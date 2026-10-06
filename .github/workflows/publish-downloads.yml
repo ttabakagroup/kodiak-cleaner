@@ -114,7 +114,13 @@ jobs:
           set -euo pipefail
           node build.mjs
           node --test tests/*.test.mjs
-          npx --yes wrangler@4 pages deploy public --project-name "$PAGES_PROJECT" --branch main --commit-dirty=true
+          # Deploy to the project's production branch so www.kodiakcleaner.app gets it (any other branch is only a preview).
+          prod=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PAGES_PROJECT" \
+            | jq -r '.result.production_branch // empty')
+          prod=${prod:-main}
+          echo "Production branch: $prod"
+          npx --yes wrangler@4 pages deploy public --project-name "$PAGES_PROJECT" --branch "$prod" --commit-dirty=true
 
       - name: Check the live downloads
         if: steps.secrets.outputs.ready == 'true'
