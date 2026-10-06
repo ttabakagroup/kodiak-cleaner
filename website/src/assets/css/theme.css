@@ -1,0 +1,160 @@
+/* Honey, Classic and Glacier themes, in that order. All pairs meet WCAG 2.2 AA (check with
+   scripts/check_contrast.py). Honey is the free default; Classic via
+   <html data-palette="classic">, Glacier via <html data-palette="glacier">.
+   Light/dark follows the system unless <html data-theme="light|dark"> forces it.
+   Each dark token list appears twice on purpose: once for the system setting, once for manual Dark. */
+
+/* Honey light (default) */
+:root {
+  color-scheme: light;
+  --bg:#F5EFE6; --surface:#FFFFFF; --surface-alt:#FBF7F0; --line:#E8DFD1;
+  --text:#3D2B1F; --muted:#6F6152; --link:#6B4A34;
+  --primary:#6B4A34; --on-primary:#FFFFFF;
+  --accent:#D9A441; --accent-text:#86611E; --accent-tint:rgba(217,164,65,.18);
+  --success:#7C9463; --control-border:#B27C4B;
+  --warn-bg:#F7DDD4; --warn-text:#A6452F; --warn-border:#F7DDD4;
+  --danger:#B4432E; --danger-bg:#B4432E; --danger-fg:#FFFFFF; --danger-border:#B4432E;
+  --chip-bg:#F6E6C8; --chip-text:#8A5A16; --brand-1:#6B4A34; --brand-2:#86611E;
+  --focus-ring:#86611E; --focus-glow:0 0 0 3px var(--accent-tint);
+  --on-success:#FFFFFF; --toggle-on:var(--success);
+  --row-alt:var(--surface-alt); --row-hover:var(--accent-tint); --row-line:var(--line); --column-divider:var(--line);
+  --font:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-display:"Fredoka","Nunito","Varela Round",system-ui,sans-serif;
+  --radius:10px; --radius-card:16px;
+}
+/* Honey dark: system dark unless Light is forced, or Dark forced */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#1E1815; --surface:#2C2420; --surface-alt:#241D19; --line:#3A2F28;
+    --text:#EDE6DC; --muted:#A69A8D; --link:#E0A94C;
+    --primary:#EDE6DC; --on-primary:#1E1815;
+    --accent:#E0A94C; --accent-text:#E0A94C; --accent-tint:rgba(224,169,76,.16);
+    --success:#8FA876; --control-border:#7F6F5F; --focus-ring:#E0A94C; --danger:#F0A08A;
+    --warn-bg:#4A2A22; --warn-text:#F0A08A; --warn-border:#4A2A22;
+    --chip-bg:#4A3A1D; --chip-text:#E8C176; --brand-1:#EDE6DC; --brand-2:#E0A94C;
+    --on-success:#1E1815;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#1E1815; --surface:#2C2420; --surface-alt:#241D19; --line:#3A2F28;
+  --text:#EDE6DC; --muted:#A69A8D; --link:#E0A94C;
+  --primary:#EDE6DC; --on-primary:#1E1815;
+  --accent:#E0A94C; --accent-text:#E0A94C; --accent-tint:rgba(224,169,76,.16);
+  --success:#8FA876; --control-border:#7F6F5F; --focus-ring:#E0A94C; --danger:#F0A08A;
+  --warn-bg:#4A2A22; --warn-text:#F0A08A; --warn-border:#4A2A22;
+  --chip-bg:#4A3A1D; --chip-text:#E8C176; --brand-1:#EDE6DC; --brand-2:#E0A94C;
+  --on-success:#1E1815;
+}
+
+/* Classic light (Supporter theme) */
+:root[data-palette="classic"] {
+  color-scheme: light;
+  --bg:#F5F6F8; --surface:#FFFFFF; --surface-alt:#F2F4F7; --line:#E3E6EA;
+  --row-alt:#F1F4F8; --row-hover:#E6EDF8; --row-line:#DCE1E7; --column-divider:#9AA3AE;
+  --text:#1B1F24; --muted:#5F6670; --link:#1D4ED8;
+  --primary:#2563EB; --on-primary:#FFFFFF;
+  --accent:#2563EB; --accent-text:#1D4ED8; --accent-tint:rgba(37,99,235,.18);
+  --success:#16A34A; --on-success:#FFFFFF; --toggle-on:#2563EB; --control-border:#828A95; --focus-ring:#2563EB;
+  --warn-bg:#FFF4CE; --warn-text:#5C4400; --warn-border:#D9B84A;
+  --danger:#C42B1C; --danger-bg:#C42B1C; --danger-fg:#FFFFFF; --danger-border:#C42B1C;
+  --chip-bg:#E8EEFD; --chip-text:#1D4ED8; --brand-1:#1B1F24; --brand-2:#2563EB;
+  --focus-glow:0 0 0 3px var(--accent-tint);
+  --font:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  --font-display:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --radius:8px; --radius-card:10px;
+}
+/* Classic dark: system dark unless Light is forced, or Dark forced */
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="classic"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#1C1D21; --surface:#25272C; --surface-alt:#2D2F35; --line:#33363C;
+    --row-alt:#2E3036; --row-hover:#363A42; --row-line:#3D4047; --column-divider:#6E7580;
+    --text:#F1F2F4; --muted:#A3A9B2; --link:#7FA6F8;
+    --primary:#2563EB; --on-primary:#FFFFFF;
+    --accent:#60A5FA; --accent-text:#93BBFB; --accent-tint:rgba(59,130,246,.25);
+    --success:#22C55E; --on-success:#0F1A12; --toggle-on:#3B82F6; --control-border:#7B828C; --focus-ring:#60A5FA;
+    --warn-bg:#3B3116; --warn-text:#F3D98A; --warn-border:#8A7330;
+    --danger:#F87171; --danger-bg:#DC2626; --danger-fg:#FFFFFF; --danger-border:#DC2626;
+    --chip-bg:#23324D; --chip-text:#93BBFB; --brand-1:#F1F2F4; --brand-2:#60A5FA;
+  }
+}
+:root[data-palette="classic"][data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#1C1D21; --surface:#25272C; --surface-alt:#2D2F35; --line:#33363C;
+  --row-alt:#2E3036; --row-hover:#363A42; --row-line:#3D4047; --column-divider:#6E7580;
+  --text:#F1F2F4; --muted:#A3A9B2; --link:#7FA6F8;
+  --primary:#2563EB; --on-primary:#FFFFFF;
+  --accent:#60A5FA; --accent-text:#93BBFB; --accent-tint:rgba(59,130,246,.25);
+  --success:#22C55E; --on-success:#0F1A12; --toggle-on:#3B82F6; --control-border:#7B828C; --focus-ring:#60A5FA;
+  --warn-bg:#3B3116; --warn-text:#F3D98A; --warn-border:#8A7330;
+  --danger:#F87171; --danger-bg:#DC2626; --danger-fg:#FFFFFF; --danger-border:#DC2626;
+  --chip-bg:#23324D; --chip-text:#93BBFB; --brand-1:#F1F2F4; --brand-2:#60A5FA;
+}
+
+/* Glacier light (Supporter theme) */
+:root[data-palette="glacier"] {
+  color-scheme: light;
+  --bg:#F1F3F3; --surface:#F7F8F8; --surface-alt:#EAEEEF; --line:#D5DCDF;
+  --text:#4C5A63; --muted:#6A6C64; --link:#4A6F82;
+  --primary:#6C93A6; --on-primary:#1E2528;
+  --accent:#6C93A6; --accent-text:#3E6072; --accent-tint:rgba(108,147,166,.16);
+  --success:#6C93A6; --control-border:#778992;
+  --warn-bg:#F7F8F8; --warn-text:#735750; --warn-border:#8E7069;
+  --danger:#735750; --danger-bg:#F7F8F8; --danger-fg:#735750; --danger-border:#D5DCDF;
+  --chip-bg:#8FA39B; --chip-text:#26301F; --brand-1:#4C5A63; --brand-2:#4C5A63;
+  --focus-glow:none;
+  --on-success:#1E2528; --toggle-on:#4A6F82; --focus-ring:#3E6072;
+  --font:"Avenir Next","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  --font-display:var(--font);
+  --radius:6px; --radius-card:6px;
+}
+/* Glacier dark: system dark unless Light is forced, or Dark forced */
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="glacier"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#1E2528; --surface:#252D31; --surface-alt:#21292C; --line:#333D42;
+    --text:#EAEEEE; --muted:#B7B9AE; --link:#8FB6C7;
+    --primary:#8FB6C7; --on-primary:#1E2528;
+    --accent:#8FB6C7; --accent-text:#8FB6C7; --accent-tint:rgba(143,182,199,.14);
+    --success:#8FB6C7; --control-border:#AEB9BE; --toggle-on:#8FB6C7; --focus-ring:#8FB6C7;
+    --warn-bg:#252D31; --warn-text:#B39690; --warn-border:#B39690;
+    --danger:#B39690; --danger-bg:#252D31; --danger-fg:#B39690; --danger-border:#333D42;
+    --chip-bg:#A9BDB4; --chip-text:#26301F; --brand-1:#EAEEEE; --brand-2:#EAEEEE;
+  }
+}
+:root[data-palette="glacier"][data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#1E2528; --surface:#252D31; --surface-alt:#21292C; --line:#333D42;
+  --text:#EAEEEE; --muted:#B7B9AE; --link:#8FB6C7;
+  --primary:#8FB6C7; --on-primary:#1E2528;
+  --accent:#8FB6C7; --accent-text:#8FB6C7; --accent-tint:rgba(143,182,199,.14);
+  --success:#8FB6C7; --control-border:#AEB9BE; --toggle-on:#8FB6C7; --focus-ring:#8FB6C7;
+  --warn-bg:#252D31; --warn-text:#B39690; --warn-border:#B39690;
+  --danger:#B39690; --danger-bg:#252D31; --danger-fg:#B39690; --danger-border:#333D42;
+  --chip-bg:#A9BDB4; --chip-text:#26301F; --brand-1:#EAEEEE; --brand-2:#EAEEEE;
+}
+
+/* Shared component wiring */
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 var(--font); }
+h1,h2,h3 { font-weight:600; color:var(--text); } h2,h3 { font-family:var(--font-display); }
+a { color:var(--link); text-decoration:none; } a:hover { text-decoration:underline; }
+:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.card { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-card); }
+button { border-radius:var(--radius); border:1.5px solid var(--line); background:var(--surface); color:var(--text); }
+button:hover { border-color:var(--control-border); }
+button.primary { background:var(--primary); border-color:var(--primary); color:var(--on-primary); font-weight:600; }
+button.danger { background:var(--danger-bg); border-color:var(--danger-border); color:var(--danger-fg); }
+input, select, textarea { background:var(--surface); border:1px solid var(--control-border); border-radius:var(--radius); color:var(--text); }
+input:focus, select:focus, textarea:focus { border-color:var(--focus-ring); box-shadow:var(--focus-glow); }
+.chip { background:var(--chip-bg); color:var(--chip-text); border-radius:999px; font-weight:600; }
+.nav-item[aria-current] { background:var(--accent-tint); }
+.error { background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-border); }
+table { border-collapse:collapse; }
+tbody tr:nth-child(even) { background:var(--row-alt); }
+tbody tr:hover { background:var(--row-hover); }
+td, th { border-bottom:1px solid var(--row-line); }
+td + td, th + th { border-left:1px solid var(--column-divider); }
+.switch[aria-checked="true"] { background:var(--toggle-on); }
+.check:checked { background:var(--success); color:var(--on-success); }

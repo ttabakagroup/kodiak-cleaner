@@ -1,0 +1,163 @@
+<UserControl x:Class="KodiakCleaner.App.Views.FeedbackPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+    <!-- Overview -->
+    <StackPanel Visibility="{Binding IsOverview, Converter={StaticResource BoolToVis}}">
+        <Border Style="{StaticResource Chip}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                Visibility="{Binding HasBuildNote, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding BuildNote}" />
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Send a Message" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="{Binding Intro}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                <TextBlock Text="Each button opens a short form. Send Email then opens your email app with the message ready, so nothing is sent until you press Send."
+                           Style="{StaticResource Caption}" Margin="0,6,0,0" />
+                <TextBlock Text="Feedback isn't set up in this build yet." Foreground="{DynamicResource WarnText}" Margin="0,8,0,0"
+                           Visibility="{Binding IsNotConfigured, Converter={StaticResource BoolToVis}}" />
+                <WrapPanel Margin="0,14,0,0">
+                    <Button Command="{Binding SendFeedbackCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8BD;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Send Feedback" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ReportBugCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xEBE8;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Report a Bug" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding RequestFeatureCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE82F;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Request a Feature" />
+                        </StackPanel>
+                    </Button>
+                    <!-- Security (Ted, 0.8.24): replaces the small "report a security problem privately" link. Still sent privately by email. -->
+                    <Button Command="{Binding ReportSecurityCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,8"
+                            ToolTip="Report a security problem privately, by email. Please don't post security problems in public issues.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Security" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+                <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+            <StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Copy Details" Command="{Binding CopyDetailsCommand}" Margin="0" VerticalAlignment="Top" />
+                    <StackPanel>
+                        <TextBlock Text="Details for Your Report" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Bug reports include these automatically. They never include your files, folders or anything you cleaned."
+                                   Style="{StaticResource Caption}" Margin="0,4,16,0" />
+                    </StackPanel>
+                </DockPanel>
+                <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                        CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,12,0,0">
+                    <TextBlock Text="{Binding Details}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="{Binding RateTitle}" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="&#xE735;&#xE735;&#xE735;&#xE735;&#xE735;" Style="{StaticResource Icon}" Foreground="{DynamicResource Accent}" FontSize="20" Margin="0,8,0,0" HorizontalAlignment="Left" />
+                <TextBlock Text="{Binding RateText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                <DockPanel Margin="0,12,0,0">
+                    <Button DockPanel.Dock="Left" Command="{Binding StarCommand}" Style="{StaticResource AccentButton}" VerticalAlignment="Top">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE734;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Star on GitHub" />
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="{Binding RateNote}" Style="{StaticResource Caption}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                </DockPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+
+    <!-- The form: opened by Send Feedback, Report a Bug, Request a Feature or Security -->
+    <StackPanel Visibility="{Binding IsComposing, Converter={StaticResource BoolToVis}}">
+        <Button Command="{Binding BackCommand}" HorizontalAlignment="Left" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE72B;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,8,0" />
+                <TextBlock Text="Back to Contact &amp; Feedback" />
+            </StackPanel>
+        </Button>
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" />
+                <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left" Margin="0,12,0,0">
+                    <ItemsControl ItemsSource="{Binding Kinds}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton GroupName="FeedbackKind" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                             IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Your Name" Style="{StaticResource SettingTitle}" />
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Tag="Optional" Margin="0,6,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Your Email for a Reply" Style="{StaticResource SettingTitle}" />
+                        <TextBox Text="{Binding ReplyTo, UpdateSourceTrigger=PropertyChanged}" Tag="Optional" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Subject" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                <TextBox Text="{Binding Subject, UpdateSourceTrigger=PropertyChanged}" Tag="A few words about it (optional)" Margin="0,6,0,0" />
+
+                <TextBlock Text="Message" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                <TextBox Text="{Binding Message, UpdateSourceTrigger=PropertyChanged}" Tag="{Binding MessageHint}" Margin="0,6,0,0"
+                         AcceptsReturn="True" TextWrapping="Wrap" Height="170" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />
+
+                <DockPanel Margin="0,14,0,0">
+                    <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding IncludeDetails}" VerticalAlignment="Top" />
+                    <StackPanel Margin="0,0,24,0">
+                        <TextBlock Text="Include Details About This Copy" Style="{StaticResource SettingTitle}" />
+                        <TextBlock Text="Version, Windows version, plan, install type and theme. Never your files, folders or user name." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DockPanel>
+                <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                        CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,10,0,0"
+                        Visibility="{Binding IncludeDetails, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{Binding Details}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                </Border>
+
+                <WrapPanel Margin="0,16,0,0">
+                    <Button Command="{Binding SendEmailCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE724;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Send Email" />
+                        </StackPanel>
+                    </Button>
+                    <Button Content="Copy Message" Command="{Binding CopyMessageCommand}" Margin="0,0,8,0" />
+                </WrapPanel>
+                <TextBlock Text="{Binding SendNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                <TextBlock Text="{Binding FormStatus}" Foreground="{DynamicResource AccentText}" TextWrapping="Wrap" Margin="0,6,0,0" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+    </Grid>
+</UserControl>

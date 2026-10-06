@@ -1,0 +1,32 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <!-- Version and Channel come from version.json (Directory.Build.props). -->
+    <ProductVersion Condition="'$(ProductVersion)' == ''">$(Version)</ProductVersion>
+    <!-- Folder containing the published KodiakCleaner.exe (dotnet publish -r win-x64 -o ...). -->
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildThisFileDirectory)..\publish\</PublishDir>
+    <!-- The seven Docs files from tools/MakeDocs; build.ps1 writes them to publish\Docs. -->
+    <DocsDir Condition="'$(DocsDir)' == ''">$(PublishDir)Docs\</DocsDir>
+    <InstallerPlatform>x64</InstallerPlatform>
+  </PropertyGroup>
+
+  <!-- Every channel installs to Program Files\Kodiak Cleaner (Ted's choice) and shares one upgrade code, so Dev, Beta
+       and Stable replace each other instead of installing side by side. The codes are the original Dev ones, so
+       existing Dev installs upgrade in place. Every channel is named plain Kodiak Cleaner in Windows (0.8.7); the version number shows the channel. -->
+  <PropertyGroup>
+    <InstallFolderName>Kodiak Cleaner</InstallFolderName>
+    <UpgradeCode>B2BD887F-AF40-4BAB-BF5B-668111F792A1</UpgradeCode>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ProductName>Kodiak Cleaner</ProductName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Plain KodiakCleaner-0.8.10-x64.msi for every channel; build.ps1 renames it KodiakCleaner-<Branch>-Setup.msi inside the Setup ZIP. -->
+    <OutputName>KodiakCleaner-$(ProductVersion)-x64</OutputName>
+    <DefineConstants>ProductVersion=$(ProductVersion);ProductName=$(ProductName);InstallFolderName=$(InstallFolderName);UpgradeCode=$(UpgradeCode);PublishDir=$(PublishDir);DocsDir=$(DocsDir)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+  </ItemGroup>
+</Project>

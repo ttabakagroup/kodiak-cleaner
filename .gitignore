@@ -1,0 +1,5 @@
+# source/.gitignore covers the app (build output and Ted's supporter signing key).
+# Website: local secrets and Wrangler state. Never commit them.
+website/.dev.vars
+website/.wrangler/
+node_modules/

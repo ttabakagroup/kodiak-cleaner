@@ -1,0 +1,44 @@
+<!-- Glacier: calm, low-contrast blue-grey stone (light mode). Colors come only from the theme tables in Ted's app standard;
+     every control uses these keys, so nothing else holds a color. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Bg" Color="#F1F3F3" />
+    <SolidColorBrush x:Key="Surface" Color="#F7F8F8" />
+    <SolidColorBrush x:Key="SurfaceAlt" Color="#EAEEEF" />
+    <!-- Tables: every other row, row hover, row separators and the column dividers you drag. -->
+    <SolidColorBrush x:Key="RowAlt" Color="#EAEEEF" />
+    <SolidColorBrush x:Key="RowHover" Color="#296C93A6" />
+    <SolidColorBrush x:Key="RowLine" Color="#D5DCDF" />
+    <SolidColorBrush x:Key="ColumnDivider" Color="#D5DCDF" />
+    <SolidColorBrush x:Key="Line" Color="#D5DCDF" />
+    <SolidColorBrush x:Key="Text" Color="#4C5A63" />
+    <SolidColorBrush x:Key="Muted" Color="#6A6C64" />
+    <SolidColorBrush x:Key="Link" Color="#4A6F82" />
+    <SolidColorBrush x:Key="Primary" Color="#6C93A6" />
+    <SolidColorBrush x:Key="OnPrimary" Color="#1E2528" />
+    <SolidColorBrush x:Key="Accent" Color="#6C93A6" />
+    <SolidColorBrush x:Key="AccentText" Color="#3E6072" />
+    <SolidColorBrush x:Key="AccentTint" Color="#296C93A6" />
+    <SolidColorBrush x:Key="Success" Color="#6C93A6" />
+    <SolidColorBrush x:Key="OnSuccess" Color="#1E2528" />
+    <SolidColorBrush x:Key="ToggleOn" Color="#4A6F82" />
+    <SolidColorBrush x:Key="ControlBorder" Color="#778992" />
+    <SolidColorBrush x:Key="WarnBg" Color="#F7F8F8" />
+    <SolidColorBrush x:Key="WarnText" Color="#735750" />
+    <SolidColorBrush x:Key="WarnBorder" Color="#8E7069" />
+    <SolidColorBrush x:Key="Danger" Color="#735750" />
+    <SolidColorBrush x:Key="DangerBg" Color="#F7F8F8" />
+    <SolidColorBrush x:Key="DangerFg" Color="#735750" />
+    <SolidColorBrush x:Key="DangerBorder" Color="#D5DCDF" />
+    <SolidColorBrush x:Key="ChipBg" Color="#8FA39B" />
+    <SolidColorBrush x:Key="ChipText" Color="#26301F" />
+    <SolidColorBrush x:Key="Brand1" Color="#4C5A63" />
+    <SolidColorBrush x:Key="Brand2" Color="#4C5A63" />
+    <SolidColorBrush x:Key="FocusRing" Color="#3E6072" />
+    <CornerRadius x:Key="Radius">6</CornerRadius>
+    <CornerRadius x:Key="RadiusCard">6</CornerRadius>
+    <!-- Soft ring around a focused text box (Honey only). -->
+    <SolidColorBrush x:Key="FocusGlow" Color="#00000000" />
+    <FontFamily x:Key="FontDisplay">Avenir Next, Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="FontBody">Avenir Next, Segoe UI Variable Text, Segoe UI</FontFamily>
+</ResourceDictionary>

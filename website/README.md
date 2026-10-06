@@ -1,0 +1,151 @@
+# Kodiak Cleaner Website
+
+The website for Kodiak Cleaner (Windows) and Kodiak Cleaner for Linux, built for Cloudflare Pages. It is a static site plus one small Pages Function that sends the Contact Us form to www.kodiakcleaner.app/contact.
+
+No trackers, ads, cookies or outside fonts. The only outside script is Cloudflare Turnstile (the spam check), and it loads only on Contact Us.
+
+## Pages
+
+| Page | Address | Made from |
+|------|---------|-----------|
+| Home | `/` | `src/pages/home.mjs` |
+| Features | `/features/` | `src/pages/features.mjs` |
+| Linux | `/linux/` | `src/pages/linux.mjs` and `content/linux/CHANGELOG.md` |
+| Download | `/download/` | `src/pages/download.mjs` (Windows and Linux) |
+| Changelog | `/changelog/` | `content/CHANGELOG.md` |
+| Archive | `/archive/` | `content/CHANGELOG.md` and `site.config.json` |
+| Contact Us | `/contact/` | `src/pages/contact.mjs` and `functions/api/contact.js` |
+| Why It Was Made | `/why-it-was-made/` | `content/why-it-was-made.md` (word for word) |
+| Privacy Policy | `/privacy/` | website section plus `content/PRIVACY.md` |
+| Terms of Use | `/terms/` | `content/terms-of-use.md` |
+
+Every page links to GitHub and to tedtabaka.com.
+
+## Deploy to Cloudflare Pages (first time)
+
+The site's main address is **https://www.kodiakcleaner.app**. The bare `kodiakcleaner.app`, `kodiakcleaner.pages.dev` and every preview link such as `3c0fc5da.kodiakcleaner.pages.dev` send visitors to the same page there automatically, and `/downloads` goes to the Download page (`functions/_middleware.js`). To look at a deploy before it's live, use `npm run preview` on your PC, since preview links now redirect too.
+
+You need a free Cloudflare account and Node.js 18 or newer on your PC.
+
+### What gets uploaded
+
+Keep the whole `website` folder on your PC, but don't drag it into the Cloudflare dashboard. Drag-and-drop uploads plain files only and skips the `functions` folder, so Contact Us would not work.
+
+Instead, `npm run deploy` (step 1) uploads the right two things for you: the built pages in `public/` and the form code in `functions/`. Nothing else in the folder goes online.
+
+Never upload or share `.dev.vars` (local test keys), `.wrangler/` (local cache) or `node_modules/`. They are listed in `.gitignore`.
+
+**1. Put the site online.** Open a terminal in the `website` folder and run:
+
+```
+npx wrangler login
+npm run deploy
+```
+
+Say yes when it asks to create the project `kodiakcleaner`. The site is then live at `https://kodiakcleaner.pages.dev`.
+
+**2. Connect www.kodiakcleaner.app.** Cloudflare dashboard > Workers & Pages > kodiakcleaner > Custom domains > Set up a custom domain:
+- Add `www.kodiakcleaner.app` and confirm. This is the main address.
+- Add `kodiakcleaner.app` the same way, so the bare domain redirects to www.
+
+If kodiakcleaner.app is registered with Cloudflare or already uses Cloudflare's nameservers, the DNS records are made for you. If it's at another registrar, first add the domain to Cloudflare (Add a domain) and switch its nameservers to the two Cloudflare gives you, then come back to this step. The security certificate is automatic; .app domains only work over HTTPS, which Cloudflare provides.
+
+**3. Make the Turnstile spam check.** Cloudflare dashboard > Turnstile > Add widget. Name it "Kodiak Cleaner", add the hostnames `www.kodiakcleaner.app`, `kodiakcleaner.app` and `kodiakcleaner.pages.dev`, Widget Mode: Managed. Copy the **Site Key** and **Secret Key**.
+
+**4. Make a Resend key (sends the emails).** Sign up free at resend.com **using www.kodiakcleaner.app/contact**, then API Keys > Create API Key (Sending access). Copy the key. While you send from Resend's test address, messages can only go to the email you signed up with, which is exactly where they should go.
+
+Optional, for a nicer sender: in Resend > Domains, add `kodiakcleaner.app` and add the DNS records it shows in Cloudflare (DNS > Records). Once it says Verified, set `CONTACT_FROM` below to `Kodiak Cleaner Website <contact@kodiakcleaner.app>`. Messages can then go to any address.
+
+**5. Add the settings.** Cloudflare dashboard > Workers & Pages > kodiakcleaner > Settings > Variables and Secrets, for Production:
+
+| Name | Type | Value |
+|------|------|-------|
+| `TURNSTILE_SITE_KEY` | Text | Site Key from step 3 |
+| `TURNSTILE_SECRET_KEY` | Secret | Secret Key from step 3 |
+| `RESEND_API_KEY` | Secret | Key from step 4 |
+| `CONTACT_TO` | Text (optional) | Where messages go. Default www.kodiakcleaner.app/contact |
+| `CONTACT_FROM` | Text (optional) | Sender, only after kodiakcleaner.app is verified in Resend |
+
+**6. Deploy again** with `npm run deploy` so the settings take effect, then open https://www.kodiakcleaner.app/contact/ and send yourself a test message.
+
+Leave Cloudflare Web Analytics off so the site stays tracker-free.
+
+**Prefer GitHub over the terminal?** Put the `website` folder in a GitHub repository (the `.gitignore` keeps the local files out), then Workers & Pages > Create > Pages > Connect to Git. Build command `npm run build`, build output directory `public`. Every push then publishes the site, with the form included. Steps 2 to 5 stay the same.
+
+## Downloads Served From kodiakcleaner.app
+
+While `hostedDownloads` is in `site.config.json`, the Download page's buttons point at
+`https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi` (a bare MSI, Ted's choice on 2026-10-05) and `.../KodiakCleaner-Portable.zip`
+instead of GitHub. The Linux buttons (from `linux` in `site.config.json`) point at `.../KodiakCleanerLinux-DEB.zip` and
+`.../KodiakCleanerLinux-AppImage.zip` the same way. The Windows files are about 70 MB, and Cloudflare Pages only takes files up to 25 MB, so they
+live in Cloudflare R2 (free up to 10 GB, with no charge for downloads). `functions/download/[file].js` serves them.
+
+One-time setup:
+1. Cloudflare dashboard > R2 Object Storage. Turn on R2 if asked (Cloudflare asks for a payment method even on the free tier).
+2. Create bucket, named `kodiakcleaner-downloads`.
+3. Open the bucket > Upload, and add the four files under exactly these names: `KodiakCleaner-Installer.msi`, `KodiakCleaner-Portable.zip`, `KodiakCleanerLinux-AppImage.zip` and `KodiakCleanerLinux-DEB.zip`.
+4. Workers & Pages > kodiakcleaner > Settings > Bindings > Add > R2 bucket. Variable name `DOWNLOADS`, bucket `kodiakcleaner-downloads`.
+5. `npm run deploy`.
+
+Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI comes out of `KodiakCleaner-Dev-Setup.zip`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, and the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`.
+To go back to GitHub downloads, delete `hostedDownloads` from `site.config.json` and deploy.
+
+## If Contact Us Says a Message Couldn't Be Sent
+
+The form now says what went wrong. The common causes:
+
+- **"error 404" or "error 405"**: the form code wasn't uploaded. Deploy with `npm run deploy` (or Git), not drag-and-drop.
+- **"error 403"**: a Cloudflare security setting blocked the form. Check Security > Bots (Bot Fight Mode) and Security > WAF for kodiakcleaner.app.
+- **"Sign up for Resend with www.kodiakcleaner.app/contact"**: Resend's test sender only delivers to the email the Resend account was made with.
+- **"Resend API key was refused"**: make a new key in Resend and paste it again into `RESEND_API_KEY`.
+- **"CONTACT_FROM isn't verified"**: delete `CONTACT_FROM`, or finish verifying kodiakcleaner.app in Resend.
+
+After changing any setting in Cloudflare, deploy again; settings only reach the site on the next deploy. To see the details, open Workers & Pages > kodiakcleaner > Deployments > the newest one > Functions > Real-time logs, then send a test message.
+
+## Each New Kodiak Cleaner Release
+
+1. `npm run sync` copies CHANGELOG.md and the other documents from `../source` (or `../ccleaner-alt`), and the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/` (or copy them by hand).
+2. In `site.config.json`, add the version under `releases` with its two file sizes. Only versions listed there get download links; the rest show "Not published".
+3. `npm test`, then `npm run deploy`.
+
+Archive links point at the GitHub release files, for example
+`https://github.com/ttabakagroup/kodiakcleaner/releases/download/v0.8.35-dev/KodiakCleaner-Dev-Setup.zip`
+(0.8.30 and older: `KodiakCleaner-0.8.27-x64-msi-dev.zip`).
+They work once that release exists on GitHub. The installer is always the MSI inside a ZIP; a test fails if a bare `.msi` is ever linked.
+
+## Commands
+
+| Command | What it does |
+|---------|--------------|
+| `npm run build` | Builds the site into `public/` |
+| `npm test` | Builds, then checks links, images, downloads, Title Case, outside resources and the contact function |
+| `npm run preview` | Runs the site and the form locally with Wrangler (put test keys in a `.dev.vars` file) |
+| `npm run deploy` | Builds and uploads to Cloudflare Pages |
+| `npm run sync` | Copies the documents from `../source` (or `../ccleaner-alt`) and `../kodiak-linux`, then builds |
+
+Turnstile's test keys for local runs: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`.
+
+## Files
+
+```
+build.mjs               builds public/ from src/ and content/
+site.config.json        site address, links and published releases
+content/                CHANGELOG.md, PRIVACY.md, terms-of-use.md, why-it-was-made.md, LICENSE, version.json (copied from the app)
+content/linux/          CHANGELOG.md and version.json (copied from Kodiak Cleaner for Linux)
+functions/api/contact.js  Contact Us handler (Turnstile check, then email through Resend; nothing stored)
+src/layout.mjs          header, footer and shared pieces
+src/pages/              one file per page
+src/markdown.mjs        renders the Markdown documents and reads the changelog
+src/icons.mjs           line icons
+src/assets/             CSS (theme.css from Ted's build standard, unchanged), scripts, Fredoka font, logo and screenshots
+src/static/_headers     security and caching headers for Cloudflare
+functions/download/[file].js  serves the hosted downloads from R2
+src/static/_redirects   short links (/github, /releases)
+functions/_middleware.js  sends kodiakcleaner.app, pages.dev and preview links to www.kodiakcleaner.app
+tests/                  site checks and contact function tests
+public/                 the built site (made by npm run build)
+```
+
+Windows screenshots come from the 0.8.35 Dev portable build under Wine with sample programs and startup entries (the Developer item was painted out of the two Appearance shots). Linux screenshots (`linux-*.png`) come from Kodiak Cleaner for Linux 0.8.1 Dev via its `tools/screenshots.py`. Retake the Windows ones on Windows when convenient; real program icons look better.
+
+Copyright © 2026 Ted Tabaka. MIT License.

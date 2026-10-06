@@ -1,0 +1,80 @@
+name: Build MSI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths-ignore: ['website/**', 'assets/**', 'releases/**']
+  pull_request:
+    paths-ignore: ['website/**', 'assets/**', 'releases/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to attach files to releases
+
+jobs:
+  build:
+    runs-on: windows-latest
+    # The app lives in source/; the website, logos and release files sit beside it.
+    defaults:
+      run:
+        working-directory: source
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # version.json holds the version and channel. A tag must match it: v0.8.0-dev, v0.9.0-beta, v1.0.0.
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          $info = Get-Content version.json -Raw | ConvertFrom-Json
+          $channel = $info.channel.ToLower()
+          $label = (Get-Culture).TextInfo.ToTitleCase($channel)
+          $tag = if ($channel -eq "stable") { "v$($info.version)" } else { "v$($info.version)-$channel" }
+          $name = if ($channel -eq "stable") { $info.version } else { "$($info.version) $label" }
+          if ($channel -ne "stable" -and [version]$info.targetStable -gt [version]"1.0.0") { $name += " (for $($info.targetStable))" }
+          if ("${{ github.ref_type }}" -eq "tag" -and "${{ github.ref_name }}" -ne $tag) {
+            Write-Error "Tag ${{ github.ref_name }} doesn't match version.json (expected $tag)."
+            exit 1
+          }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "name=$name" >> $env:GITHUB_OUTPUT
+          "channel=$channel" >> $env:GITHUB_OUTPUT
+          "label=$label" >> $env:GITHUB_OUTPUT
+          "prerelease=$(if ($channel -eq 'stable') { 'false' } else { 'true' })" >> $env:GITHUB_OUTPUT
+
+      # Tagged builds are releases: no Developer page, Ted's supporter key and a changelog entry are required.
+      # Every other build is a development build (artifacts only).
+      - name: Build
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") { ./build.ps1 -Release } else { ./build.ps1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KodiakCleaner-${{ steps.version.outputs.tag }}-run${{ github.run_number }}
+          path: source/dist/*
+
+      - name: Attach the Setup and Portable ZIPs to the GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Kodiak Cleaner ${{ steps.version.outputs.name }}
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          files: source/dist/*
+
+      # GitHub's releases/latest skips pre-releases, so Dev and Beta builds also replace the files in one fixed release
+      # (latest-dev or latest-beta). Docs\Download.url links there; the file names stay the same every build.
+      - name: Update the fixed latest-dev or latest-beta release
+        if: github.ref_type == 'tag' && steps.version.outputs.prerelease == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-${{ steps.version.outputs.channel }}
+          name: Kodiak Cleaner ${{ steps.version.outputs.label }} (newest build)
+          body: The newest ${{ steps.version.outputs.label }} build, ${{ steps.version.outputs.name }}. Replaced by every ${{ steps.version.outputs.label }} release.
+          prerelease: true
+          files: source/dist/*

@@ -1,0 +1,21 @@
+<Project>
+  <!-- version.json is the single source of the version and release channel. -->
+  <PropertyGroup>
+    <_VersionJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)version.json'))</_VersionJson>
+    <Version>$([System.Text.RegularExpressions.Regex]::Match($(_VersionJson), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</Version>
+    <Channel>$([System.Text.RegularExpressions.Regex]::Match($(_VersionJson), '"channel"\s*:\s*"([^"]+)"').Groups[1].Value)</Channel>
+    <TargetStable>$([System.Text.RegularExpressions.Regex]::Match($(_VersionJson), '"targetStable"\s*:\s*"([^"]+)"').Groups[1].Value)</TargetStable>
+    <!-- Release builds (build.ps1 -Release, tagged CI builds) leave out the Developer page. -->
+    <ReleaseBuild Condition="'$(ReleaseBuild)' == ''">false</ReleaseBuild>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Company>Ted Tabaka</Company>
+    <Authors>Ted Tabaka</Authors>
+    <Product>Kodiak Cleaner</Product>
+    <Copyright>Copyright © 2026 Ted Tabaka. MIT License.</Copyright>
+    <!-- Lets the WPF project compile on non-Windows build machines (CI/Linux); running still needs Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+</Project>

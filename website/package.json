@@ -1,0 +1,17 @@
+{
+  "name": "kodiak-cleaner-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Kodiak Cleaner website, built for Cloudflare Pages.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "node build.mjs",
+    "sync": "node build.mjs --sync",
+    "test": "node build.mjs && node --test tests/*.test.mjs",
+    "check": "node --test tests/*.test.mjs",
+    "preview": "node build.mjs && npx wrangler pages dev public",
+    "deploy": "node build.mjs && npx wrangler pages deploy public --project-name kodiakcleaner"
+  }
+}

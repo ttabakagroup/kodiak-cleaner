@@ -1,0 +1,36 @@
+<Window x:Class="KodiakCleaner.App.BetaNoticeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="560" SizeToContent="Height" ResizeMode="NoResize"
+        Icon="pack://application:,,,/Assets/app.ico" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
+        FontFamily="{DynamicResource FontBody}" FontSize="14" UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+    <!-- Shown at every start of a Dev or Beta build until "Don't Show This Again at Startup" is on when it closes. -->
+    <StackPanel Margin="28,24">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="&#xE7BA;" Style="{StaticResource Icon}" FontSize="22" Foreground="{DynamicResource WarnText}" Margin="0,0,12,0" VerticalAlignment="Center" />
+            <TextBlock x:Name="Heading" Style="{StaticResource PageTitle}" FontSize="22" />
+        </StackPanel>
+
+        <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap"
+                           Text="Kodiak Cleaner is still beta software. We are working to improve it every day, and our goal is to reach the first full release soon." />
+                <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" FontWeight="SemiBold"
+                           Text="Use Kodiak Cleaner at your own risk. More testing is needed before we can confirm that every feature works as intended." />
+                <TextBlock TextWrapping="Wrap" Margin="0,8,0,0" FontWeight="SemiBold"
+                           Text="Being beta and cleaning software, Kodiak Cleaner may delete information you didn't mean to remove." />
+                <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" Style="{StaticResource Caption}" FontSize="13"
+                           Text="Check what's selected before you clean, and keep your own backups of anything important. Removed files go to the Recycle Bin where possible, and registry fixes are backed up first." />
+            </StackPanel>
+        </Border>
+
+        <DockPanel Margin="0,20,0,0">
+            <Button DockPanel.Dock="Right" Content="I Understand" Style="{StaticResource AccentButton}" Margin="0" IsDefault="True" IsCancel="True" Click="Close_Click" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <CheckBox x:Name="DontShowAgain" Style="{StaticResource ToggleSwitch}" />
+                <TextBlock Text="Don't Show This Again at Startup" Margin="10,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

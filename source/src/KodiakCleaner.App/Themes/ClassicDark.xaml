@@ -1,0 +1,44 @@
+<!-- Classic: the neutral greys and blue of PCSweep's first versions, a familiar Windows look (dark mode). Free for everyone.
+     Colors come only from this table; every control uses these keys, so nothing else holds a color. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Bg" Color="#1C1D21" />
+    <SolidColorBrush x:Key="Surface" Color="#25272C" />
+    <SolidColorBrush x:Key="SurfaceAlt" Color="#2D2F35" />
+    <!-- Tables: every other row, row hover, row separators and the column dividers you drag. -->
+    <SolidColorBrush x:Key="RowAlt" Color="#2E3036" />
+    <SolidColorBrush x:Key="RowHover" Color="#363A42" />
+    <SolidColorBrush x:Key="RowLine" Color="#3D4047" />
+    <SolidColorBrush x:Key="ColumnDivider" Color="#6E7580" />
+    <SolidColorBrush x:Key="Line" Color="#33363C" />
+    <SolidColorBrush x:Key="Text" Color="#F1F2F4" />
+    <SolidColorBrush x:Key="Muted" Color="#A3A9B2" />
+    <SolidColorBrush x:Key="Link" Color="#7FA6F8" />
+    <SolidColorBrush x:Key="Primary" Color="#2563EB" />
+    <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Accent" Color="#60A5FA" />
+    <SolidColorBrush x:Key="AccentText" Color="#93BBFB" />
+    <SolidColorBrush x:Key="AccentTint" Color="#403B82F6" />
+    <SolidColorBrush x:Key="Success" Color="#22C55E" />
+    <SolidColorBrush x:Key="OnSuccess" Color="#0F1A12" />
+    <SolidColorBrush x:Key="ToggleOn" Color="#3B82F6" />
+    <SolidColorBrush x:Key="ControlBorder" Color="#7B828C" />
+    <SolidColorBrush x:Key="WarnBg" Color="#3B3116" />
+    <SolidColorBrush x:Key="WarnText" Color="#F3D98A" />
+    <SolidColorBrush x:Key="WarnBorder" Color="#8A7330" />
+    <SolidColorBrush x:Key="Danger" Color="#F87171" />
+    <SolidColorBrush x:Key="DangerBg" Color="#DC2626" />
+    <SolidColorBrush x:Key="DangerFg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="DangerBorder" Color="#DC2626" />
+    <SolidColorBrush x:Key="ChipBg" Color="#23324D" />
+    <SolidColorBrush x:Key="ChipText" Color="#93BBFB" />
+    <SolidColorBrush x:Key="Brand1" Color="#F1F2F4" />
+    <SolidColorBrush x:Key="Brand2" Color="#60A5FA" />
+    <SolidColorBrush x:Key="FocusRing" Color="#60A5FA" />
+    <CornerRadius x:Key="Radius">8</CornerRadius>
+    <CornerRadius x:Key="RadiusCard">10</CornerRadius>
+    <!-- Soft ring around a focused text box. -->
+    <SolidColorBrush x:Key="FocusGlow" Color="#403B82F6" />
+    <FontFamily x:Key="FontDisplay">Segoe UI Variable Display, Segoe UI</FontFamily>
+    <FontFamily x:Key="FontBody">Segoe UI Variable Text, Segoe UI</FontFamily>
+</ResourceDictionary>

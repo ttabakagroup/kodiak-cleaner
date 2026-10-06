@@ -1,0 +1,56 @@
+# Kodiak Cleaner
+
+Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
+
+Kodiak Cleaner is a small, honest cleaner for Windows by Ted Tabaka. It has no telemetry, ads, upsells, bundled offers or background services. Every feature is free and open source under the MIT License.
+
+Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so check what's selected before you clean and keep your own backups of anything important.
+
+## What You Need
+
+- Windows 10 or Windows 11, 64-bit (x64)
+- About 100 MB of free disk space
+- Administrator rights only for system-wide items (Kodiak Cleaner asks when it needs them)
+
+## Install
+
+- Installer: double-click the .msi file (downloaded on its own, or extracted from the Setup ZIP) and follow the steps. Kodiak Cleaner installs to Program Files\Kodiak Cleaner, with these documents in its Docs folder.
+- Portable: extract the Portable ZIP to any folder, even a USB drive, and run KodiakCleaner.exe. It keeps its settings, backups and logs in that folder and leaves no trace outside it.
+
+The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click More info, then Run anyway.
+
+## Update Without Losing Anything
+
+Your settings are in KodiakCleaner.ini next to KodiakCleaner.exe. Backups and the activity log are in Documents\Kodiak Cleaner (Backups and Logs folders); the portable version keeps those folders beside KodiakCleaner.exe. Settings > Application shows exactly where. To be safe, use Settings > Application > Back Up Settings before any update.
+
+- Installed: click Check Now under Settings > Updates, or run a newer installer over the old one. KodiakCleaner.ini, Backups and Logs are kept.
+- Portable: replace KodiakCleaner.exe and the Docs folder only. Keep KodiakCleaner.ini and the Backups and Logs folders.
+
+After an update, What's New shows everything that changed since your previous version. The full history is in Changelog.txt.
+
+## Uninstall
+
+Uninstall Kodiak Cleaner from Windows Settings > Apps. It removes the program, its settings, its scheduled tasks and its other Windows entries, then asks whether to delete Documents\Kodiak Cleaner (your backups and logs) too. Keep them if you might still want to undo a registry fix. For the portable version, turn off Clean When Windows Starts, the Recycle Bin menu and any schedules, then delete its folder.
+
+## Privacy
+
+Everything stays on your PC, and Kodiak Cleaner sends nothing on its own. The only time it goes online is the update check, which is off until you turn it on or click Check Now. Privacy.txt has the details.
+
+## These Documents
+
+- Changelog.txt: every change, newest first
+- Download.url: the newest installer on GitHub
+- Homepage.url: the Kodiak Cleaner website
+- License.txt: the MIT License
+- Privacy.txt: the privacy policy
+- ReadMe.txt: this file
+- TermsOfUse.txt: the Terms of Use
+
+## Help and Feedback
+
+- Feedback, bug reports and feature requests: Settings > Contact & Feedback, or email www.kodiakcleaner.app/contact
+- Website: https://www.kodiakcleaner.app/
+- Source code and releases: https://github.com/ttabakagroup/kodiakcleaner
+- Say thanks: https://ko-fi.com/ttabaka
+
+Copyright © 2026 Ted Tabaka. Free and open source under the MIT License.

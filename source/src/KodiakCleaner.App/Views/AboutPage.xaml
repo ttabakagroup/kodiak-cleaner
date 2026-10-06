@@ -1,0 +1,116 @@
+<UserControl x:Class="KodiakCleaner.App.Views.AboutPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <!-- About -->
+        <StackPanel Visibility="{Binding ShowAbout, Converter={StaticResource BoolToVis}}">
+            <!-- Logo, name, version and channel -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="24">
+                <DockPanel>
+                    <Image DockPanel.Dock="Left" Source="pack://application:,,,/Assets/logo.png" Width="88" Height="88"
+                           VerticalAlignment="Top" RenderOptions.BitmapScalingMode="HighQuality" Margin="0,0,20,0" />
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Wordmark}" FontSize="26">
+                            <Run Text="Kodiak" Foreground="{DynamicResource Brand1}" /><Run Text=" Cleaner" Foreground="{DynamicResource Brand2}" />
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Style="{StaticResource Caption}" FontSize="14" VerticalAlignment="Center">
+                                <Run Text="Version" /> <Run Text="{Binding VersionName, Mode=OneWay}" FontWeight="SemiBold" /> <Run Text="{Binding ReleaseDate, Mode=OneWay}" />
+                            </TextBlock>
+                            <Border Style="{StaticResource Chip}" Margin="10,0,0,0">
+                                <TextBlock Text="{Binding Channel}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Slogan}" Style="{StaticResource SectionTitle}" Foreground="{DynamicResource AccentText}"
+                                   TextWrapping="Wrap" Margin="0,12,0,0" />
+                        <TextBlock Text="A small, honest Windows cleaner: no telemetry, no ads, no bundled offers and no background services."
+                                   TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <WrapPanel Margin="0,8,0,0">
+                            <TextBlock Style="{StaticResource Caption}" VerticalAlignment="Center"
+                                       Text="By Ted Tabaka, independent developer." />
+                            <Button Content="Why It Was Made" Command="{Binding OpenStoryCommand}" Style="{StaticResource LinkButton}"
+                                    FontSize="12" Margin="4,0,0,0" Padding="4,0" VerticalAlignment="Center" />
+                        </WrapPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Your Plan -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Supporter Page" Command="{Binding OpenSupporterCommand}" Margin="0" VerticalAlignment="Center" />
+                    <StackPanel>
+                        <TextBlock Text="Your Plan" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Margin="0,6,0,0">
+                            <Run Text="{Binding PlanName, Mode=OneWay}" FontWeight="SemiBold" />
+                            <Run Text="· unlocked by:" Foreground="{DynamicResource Muted}" />
+                            <Run Text="{Binding HowUnlocked, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
+                        </TextBlock>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- What's New -->
+            <ContentControl Content="{Binding CurrentRelease}" ContentTemplate="{StaticResource ReleaseTemplate}" Focusable="False" />
+            <Button Content="See All Changes" Command="{Binding SeeAllChangesCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
+
+            <!-- Privacy -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE72E;" Style="{StaticResource Icon}" Margin="0,0,10,0" />
+                        <TextBlock Text="Privacy" Style="{StaticResource SectionTitle}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding PrivacySummary}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                    <Button Content="Privacy Policy" Command="{Binding PrivacyPolicyCommand}" Style="{StaticResource LinkButton}" HorizontalAlignment="Left" Margin="-8,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Credits and Licenses -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Credits and Licenses" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="Kodiak Cleaner is free and open source under the MIT License. It uses:" Style="{StaticResource Caption}" Margin="0,4,0,4" />
+                    <ItemsControl ItemsSource="{Binding Credits}" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,8,0,0">
+                                    <TextBlock>
+                                        <Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold" />
+                                        <Run Text="·" Foreground="{DynamicResource Muted}" />
+                                        <Run Text="{Binding License, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Use}" Style="{StaticResource Caption}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Learn More -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Learn More" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="A quick tour of Kodiak Cleaner, its website, and its project page on GitHub where the code, releases and discussions live." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Content="Getting Started" Command="{Binding GettingStartedCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,0" />
+                        <Button Content="Website" Command="{Binding WebsiteCommand}" Margin="0,0,8,0" />
+                        <Button Content="Project Page" Command="{Binding ProjectPageCommand}" Margin="0,0,8,0" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Full changelog -->
+        <StackPanel Visibility="{Binding ShowChangelog, Converter={StaticResource BoolToVis}}">
+            <Button Command="{Binding BackCommand}" HorizontalAlignment="Left" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE72B;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,8,0" />
+                    <TextBlock Text="Back to About" />
+                </StackPanel>
+            </Button>
+            <ItemsControl ItemsSource="{Binding Releases}" ItemTemplate="{StaticResource ReleaseTemplate}" Focusable="False" />
+        </StackPanel>
+    </Grid>
+</UserControl>

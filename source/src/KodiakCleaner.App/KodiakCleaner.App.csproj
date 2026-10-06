@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Only for the system tray icon (WPF has none). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>KodiakCleaner</AssemblyName>
+    <RootNamespace>KodiakCleaner.App</RootNamespace>
+    <StartupObject>KodiakCleaner.App.Program</StartupObject>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- WinForms is only used for the tray icon; WPF handles DPI through app.manifest. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+
+  <!-- dotnet publish -r win-x64 produces one self-contained KodiakCleaner.exe (no .NET install needed). -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+    <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\Fonts\Fredoka-SemiBold.ttf" />
+    <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="CHANGELOG.md" />
+    <EmbeddedResource Include="..\..\terms-of-use.md" LogicalName="terms-of-use.md" />
+    <EmbeddedResource Include="..\..\PRIVACY.md" LogicalName="PRIVACY.md" />
+    <EmbeddedResource Include="..\..\why-it-was-made.md" LogicalName="why-it-was-made.md" />
+    <EmbeddedResource Include="..\..\keys\withdrawn-codes.txt" LogicalName="withdrawn-codes.txt" />
+    <!-- Ted's public key once he has made one (tools/SupporterCodes make-key); until then the test key. -->
+    <EmbeddedResource Include="..\..\keys\supporter-public.pem" LogicalName="supporter-public.pem"
+                      Condition="Exists('..\..\keys\supporter-public.pem')" />
+    <EmbeddedResource Include="..\..\keys\supporter-test-public.pem" LogicalName="supporter-test-public.pem"
+                      Condition="!Exists('..\..\keys\supporter-public.pem')" />
+  </ItemGroup>
+
+  <!-- version.json (read in Directory.Build.props) tells the app its channel. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Channel</_Parameter1>
+      <_Parameter2>$(Channel)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TargetStable</_Parameter1>
+      <_Parameter2>$(TargetStable)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Development builds include the Developer page; release builds leave it out entirely. -->
+  <PropertyGroup Condition="'$(ReleaseBuild)' != 'true'">
+    <DefineConstants>$(DefineConstants);DEVTOOLS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ReleaseBuild)' == 'true'">
+    <Compile Remove="Developer\**" />
+    <Page Remove="Developer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Keep WPF types unambiguous: WinForms is only used by its full name in TrayIcon.cs. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KodiakCleaner.Core\KodiakCleaner.Core.csproj" />
+  </ItemGroup>
+</Project>

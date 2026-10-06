@@ -1,0 +1,109 @@
+<Window x:Class="KodiakCleaner.App.ScheduleEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Schedule" Width="1000" Height="700" MinWidth="820" MinHeight="520"
+        Icon="pack://application:,,,/Assets/app.ico" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
+        FontFamily="{DynamicResource FontBody}" FontSize="14" UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+    <!-- One scheduled cleaning: when it runs (left) and what it cleans (right). -->
+    <DockPanel Margin="28,24">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="&#xE787;" Style="{StaticResource Icon}" FontSize="22" Foreground="{DynamicResource AccentText}" Margin="0,0,12,0" />
+            <TextBlock x:Name="Heading" Text="New Schedule" Style="{StaticResource PageTitle}" FontSize="22" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Cancel" IsCancel="True" />
+            <Button Style="{StaticResource AccentButton}" Margin="0" Click="Save_Click" IsDefault="True">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE74E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Save Schedule" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Name" Style="{StaticResource SettingTitle}" />
+                    <TextBox x:Name="NameBox" Margin="0,6,0,0" VerticalContentAlignment="Center" MaxLength="60" />
+
+                    <TextBlock Text="Repeat" Style="{StaticResource SettingTitle}" Margin="0,18,0,0" />
+                    <Border Style="{StaticResource SegmentHost}" Margin="0,6,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="WeeklyBox" GroupName="Repeat" Style="{StaticResource Segment}" Content="Weekly" Checked="Repeat_Checked" />
+                            <RadioButton x:Name="MonthlyBox" GroupName="Repeat" Style="{StaticResource Segment}" Content="Monthly" Checked="Repeat_Checked" />
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel x:Name="WeeklyPanel" Margin="0,18,0,0">
+                        <TextBlock Text="Days" Style="{StaticResource SettingTitle}" />
+                        <Border Style="{StaticResource SegmentHost}" Margin="0,6,0,0">
+                            <StackPanel x:Name="DayButtons" Orientation="Horizontal" />
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel x:Name="MonthlyPanel" Margin="0,18,0,0" Visibility="Collapsed">
+                        <TextBlock Text="Day of the Month" Style="{StaticResource SettingTitle}" />
+                        <ComboBox x:Name="DayOfMonthBox" Margin="0,6,0,0" Width="160" HorizontalAlignment="Left" />
+                    </StackPanel>
+
+                    <TextBlock Text="Time" Style="{StaticResource SettingTitle}" Margin="0,18,0,0" />
+                    <ComboBox x:Name="TimeBox" Margin="0,6,0,0" Width="160" HorizontalAlignment="Left" />
+
+                    <DockPanel Margin="0,20,0,0">
+                        <CheckBox x:Name="AdminSwitch" DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" VerticalAlignment="Center" />
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Run as Administrator" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Name="AdminCaption" Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="Items to Clean" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,10"
+                                   Text="Tick a heading for its whole group. Items with a caution aren't listed: they only run when you click Run Cleaner yourself." />
+                        <WrapPanel Margin="0,0,0,10">
+                            <Button Content="Basic Items" Click="Basic_Click" ToolTip="The items Kodiak Cleaner ticks when it starts." />
+                            <Button Content="All Browsers" Click="Browsers_Click" ToolTip="Every item of every browser, including history and cookies." />
+                            <Button Content="Same as Cleaner" Click="Cleaner_Click" ToolTip="What is ticked on the Cleaner page now." />
+                            <Button Content="Clear" Click="Clear_Click" Margin="0" />
+                        </WrapPanel>
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="Groups">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <CheckBox IsThreeState="False" IsChecked="{Binding AllChecked}" Margin="0,4,0,4">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}" />
+                                        </CheckBox>
+                                        <ItemsControl ItemsSource="{Binding Items}" Margin="26,0,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,3" ToolTip="{Binding Description}">
+                                                        <TextBlock Text="{Binding Name}" />
+                                                    </CheckBox>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,30 @@
+{
+  "siteUrl": "https://www.kodiakcleaner.app",
+  "repo": "https://github.com/ttabakagroup/kodiakcleaner",
+  "homepage": "https://tedtabaka.com",
+  "kofi": "https://ko-fi.com/ttabaka",
+  "email": "www.kodiakcleaner.app/contact",
+  "copyrightYear": 2026,
+  "hostedDownloads": {
+    "installer": "KodiakCleaner-Installer.msi",
+    "installerSize": "70.8 MB",
+    "portable": "KodiakCleaner-Portable.zip",
+    "portableSize": "63.5 MB"
+  },
+  "releases": {
+    "0.8.28": {
+      "installerSize": "64.1 MB",
+      "portableSize": "63.5 MB"
+    },
+    "0.8.27": {
+      "installerSize": "64.1 MB",
+      "portableSize": "63.5 MB"
+    }
+  },
+  "linux": {
+    "appimage": "KodiakCleanerLinux-AppImage.zip",
+    "appimageSize": "570 KB",
+    "deb": "KodiakCleanerLinux-DEB.zip",
+    "debSize": "134 KB"
+  }
+}

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Ted's supporter code tool. Never shipped in a release. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\KodiakCleaner.Core\KodiakCleaner.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,161 @@
+# Kodiak Cleaner: Project Rules
+
+Kodiak Cleaner is Ted Tabaka's Windows cleaner: C# .NET 8 WPF app (`src/KodiakCleaner.App`), logic in
+`src/KodiakCleaner.Core`, xunit tests in `tests/`, WiX v5 MSI in `installer/`. It follows Ted's app standard:
+privacy first, local first, security paramount, convenient, practical and useful to everyone.
+
+## Privacy and Safety
+- No telemetry, analytics, crash reporting, ads, upsells or background services. Nothing is sent automatically.
+- The only network use is the GitHub update check, off by default and only on request. Any new online feature
+  must be off until turned on, explained where it's turned on, and added to PRIVACY.md and store-assets/privacy-policy.html.
+- No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
+- Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
+  `Documents\Kodiak Cleaner` for an installed copy (AppData\Local\Kodiak Cleaner only if Documents can't be written), beside
+  the exe for a portable copy, with `Backups\{Event Logs, Programs History, Registry, Settings, Startup History}` and `Logs\`.
+  Nothing else in AppData. Never write user data into Program Files (only KodiakCleaner.ini is writable there).
+- `ActivityLog` writes one plain-text file per month in Logs (12 kept): counts, sizes and item names only, never file
+  contents; Settings > Application > Keep an Activity Log turns it off. Log every user-visible change it makes.
+- Uninstall leaves nothing behind (Ted, 0.8.36): the MSI runs `KodiakCleaner.exe --uninstall-user` (as the user: HKCU
+  entries, update temp folder, asks whether to delete Documents\Kodiak Cleaner) and `--uninstall-system` (elevated: the
+  Task Scheduler folder), only on REMOVE=ALL and never on upgrade. Anything new the app registers with Windows must be
+  removed there too. Cleanup must never show an error or block the uninstall.
+- Every registry change is backed up to a `.reg` file first. Removed files go to the Recycle Bin where possible.
+
+## Interface
+- Colors only from the Honey (default), Classic and Glacier theme dictionaries in `Themes/` and the accent shades
+  (`Core/Appearance/AccentShades.cs`, used by `AccentColors.cs`); no colors anywhere else (a test enforces this). Only colors, fonts and corner
+  radii differ between themes. The theme colors match the standard's `tools/design/theme.css` exactly (a test checks; run
+  `python3 tools/design/check_contrast.py tools/design/theme.css` after any color change: WCAG 2.2 AA). Honey is free; Classic and Glacier
+  are Supporter themes (standard, 0.8.31) and fall back to Honey without a code. Accent colors (theme's own, Windows, Blue, Teal, Green,
+  Purple, Pink, Orange, Slate) are free and adjusted per theme and mode; swatches are 28px with a ring and a checkmark when chosen.
+  The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
+  Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.
+- About is its own sidebar entry under Settings (Ted's choice), not a page inside the Settings sidebar.
+- Slogan (`AppInfo.Slogan`, Ted's exact words): "Not a Crap Cleaner. A Cleaner App, Built Around What Matters."
+- `why-it-was-made.md` is Ted's own story. Change its wording only when Ted asks (0.8.4: light edit, no em dashes, "Kodiak Cleaner"
+  wherever it said Cleaner; 0.8.13: light wording edit at Ted's invitation, his voice and first person kept; 0.8.25: opens "For well over two decades", Ted's words); it shows under Settings > Help > Why It Was Made, in larger text (17, Ted, 0.8.24).
+- Tools must stay local and reversible: read-only, or removals go to the Recycle Bin after a confirm. Browser
+  Extensions only lists; removal happens in the browser. Empty Folders never searches Windows, program folders or AppData, as a starting point or inside one (`EmptyFolderFinder.Find`/`IsStillEmpty` take the protected list), and never lists Desktop, Documents and the other Windows user folders (the kept list; searched inside). Large Files skips Windows, program folders and hidden/system files.
+  Scheduled Tasks only turns tasks on or off, never deletes them, and hides Windows tasks unless asked.
+- Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several
+  choices (color scheme, accent color, light or dark) use tiles, swatches or segmented buttons.
+- Title Case (Ted's rule, stricter than the standard) for page names, card titles, headings, field labels, column
+  headers, buttons, switches and option labels. Sentences (help text, captions, hints) stay sentence case. Use the
+  `PageTitle`, `SectionTitle` and `SettingTitle` styles; the test also checks every Button/CheckBox/RadioButton label and (0.8.24)
+  labels set in code (prompts, folder pickers, Sort By, table values like All Users). Getting Started's Features list stays A to Z and current.
+- Main sidebar: a Cleaning heading over Cleaner/Registry/Startup/Programs, and Tools open by default (Ted, 0.8.11; folding is remembered as `ToolsOpen`).
+  Bottom right of the sidebar: the paperclip (on its side = locked at the default 310 width, upright = drag the edge, 240 to 480)
+  above the collapse button (icons only, 84 wide, bigger centered icons; every nav entry has its name as a tooltip).
+  A divider with space above it separates Settings and About from the scrolling list (Ted, 0.8.29). The standard-user bar uses AccentTint, Line and Text, not Warn colors.
+  Width, lock and collapse are saved in the ini. Settings > General > Sidebar: Adjustable Sidebar Width and Show the Paperclip (0.8.12).
+- Refer to the app by name ("Kodiak Cleaner", `AppInfo.Name`), never "the app". Since 0.8.7 the shown name never
+  includes the channel (Ted's choice); the channel appears in the version ("0.8.7 Dev") and the About chip. Plain hyphens in names.
+- Never mention Ted's other apps. Logo (0.8.5, designed at Ted's request, approved by Ted 2026-10-04): a computer with bear ears,
+  a bear face on the screen and a sparkle. Source `Assets/logo.svg`; `app.ico`, `logo.png` and the installer's
+  `WixUIDialog.bmp`/`WixUIBanner.bmp` are rendered from it. Don't redesign it without Ted. Named PCSweep until 0.8.2.
+- The MSI installs every channel to `Program Files\Kodiak Cleaner` (Ted's choice) with one shared upgrade code, so
+  channels replace each other rather than sitting side by side.
+- Ted's name in the app and docs is "Ted Tabaka" (copyright holder too), never his full name.
+- Tables: alternating rows (`RowAlt`), `RowHover`, `RowLine` and a draggable `ColumnDivider` in the header only, all theme
+  tokens. Batch actions use a fixed 48px checkbox column (`CanUserResize=False`, `CheckColumnHeader`, no divider; header box
+  selects all) plus buttons above the table and a right-click menu; switches go at the right end.
+- Settings pages are titled cards of related switches. The logo dances on hover/click (sidebar and Getting Started, `LogoDance`) unless animations are off: the Animations switch (Settings > Appearance > Motion) and Windows animation effects both gate `Motion.Enabled`.
+- Uninstall (Ted, 0.8.14, `UninstallFlow`): scan, back up the uninstall entry and found keys (`Before_Uninstall`), run the uninstaller, and only
+  when the entry is gone rescan and show `LeftoversWindow` (all ticked; folders/shortcuts to the Recycle Bin, keys and startup entries backed up).
+  `LeftoverNames`/`LeftoverFinder` match exact names only, never generic names, protected folders, roots or other programs' folders.
+- Programs (0.8.15): program icons (`ProgramIcons`: DisplayIcon, Installer ProductIcon, main exe), tick boxes + Select All; batch uninstall
+  runs the full flow per program strictly one at a time, waiting for helper uninstallers (Temp, Un/Au_/_iu/unins) to close.
+- Icons (0.8.16): only from files already on the PC (`ProgramIcons`, `FileIcons`: exe icons via ExtractIconEx, others via SHGetFileInfo), never bundled brand logos;
+  a plain Segoe glyph when nothing is found. Cleaner groups take the icon from `CleanTarget.AppFiles`, then App Paths.
+- Cleaner Advanced Cleaning (Ted, 0.8.16): `CleanTarget.Advanced` items sit in one group, hidden behind the Advanced Cleaning button, never ticked
+  by default, unticked again when hidden. After an analysis they are measured quietly and suggested only per `AdvancedAdvice` (1 GB, or 200 MB on a nearly full drive).
+- Startup (Ted, 0.8.17): Add makes a .lnk in the Startup folder (`ShellLink`; a picked shortcut is moved unless Move the Shortcut is off).
+  `StartupHistory` (Backups\Startup History\history.json + shortcut copies) is updated whenever the list is read, never in the background;
+  every removal (Startup page or Uninstall leftovers) is backed up and marked; History restores removed entries. Back Up Settings copies it too.
+- Programs History (Ted, 0.8.22): `ProgramHistoryStore` (Backups\Programs History\history.json) records every Delete Entry, Rename, uninstall
+  and removed leftover. Restore uses the .reg backup (reg.exe import), the Recycle Bin, or the Startup history; uninstalls are record only.
+  Every new removal on the Programs page must be recorded there. Back Up Settings copies it.
+- Advanced Cleaning shows a warning (Yes/No, No default) every time it is opened (Ted, 0.8.17).
+- Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
+  vssadmin, wevtutil, netsh, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
+  shadow copies keep the newest. `CleanTarget.Warning` items: caution text, confirm on tick, skipped by Select All and by AutoClean.
+  Never add Windows Installer cache, Defender data, Downloads, File History data or the Security event log.
+- A to Z rule (Ted, 0.8.21): anything added to any list (Cleaner items, tools, menus, options, browsers) goes in A to Z order, unless a
+  list has a stated priority (Windows first in the Cleaner; Advanced Cleaning last).
+- Cleaner order (Ted, 0.8.20): `CleanCatalog.Order` sorts Windows first, then programs A to Z, Advanced Cleaning last, items A to Z
+  in every group (a test checks it). Add new entries anywhere; never hand-order them. Reset to Default ticks only `EnabledByDefault` basic items.
+  Sort By: Default (Ted, 0.8.23; the standing order, selected out of the box; 0.8.26: ticked items first in each group, A to Z,
+  re-sorted on load, Reset to Default and every click on Default, never on each tick), A to Z (plain, Windows not pinned), Last Cleaned, Most Space Freed, Largest Found (`CleanSort`, saved as `[Cleaner] SortBy`); `CleanerHistory` in
+  `[Cleaner History]` records every real clean (Cleaner page, AutoClean, schedules).
+- Scheduled Cleaning (Ted, 0.8.21): `CleaningSchedule` in `[Schedule id]` sections, each with a Task Scheduler task `<AppInfo.Id>\Cleaning <id>`
+  that runs `KodiakCleaner.exe /schedule:<id>` (no window; an open copy runs it instead). No background service. Caution items can't be
+  scheduled; Run as Administrator only for an administrator on the installed copy. Settings > Reset keeps schedules and history.
+- Startup speed (Ted, 0.8.33): only the Cleaner page loads at startup. Other pages read their lists on first visit through
+  `ILoadOnFirstVisit.EnsureLoaded` (MainViewModel.OnNavigated); never call Refresh in a page view model's constructor. Grouped tables
+  keep `VirtualizingPanel.IsVirtualizingWhenGrouping="True"`. Uncompressed or ReadyToRun single-file builds don't start under Wine.
+- Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
+- Registry checks (Ted, 0.8.30): 15 categories in `RegistryScanner.Categories` (A to Z, Look For grid of 3 columns, Select All). Only report what is
+  definitely gone (`PathChecks.IsMissing`); never files in the Windows folder (`MissingOutsideWindows`), drivers, boot/system-start services,
+  or HKLM file extensions. COM classes and type libraries only when every listed file is gone.
+- Registry backups keep rare value types (hex(N) via RegQueryValueEx) so restores bring back the same type.
+- Programs actions (Uninstall, Repair, Rename, Delete Entry) are buttons and a right-click menu. Rename and Delete Entry
+  back up the uninstall entry first; Delete Entry never touches program files. Tools are listed alphabetically.
+- Settings footer, two lines: `Copyright © 2026 TED TABAKA.` then `Free and open source under the MIT License.`
+  No Terms of Use link there (Ted removed it); Terms of Use and Privacy Policy are pages under Help.
+- Dev and Beta builds show the Beta Software notice at every start until it closes with Don't Show This Again at Startup
+  on (`ShowBetaNotice`, also a switch under Settings > General). Stable builds never show it.
+- Automatic updates download the release's `-Setup.zip` (older `-msi` ZIPs still match), verify its SHA-256, extract the one MSI and start msiexec on exit without
+  waiting (so the exe isn't locked). Only a check that reached GitHub counts toward the once-a-day limit.
+- Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
+  never `MessageBox` directly. Risky Yes is a `DangerButton`, No stays the default.
+- Every window uses `UseLayoutRounding="True" TextOptions.TextFormattingMode="Display"` for crisp text (0.8.27).
+- README screenshots live in `docs/images/` (never shipped in packages); retake them when pages change.
+- Clipboard copies go through `ClipboardHelper` (retries, then a plain message), never `Clipboard.SetText`.
+
+## Feedback and Support
+- Contact & Feedback buttons open an in-app form; Send Email opens the person's email app with it ready
+  (www.kodiakcleaner.app/contact, set in `AppInfo.Feedback`). No mail service or hosted form (that would be network use). Nothing is
+  sent automatically, no hidden data in links, and bug-report Details never include files, folders or user names.
+- Security issues are reported privately, never in public issues. Contact & Feedback has four accent buttons (Ted, 0.8.24):
+  Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
+- Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Downloads and updates stay on GitHub releases; source and Star on GitHub stay on the repo.
+- The repository (ttabakagroup/kodiakcleaner) is public. Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
+- Never offer anything in return for a rating. Support link: https://ko-fi.com/ttabaka, no nags or pop-ups.
+- Supporter tier only (Ted removed Premium). Codes are verified offline; never run `make-key` for Ted or touch his private key.
+
+## Versions and Channels
+- `version.json` is the single source: `{ "channel": "dev", "version": "0.8.0", "targetStable": "1.0.0" }`.
+- Dev 0.8.x, Beta 0.9.x, Stable 1.x. Never change channel unless Ted says so ("move to beta" = 0.9.0,
+  "move to stable" = 1.0.0, "new minor release" raises the stable minor).
+- Show `AppInfo.VersionName` ("0.8.0 Dev") wherever a version is shown or sent.
+- Release builds (`build.ps1 -Release`, tagged CI builds) strip the Developer page and refuse to build with the
+  test supporter key or without a CHANGELOG entry.
+
+## Commit Routine
+After each completed, tested change:
+1. Run `dotnet test tests/KodiakCleaner.Core.Tests` (and build the app). Don't commit if anything fails.
+2. Bump the patch number in `version.json` (+0.0.1) unless Ted gave a channel or minor instruction.
+3. Add the entry to `CHANGELOG.md` under `## [version_name] - YYYY-MM-DD`, grouped by area.
+4. Update README.md and this file if behavior or rules changed.
+5. Commit as `[version_name]: short summary` with a body listing changes by area.
+6. Tag `v[version]-[channel]` (e.g. `v0.8.1-dev`; stable as `v1.0.2`).
+7. Every GitHub release carries `KodiakCleaner-<Branch>-Setup.msi` (bare, so Download.url can link it; Ted, 0.8.31),
+   `KodiakCleaner-<Branch>-Setup.zip` (the MSI plus Docs) and `KodiakCleaner-<Branch>-Portable.zip`, Branch = Dev, Beta or Stable, the same
+   name every release (standard, 0.8.31; replaces Ted's 0.8.10 versioned names). Files handed to Ted directly are always zipped (Claude
+   can't hand him a bare .msi): never deliver a bare .msi on its own. On Windows `build.ps1` makes both; on Linux publish the exe,
+   then run `installer/package-linux.sh publish dist` (WiX under Wine; both ZIPs with the same files as build.ps1, a test checks it). Test the MSI installs before shipping.
+8. Docs (standard): `tools/MakeDocs` writes Changelog.txt, Download.url, Homepage.url, License.txt, Privacy.txt, ReadMe.txt
+   (from `dist-files/ReadMe.md`, the user-facing read me) and TermsOfUse.txt as plain text with CRLF. Both ZIPs have a `Docs\` folder and the
+   MSI installs it to `Program Files\Kodiak Cleaner\Docs`. Download.url: `releases/download/latest-dev/KodiakCleaner-Dev-Setup.msi`
+   (Beta: latest-beta; Stable: `releases/latest/download/KodiakCleaner-Stable-Setup.msi`); CI refreshes the fixed latest-dev/latest-beta release.
+9. Deliver the project-folder layout (`C:\Projects\Kodiak Cleaner`, standard's project-folders.md) as one `Kodiak Cleaner.zip` when
+   C:\Projects can't be reached: Source (with .git), Website (+ReadMe.txt, no .dev.vars/.wrangler/node_modules), Assets\Design,
+   Assets\Logos, Assets\StoreAssets, Assets\Git (mirror clone), Application\Windows, Application\Linux, Docs, ARCHIVE\ChangelogComplete.txt.
+   Every release package also carries the newest Linux app ZIPs (Ted, 2026-10-05): KodiakCleaner-Dev-AppImage.zip and
+   KodiakCleaner-Dev-Deb.zip from /mnt/project-files/kodiak-linux/dist (built by the Linux thread), listed in FILE-LIST.md.
+   The changelog resets only when Ted moves to Beta or Stable; ChangelogComplete.txt is the running history.
+Never push or publish unless Ted asks.
+
+## Testing on Linux
+The app builds on Linux (WindowsDesktop SDK copied in) and runs under Wine for screenshots. Wine can't check
+supporter codes (no ECDSA in its CNG), so use the Developer page preview there.

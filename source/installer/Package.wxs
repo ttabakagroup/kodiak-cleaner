@@ -1,0 +1,112 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="$(var.ProductName)"
+           Manufacturer="Ted Tabaka"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="$(var.UpgradeCode)"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <SummaryInformation Description="$(var.ProductName) - a small, honest PC cleaner" />
+    <!-- afterInstallExecute keeps KodiakCleaner.ini in place across upgrades. -->
+    <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer version of Kodiak Cleaner is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="..\src\KodiakCleaner.App\Assets\app.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPCONTACT" Value="www.kodiakcleaner.app/contact" />
+    <Property Id="ARPCOMMENTS" Value="Not a Crap Cleaner. A Cleaner App, Built Around What Matters." />
+    <Property Id="ARPURLINFOABOUT" Value="https://www.kodiakcleaner.app/" />
+    <Property Id="ARPHELPLINK" Value="https://www.kodiakcleaner.app/" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/ttabakagroup/kodiakcleaner/releases" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="$(var.InstallFolderName)">
+        <!-- Backups from versions before 0.8.36, which kept them here; see the exe component. -->
+        <Directory Id="BACKUPSFOLDER" Name="Backups">
+          <Directory Id="OLDEVENTLOGS" Name="Event Logs" />
+          <Directory Id="OLDPROGRAMSHISTORY" Name="Programs History" />
+          <Directory Id="OLDSTARTUPHISTORY" Name="Startup History" />
+        </Directory>
+        <Directory Id="DOCSFOLDER" Name="Docs" />
+      </Directory>
+    </StandardDirectory>
+
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Component>
+        <File Id="KodiakCleanerExe" Source="$(var.PublishDir)KodiakCleaner.exe" KeyPath="yes" />
+        <!-- Since 0.8.36 backups and logs live in Documents\Kodiak Cleaner, and Kodiak Cleaner moves older ones there
+             (also during uninstall, before this runs). Anything still in the old Backups folder goes with the program. -->
+        <RemoveFile Id="OldBackupFiles" Directory="BACKUPSFOLDER" Name="*" On="uninstall" />
+        <RemoveFile Id="OldEventLogFiles" Directory="OLDEVENTLOGS" Name="*" On="uninstall" />
+        <RemoveFile Id="OldProgramsHistoryFiles" Directory="OLDPROGRAMSHISTORY" Name="*" On="uninstall" />
+        <RemoveFile Id="OldStartupHistoryFiles" Directory="OLDSTARTUPHISTORY" Name="*" On="uninstall" />
+        <RemoveFolder Id="OldEventLogs" Directory="OLDEVENTLOGS" On="uninstall" />
+        <RemoveFolder Id="OldProgramsHistory" Directory="OLDPROGRAMSHISTORY" On="uninstall" />
+        <RemoveFolder Id="OldStartupHistory" Directory="OLDSTARTUPHISTORY" On="uninstall" />
+        <RemoveFolder Id="OldBackups" Directory="BACKUPSFOLDER" On="uninstall" />
+      </Component>
+
+      <!-- Settings live next to the exe. Users may write this one file, never KodiakCleaner.exe itself.
+           NeverOverwrite keeps the user's settings on repair and upgrade. -->
+      <Component NeverOverwrite="yes">
+        <File Id="KodiakCleanerIni" Source="KodiakCleaner.ini" KeyPath="yes">
+          <PermissionEx Sddl="D:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FRFW;;;BU)" />
+        </File>
+      </Component>
+    </ComponentGroup>
+
+    <!-- The seven Docs files (Ted's standard), made by tools/MakeDocs; removed with the program. -->
+    <ComponentGroup Id="DocsFiles" Directory="DOCSFOLDER">
+      <Component><File Source="$(var.DocsDir)Changelog.txt" KeyPath="yes" /></Component>
+      <Component><File Source="$(var.DocsDir)Download.url" KeyPath="yes" /></Component>
+      <Component><File Source="$(var.DocsDir)Homepage.url" KeyPath="yes" /></Component>
+      <Component><File Source="$(var.DocsDir)License.txt" KeyPath="yes" /></Component>
+      <Component><File Source="$(var.DocsDir)Privacy.txt" KeyPath="yes" /></Component>
+      <Component><File Source="$(var.DocsDir)ReadMe.txt" KeyPath="yes" /></Component>
+      <Component><File Source="$(var.DocsDir)TermsOfUse.txt" KeyPath="yes" /></Component>
+    </ComponentGroup>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcut">
+        <Shortcut Id="AppShortcut" Name="$(var.ProductName)" Description="Clean junk files and manage startup programs"
+                  Target="[#KodiakCleanerExe]" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
+        <RegistryValue Root="HKLM" Key="Software\$(var.ProductName)" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="$(var.ProductName)" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="DocsFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+
+    <!-- Lets the user pick the install folder; shows License.rtf. -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    <!-- The Kodiak Cleaner bear on the installer's welcome page and page headers. -->
+    <WixVariable Id="WixUIDialogBmp" Value="WixUIDialog.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="WixUIBanner.bmp" />
+
+    <!-- Removing Kodiak Cleaner (not upgrading it) leaves nothing behind (Ted, 0.8.36). As the person removing it:
+         per-user registrations, and a question whether to delete the backups and logs in Documents\Kodiak Cleaner
+         (a quiet msiexec /qn keeps them unless DELETEUSERDATA=1). Elevated: the Task Scheduler folder. -->
+    <CustomAction Id="UninstallUserCleanup" FileRef="KodiakCleanerExe" ExeCommand="--uninstall-user [UILevel] [DELETEUSERDATA]"
+                  Execute="immediate" Return="ignore" />
+    <CustomAction Id="UninstallSystemCleanup" FileRef="KodiakCleanerExe" ExeCommand="--uninstall-system"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+    <InstallExecuteSequence>
+      <Custom Action="UninstallUserCleanup" Before="InstallInitialize" Condition='REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE' />
+      <Custom Action="UninstallSystemCleanup" Before="RemoveFiles" Condition='REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE' />
+    </InstallExecuteSequence>
+
+    <!-- "Launch Kodiak Cleaner" checkbox on the final page. -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch $(var.ProductName)" />
+    <Property Id="WixShellExecTarget" Value="[#KodiakCleanerExe]" />
+    <CustomAction Id="LaunchApplication" DllEntry="WixShellExec" Impersonate="yes" BinaryRef="Wix4UtilCA_X64" />
+    <UI>
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
+    </UI>
+  </Package>
+</Wix>

@@ -1,0 +1,91 @@
+<UserControl x:Class="KodiakCleaner.App.Views.RegistryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+            <TextBlock Text="Registry" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="{Binding Summary}" Style="{StaticResource PageSubtitle}" />
+        </StackPanel>
+
+        <!-- Actions sit in one row above the results: scan and fix on the left, backups on the right. -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16" LastChildFill="False">
+            <Button DockPanel.Dock="Left" Command="{Binding ScanCommand}" Style="{StaticResource AccentButton}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE721;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Scan for Issues" />
+                </StackPanel>
+            </Button>
+            <Button DockPanel.Dock="Left" Command="{Binding FixCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE90F;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Fix Selected" />
+                </StackPanel>
+            </Button>
+            <ProgressBar DockPanel.Dock="Left" IsIndeterminate="True" Width="120" Margin="8,0,0,0" VerticalAlignment="Center"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+            <Button DockPanel.Dock="Right" Command="{Binding OpenBackupsCommand}" Style="{StaticResource LinkButton}" Margin="4,0,0,0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE838;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Open Backups Folder" />
+                </StackPanel>
+            </Button>
+            <Button DockPanel.Dock="Right" Command="{Binding BackUpNowCommand}" Margin="0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE8F1;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Back Up Now" />
+                </StackPanel>
+            </Button>
+        </DockPanel>
+
+        <!-- Look For: every check, A to Z down each of three columns, all ticked to start, with Select All (Ted, 0.8.30). -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,10">
+                    <TextBlock DockPanel.Dock="Left" Text="Look For" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" Margin="0,0,20,0" />
+                    <CheckBox Content="Select All" IsThreeState="False" FontWeight="SemiBold" VerticalAlignment="Center"
+                              IsChecked="{Binding AllCategoriesChecked}" />
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Categories}" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" Margin="0,4,12,4"
+                                      Visibility="{Binding IsVisible, Converter={StaticResource BoolToVis}}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Padding="8">
+            <DataGrid ItemsSource="{Binding Issues}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Fix This Issue" Command="{Binding FixRowCommand}">
+                            <MenuItem.Icon><TextBlock Text="&#xE90F;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
+                        <DataGridTemplateColumn.Header>
+                            <CheckBox IsThreeState="False" ToolTip="Select All" HorizontalAlignment="Center"
+                                      IsChecked="{Binding DataContext.AllChecked, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Category}" Width="1.3*" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Problem" Binding="{Binding Description}" Width="2*" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Data" Binding="{Binding Data}" Width="2*" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Registry Key" Binding="{Binding Key}" Width="3*" IsReadOnly="True" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </DockPanel>
+</UserControl>
