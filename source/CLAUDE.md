@@ -109,7 +109,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   on (`ShowBetaNotice`, also a switch under Settings > General). Stable builds never show it.
 - Automatic updates (0.8.40): read `updates/<channel>.json` ({channel, version, msi: {url, sha256}}) from the website, accept only an
   .msi on https://www.kodiakcleaner.app (no redirects followed), verify its SHA-256 and start msiexec on exit without waiting (so the exe isn't
-  locked); a hidden cmd.exe reopens Kodiak Cleaner when msiexec exits with 0 (Ted, 0.8.43). With automatic updates on, the check runs at every start (Ted, 0.8.43). Every release must refresh the website's update
+  locked); a hidden cmd.exe reopens Kodiak Cleaner when msiexec exits with 0 (Ted, 0.8.43). With automatic updates on, the check follows `UpdateSchedule` ([Updates] Interval, Ted 0.8.44: On Startup (default), Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month (15 days), Monthly; listed in that order, not A to Z), checked at start and by a 5-minute timer while open. Every release must refresh the website's update
   file with the new version and the MSI's SHA-256 (release-<ver>/updates/dev.json).
 - Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
   never `MessageBox` directly. Risky Yes is a `DangerButton`, No stays the default.

@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.44 Dev] - 2026-10-06
+
+### Updates
+- New Check for Updates choice under Settings > Updates, below Keep Kodiak Cleaner Updated Automatically: On Startup (the default, as in 0.8.43), Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly. The longer intervals check when Kodiak Cleaner starts or while it's open, once that long has passed since the last check.
+
 ## [0.8.43 Dev] - 2026-10-06
 
 ### Updates

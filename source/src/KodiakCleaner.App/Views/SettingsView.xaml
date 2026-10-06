@@ -170,7 +170,7 @@
             <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Check Now" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="Kodiak Cleaner only goes online when you check, or when it starts if automatic updates are on." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                    <TextBlock Text="Kodiak Cleaner only goes online when you check, or on the schedule below if automatic updates are on." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                     <DockPanel Style="{StaticResource SettingRow}" Margin="0,10,0,0">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Content="Install Update" Command="{Binding InstallUpdateCommand}" Style="{StaticResource AccentButton}"
@@ -193,9 +193,36 @@
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding AutoUpdate}" />
                         <StackPanel Margin="0,0,24,0">
                             <TextBlock Text="Keep Kodiak Cleaner Updated Automatically" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="Check the Kodiak Cleaner website for a new version each time Kodiak Cleaner starts. Updates download in the background, install when you close Kodiak Cleaner, and then Kodiak Cleaner opens again." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            <TextBlock Text="Check the Kodiak Cleaner website for a new version as often as you choose below. Updates download in the background, install when you close Kodiak Cleaner, and then Kodiak Cleaner opens again." Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
+                    <!-- How often to check (Ted, 0.8.44): shortest to longest, the order Ted listed them. -->
+                    <StackPanel Margin="0,14,0,0" IsEnabled="{Binding AutoUpdate}">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.5" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Check for Updates" Style="{StaticResource SettingTitle}" />
+                        <TextBlock Text="On Startup checks each time Kodiak Cleaner starts. The others check at start or while it's open, once that long has passed since the last check." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                        <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left" Margin="0,10,0,0">
+                            <ItemsControl ItemsSource="{Binding UpdateIntervals}" Focusable="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton GroupName="UpdateInterval" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
             </Border>
             </StackPanel>

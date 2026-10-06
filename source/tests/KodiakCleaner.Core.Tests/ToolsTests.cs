@@ -273,3 +273,47 @@ public class UpdateManifestTests
         Assert.False(UpdateManifest.TryParseVersion("nightly", out _));
     }
 }
+
+public class UpdateScheduleTests
+{
+    private static readonly DateTime Last = new(2026, 10, 6, 12, 0, 0, DateTimeKind.Utc);
+
+    [Fact]
+    public void On_startup_only_checks_when_kodiak_cleaner_starts()
+    {
+        Assert.True(UpdateSchedule.IsDue(UpdateInterval.OnStartup, Last, Last.AddMinutes(1), atStartup: true));
+        Assert.False(UpdateSchedule.IsDue(UpdateInterval.OnStartup, Last, Last.AddDays(40), atStartup: false));
+    }
+
+    [Theory]
+    [InlineData(UpdateInterval.EveryHour, 1)]
+    [InlineData(UpdateInterval.Every4Hours, 4)]
+    [InlineData(UpdateInterval.Daily, 24)]
+    [InlineData(UpdateInterval.Every3Days, 72)]
+    [InlineData(UpdateInterval.Weekly, 168)]
+    [InlineData(UpdateInterval.TwiceAMonth, 360)]
+    public void Intervals_wait_their_time_from_the_last_check(UpdateInterval interval, int hours)
+    {
+        foreach (var start in new[] { true, false })
+        {
+            Assert.False(UpdateSchedule.IsDue(interval, Last, Last.AddHours(hours).AddMinutes(-1), start));
+            Assert.True(UpdateSchedule.IsDue(interval, Last, Last.AddHours(hours), start));
+            Assert.True(UpdateSchedule.IsDue(interval, null, Last, start)); // never checked: check now
+        }
+    }
+
+    [Fact]
+    public void Monthly_means_a_calendar_month()
+    {
+        Assert.False(UpdateSchedule.IsDue(UpdateInterval.Monthly, Last, Last.AddDays(30), atStartup: true)); // Oct 6 to Nov 5
+        Assert.True(UpdateSchedule.IsDue(UpdateInterval.Monthly, Last, Last.AddMonths(1), atStartup: true));
+    }
+
+    [Fact]
+    public void Options_list_every_interval_shortest_first()
+    {
+        Assert.Equal(Enum.GetValues<UpdateInterval>(), UpdateSchedule.Options.Select(o => o.Interval));
+        Assert.Equal("On Startup", UpdateSchedule.Options[0].Label);
+        Assert.Equal("Monthly", UpdateSchedule.Options[^1].Label);
+    }
+}

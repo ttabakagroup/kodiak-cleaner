@@ -24,7 +24,11 @@ public partial class MainWindow : Window
         {
             if (BetaNoticeWindow.ShouldShow) BetaNoticeWindow.ShowFor(this);
             ShowWhatsNewIfUpdated();
-            await UpdateService.AutoCheckAsync(msg => _vm.Notice = msg);
+            await UpdateService.AutoCheckAsync(msg => _vm.Notice = msg, atStartup: true);
+            // Intervals shorter than a session (Every Hour, Every 4 Hours) are checked while Kodiak Cleaner stays open.
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
+            timer.Tick += async (_, _) => await UpdateService.AutoCheckAsync(msg => _vm.Notice = msg, atStartup: false);
+            timer.Start();
         };
     }
 

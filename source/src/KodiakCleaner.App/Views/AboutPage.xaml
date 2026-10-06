@@ -62,7 +62,7 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBlock Text="Kodiak Cleaner only goes online when you check, or when it starts if automatic updates are on."
+                        <TextBlock Text="Kodiak Cleaner only goes online when you check, or on its own schedule if automatic updates are on."
                                    Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                         <ProgressBar IsIndeterminate="True" Margin="0,6,0,0" Visibility="{Binding IsCheckingUpdates, Converter={StaticResource BoolToVis}}" />
                     </StackPanel>

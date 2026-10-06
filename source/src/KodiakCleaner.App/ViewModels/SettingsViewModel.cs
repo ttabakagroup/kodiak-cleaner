@@ -294,6 +294,30 @@ public sealed class SettingsViewModel : ObservableObject
         set => Apply(value, v => S.AutoUpdate = v);
     }
 
+    /// <summary>Check for Updates interval choices (Ted, 0.8.44), shown as segments under Keep Kodiak Cleaner Updated Automatically.</summary>
+    public IReadOnlyList<UpdateIntervalOption> UpdateIntervals => _updateIntervals ??=
+        UpdateSchedule.Options.Select(o => new UpdateIntervalOption(this, o.Interval, o.Label)).ToList();
+    private List<UpdateIntervalOption>? _updateIntervals;
+
+    public UpdateInterval UpdateInterval
+    {
+        get => S.UpdateInterval;
+        set
+        {
+            if (S.UpdateInterval == value) return;
+            S.UpdateInterval = value;
+            try { S.Save(); }
+            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or InvalidOperationException or System.IO.IOException)
+            {
+                Dialogs.Error(e.Message);
+            }
+            foreach (var o in UpdateIntervals) o.Changed();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SaveError));
+            OnPropertyChanged(nameof(HasSaveError));
+        }
+    }
+
     private bool _isCheckingUpdates;
     public bool IsCheckingUpdates { get => _isCheckingUpdates; private set => Set(ref _isCheckingUpdates, value); }
 
@@ -521,4 +545,12 @@ public sealed class SettingsViewModel : ObservableObject
         _cleanerOptionsChanged();
         OnPropertyChanged(string.Empty);
     }
+}
+
+/// <summary>One segment of Settings > Updates' Check for Updates interval.</summary>
+public sealed class UpdateIntervalOption(SettingsViewModel owner, UpdateInterval interval, string label) : ObservableObject
+{
+    public string Label { get; } = label;
+    public bool IsSelected { get => owner.UpdateInterval == interval; set { if (value) owner.UpdateInterval = interval; } }
+    public void Changed() => OnPropertyChanged(nameof(IsSelected));
 }

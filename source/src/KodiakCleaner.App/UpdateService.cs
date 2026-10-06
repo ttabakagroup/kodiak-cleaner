@@ -128,11 +128,24 @@ public static class UpdateService
 
     public static void InstallPendingNow() => System.Windows.Application.Current.Shutdown();
 
-    /// <summary>Automatic updates: a check in the background each time Kodiak Cleaner starts (Ted, 0.8.43; was once a day).</summary>
-    public static async Task AutoCheckAsync(Action<string> notify)
+    private static bool _autoChecking;
+
+    /// <summary>
+    /// Automatic updates: a background check at start (<paramref name="atStartup"/>) and, while Kodiak Cleaner is open, whenever
+    /// Settings > Updates' interval says one is due (Ted, 0.8.44). Nothing more is checked once an update is waiting to install.
+    /// </summary>
+    public static async Task AutoCheckAsync(Action<string> notify, bool atStartup)
     {
         var s = Settings.Current;
-        if (!s.AutoUpdate || !Integration.IsInstalled) return;
+        if (!s.AutoUpdate || !Integration.IsInstalled || PendingVersion is not null || _autoChecking) return;
+        if (!UpdateSchedule.IsDue(s.UpdateInterval, s.LastUpdateCheckUtc, DateTime.UtcNow, atStartup)) return;
+        _autoChecking = true;
+        try { await AutoCheckNowAsync(notify); }
+        finally { _autoChecking = false; }
+    }
+
+    private static async Task AutoCheckNowAsync(Action<string> notify)
+    {
         var result = await CheckAsync();
         if (!result.Available || result.Info is null) return;
         try
