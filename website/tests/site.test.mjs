@@ -52,20 +52,22 @@ test("images have alt text", () => {
   for (const p of pages) for (const tag of p.html.match(/<img\b[^>]*>/g) || []) assert.match(tag, /\balt="/, `${p.file}: ${tag}`);
 });
 
-test("no bare MSI download links; installer is always a ZIP", () => {
-  // The only bare MSI allowed is one Ted chose on purpose in site.config.json "hostedDownloads".
+test("MSI links are the hosted installer or a 0.8.37+ release's bare KodiakCleaner-<Channel>-Setup.msi", () => {
+  // Since 0.8.37 (Ted, 2026-10-06) the bare MSI is the installer everywhere; older releases ship it in a ZIP.
+  const ver = (v) => v.split(".").map(Number).reduce((a, n) => a * 1000 + n, 0);
   for (const p of pages) {
     for (const href of attr(p.html, "href")) {
-      if (hosted.includes(href)) continue;
-      assert.ok(!/\.msi($|[?#])/i.test(href), `${p.file} links a bare MSI: ${href}`);
+      if (hosted.includes(href) || !/\.msi($|[?#])/i.test(href)) continue;
+      const m = href.match(/releases\/download\/v(\d+\.\d+\.\d+)-(dev|beta)\/KodiakCleaner-(Dev|Beta)-Setup\.msi$/);
+      assert.ok(m && ver(m[1]) >= 8037, `${p.file} links an unexpected MSI: ${href}`);
     }
   }
   const dl = pages.find((p) => p.file === "/download/index.html").html;
   if (cfg.hostedDownloads) {
     for (const f of hosted) assert.ok(dl.includes(`href="${f}"`), `Download page should link ${f}`);
   } else {
-    assert.match(dl, /releases\/download\/v\d+\.\d+\.\d+(-dev|-beta)?\/KodiakCleaner-[\d.]+-x64-msi(-dev|-beta)?\.zip/);
-    assert.match(dl, /releases\/download\/v\d+\.\d+\.\d+(-dev|-beta)?\/KodiakCleaner-[\d.]+-x64-portable(-dev|-beta)?\.zip/);
+    assert.match(dl, /releases\/download\/v\d+\.\d+\.\d+(-dev|-beta)?\/KodiakCleaner-(Dev|Beta)-Setup\.msi/);
+    assert.match(dl, /releases\/download\/v\d+\.\d+\.\d+(-dev|-beta)?\/KodiakCleaner-(Dev|Beta)-Portable\.zip/);
   }
 });
 
