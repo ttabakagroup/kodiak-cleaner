@@ -1,6 +1,7 @@
 name: Create GitHub Release
 
-# Makes a pre-release for the newest builds in releases/ when you click Run workflow.
+# Makes a pre-release for the newest builds in releases/ when you click Run workflow. If that version's release
+# already exists, it updates its title, notes and files instead (run it again after a Linux or Mac build lands).
 # Tag: v<windows version>-dev. Notes: website/github/release-notes/<version>-dev.md.
 # Attaches the MSI, the Portable ZIP, the Linux AppImage and .deb ZIPs, the Mac DMG and ZIP and a source ZIP.
 # A tag made by this workflow doesn't start the Build MSI release build.
@@ -36,15 +37,18 @@ jobs:
           fi
           tag="v$ver-dev"
           notes="website/github/release-notes/$ver-dev.md"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "::error::Release $tag already exists."; exit 1
-          fi
           [ -f "$notes" ] || { echo "::error::Missing $notes"; exit 1; }
           git archive --format=zip --prefix=kodiakcleaner/ -o "KodiakCleaner-$ver-source.zip" HEAD source macos
           tail -n +2 "$notes" > notes.md   # the release has its own title
-          gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
-            --title "Kodiak Cleaner $ver Dev ($title_extra)" --notes-file notes.md \
-            "${win}KodiakCleaner-Dev-Setup.msi" "${win}KodiakCleaner-Dev-Portable.zip" \
-            "${lin}KodiakCleaner-Dev-AppImage.zip" "${lin}KodiakCleaner-Dev-Deb.zip" \
-            "${extra[@]}" "KodiakCleaner-$ver-source.zip"
+          files=("${win}KodiakCleaner-Dev-Setup.msi" "${win}KodiakCleaner-Dev-Portable.zip"
+                 "${lin}KodiakCleaner-Dev-AppImage.zip" "${lin}KodiakCleaner-Dev-Deb.zip"
+                 "${extra[@]}" "KodiakCleaner-$ver-source.zip")
+          title="Kodiak Cleaner $ver Dev ($title_extra)"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            # Already released (for example a Linux or Mac build arrived later): refresh the title, notes and files.
+            gh release edit "$tag" --title "$title" --notes-file notes.md --prerelease
+            gh release upload "$tag" --clobber "${files[@]}"
+          else
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title "$title" --notes-file notes.md "${files[@]}"
+          fi
           echo "Created $(gh release view "$tag" --json url -q .url)"
