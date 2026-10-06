@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.42 Dev] - 2026-10-06
+
+### About
+- The Check for Updates button now sits on the right of its card, the same size as before, with the last check time and the note beside it, so the card is shorter.
+
 ## [0.8.41 Dev] - 2026-10-06
 
 ### About
