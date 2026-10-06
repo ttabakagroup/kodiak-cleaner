@@ -70,7 +70,7 @@ struct TriggersView: View {
                 Text("Entry").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Runs").frame(width: 170, alignment: .leading)
                 Text("Status").frame(width: 90, alignment: .leading)
-                Color.clear.frame(width: 44)
+                Color.clear.frame(width: 44, height: 1)
             }
             .font(theme.body(12, weight: .semibold))
             .foregroundStyle(theme.muted)

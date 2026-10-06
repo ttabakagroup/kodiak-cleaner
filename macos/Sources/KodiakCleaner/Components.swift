@@ -109,7 +109,7 @@ private struct KCSwitch: View {
     }
 }
 
-/// A checkmark box for batch choices.
+/// A checkmark box for batch choices. Shows only the box; the label is for VoiceOver.
 struct KCCheckboxStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View { KCCheckbox(configuration: configuration) }
 }
@@ -121,18 +121,16 @@ private struct KCCheckbox: View {
 
     var body: some View {
         Button { configuration.isOn.toggle() } label: {
-            HStack(spacing: 8) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 4).fill(configuration.isOn ? theme.primary : theme.surface)
-                    RoundedRectangle(cornerRadius: 4).strokeBorder(configuration.isOn ? theme.primary : theme.controlBorder, lineWidth: 1.5)
-                    if configuration.isOn {
-                        Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(theme.onPrimary)
-                    }
+            // The label is spoken by VoiceOver only; every checkbox sits in a narrow column beside its row's name.
+            ZStack {
+                RoundedRectangle(cornerRadius: 4).fill(configuration.isOn ? theme.primary : theme.surface)
+                RoundedRectangle(cornerRadius: 4).strokeBorder(configuration.isOn ? theme.primary : theme.controlBorder, lineWidth: 1.5)
+                if configuration.isOn {
+                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(theme.onPrimary)
                 }
-                .frame(width: 17, height: 17)
-                .overlay(FocusRing(radius: 4, shown: focused))
-                configuration.label
             }
+            .frame(width: 17, height: 17)
+            .overlay(FocusRing(radius: 4, shown: focused))
         }
         .buttonStyle(.plain)
         .focusEffectDisabled()

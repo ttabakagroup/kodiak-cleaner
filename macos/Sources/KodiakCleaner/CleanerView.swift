@@ -99,7 +99,7 @@ struct CleanerView: View {
         let grouped = model.settings.sortBy == "default" || model.settings.sortBy == "az"
         return VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Color.clear.frame(width: 48)
+                Color.clear.frame(width: 48, height: 1)
                 Text("Item").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Found").frame(width: 130, alignment: .trailing)
                 Text("Last Cleaned").frame(width: 130, alignment: .trailing).padding(.trailing, 14)
