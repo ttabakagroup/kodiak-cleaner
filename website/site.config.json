@@ -12,6 +12,10 @@
     "portableSize": "63.5 MB"
   },
   "releases": {
+    "0.8.43": {
+      "installerSize": "70.8 MB",
+      "portableSize": "63.5 MB"
+    },
     "0.8.42": {
       "installerSize": "70.8 MB",
       "portableSize": "63.5 MB"

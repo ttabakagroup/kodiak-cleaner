@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.43 Dev] - 2026-10-06
+
+### Updates
+- With Keep Kodiak Cleaner Updated Automatically on, Kodiak Cleaner now checks for a new version every time it starts, instead of once a day.
+- After an update installs, Kodiak Cleaner opens again on its own. If the installation is cancelled or fails, it stays closed.
+
 ## [0.8.42 Dev] - 2026-10-06
 
 ### About

@@ -38,7 +38,7 @@ public static class UpdateService
         try
         {
             using var resp = await Http.GetAsync(UpdateManifest.Url(AppInfo.Channel), ct);
-            // Only a check that reached the website counts toward the once-a-day limit, so an offline start tries again next time.
+            // Only a check that reached the website counts as "Last checked".
             if (resp.StatusCode == HttpStatusCode.NotFound)
             {
                 MarkChecked();
@@ -101,7 +101,9 @@ public static class UpdateService
 
     /// <summary>
     /// Called when Kodiak Cleaner exits: starts a downloaded, verified update and returns without waiting,
-    /// so this process can exit and Windows Installer can replace its files.
+    /// so this process can exit and Windows Installer can replace its files. When the install succeeds, Kodiak Cleaner
+    /// opens again on its own (Ted, 0.8.43): a hidden cmd.exe waits for msiexec and, only on exit code 0, starts the exe.
+    /// It runs as the user, so the reopened copy isn't elevated by the installer's prompt.
     /// </summary>
     public static void InstallPendingOnExit()
     {
@@ -115,25 +117,28 @@ public static class UpdateService
             File.Copy(msi, run, overwrite: false);
             if (!HashMatches(run, _pendingSha)) { File.Delete(run); return; }
             KodiakCleaner.Core.Util.ActivityLog.Write("Updates", $"Installing the update {Path.GetFileName(msi)}");
-            Process.Start(new ProcessStartInfo("msiexec.exe", $"/i \"{run}\" /passive /norestart") { UseShellExecute = true });
+            var exe = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "KodiakCleaner.exe");
+            var cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            Process.Start(new ProcessStartInfo(cmd,
+                $"/d /s /c \"start \"\" /wait msiexec.exe /i \"{run}\" /passive /norestart & if not errorlevel 1 start \"\" \"{exe}\"\"")
+            { UseShellExecute = false, CreateNoWindow = true });
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { }
     }
 
     public static void InstallPendingNow() => System.Windows.Application.Current.Shutdown();
 
-    /// <summary>Automatic updates: at most one check a day, at startup, in the background.</summary>
+    /// <summary>Automatic updates: a check in the background each time Kodiak Cleaner starts (Ted, 0.8.43; was once a day).</summary>
     public static async Task AutoCheckAsync(Action<string> notify)
     {
         var s = Settings.Current;
         if (!s.AutoUpdate || !Integration.IsInstalled) return;
-        if (s.LastUpdateCheckUtc is { } last && DateTime.UtcNow - last < TimeSpan.FromDays(1)) return;
         var result = await CheckAsync();
         if (!result.Available || result.Info is null) return;
         try
         {
             await DownloadAsync(result.Info);
-            notify($"{AppInfo.Name} {PendingVersion} has been downloaded and will install when you close {AppInfo.ShortName}.");
+            notify($"{AppInfo.Name} {PendingVersion} has been downloaded and will install when you close {AppInfo.ShortName}, which then opens again.");
         }
         catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException or UnauthorizedAccessException)
         {

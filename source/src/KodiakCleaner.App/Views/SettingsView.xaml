@@ -170,7 +170,7 @@
             <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Check Now" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="Kodiak Cleaner only goes online when you check, or once a day if automatic updates are on." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                    <TextBlock Text="Kodiak Cleaner only goes online when you check, or when it starts if automatic updates are on." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                     <DockPanel Style="{StaticResource SettingRow}" Margin="0,10,0,0">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Content="Install Update" Command="{Binding InstallUpdateCommand}" Style="{StaticResource AccentButton}"
@@ -193,7 +193,7 @@
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding AutoUpdate}" />
                         <StackPanel Margin="0,0,24,0">
                             <TextBlock Text="Keep Kodiak Cleaner Updated Automatically" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="Check the Kodiak Cleaner website for a new version once a day. Updates download in the background and install when you close Kodiak Cleaner." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            <TextBlock Text="Check the Kodiak Cleaner website for a new version each time Kodiak Cleaner starts. Updates download in the background, install when you close Kodiak Cleaner, and then Kodiak Cleaner opens again." Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
                 </StackPanel>
