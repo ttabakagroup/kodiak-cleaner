@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.38 Dev] - 2026-10-06
+
+### Installer
+- The GitHub build makes the MSI again. Windows Installer's own checks flagged the Start menu shortcut as if Kodiak Cleaner were installed for one user only; it is installed for everyone, so those three checks (ICE38, ICE43 and ICE57) are now switched off rather than moving the shortcut's marker, which would have made every future upgrade delete the Start menu shortcut.
+
 ## [0.8.37 Dev] - 2026-10-06
 
 ### Downloads

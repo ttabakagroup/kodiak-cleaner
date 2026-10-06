@@ -7,6 +7,12 @@
     <!-- The seven Docs files from tools/MakeDocs; build.ps1 writes them to publish\Docs. -->
     <DocsDir Condition="'$(DocsDir)' == ''">$(PublishDir)Docs\</DocsDir>
     <InstallerPlatform>x64</InstallerPlatform>
+    <!-- Windows Installer validation (run by this build on Windows, not by the Wine build) counts the Start menu as part of
+         a user's profile, so ICE38, ICE43 and ICE57 ask for an HKCU key path on the shortcut component. Kodiak Cleaner
+         installs for all users (ALLUSERS=1), where the shortcut is per machine and the HKLM key path is right. Moving it to
+         HKCU would change the component, and every upgrade would then delete the shortcut the new version just made
+         (the old version's removal runs after the new install), so these three checks are switched off instead (0.8.38). -->
+    <SuppressIces>ICE38;ICE43;ICE57</SuppressIces>
   </PropertyGroup>
 
   <!-- Every channel installs to Program Files\Kodiak Cleaner (Ted's choice) and shares one upgrade code, so Dev, Beta

@@ -154,6 +154,19 @@ public class UninstallTests
     }
 
     [Fact]
+    public void The_start_menu_shortcut_keeps_its_machine_key_and_the_ice_checks_that_disagree_are_off()
+    {
+        // ICE38/ICE43/ICE57 (only run by the Windows build) want an HKCU key path for a Start menu shortcut, which is wrong
+        // for an all-users install and would make upgrades delete the shortcut, so they are suppressed (0.8.38).
+        var shortcut = System.Xml.Linq.XDocument.Parse(Wxs).Descendants().Single(e => e.Name.LocalName == "Component" && (string?)e.Attribute("Id") == "StartMenuShortcut");
+        var keyPath = shortcut.Elements().Single(e => (string?)e.Attribute("KeyPath") == "yes");
+        Assert.Equal("RegistryValue", keyPath.Name.LocalName);
+        Assert.Equal("HKLM", (string?)keyPath.Attribute("Root"));
+        Assert.Contains("Scope=\"perMachine\"", Wxs);
+        Assert.Contains("<SuppressIces>ICE38;ICE43;ICE57</SuppressIces>", Repo.Read("installer", "KodiakCleaner.Installer.wixproj"));
+    }
+
+    [Fact]
     public void Program_files_hold_no_writable_backups_folder_and_old_backups_are_removed()
     {
         // Only KodiakCleaner.ini is writable for normal users; backups and logs live in Documents\Kodiak Cleaner.
