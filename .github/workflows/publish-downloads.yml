@@ -128,6 +128,11 @@ jobs:
             read -r code type final < <(curl -s -L -r 0-0 -o /dev/null -w '%{http_code} %{content_type} %{url_effective}\n' \
               "https://www.kodiakcleaner.app/download/$f")
             echo "$f: HTTP $code, $type, from $final"
+            # A Cloudflare Access login in front of the site: the files are uploaded, but only signed-in people get them.
+            if [[ "$final" == *cloudflareaccess.com* ]]; then
+              echo "::warning::www.kodiakcleaner.app is behind a Cloudflare Access login, so $f can't be checked from here and visitors must sign in. Remove the Access application in Cloudflare Zero Trust to make the downloads public."
+              continue
+            fi
             case "$code" in 200|206) ;; *) echo "::error::$f is not downloadable (HTTP $code)"; exit 1 ;; esac
             case "$type" in text/html*) echo "::error::$f returned a web page instead of the file ($final)"; exit 1 ;; esac
           done
