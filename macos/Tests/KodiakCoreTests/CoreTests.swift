@@ -186,7 +186,7 @@ final class TriggerTests: TempHomeTestCase {
     }
 
     func testAppNameFromProgramPath() {
-        XCTAssertEqual(Triggers.appName("/Applications/Foo Bar.app/Contents/MacOS/helper"), "Foo Bar.app")
+        XCTAssertEqual(Triggers.appName("/Applications/Foo Bar.app/Contents/MacOS/helper"), "Foo Bar")
         XCTAssertNil(Triggers.appName("/usr/local/bin/thing"))
     }
 

@@ -23,11 +23,14 @@ public enum Paths {
         return path
     }
 
-    /// The path with links resolved (/var becomes /private/var), or the path itself when it doesn't exist.
+    /// The path with links resolved (/var becomes /private/var). For a path that doesn't exist yet, the part that does
+    /// exist is resolved and the rest is kept as written.
     public static func real(_ path: String) -> String {
         var buffer = [CChar](repeating: 0, count: Int(PATH_MAX) + 1)
-        guard realpath(path, &buffer) != nil else { return path }
-        return String(cString: buffer)
+        if realpath(path, &buffer) != nil { return String(cString: buffer) }
+        let parent = (path as NSString).deletingLastPathComponent
+        if parent.isEmpty || parent == path || parent == "/" { return path }
+        return (real(parent) as NSString).appendingPathComponent((path as NSString).lastPathComponent)
     }
 
     /// The home folder with ~ instead, for showing a path.
