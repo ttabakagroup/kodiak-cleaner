@@ -3,7 +3,7 @@ import { shot, betaNotice, wordmark } from "../layout.mjs";
 import { esc } from "../markdown.mjs";
 
 export default function home(ctx) {
-  const { cfg, latest, linuxLatest } = ctx;
+  const { cfg, latest, linuxLatest, macLatest } = ctx;
 
   // A to Z.
   const highlights = [
@@ -13,7 +13,7 @@ export default function home(ctx) {
     ["drive", "Installed or Portable", "Use the MSI installer, or run the portable version from any folder, even a USB drive."],
     ["lock", "Local First", "Settings and backups are plain files on your own PC. Nothing is kept in the cloud."],
     ["shield", "No Ads, No Tracking", "No telemetry, analytics, crash reports or upsells. It only goes online to check for updates, and only when you ask."],
-    ["terminal", "Now on Linux Too", "Kodiak Cleaner for Linux cleans junk, caches and package downloads, and shows everything that starts automatically."],
+    ["terminal", "Now on Mac and Linux", "Kodiak Cleaner for Mac and Kodiak Cleaner for Linux clean junk, caches and browser data, and show everything that starts by itself."],
     ["palette", "Your Look", "Honey, Classic and Glacier color schemes, accent colors for everyone, and light or dark mode."],
   ];
 
@@ -46,13 +46,14 @@ export default function home(ctx) {
     <div class="hero-logo"><span class="halo"></span><img src="/images/logo.svg" alt="Kodiak Cleaner logo: a friendly bear in a computer screen" width="230" height="230" fetchpriority="high"></div>
     <h1>${wordmark}</h1>
     <p class="slogan">Not a Crap Cleaner. A Cleaner App, Built Around What Matters.</p>
-    <p class="lead">A small, honest cleaner for Windows and Linux. Clear out junk files, fix broken registry entries, tame start-up programs and uninstall software cleanly, with no telemetry, no ads, no upsells and no background services.</p>
+    <p class="lead">A small, honest cleaner for Windows, Mac and Linux. Clear out junk files, fix broken registry entries, tame start-up programs and uninstall software cleanly, with no telemetry, no ads, no upsells and no background services.</p>
     <div class="btn-row">
       <a class="btn primary lg" href="/download/#windows">${icons.windows}<span>Download for Windows<small>Version ${esc(latest.name)} · Free</small></span></a>
+      <a class="btn lg" href="/download/#mac">${icons.laptop}<span>Download for Mac<small>Version ${esc(macLatest.name)} · Free</small></span></a>
       <a class="btn lg" href="/download/#linux">${icons.terminal}<span>Download for Linux<small>Version ${esc(linuxLatest.name)} · Free</small></span></a>
       <a class="btn lg" href="${cfg.repo}" rel="noopener">${icons.github}<span>View on GitHub<small>Open source, MIT License</small></span></a>
     </div>
-    <p class="hero-meta"><span>Windows 10 and 11 (64-bit)</span><span>Linux (DEB or AppImage)</span><span>No account needed</span></p>
+    <p class="hero-meta"><span>Windows 10 and 11 (64-bit)</span><span>macOS 26 or newer</span><span>Linux (DEB or AppImage)</span><span>No account needed</span></p>
     <div class="hero-shot">${shot(ctx, "cleaner.png", "Kodiak Cleaner's Cleaner page after Analyze, showing 717.1 MB that can be freed", { eager: true })}</div>
   </div>
 </section>
@@ -140,6 +141,20 @@ export default function home(ctx) {
       </div>
       ${shot(ctx, "linux-triggers.png", "Kodiak Cleaner for Linux, Triggers page", { bar: "Kodiak Cleaner for Linux" })}
     </div>
+    <div class="showcase reveal">
+      <div class="text">
+        <span class="eyebrow">Mac</span>
+        <h2>Kodiak Cleaner for Mac</h2>
+        <p>A native Mac app for macOS 26 or newer. It cleans macOS junk, browser data and developer tool caches, and its Triggers page lists launch agents, launch daemons, cron jobs and shell startup files.</p>
+        <ul>
+          <li>A disk image or a ZIP, for Apple silicon and Intel Macs.</li>
+          <li>No network code at all. Nothing leaves your Mac.</li>
+          <li>The same color schemes, and the same supporter code.</li>
+        </ul>
+        <a href="/mac/">More about the Mac edition →</a>
+      </div>
+      ${shot(ctx, "mac-cleaner-honey-dark.png", "Kodiak Cleaner for Mac, Cleaner page in Honey dark mode", { bar: "Kodiak Cleaner for Mac" })}
+    </div>
   </div>
 </section>
 
@@ -205,7 +220,7 @@ export default function home(ctx) {
     <div class="card reveal">
       <img src="/images/logo.svg" alt="" width="110" height="110">
       <h2>Ready for a Cleaner PC?</h2>
-      <p class="lead cta-lead">Free, open source and private, for Windows and Linux.</p>
+      <p class="lead cta-lead">Free, open source and private, for Windows, Mac and Linux.</p>
       <div class="btn-row centered">
         <a class="btn primary lg" href="/download/">${icons.download}Download Kodiak Cleaner</a>
         <a class="btn lg" href="/contact/">${icons.mail}Contact Us</a>
@@ -219,7 +234,7 @@ export default function home(ctx) {
     path: "/",
     out: "index.html",
     title: "Home",
-    description: "Kodiak Cleaner is a free, open source cleaner for Windows and Linux with no telemetry, no ads and no upsells. Clean junk files, fix the registry, manage start-up programs and uninstall software cleanly.",
+    description: "Kodiak Cleaner is a free, open source cleaner for Windows, Mac and Linux with no telemetry, no ads and no upsells. Clean junk files, fix the registry, manage start-up programs and uninstall software cleanly.",
     body,
   };
 }

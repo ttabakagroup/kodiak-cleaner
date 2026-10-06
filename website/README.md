@@ -11,7 +11,8 @@ No trackers, ads, cookies or outside fonts. The only outside script is Cloudflar
 | Home | `/` | `src/pages/home.mjs` |
 | Features | `/features/` | `src/pages/features.mjs` |
 | Linux | `/linux/` | `src/pages/linux.mjs` and `content/linux/CHANGELOG.md` |
-| Download | `/download/` | `src/pages/download.mjs` (Windows and Linux) |
+| Mac | `/mac/` | `src/pages/mac.mjs` and `content/mac/CHANGELOG.md` |
+| Download | `/download/` | `src/pages/download.mjs` (Windows, Mac and Linux) |
 | Changelog | `/changelog/` | `content/CHANGELOG.md` |
 | Archive | `/archive/` | `content/CHANGELOG.md` and `site.config.json` |
 | Contact Us | `/contact/` | `src/pages/contact.mjs` and `functions/api/contact.js` |
@@ -77,17 +78,17 @@ Leave Cloudflare Web Analytics off so the site stays tracker-free.
 While `hostedDownloads` is in `site.config.json`, the Download page's buttons point at
 `https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi` (a bare MSI, Ted's choice on 2026-10-05) and `.../KodiakCleaner-Portable.zip`
 instead of GitHub. The Linux buttons (from `linux` in `site.config.json`) point at `.../KodiakCleanerLinux-DEB.zip` and
-`.../KodiakCleanerLinux-AppImage.zip` the same way. The Windows files are about 70 MB, and Cloudflare Pages only takes files up to 25 MB, so they
+`.../KodiakCleanerLinux-AppImage.zip` the same way, and the Mac buttons (from `mac`) at `.../KodiakCleanerMac.dmg` and `.../KodiakCleanerMac.zip`. The Windows files are about 70 MB, and Cloudflare Pages only takes files up to 25 MB, so they
 live in Cloudflare R2 (free up to 10 GB, with no charge for downloads). `functions/download/[file].js` serves them.
 
 One-time setup:
 1. Cloudflare dashboard > R2 Object Storage. Turn on R2 if asked (Cloudflare asks for a payment method even on the free tier).
 2. Create bucket, named `kodiakcleaner-downloads`.
-3. Open the bucket > Upload, and add the four files under exactly these names: `KodiakCleaner-Installer.msi`, `KodiakCleaner-Portable.zip`, `KodiakCleanerLinux-AppImage.zip` and `KodiakCleanerLinux-DEB.zip`.
+3. Open the bucket > Upload, and add the six files under exactly these names: `KodiakCleaner-Installer.msi`, `KodiakCleaner-Portable.zip`, `KodiakCleanerLinux-AppImage.zip`, `KodiakCleanerLinux-DEB.zip`, `KodiakCleanerMac.dmg` and `KodiakCleanerMac.zip`.
 4. Workers & Pages > kodiakcleaner > Settings > Bindings > Add > R2 bucket. Variable name `DOWNLOADS`, bucket `kodiakcleaner-downloads`.
 5. `npm run deploy`.
 
-Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI is `KodiakCleaner-Dev-Setup.msi`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, and the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`.
+Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI is `KodiakCleaner-Dev-Setup.msi`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`, and the Mac files are `KodiakCleaner-Dev-Mac.dmg` and `KodiakCleaner-Dev-Mac.zip` from `../kodiak-mac/dist`.
 To go back to GitHub downloads, delete `hostedDownloads` from `site.config.json` and deploy.
 
 ## If Contact Us Says a Message Couldn't Be Sent
@@ -104,7 +105,7 @@ After changing any setting in Cloudflare, deploy again; settings only reach the 
 
 ## Each New Kodiak Cleaner Release
 
-1. `npm run sync` copies CHANGELOG.md and the other documents from `../source` (or `../ccleaner-alt`), and the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/` (or copy them by hand).
+1. `npm run sync` copies CHANGELOG.md and the other documents from `../source` (or `../ccleaner-alt`), the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
 2. In `site.config.json`, add the version under `releases` with its two file sizes. Only versions listed there get download links; the rest show "Not published".
 3. `npm test`, then `npm run deploy`.
 
@@ -121,7 +122,7 @@ They work once that release exists on GitHub. Only the hosted installer and GitH
 | `npm test` | Builds, then checks links, images, downloads, Title Case, outside resources and the contact function |
 | `npm run preview` | Runs the site and the form locally with Wrangler (put test keys in a `.dev.vars` file) |
 | `npm run deploy` | Builds and uploads to Cloudflare Pages |
-| `npm run sync` | Copies the documents from `../source` (or `../ccleaner-alt`) and `../kodiak-linux`, then builds |
+| `npm run sync` | Copies the documents from `../source` (or `../ccleaner-alt`), `../kodiak-linux` and `../kodiak-mac`, then builds |
 
 Turnstile's test keys for local runs: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`.
 
@@ -132,6 +133,7 @@ build.mjs               builds public/ from src/ and content/
 site.config.json        site address, links and published releases
 content/                CHANGELOG.md, PRIVACY.md, terms-of-use.md, why-it-was-made.md, LICENSE, version.json (copied from the app)
 content/linux/          CHANGELOG.md and version.json (copied from Kodiak Cleaner for Linux)
+content/mac/            CHANGELOG.md and version.json (copied from Kodiak Cleaner for Mac)
 functions/api/contact.js  Contact Us handler (Turnstile check, then email through Resend; nothing stored)
 src/layout.mjs          header, footer and shared pieces
 src/pages/              one file per page
@@ -146,6 +148,6 @@ tests/                  site checks and contact function tests
 public/                 the built site (made by npm run build)
 ```
 
-Windows screenshots come from the 0.8.36 Dev portable build under Wine with sample programs and startup entries (the Developer item was painted out of the Appearance shots, and the Application shot shows a sample folder path). Linux screenshots (`linux-*.png`) come from Kodiak Cleaner for Linux 0.8.1 Dev via its `tools/screenshots.py`. Retake the Windows ones on Windows when convenient; real program icons look better.
+Windows screenshots come from the 0.8.36 Dev portable build under Wine with sample programs and startup entries (the Developer item was painted out of the Appearance shots, and the Application shot shows a sample folder path). Linux screenshots (`linux-*.png`) come from Kodiak Cleaner for Linux 0.8.1 Dev via its `tools/screenshots.py`. Mac screenshots (`mac-*.png`) come from Kodiak Cleaner for Mac 0.8.0 Dev (`dist/screenshots`, taken on a GitHub Mac); its Triggers shot shows that build machine's own launch agents. Retake the Windows ones on Windows when convenient; real program icons look better.
 
 Copyright © 2026 Ted Tabaka. MIT License.

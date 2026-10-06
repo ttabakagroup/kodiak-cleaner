@@ -6,6 +6,7 @@ export const NAV = [
   { id: "home", href: "/", label: "Home" },
   { id: "features", href: "/features/", label: "Features" },
   { id: "linux", href: "/linux/", label: "Linux" },
+  { id: "mac", href: "/mac/", label: "Mac" },
   { id: "download", href: "/download/", label: "Download" },
   { id: "changelog", href: "/changelog/", label: "Changelog" },
   { id: "archive", href: "/archive/", label: "Archive" },
@@ -29,9 +30,9 @@ export function pageHead(title, lead) {
 }
 
 export function layout(page, ctx) {
-  const { cfg, latest, linuxLatest } = ctx;
+  const { cfg, latest, linuxLatest, macLatest } = ctx;
   const url = cfg.siteUrl.replace(/\/$/, "") + page.path;
-  const fullTitle = page.id === "home" ? "Kodiak Cleaner: A Free, Private Cleaner for Windows and Linux" : `${page.title} | Kodiak Cleaner`;
+  const fullTitle = page.id === "home" ? "Kodiak Cleaner: A Free, Private Cleaner for Windows, Mac and Linux" : `${page.title} | Kodiak Cleaner`;
   const nav = NAV.map((n) => `<a href="${n.href}"${n.id === page.id ? ' aria-current="page"' : ""}>${n.label}</a>`).join("");
   return `<!doctype html>
 <html lang="en">
@@ -81,6 +82,7 @@ ${page.body}
         <div class="footer-brand"><img src="/images/logo.svg" alt="" width="56" height="56">${wordmark}</div>
         <p class="muted">Not a Crap Cleaner. A Cleaner App, Built Around What Matters.</p>
         <p class="muted">Windows: version ${esc(latest.name)}, for Windows 10 and 11 (64-bit)</p>
+        <p class="muted">Mac: version ${esc(macLatest.name)}, for macOS 26 or newer</p>
         <p class="muted">Linux: version ${esc(linuxLatest.name)}, for 64-bit Linux with GTK 4</p>
       </div>
       <div><h2>Kodiak Cleaner</h2><ul>
@@ -89,6 +91,7 @@ ${page.body}
         <li><a href="/download/">Download</a></li>
         <li><a href="/features/">Features</a></li>
         <li><a href="/linux/">Kodiak Cleaner for Linux</a></li>
+        <li><a href="/mac/">Kodiak Cleaner for Mac</a></li>
         <li><a href="/why-it-was-made/">Why It Was Made</a></li>
       </ul></div>
       <div><h2>Help and Contact</h2><ul>

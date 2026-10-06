@@ -79,6 +79,7 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
   <a class="chip-link" href="#safety">Safety</a>
   <a class="chip-link" href="#privacy">Privacy</a>
   <a class="chip-link" href="/linux/">Linux Edition</a>
+  <a class="chip-link" href="/mac/">Mac Edition</a>
 </div></nav>
 
 <section class="feature-group" id="cleaning-pages">
@@ -131,7 +132,7 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
       <div class="card"><span class="icon">${icons.download}</span><h3>Updates Only When Asked</h3><p>Kodiak Cleaner only goes online to check GitHub for updates, when you click Check Now or turn on automatic updates.</p></div>
       <div class="card"><span class="icon">${icons.mail}</span><h3>Feedback Through Your Email</h3><p>In-app feedback opens your own email app. Nothing is sent until you press Send.</p></div>
     </div>
-    <div class="card mt-xl"><span class="icon">${icons.file}</span><h3>Docs Folder Included</h3><p>The installer, the portable ZIP and the Linux downloads each come with a Docs folder: Changelog, Download, Homepage, License, Privacy, ReadMe and Terms of Use, all in plain text.</p></div>
+    <div class="card mt-xl"><span class="icon">${icons.file}</span><h3>Docs Folder Included</h3><p>The installer, the portable ZIP and the Mac and Linux downloads each come with a Docs folder: Changelog, Download, Homepage, License, Privacy, ReadMe and Terms of Use, all in plain text.</p></div>
     <div class="mt-xl">${shot(ctx, "application.png", "Application settings showing where backups and the activity log are kept")}</div>
     <div class="mt-xl">${betaNotice()}</div>
     <p class="center mt-xl"><a class="btn primary lg" href="/download/">${icons.download}Download Kodiak Cleaner</a></p>
@@ -143,7 +144,7 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
     path: "/features/",
     out: "features/index.html",
     title: "Features",
-    description: "Every Kodiak Cleaner feature: Cleaner, Advanced Cleaning, Registry with fifteen checks, Startup, Programs, Scheduled Cleaning, nine built-in tools, settings, safety and privacy, plus the Linux edition.",
+    description: "Every Kodiak Cleaner feature: Cleaner, Advanced Cleaning, Registry with fifteen checks, Startup, Programs, Scheduled Cleaning, nine built-in tools, settings, safety and privacy, plus the Mac and Linux editions.",
     body,
   };
 }

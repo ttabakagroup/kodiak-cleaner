@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.39 Dev] - 2026-10-06
+
+### Settings
+- A divider with a little space on each side now sits above Support Kodiak Cleaner at the bottom of the Settings sidebar, setting it and the privacy note apart from the pages above.
+
 ## [0.8.38 Dev] - 2026-10-06
 
 ### Installer

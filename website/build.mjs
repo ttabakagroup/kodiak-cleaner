@@ -1,7 +1,7 @@
 // Builds the Kodiak Cleaner website into public/.
 //   node build.mjs          build the site
 //   node build.mjs --sync   first copy CHANGELOG.md and the other documents from ../source (or ../ccleaner-alt) (Windows)
-//                           and ../kodiak-linux (Linux, into content/linux/)
+//                           ../kodiak-linux (Linux, into content/linux/) and ../kodiak-mac (Mac, into content/mac/)
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,7 @@ import archive from "./src/pages/archive.mjs";
 import changelog from "./src/pages/changelog.mjs";
 import contact from "./src/pages/contact.mjs";
 import linux from "./src/pages/linux.mjs";
+import mac from "./src/pages/mac.mjs";
 import { story, privacy, terms, notFound } from "./src/pages/docs.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -22,7 +23,7 @@ const read = (...p) => readFileSync(at(...p), "utf8");
 
 // Keep the documents in step with the app when its folder sits beside this one.
 const DOCS = ["CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "why-it-was-made.md", "LICENSE", "version.json"];
-const LINUX_DOCS = ["CHANGELOG.md", "version.json"];
+const LINUX_DOCS = ["CHANGELOG.md", "version.json"]; // also what's copied from the Mac app
 if (process.argv.includes("--sync")) {
   const app = [at("..", "source"), at("..", "ccleaner-alt")].find((p) => existsSync(join(p, "version.json")));
   if (!app) throw new Error("--sync needs the app folder at ../source (or ../ccleaner-alt)");
@@ -33,6 +34,11 @@ if (process.argv.includes("--sync")) {
   mkdirSync(at("content", "linux"), { recursive: true });
   for (const f of LINUX_DOCS) cpSync(join(lin, f), at("content", "linux", f));
   console.log(`Synced ${LINUX_DOCS.length} documents from ${lin}`);
+  const macApp = at("..", "kodiak-mac");
+  if (!existsSync(macApp)) throw new Error("--sync needs the Mac app folder at ../kodiak-mac");
+  mkdirSync(at("content", "mac"), { recursive: true });
+  for (const f of LINUX_DOCS) cpSync(join(macApp, f), at("content", "mac", f));
+  console.log(`Synced ${LINUX_DOCS.length} documents from ${macApp}`);
 }
 
 const cfg = JSON.parse(read("site.config.json"));
@@ -41,6 +47,8 @@ if (!releases.length) throw new Error("No versions found in content/CHANGELOG.md
 const latest = releases[0];
 const linuxReleases = parseChangelog(read("content", "linux", "CHANGELOG.md"));
 if (!linuxReleases.length) throw new Error("No versions found in content/linux/CHANGELOG.md");
+const macReleases = parseChangelog(read("content", "mac", "CHANGELOG.md"));
+if (!macReleases.length) throw new Error("No versions found in content/mac/CHANGELOG.md");
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const parts = (iso) => iso.split("-").map(Number);
@@ -58,6 +66,8 @@ const ctx = {
   latest,
   linuxReleases,
   linuxLatest: linuxReleases[0],
+  macReleases,
+  macLatest: macReleases[0],
   imageSizes,
   buildId: Date.now().toString(36),
   content: {
@@ -123,7 +133,7 @@ cpSync(at("src", "assets", "favicon.ico"), join(out, "favicon.ico"));
 cpSync(at("src", "static"), out, { recursive: true });
 
 // Pages
-const pages = [home, features, linux, download, archive, changelog, contact, story, privacy, terms, notFound].map((p) => p(ctx));
+const pages = [home, features, linux, mac, download, archive, changelog, contact, story, privacy, terms, notFound].map((p) => p(ctx));
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });
@@ -136,4 +146,4 @@ const urls = pages.filter((p) => p.id !== "404").map((p) => `  <url><loc>${site}
 writeFileSync(join(out, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
 writeFileSync(join(out, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${site}/sitemap.xml\n`);
 
-console.log(`Built ${pages.length} pages for Kodiak Cleaner ${latest.name} (${releases.length} versions) and Kodiak Cleaner for Linux ${linuxReleases[0].name} into public/`);
+console.log(`Built ${pages.length} pages for Kodiak Cleaner ${latest.name} (${releases.length} versions) Kodiak Cleaner for Linux ${linuxReleases[0].name} and Kodiak Cleaner for Mac ${macReleases[0].name} into public/`);

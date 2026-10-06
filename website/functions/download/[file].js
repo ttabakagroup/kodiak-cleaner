@@ -2,11 +2,11 @@
 // The files are too big for Cloudflare Pages (25 MiB per file), so they live in a Cloudflare R2
 // bucket bound to this project as DOWNLOADS. Upload them in the dashboard under R2 > the bucket.
 
-const TYPES = { zip: "application/zip", msi: "application/x-msi" };
+const TYPES = { dmg: "application/x-apple-diskimage", msi: "application/x-msi", zip: "application/zip" };
 
 export async function onRequestGet({ request, env, params }) {
   const name = String(params.file || "");
-  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.(zip|msi)$/.test(name)) return notFound();
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.(dmg|msi|zip)$/.test(name)) return notFound();
   if (!env.DOWNLOADS) return notFound();
 
   const obj = await env.DOWNLOADS.get(name, { range: request.headers, onlyIf: request.headers });

@@ -1,5 +1,30 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.2 Dev] - 2026-10-06
+
+### Programs
+- New Programs page: a searchable list of the apps installed on this computer (system packages, Flatpak, Snap and your own menu entries) with icons, versions and sizes. Tick several and Uninstall removes them, asking for the administrator password only once. Parts of the system and desktop, and anything else that would be removed along with them, are protected.
+- After an uninstall, Kodiak Cleaner offers the program's leftover folders in your home folder, matched only by their exact name. Nothing is ticked for you, and ticked folders go to the Trash.
+- Programs History records everything uninstalled and can reinstall it, or restore one of your own menu entries. Repair reinstalls a program's system package to put back missing or damaged files.
+
+### Scheduled Cleaning
+- New Scheduled Cleaning page: named cleanings that run on chosen weekdays or a day of the month through systemd user timers, even when Kodiak Cleaner is closed. A cleaning missed while the computer was off runs at the next chance, and the timers remove themselves if Kodiak Cleaner is uninstalled. Administrator and Advanced Cleaning items never run on a schedule.
+- Clean When You Sign In (Settings > Cleaning) cleans your ticked Cleaner items a minute after you sign in.
+- A Clean Now action on Kodiak Cleaner's launcher (right-click it in your app menu or dock) cleans your ticked items without opening a window.
+
+### Tools
+- A new Tools section in the sidebar, A to Z.
+- Browser Extensions: lists the extensions in Brave, Chrome, Chromium, Edge, Firefox, Floorp, Helium, LibreWolf, Mullvad Browser, Opera and Vivaldi (including Snap and Flatpak copies), with icons, versions and on or off state, so you can spot ones you don't recognize. Read-only.
+- Disk Analyzer: see which folders and files take the most space, look inside any folder, and move big files to the Trash.
+- Drive Wiper: overwrites the free space on your home drive or another drive you can write to (1, 3 or 7 passes), with a progress bar and Cancel, and warns that TRIM is the better tool on SSDs and btrfs or ZFS.
+- Duplicate Finder and Large Files: find identical copies or very big files and move the ones you pick to the Trash. One copy of each file always stays.
+- Empty Folders: find folders left behind with nothing in them and move them to the Trash. Your own folders, such as Documents, and hidden folders are never offered.
+- System Information: distribution, kernel, desktop, processor, memory, graphics, drives and up time on one page, with Copy to Clipboard.
+
+### Backups and Logs
+- New activity log: one plain-text file per month in ~/.local/share/kodiak-cleaner/Logs noting cleanings, trigger and program changes, backups and errors. It stays on this computer, keeps the last 12 months, and can be turned off under Settings > General > Keep an Activity Log.
+- Settings > General has Back Up Settings and Restore Settings, and shows where your backups and the activity log are, with Open Folder.
+
 ## [0.8.1 Dev] - 2026-10-05
 
 ### Appearance

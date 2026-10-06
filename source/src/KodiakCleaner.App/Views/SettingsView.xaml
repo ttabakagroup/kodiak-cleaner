@@ -464,6 +464,9 @@
         <!-- Settings sidebar -->
         <DockPanel Margin="-12,0,16,0">
             <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                <!-- A divider with space on both sides sets Support Kodiak Cleaner and the privacy note apart from the pages
+                     above, like the one over Settings and About in the main sidebar (Ted, 0.8.39). -->
+                <Border Height="1" Margin="12,4,12,14" Background="{DynamicResource Line}" />
                 <Button Style="{StaticResource LinkButton}" Command="{Binding SupportCommand}" HorizontalAlignment="Left" Margin="12,0,0,6"
                         Visibility="{Binding ShowSupportLink, Converter={StaticResource BoolToVis}}">
                     <StackPanel Orientation="Horizontal">

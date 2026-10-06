@@ -11,6 +11,7 @@ const cfg = JSON.parse(readFileSync(join(root, "..", "site.config.json"), "utf8"
 const hosted = [
   ...(cfg.hostedDownloads ? [cfg.hostedDownloads.installer, cfg.hostedDownloads.portable] : []),
   ...(cfg.linux ? [cfg.linux.deb, cfg.linux.appimage] : []),
+  ...(cfg.mac ? [cfg.mac.dmg, cfg.mac.zip] : []),
 ].map((f) => `/download/${f}`);
 const walk = (d) => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : [join(d, f)]));
 const files = walk(root);
@@ -126,4 +127,10 @@ test("Linux downloads are linked from the Download and Linux pages, and the Wind
   }
   for (const f of ["KodiakCleaner-Installer.msi", "KodiakCleaner-Portable.zip"]) assert.ok(dl.includes(`href="/download/${f}"`), f);
   assert.match(pages.find((p) => p.file === "/index.html").html, /href="\/linux\/"/);
+  const mac = pages.find((p) => p.file === "/mac/index.html").html;
+  for (const f of ["KodiakCleanerMac.dmg", "KodiakCleanerMac.zip"]) {
+    assert.ok(dl.includes(`href="/download/${f}"`), `Download page should link ${f}`);
+    assert.ok(mac.includes(`href="/download/${f}"`), `Mac page should link ${f}`);
+  }
+  assert.match(pages.find((p) => p.file === "/index.html").html, /Download for Mac/);
 });

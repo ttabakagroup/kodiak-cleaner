@@ -2,15 +2,17 @@ import { icons } from "../icons.mjs";
 import { betaNotice, pageHead } from "../layout.mjs";
 import { esc } from "../markdown.mjs";
 import { linuxDownloads } from "./linux.mjs";
+import { macDownloads } from "./mac.mjs";
 
 export default function download(ctx) {
-  const { cfg, latest, linuxLatest } = ctx;
+  const { cfg, latest, linuxLatest, macLatest } = ctx;
   const d = ctx.dl(latest);
 
   const body = `
-${pageHead("Download", "Kodiak Cleaner for Windows and Linux. Free for everyone, with every feature.")}
+${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for everyone, with every feature.")}
 <nav class="jump" aria-label="On this page"><div class="wrap chips">
   <a class="chip-link" href="#windows">Windows</a>
+  <a class="chip-link" href="#mac">Mac</a>
   <a class="chip-link" href="#linux">Linux</a>
 </div></nav>
 
@@ -90,6 +92,13 @@ ${pageHead("Download", "Kodiak Cleaner for Windows and Linux. Free for everyone,
   </div>
 </section>
 
+<section id="mac">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">macOS 26 or Newer</span><h2>Kodiak Cleaner for Mac</h2><p class="lead">Version ${esc(macLatest.name)}, released ${ctx.longDate(macLatest.date)}, for Apple silicon and Intel Macs. This Dev build isn't signed yet, so the first time you open it, use Open Anyway in Privacy &amp; Security. <a href="/mac/">See the steps and learn more →</a></p></div>
+    ${macDownloads(ctx)}
+  </div>
+</section>
+
 <section class="alt" id="linux">
   <div class="wrap">
     <div class="section-head"><span class="eyebrow">64-Bit Linux</span><h2>Kodiak Cleaner for Linux</h2><p class="lead">Version ${esc(linuxLatest.name)}, released ${ctx.longDate(linuxLatest.date)}. Cleaner and Triggers, in the same color schemes. <a href="/linux/">Learn more about the Linux edition →</a></p></div>
@@ -102,7 +111,7 @@ ${pageHead("Download", "Kodiak Cleaner for Windows and Linux. Free for everyone,
     path: "/download/",
     out: "download/index.html",
     title: "Download",
-    description: `Download Kodiak Cleaner for Windows 10 and 11 (MSI installer or portable ZIP) or for Linux (DEB or AppImage). Free and open source.`,
+    description: `Download Kodiak Cleaner for Windows 10 and 11 (MSI installer or portable ZIP), for Mac (DMG or ZIP) or for Linux (DEB or AppImage). Free and open source.`,
     body,
   };
 }

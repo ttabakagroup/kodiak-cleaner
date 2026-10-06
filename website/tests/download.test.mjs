@@ -6,7 +6,7 @@ import { onRequestGet } from "../functions/download/[file].js";
 const data = new TextEncoder().encode("0123456789");
 const bucket = {
   async get(key, opts) {
-    if (key !== "KodiakCleaner-Portable.zip") return null;
+    if (key !== "KodiakCleaner-Portable.zip" && key !== "KodiakCleanerMac.dmg") return null;
     const range = opts.range.get("range");
     const m = range && /bytes=(\d+)-(\d+)/.exec(range);
     const r = m ? { offset: +m[1], length: +m[2] - +m[1] + 1 } : undefined;
@@ -34,4 +34,10 @@ test("missing files, odd names and a missing bucket give a plain 404", async () 
   for (const [file, env] of [["Nope.zip", undefined], ["../secret.zip", undefined], ["notes.txt", undefined], ["KodiakCleaner-Portable.zip", {}]]) {
     assert.equal((await get(file, {}, env)).status, 404, file);
   }
+});
+
+test("serves the Mac disk image with its own type", async () => {
+  const res = await get("KodiakCleanerMac.dmg");
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("content-type"), "application/x-apple-diskimage");
 });
