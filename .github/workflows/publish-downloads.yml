@@ -114,6 +114,18 @@ jobs:
           set -euo pipefail
           node build.mjs
           node --test tests/*.test.mjs
+          # The app's update check (0.8.40+) reads /updates/dev.json; its version and SHA-256 must match the MSI just uploaded.
+          msi="../${WIN_DIR}KodiakCleaner-Dev-Setup.msi"
+          ver=$(basename "$WIN_DIR"); ver=${ver#Windows-}; ver=${ver%-dev}
+          mkdir -p public/updates
+          jq -n --arg v "$ver" --arg h "$(sha256sum "$msi" | cut -d' ' -f1)" \
+             --arg u "https://www.kodiakcleaner.app/download/$R2_INSTALLER" \
+             '{channel: "dev", version: $v, msi: {url: $u, sha256: $h}}' > public/updates/dev.json
+          cat public/updates/dev.json
+          # Served uncached so a new release is seen at once (only added if the site's own _headers doesn't cover it).
+          if ! grep -q '^/updates/' public/_headers 2>/dev/null; then
+            printf '\n/updates/*\n  Cache-Control: no-cache\n  Content-Type: application/json\n' >> public/_headers
+          fi
           # Deploy to the project's production branch so www.kodiakcleaner.app gets it (any other branch is only a preview).
           prod=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PAGES_PROJECT" \
@@ -136,9 +148,18 @@ jobs:
             echo "$f: HTTP $code, $type, from $final"
             # A Cloudflare Access login in front of the site: the files are uploaded, but only signed-in people get them.
             if [[ "$final" == *cloudflareaccess.com* ]]; then
-              echo "::warning::www.kodiakcleaner.app is behind a Cloudflare Access login, so $f can't be checked from here and visitors must sign in. Remove the Access application in Cloudflare Zero Trust to make the downloads public."
+              echo "::warning::www.kodiakcleaner.app is behind a Cloudflare Access login, so $f can't be checked from here and visitors must sign in (expected while the site is private for testing)."
               continue
             fi
             case "$code" in 200|206) ;; *) echo "::error::$f is not downloadable (HTTP $code)"; exit 1 ;; esac
             case "$type" in text/html*) echo "::error::$f returned a web page instead of the file ($final)"; exit 1 ;; esac
           done
+          # The update file must name this build's MSI, or the app throws the download away.
+          want=$(sha256sum "${WIN_DIR}KodiakCleaner-Dev-Setup.msi" | cut -d' ' -f1)
+          read -r code loc < <(curl -s -o /tmp/dev.json -w '%{http_code} %{redirect_url}\n' https://www.kodiakcleaner.app/updates/dev.json)
+          echo "updates/dev.json: HTTP $code ${loc}"
+          if [[ "$loc" == *cloudflareaccess.com* ]]; then
+            echo "::warning::updates/dev.json is behind the Cloudflare Access login, so the app's update check can't reach it until the site is public."
+          elif [ "$code" != 200 ] || [ "$(jq -r .msi.sha256 /tmp/dev.json 2>/dev/null)" != "$want" ]; then
+            echo "::error::updates/dev.json doesn't match the uploaded MSI (HTTP $code)"; exit 1
+          fi
