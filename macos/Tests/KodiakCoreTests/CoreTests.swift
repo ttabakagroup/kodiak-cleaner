@@ -343,15 +343,16 @@ final class SupporterTests: XCTestCase {
         XCTAssertEqual(status, .valid)
         XCTAssertEqual(license?.name, "Jane")
         let c = code(["id": "abc"])
-        let spaced = "  " + c.prefix(10) + "\n" + c.dropFirst(10) + " "
+        let spaced = "  " + String(c.prefix(10)) + "\n" + String(c.dropFirst(10)) + " "
         XCTAssertEqual(Supporter.verify(spaced, publicKey: pem, withdrawn: []).0, .valid)
     }
 
     func testBadCodes() {
         let pem = key.publicKey.pemRepresentation
         let good = code(["id": "abc"])
-        let otherPayload = code(["id": "xyz"]).split(separator: ".")[0]
-        XCTAssertEqual(Supporter.verify(otherPayload + "." + good.split(separator: ".")[1], publicKey: pem, withdrawn: []).0, .badSignature)
+        let otherPayload = String(code(["id": "xyz"]).split(separator: ".")[0])
+        let tampered = otherPayload + "." + String(good.split(separator: ".")[1])
+        XCTAssertEqual(Supporter.verify(tampered, publicKey: pem, withdrawn: []).0, .badSignature)
         XCTAssertEqual(Supporter.verify("", publicKey: pem).0, .empty)
         XCTAssertEqual(Supporter.verify("nodot", publicKey: pem).0, .malformed)
         XCTAssertEqual(Supporter.verify(good, publicKey: pem, withdrawn: ["abc"]).0, .withdrawn)

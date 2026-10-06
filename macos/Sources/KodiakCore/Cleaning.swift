@@ -269,10 +269,10 @@ public enum Cleaner {
                             + "rebuild it, some may sign you out, and apps that are open may misbehave until restarted."),
             CleanTarget(id: "advanced.xcodearchives", group: advancedGroup, name: "Xcode Archives",
                         description: "Builds you archived in Xcode.",
-                        patterns: ["~/Library/Developer/Xcode/Archives"], processes: ["com.apple.dt.Xcode"],
-                        present: ["~/Library/Developer/Xcode/Archives"],
+                        patterns: ["~/Library/Developer/Xcode/Archives"],
                         warning: "Archives are what you need to send an old build again or read its crash reports. "
-                            + "Keep the ones for versions people still use."),
+                            + "Keep the ones for versions people still use.",
+                        processes: ["com.apple.dt.Xcode"], present: ["~/Library/Developer/Xcode/Archives"]),
             CleanTarget(id: "advanced.devicesupport", group: advancedGroup, name: "Xcode Device Support",
                         description: "Files Xcode copied from iPhones and other devices, made again when a device connects.",
                         patterns: ["~/Library/Developer/Xcode/iOS DeviceSupport", "~/Library/Developer/Xcode/watchOS DeviceSupport",

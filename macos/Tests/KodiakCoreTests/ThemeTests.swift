@@ -34,7 +34,8 @@ final class ThemeTests: XCTestCase {
         for scheme in Themes.schemeOrder {
             for dark in [false, true] {
                 for accent in Themes.accentNames(scheme) {
-                    for system in accent == Themes.systemAccent ? ["#007AFF", "#FFC600", "#8C8C8C", "#E0383E"] : [nil] {
+                    let systems: [String?] = accent == Themes.systemAccent ? ["#007AFF", "#FFC600", "#8C8C8C", "#E0383E"] : [nil]
+                    for system in systems {
                         let table = Themes.tokensFor(scheme, dark: dark, accent: accent, systemAccentColor: system)
                         XCTAssertEqual(failures(table), [], "\(scheme) \(dark ? "dark" : "light") \(accent) \(system ?? "")")
                     }

@@ -168,7 +168,7 @@ public enum Run {
         process.standardOutput = out
         process.standardError = err
         let inPipe = Pipe()
-        process.standardInput = input == nil ? FileHandle.nullDevice : inPipe
+        if input == nil { process.standardInput = FileHandle.nullDevice } else { process.standardInput = inPipe }
         do { try process.run() } catch {
             return Result(code: -1, output: "", error: error.localizedDescription)
         }
