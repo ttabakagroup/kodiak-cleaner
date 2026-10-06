@@ -37,6 +37,9 @@ public sealed class AboutViewModel : ObservableObject
     public string Channel => AppInfo.ChannelLabel;
     public string ReleaseDate => CurrentRelease?.Date ?? "";
 
+    /// <summary>Check for Updates is on About (0.8.41, Ted) as well as Settings > Updates; both share SettingsViewModel's check and status.</summary>
+    public SettingsViewModel Updates => _settings;
+
     public string PlanName => Supporter.PlanName;
     public string HowUnlocked => Supporter.HowUnlocked;
 

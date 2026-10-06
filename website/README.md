@@ -117,7 +117,7 @@ After changing any setting in Cloudflare, deploy again; settings only reach the 
 
 ## Each New Kodiak Cleaner Release
 
-1. `npm run sync` copies CHANGELOG.md and the other documents from `../ccleaner-alt`, the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
+1. `npm run sync` copies CHANGELOG.md and the other documents from `../source` (or `../ccleaner-alt`), the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
 2. In `site.config.json`, add the version under `releases` with its two file sizes. Only versions listed there get download links; the rest show "Not published".
 3. `npm test`, then `npm run deploy`.
 
@@ -134,7 +134,7 @@ They work once that release exists on GitHub. Only the hosted installer and GitH
 | `npm test` | Builds, then checks links, images, downloads, Title Case, outside resources and the contact function |
 | `npm run preview` | Runs the site and the form locally with Wrangler (put test keys in a `.dev.vars` file) |
 | `npm run deploy` | Builds and uploads to Cloudflare Pages |
-| `npm run sync` | Copies the documents from `../ccleaner-alt`, `../kodiak-linux` and `../kodiak-mac`, then builds |
+| `npm run sync` | Copies the documents from `../source` (or `../ccleaner-alt`), `../kodiak-linux` and `../kodiak-mac`, then builds |
 
 Turnstile's test keys for local runs: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`.
 

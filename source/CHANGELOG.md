@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.41 Dev] - 2026-10-06
+
+### About
+- New Check for Updates card right below the version card, with a large Check for Updates button, Install Update next to it when a new version is found, and the last check time. It's the same check as Settings > Updates, which still has Check Now and the Keep Kodiak Cleaner Updated Automatically switch.
+
 ## [0.8.40 Dev] - 2026-10-06
 
 ### Updates

@@ -23,7 +23,7 @@ The installer isn't code-signed yet, so Windows SmartScreen may warn you the fir
 
 Your settings are in KodiakCleaner.ini next to KodiakCleaner.exe. Backups and the activity log are in Documents\Kodiak Cleaner (Backups and Logs folders); the portable version keeps those folders beside KodiakCleaner.exe. Settings > Application shows exactly where. To be safe, use Settings > Application > Back Up Settings before any update.
 
-- Installed: click Check Now under Settings > Updates, or run a newer installer over the old one. KodiakCleaner.ini, Backups and Logs are kept.
+- Installed: click Check for Updates on the About page (or Check Now under Settings > Updates), or run a newer installer over the old one. KodiakCleaner.ini, Backups and Logs are kept.
 - Portable: replace KodiakCleaner.exe and the Docs folder only. Keep KodiakCleaner.ini and the Backups and Logs folders.
 
 After an update, What's New shows everything that changed since your previous version. The full history is in Changelog.txt.
@@ -34,7 +34,7 @@ Uninstall Kodiak Cleaner from Windows Settings > Apps. It removes the program, i
 
 ## Privacy
 
-Everything stays on your PC, and Kodiak Cleaner sends nothing on its own. The only time it goes online is the update check, which is off until you turn it on or click Check Now. Privacy.txt has the details.
+Everything stays on your PC, and Kodiak Cleaner sends nothing on its own. The only time it goes online is the update check, which is off until you turn it on or click Check for Updates. Privacy.txt has the details.
 
 ## These Documents
 

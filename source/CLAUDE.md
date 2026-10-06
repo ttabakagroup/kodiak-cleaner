@@ -32,6 +32,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
   Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.
 - About is its own sidebar entry under Settings (Ted's choice), not a page inside the Settings sidebar.
+  Check for Updates is a large button on About right below the version card (Ted, 0.8.41), and also stays under Settings > Updates;
+  the automatic-updates switch is only in Settings.
 - Slogan (`AppInfo.Slogan`, Ted's exact words): "Not a Crap Cleaner. A Cleaner App, Built Around What Matters."
 - `why-it-was-made.md` is Ted's own story. Change its wording only when Ted asks (0.8.4: light edit, no em dashes, "Kodiak Cleaner"
   wherever it said Cleaner; 0.8.13: light wording edit at Ted's invitation, his voice and first person kept; 0.8.25: opens "For well over two decades", Ted's words); it shows under Settings > Help > Why It Was Made, in larger text (17, Ted, 0.8.24).
