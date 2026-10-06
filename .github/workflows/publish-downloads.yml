@@ -124,7 +124,10 @@ jobs:
           # The Mac links are checked once the site lists them (its download function must also allow .dmg).
           if [ -n "$MAC_DIR" ] && [ "$MAC_ON_SITE" = true ]; then files+=("$R2_MAC_DMG" "$R2_MAC_ZIP"); fi
           for f in "${files[@]}"; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' -I "https://www.kodiakcleaner.app/download/$f")
-            echo "$f: HTTP $code"
-            [ "$code" = 200 ] || { echo "::error::$f is not downloadable (HTTP $code)"; exit 1; }
+            # Ask for the first byte, following redirects, and show where they lead.
+            read -r code type final < <(curl -s -L -r 0-0 -o /dev/null -w '%{http_code} %{content_type} %{url_effective}\n' \
+              "https://www.kodiakcleaner.app/download/$f")
+            echo "$f: HTTP $code, $type, from $final"
+            case "$code" in 200|206) ;; *) echo "::error::$f is not downloadable (HTTP $code)"; exit 1 ;; esac
+            case "$type" in text/html*) echo "::error::$f returned a web page instead of the file ($final)"; exit 1 ;; esac
           done
