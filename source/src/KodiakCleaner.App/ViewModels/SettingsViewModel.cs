@@ -201,7 +201,7 @@ public sealed class SettingsViewModel : ObservableObject
     public string DataFolderNote => (Integration.IsInstalled
             ? "Kept in your Documents folder, so saving them never needs administrator rights. "
             : "This portable copy keeps them beside KodiakCleaner.exe. ") +
-        "Backups has a folder for each kind (Event Logs, Programs History, Registry, Settings and Startup History); Logs has the activity log. " +
+        "Backups has a folder for each kind (Event Logs, Programs History, Registry, Settings and Startup History); Logs has the activity log; Reports has the System Information reports you export. " +
         (Integration.IsInstalled ? "Uninstalling Kodiak Cleaner asks whether to delete them." : "Delete the folder to remove them.");
     public ICommand ResetCommand { get; }
     public ICommand BackUpRegistryCommand { get; }

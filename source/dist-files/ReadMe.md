@@ -15,22 +15,22 @@ Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so
 ## Install
 
 - Installer: double-click KodiakCleaner-Dev-Setup.msi and follow the steps. Kodiak Cleaner installs to Program Files\Kodiak Cleaner, with these documents in its Docs folder.
-- Portable: extract the Portable ZIP to any folder, even a USB drive, and run KodiakCleaner.exe. It keeps its settings, backups and logs in that folder and leaves no trace outside it.
+- Portable: extract the Portable ZIP to any folder, even a USB drive, and run KodiakCleaner.exe. It keeps its settings, backups, logs and reports in that folder and leaves no trace outside it.
 
 The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click More info, then Run anyway.
 
 ## Update Without Losing Anything
 
-Your settings are in KodiakCleaner.ini next to KodiakCleaner.exe. Backups and the activity log are in Documents\Kodiak Cleaner (Backups and Logs folders); the portable version keeps those folders beside KodiakCleaner.exe. Settings > Application shows exactly where. To be safe, use Settings > Application > Back Up Settings before any update.
+Your settings are in KodiakCleaner.ini next to KodiakCleaner.exe. Backups, the activity log and exported reports are in Documents\Kodiak Cleaner (Backups, Logs and Reports folders); the portable version keeps those folders beside KodiakCleaner.exe. Settings > Application shows exactly where. To be safe, use Settings > Application > Back Up Settings before any update.
 
-- Installed: click Check for Updates on the About page (or Check Now under Settings > Updates), or run a newer installer over the old one. KodiakCleaner.ini, Backups and Logs are kept.
-- Portable: replace KodiakCleaner.exe and the Docs folder only. Keep KodiakCleaner.ini and the Backups and Logs folders.
+- Installed: click Check for Updates on the About page (or Check Now under Settings > Updates), or run a newer installer over the old one. KodiakCleaner.ini, Backups, Logs and Reports are kept.
+- Portable: replace KodiakCleaner.exe and the Docs folder only. Keep KodiakCleaner.ini and the Backups, Logs and Reports folders.
 
 After an update, What's New shows everything that changed since your previous version. The full history is in Changelog.txt.
 
 ## Uninstall
 
-Uninstall Kodiak Cleaner from Windows Settings > Apps. It removes the program, its settings, its scheduled tasks and its other Windows entries, then asks whether to delete Documents\Kodiak Cleaner (your backups and logs) too. Keep them if you might still want to undo a registry fix. For the portable version, turn off Clean When Windows Starts, the Recycle Bin menu and any schedules, then delete its folder.
+Uninstall Kodiak Cleaner from Windows Settings > Apps. It removes the program, its settings, its scheduled tasks and its other Windows entries, then asks whether to delete Documents\Kodiak Cleaner (your backups, logs and reports) too. Keep them if you might still want to undo a registry fix. For the portable version, turn off Clean When Windows Starts, the Recycle Bin menu and any schedules, then delete its folder.
 
 ## Privacy
 

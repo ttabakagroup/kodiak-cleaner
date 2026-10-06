@@ -160,17 +160,28 @@ public sealed class LargeFilesViewModel : ObservableObject
 
 // ---------------------------------------------------------------- System Information
 
-/// <summary>Tools › System Information: read-only facts about this PC, with Copy to Clipboard for support questions.</summary>
+/// <summary>
+/// System Information (next to Settings and About since 0.8.46, Ted): read-only facts about this PC. Summary is the quick
+/// look; Advanced (Ted, 0.8.46) adds serial numbers, network addresses, memory, cache, BIOS, graphics, a few Windows
+/// settings and temperatures, read in the background the first time it is opened. Copy to Clipboard copies the view
+/// shown; Export Report saves both views to the Reports folder as Text, HTML or CSV. Nothing is sent anywhere.
+/// </summary>
 public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
 {
     public SystemInfoViewModel()
     {
-        RefreshCommand = new RelayCommand(Refresh);
+        RefreshCommand = new RelayCommand(Refresh, () => !IsBusy);
         CopyCommand = new RelayCommand(() =>
         {
-            if (ClipboardHelper.CopyOrExplain(SystemReport.ToText(Facts, $"{AppInfo.Name} {AppInfo.VersionName}: System Information")))
+            if (ClipboardHelper.CopyOrExplain(SystemReport.ToText(CurrentFacts, $"{AppInfo.Name} {AppInfo.VersionName}: System Information")))
                 Status = "Copied. Paste it wherever you need it; nothing was sent anywhere.";
         });
+        ExportCommand = new RelayCommand(Export, () => !IsBusy);
+        OpenReportCommand = new RelayCommand(() =>
+        {
+            if (LastReport is not null && File.Exists(LastReport)) Elevation.ShowInExplorer(LastReport);
+        });
+        OpenReportsFolderCommand = new RelayCommand(() => Elevation.OpenFolder(Settings.Data.Reports));
     }
 
     private bool _loaded;
@@ -179,21 +190,143 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (_loaded) return;
         _loaded = true;
-        Refresh();
+        LoadSummary();
     }
 
     public ObservableCollection<SystemFact> Facts { get; } = new();
+    public ObservableCollection<SystemFact> AdvancedFacts { get; } = new();
+    public IEnumerable<SystemFact> CurrentFacts => ShowAdvanced ? AdvancedFacts : Facts;
+
     public ICommand RefreshCommand { get; }
     public ICommand CopyCommand { get; }
+    public ICommand ExportCommand { get; }
+    public ICommand OpenReportCommand { get; }
+    public ICommand OpenReportsFolderCommand { get; }
+
+    private bool _showAdvanced;
+    public bool ShowAdvanced
+    {
+        get => _showAdvanced;
+        set
+        {
+            if (!Set(ref _showAdvanced, value)) return;
+            OnPropertyChanged(nameof(ShowSummary));
+            OnPropertyChanged(nameof(CurrentFacts));
+            Status = "";
+            if (value && !_advancedLoaded) _ = LoadAdvancedAsync();
+        }
+    }
+    public bool ShowSummary { get => !ShowAdvanced; set => ShowAdvanced = !value; }
+
+    private bool _busy;
+    public bool IsBusy
+    {
+        get => _busy;
+        private set { if (Set(ref _busy, value)) CommandManager.InvalidateRequerySuggested(); }
+    }
 
     private string _status = "";
     public string Status { get => _status; private set => Set(ref _status, value); }
 
+    private string? _lastReport;
+    /// <summary>The report Export Report saved last, for Show Report.</summary>
+    public string? LastReport { get => _lastReport; private set { Set(ref _lastReport, value); OnPropertyChanged(nameof(HasReport)); } }
+    public bool HasReport => LastReport is not null;
+
+    public string ReportsFolder => Settings.Data.Reports;
+
+    public IReadOnlyList<ReportFormatOption> ReportFormats { get; } =
+        SystemReport.Formats.Select(f => new ReportFormatOption(f.Format, f.Label)).ToList();
+
+    public ReportFormat ReportFormat
+    {
+        get => Settings.Current.ReportFormat;
+        set
+        {
+            if (Settings.Current.ReportFormat == value) return;
+            Settings.Current.ReportFormat = value;
+            try { Settings.Current.Save(); }
+            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or InvalidOperationException or IOException) { }
+            OnPropertyChanged();
+        }
+    }
+
     private void Refresh()
+    {
+        LoadSummary();
+        Status = "";
+        if (_advancedLoaded || ShowAdvanced) _ = LoadAdvancedAsync();
+    }
+
+    private void LoadSummary()
     {
         Facts.Clear();
         foreach (var f in Collect()) Facts.Add(f);
-        Status = "";
+    }
+
+    private bool _advancedLoaded;
+    private Task? _advancedTask;
+
+    private Task LoadAdvancedAsync()
+    {
+        if (_advancedTask is { IsCompleted: false }) return _advancedTask;
+        return _advancedTask = LoadAdvancedCore();
+    }
+
+    private async Task LoadAdvancedCore()
+    {
+        IsBusy = true;
+        Status = "Reading details. This can take a few seconds.";
+        try
+        {
+            var facts = await Task.Run(SystemDetails.Collect);
+            AdvancedFacts.Clear();
+            foreach (var f in facts) AdvancedFacts.Add(f);
+            _advancedLoaded = true;
+            Status = "";
+        }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            ActivityLog.Error("System Information", e);
+            Status = "Some details couldn't be read.";
+        }
+        finally { IsBusy = false; }
+    }
+
+    private async void Export()
+    {
+        if (!_loaded) EnsureLoaded();
+        if (!_advancedLoaded) await LoadAdvancedAsync();
+        var format = ReportFormat;
+        var now = DateTime.Now;
+        var title = $"{AppInfo.Name} {AppInfo.VersionName}: System Report for {Environment.MachineName}";
+        try
+        {
+            var content = SystemReport.Create(format, Facts.Concat(AdvancedFacts), title, now, CurrentStyle());
+            Directory.CreateDirectory(Settings.Data.Reports);
+            var path = Path.Combine(Settings.Data.Reports, SystemReport.FileName(now, format));
+            // A byte order mark lets Excel and Notepad read °C and other symbols in CSV and text files.
+            File.WriteAllText(path, content, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: format != ReportFormat.Html));
+            LastReport = path;
+            Status = $"Saved {Path.GetFileName(path)} in Reports.";
+            ActivityLog.Write("System Information", $"Exported a {SystemReport.Extension(format).TrimStart('.').ToUpperInvariant()} report: {path}");
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+        {
+            Status = "";
+            Dialogs.Error($"The report couldn't be saved in {Settings.Data.Reports}.\n\n{e.Message}");
+        }
+    }
+
+    /// <summary>The colors and font in use right now, so an HTML report looks like Kodiak Cleaner.</summary>
+    private static ReportStyle CurrentStyle()
+    {
+        static string Hex(string key) =>
+            System.Windows.Application.Current.TryFindResource(key) is System.Windows.Media.SolidColorBrush b
+                ? $"#{b.Color.R:X2}{b.Color.G:X2}{b.Color.B:X2}"
+                : "";
+        var font = System.Windows.Application.Current.TryFindResource("FontBody") is System.Windows.Media.FontFamily f ? f.Source : "";
+        return new ReportStyle(Hex("Bg"), Hex("Surface"), Hex("Text"), Hex("Muted"), Hex("Line"), Hex("Accent"), Hex("AccentText"), font);
     }
 
     private static IEnumerable<SystemFact> Collect()
@@ -233,7 +366,7 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
                     line = $"{ByteSize.Format(d.AvailableFreeSpace)} free of {ByteSize.Format(d.TotalSize)} ({d.DriveFormat}, {d.DriveType})";
             }
             catch (IOException) { }
-            if (line is not null) yield return new("Drives", d.Name.TrimEnd('\\'), line);
+            if (line is not null) yield return new("Drives", "Drive " + d.Name.TrimEnd('\\').TrimEnd(':'), line);
         }
 
         yield return new(AppInfo.Name, "Version", AppInfo.VersionName);
@@ -257,6 +390,13 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
         var s = new MemoryStatusEx { Length = (uint)Marshal.SizeOf<MemoryStatusEx>() };
         return GlobalMemoryStatusEx(ref s) ? ((long)s.TotalPhys, (long)s.AvailPhys) : null;
     }
+}
+
+/// <summary>One choice in System Information's report format dropdown.</summary>
+public sealed record ReportFormatOption(ReportFormat Format, string Label)
+{
+    // The themed ComboBox shows the chosen item's text, not DisplayMemberPath.
+    public override string ToString() => Label;
 }
 
 // ---------------------------------------------------------------- Scheduled Tasks

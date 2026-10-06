@@ -438,7 +438,7 @@
                     <DockPanel Style="{StaticResource SettingRow}">
                         <Button DockPanel.Dock="Right" Content="Open Folder" Command="{Binding OpenDataFolderCommand}" Margin="0" VerticalAlignment="Center" />
                         <StackPanel Margin="0,0,24,0">
-                            <TextBlock Text="Backups and Logs" Style="{StaticResource SettingTitle}" />
+                            <TextBlock Text="Backups, Logs and Reports" Style="{StaticResource SettingTitle}" />
                             <TextBlock Text="{Binding DataFolderNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding DataFolder}" Style="{StaticResource Caption}" FontFamily="Consolas" Margin="0,4,0,0" />
                         </StackPanel>

@@ -61,7 +61,7 @@ It is private first, local first, and built with security as a top priority. Rea
 - **Fast and familiar.** Analyze, review, clean. No waiting for a busy interface or hunting for moved buttons.
 - **Free and open source.** Every feature is free, under the [MIT License](LICENSE).
 - **Installed or portable.** Use the MSI installer or run the portable version from any folder, even a USB drive.
-- **Local first.** Settings live in a plain `KodiakCleaner.ini` file next to the program; backups and the activity log go in `Documents\Kodiak Cleaner`. Nothing goes in AppData.
+- **Local first.** Settings live in a plain `KodiakCleaner.ini` file next to the program; backups, the activity log and exported reports go in `Documents\Kodiak Cleaner`. Nothing goes in AppData.
 - **No ads, no tracking.** No telemetry, analytics, crash reports or upsells. The only time it goes online is to check for updates, and only when you ask.
 - **Your look.** Three color schemes (Honey free, Classic and Glacier for supporters), seven accent colors or your Windows accent (free for everyone, adjusted so text stays readable), light or dark mode.
 
@@ -116,7 +116,7 @@ After an update, What's New shows everything that changed since your previous ve
 
 ### Uninstall
 
-Uninstall Kodiak Cleaner from **Windows Settings > Apps**. It removes the program, its settings, its scheduled tasks and its other Windows entries, then asks whether to delete your backups and logs in `Documents\Kodiak Cleaner` too. Keep them if you might still want to undo a registry fix. A silent `msiexec /x ... /qn` keeps them unless you add `DELETEUSERDATA=1`.
+Uninstall Kodiak Cleaner from **Windows Settings > Apps**. It removes the program, its settings, its scheduled tasks and its other Windows entries, then asks whether to delete your backups, logs and reports in `Documents\Kodiak Cleaner` too. Keep them if you might still want to undo a registry fix. A silent `msiexec /x ... /qn` keeps them unless you add `DELETEUSERDATA=1`.
 
 For the portable version, turn off **Clean When Windows Starts**, the Recycle Bin menu and any schedules, then delete its folder.
 
@@ -207,10 +207,21 @@ Windows Task Scheduler starts Kodiak Cleaner at that time; it cleans without ope
 | **Empty Folders** | Finds folders with nothing inside and moves the ones you pick to the Recycle Bin. Windows, program and AppData folders are never searched, and your personal folders are never offered. |
 | **Large Files** | Lists the biggest files in a folder (50 MB and up, your choice) and moves the ones you pick to the Recycle Bin. Windows, program folders, and hidden or system files are skipped. |
 | **Scheduled Tasks** | Lists the programs Windows runs on a schedule and turns them off or back on. Windows' own tasks are hidden unless you ask, and tasks are never deleted. |
-| **System Information** | Windows edition and build, processor, memory, drives and up time, with Copy to Clipboard. Read-only. |
 | **System Restore** | Lists, creates and removes restore points, and opens System Restore to roll back. The newest point can't be removed. |
 
 <p align="center"><img src="website/github/images/disk-analyzer.png" alt="Disk Analyzer showing folder sizes and the largest files" width="760"></p>
+
+### System Information
+
+System Information sits at the bottom of the sidebar, between Settings and About. It is read-only, and nothing it reads leaves your PC.
+
+- **Summary**: Windows edition, version and build, up time, processor, memory, drives, and how Kodiak Cleaner is running.
+- **Advanced**: drive models, serial numbers, health and connection; memory type, speed, slots and each module's maker, part and serial number; processor cores, threads, speeds and L1/L2/L3 cache; PC model and serial number, motherboard, BIOS, UEFI, Secure Boot and TPM; graphics memory, driver and resolution; each network adapter's MAC, IPv4 and IPv6 addresses, gateway, DNS and DHCP; audio devices; a few Windows settings (antivirus, firewall, power plan, page file, Remote Desktop, UAC and more); and temperatures where Windows shares them.
+- **Export Report** saves both views as a Text document, a themed HTML page or a CSV spreadsheet (pick one from the dropdown; the choice is remembered) in the `Reports` folder beside `Backups` and `Logs`. Reports include serial numbers and network addresses, so share them only with people you trust.
+
+Left out on purpose: the Windows product key, nearby Wi-Fi networks, and per-core and SMART tables. Memory timings such as CAS latency can't be read without installing a driver, so they aren't shown.
+
+<p align="center"><img src="website/github/images/system-information.png" alt="System Information with Summary and Advanced views and Export Report" width="760"></p>
 
 ### Settings and Personalization
 
@@ -274,7 +285,7 @@ Everything stays on your PC.
 - **Feedback** opens a message in your own email app. Nothing is sent until you press Send there.
 - **No remote resources.** The Fredoka font is built in, and icons come from Windows' own icon font.
 - **No telemetry**, analytics, crash reports, accounts or ads. Nothing is sent automatically, ever.
-- **Settings, backups and logs** are plain files: `KodiakCleaner.ini` next to `KodiakCleaner.exe`, and the `Backups` and `Logs` folders in `Documents\Kodiak Cleaner` (beside the exe for the portable version). The activity log stays on your PC and can be turned off.
+- **Settings, backups and logs** are plain files: `KodiakCleaner.ini` next to `KodiakCleaner.exe`, and the `Backups`, `Logs` and `Reports` folders in `Documents\Kodiak Cleaner` (beside the exe for the portable version). The activity log stays on your PC and can be turned off.
 - **Updates are the only network use.** Kodiak Cleaner reads one small update file from its website, www.kodiakcleaner.app, only when you click **Check for Updates** on the About page or **Check Now** in Settings, or on the schedule you pick if you turn on automatic updates (off by default; on startup, every hour up to monthly). The installer comes from the same website and is checked against the SHA-256 checksum in that file before it's installed.
 
 Read the full [Privacy Policy](source/PRIVACY.md) and [Terms of Use](source/terms-of-use.md).
@@ -305,7 +316,7 @@ Yes, with every feature. If it helps you, an optional one-time thank-you on [Ko-
 The installer isn't code-signed yet. Click **More info**, then **Run anyway**. You can check the source in this repository and build it yourself.
 
 **Where are my settings?**
-In `KodiakCleaner.ini` next to `KodiakCleaner.exe`. Backups and the activity log are in `Documents\Kodiak Cleaner` (the portable version keeps them beside the exe). **Settings > Application** shows both places.
+In `KodiakCleaner.ini` next to `KodiakCleaner.exe`. Backups, the activity log and reports are in `Documents\Kodiak Cleaner` (the portable version keeps them beside the exe). **Settings > Application** shows both places.
 
 **Do I need administrator rights for backups?**
 No. Backups and logs go in your Documents folder, which you can always write to. Only some cleaning and registry areas need administrator rights.

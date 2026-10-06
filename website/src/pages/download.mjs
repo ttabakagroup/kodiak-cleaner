@@ -79,9 +79,9 @@ ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for ever
       </ol><p class="muted"><strong>Portable:</strong> extract the Portable ZIP to any folder and run <code>KodiakCleaner.exe</code>.</p></div>
       <div class="card"><h3>Update</h3><ul>
         <li><strong>Installed:</strong> click Check Now under Settings &gt; Updates, or turn on automatic updates there. You can also run a newer installer over the old one.</li>
-        <li><strong>Portable:</strong> replace <code>KodiakCleaner.exe</code> and keep <code>KodiakCleaner.ini</code> and the <code>Backups</code> and <code>Logs</code> folders.</li>
+        <li><strong>Portable:</strong> replace <code>KodiakCleaner.exe</code> and keep <code>KodiakCleaner.ini</code> and the <code>Backups</code>, <code>Logs</code> and <code>Reports</code> folders.</li>
       </ul><p class="muted">Your settings and backups are kept either way, and What's New shows what changed.</p></div>
-      <div class="card"><h3>Uninstall</h3><p>Uninstall Kodiak Cleaner from Windows Settings &gt; Apps. It removes its scheduled cleanings, start-up entry, Recycle Bin menu item and settings, then asks whether to delete your backups and logs too. Keep them if you might still want to undo a registry fix. For the portable version, just delete its folder.</p></div>
+      <div class="card"><h3>Uninstall</h3><p>Uninstall Kodiak Cleaner from Windows Settings &gt; Apps. It removes its scheduled cleanings, start-up entry, Recycle Bin menu item and settings, then asks whether to delete your backups, logs and reports too. Keep them if you might still want to undo a registry fix. For the portable version, just delete its folder.</p></div>
       <div class="card"><h3>Release Channels</h3><p>Kodiak Cleaner is in the <strong>Dev</strong> channel (0.8.x). <strong>Beta</strong> (0.9.x) comes next, then <strong>Stable</strong> (1.x). Every channel installs to <code>Program Files\\Kodiak Cleaner</code>, and updates stay on their own channel.</p></div>
     </div>
     <div class="btn-row centered mt-xl">

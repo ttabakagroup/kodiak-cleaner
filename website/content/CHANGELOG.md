@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.46 Dev] - 2026-10-06
+
+### System Information
+- System Information moved out of Tools to the bottom of the sidebar, between Settings and About.
+- New Advanced view beside Summary: drive models and serial numbers, memory type, speed, slots and each module's details, processor cores, threads and cache, PC and motherboard serial numbers, BIOS, UEFI, Secure Boot and TPM, graphics memory and driver, each network adapter's MAC, IP addresses, gateway, DNS and DHCP, audio devices, a few Windows settings, and temperatures where Windows shares them.
+- New Export Report: pick Text, HTML or CSV from the dropdown and save a report of both views in the new Reports folder. The HTML report uses your current color scheme. Your choice of format is remembered.
+
+### Application
+- The Reports folder sits beside Backups and Logs (Documents\Kodiak Cleaner, or beside KodiakCleaner.exe for the portable version) and is shown under Settings > Application. Uninstalling asks whether to delete reports along with backups and logs.
+
 ## [0.8.45 Dev] - 2026-10-06
 
 ### Settings

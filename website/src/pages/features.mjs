@@ -43,14 +43,13 @@ export default function features(ctx) {
     ["folder", "Empty Folders", "Finds folders with nothing inside and moves the ones you pick to the Recycle Bin. Windows, program and AppData folders are never searched."],
     ["file", "Large Files", "Lists the biggest files in a folder (50 MB and up, your choice). Windows, program folders and hidden or system files are skipped."],
     ["tasks", "Scheduled Tasks", "Lists the programs Windows runs on a schedule and turns them off or back on. Windows' own tasks are hidden unless you ask, and tasks are never deleted."],
-    ["info", "System Information", "Windows edition and build, processor, memory, drives and up time, with Copy to Clipboard. Read-only."],
     ["restore", "System Restore", "Lists, creates and removes restore points, and opens System Restore to roll back. The newest point can't be removed."],
   ];
 
   // Settings areas, A to Z.
   const settings = [
     ["Advanced", "Always start as administrator, and skip the User Account Control prompt (installed copies only)."],
-    ["Application", "Shows where your backups and logs are kept, with Open Folder, and the Keep an Activity Log switch."],
+    ["Application", "Shows where your backups, logs and reports are kept, with Open Folder, and the Keep an Activity Log switch."],
     ["Appearance", "Honey (free), Classic or Glacier (supporter themes) color scheme, an accent color for everyone (the scheme's own, your Windows accent, Blue, Teal, Green, Purple, Pink, Orange or Slate), Match Device, Light or Dark, and an Animations switch. Every combination meets WCAG 2.2 AA contrast."],
     ["Cleaning", "Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours."],
     ["Contact & Feedback", "Send Feedback, Report a Bug, Request a Feature and Security, each opening a short form that becomes an email in your own email app."],
@@ -67,14 +66,15 @@ export default function features(ctx) {
     "Risky Advanced Cleaning items carry a caution, ask before they're ticked, and never run on a schedule.",
     "Symbolic links and junctions are never followed.",
     "Every pop-up puts the safe choice first, so pressing Enter never does the risky thing.",
-    "Uninstalling leaves nothing behind, and asks before deleting your backups and logs.",
+    "Uninstalling leaves nothing behind, and asks before deleting your backups, logs and reports.",
   ];
 
   const body = `
-${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning to nine built-in tools. Every feature is free.")}
+${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning to eight built-in tools. Every feature is free.")}
 <nav class="jump" aria-label="On this page"><div class="wrap chips">
   <a class="chip-link" href="#cleaning-pages">Cleaning</a>
   <a class="chip-link" href="#tools">Tools</a>
+  <a class="chip-link" href="#system-information">System Information</a>
   <a class="chip-link" href="#settings">Settings</a>
   <a class="chip-link" href="#safety">Safety</a>
   <a class="chip-link" href="#privacy">Privacy</a>
@@ -94,7 +94,7 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
 
 <section class="alt feature-group" id="tools">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">Tools</span><h2>Nine Built-In Tools</h2><p class="lead">Find what's taking space, spot what doesn't belong and look after Windows. Anything removed goes to the Recycle Bin first.</p></div>
+    <div class="section-head"><span class="eyebrow">Tools</span><h2>Eight Built-In Tools</h2><p class="lead">Find what's taking space, spot what doesn't belong and look after Windows. Anything removed goes to the Recycle Bin first.</p></div>
     <div class="grid cols-3 tool-grid">
       ${tools.map(([ic, t, d]) => `<div class="card hover reveal"><h3><span class="icon">${icons[ic]}</span>${t}</h3><p>${d}</p></div>`).join("\n      ")}
     </div>
@@ -110,6 +110,17 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
         ${settings.map(([a, d]) => `<tr><td><strong>${a}</strong></td><td>${d}</td></tr>`).join("")}
       </tbody></table></div>
       <div>${shot(ctx, "appearance.png", "Appearance settings with the Honey, Classic and Glacier color schemes")}<p class="muted mt">The sidebar can be widened, locked with the paperclip, or collapsed to icons only. Getting Started walks you through the basics the first time.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="feature-group" id="system-information">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">System Information</span><h2>Know Your PC</h2><p class="lead">Its own page at the bottom of the sidebar, between Settings and About. Read-only: nothing is changed.</p></div>
+    <div class="grid cols-3">
+      <div class="card reveal"><h3><span class="icon">${icons.info}</span>Summary</h3><p>Windows edition and build, processor, memory, drives and up time at a glance, with Copy to Clipboard.</p></div>
+      <div class="card reveal"><h3><span class="icon">${icons.list}</span>Advanced</h3><p>Drive models and serial numbers, memory modules and slots, processor cores, threads and cache, motherboard and BIOS, UEFI, Secure Boot and TPM, graphics, network adapters (MAC, IP, gateway, DNS, DHCP), audio devices and temperatures where Windows shares them.</p></div>
+      <div class="card reveal"><h3><span class="icon">${icons.file}</span>Export Report</h3><p>Save both views as Text, HTML or CSV in the Reports folder. The HTML report uses your current color scheme, and your choice of format is remembered.</p></div>
     </div>
   </div>
 </section>
@@ -144,7 +155,7 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
     path: "/features/",
     out: "features/index.html",
     title: "Features",
-    description: "Every Kodiak Cleaner feature: Cleaner, Advanced Cleaning, Registry with fifteen checks, Startup, Programs, Scheduled Cleaning, nine built-in tools, settings, safety and privacy, plus the Mac and Linux editions.",
+    description: "Every Kodiak Cleaner feature: Cleaner, Advanced Cleaning, Registry with fifteen checks, Startup, Programs, Scheduled Cleaning, eight built-in tools, settings, safety and privacy, plus the Mac and Linux editions.",
     body,
   };
 }

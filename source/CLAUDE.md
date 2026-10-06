@@ -12,7 +12,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
 - Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
   `Documents\Kodiak Cleaner` for an installed copy (AppData\Local\Kodiak Cleaner only if Documents can't be written), beside
-  the exe for a portable copy, with `Backups\{Event Logs, Programs History, Registry, Settings, Startup History}` and `Logs\`.
+  the exe for a portable copy, with `Backups\{Event Logs, Programs History, Registry, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
   Nothing else in AppData. Never write user data into Program Files (only KodiakCleaner.ini is writable there).
 - `ActivityLog` writes one plain-text file per month in Logs (12 kept): counts, sizes and item names only, never file
   contents; Settings > Application > Keep an Activity Log turns it off. Log every user-visible change it makes.
@@ -96,6 +96,13 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Startup speed (Ted, 0.8.33): only the Cleaner page loads at startup. Other pages read their lists on first visit through
   `ILoadOnFirstVisit.EnsureLoaded` (MainViewModel.OnNavigated); never call Refresh in a page view model's constructor. Grouped tables
   keep `VirtualizingPanel.IsVirtualizingWhenGrouping="True"`. Uncompressed or ReadyToRun single-file builds don't start under Wine.
+- System Information (Ted, 0.8.46) is in the bottom sidebar group (Settings, System Information, About), not Tools. Summary | Advanced segments;
+  Advanced (`SystemDetails`, read in the background on first open) adds drive/memory/PC serials, per-adapter MAC, IP, gateway, DNS and DHCP,
+  memory type/speed/slots, CPU cores/threads/cache, BIOS/UEFI/Secure Boot/TPM, GPU memory/driver, audio, a few Windows settings and temperatures
+  where Windows shares them; groups A to Z. Local only (no public IP lookup). Left out on purpose: the product key, nearby Wi-Fi networks,
+  per-core and SMART tables; CAS/cache latency needs a driver, so it isn't shown. Export Report saves Summary + Advanced to `Settings.Data.Reports`
+  as Text, HTML (self-contained, current theme colors passed in as `ReportStyle`, no scripts) or CSV (formula cells made text), chosen in a
+  dropdown remembered as `[System Information] ReportFormat` (default HTML).
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
 - Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
   description or labels). Labels are read from the page templates themselves on the first search, so new settings are found automatically.

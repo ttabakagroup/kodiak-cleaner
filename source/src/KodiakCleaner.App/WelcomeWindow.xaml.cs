@@ -36,7 +36,7 @@ public partial class WelcomeWindow : Window
         new("Scheduled Tasks", ": turn background tasks off, and back on"),
         new("Search and Sort", ": find any item, sort by last cleaned or space freed"),
         new("Startup", ": add, turn off or remove programs, restore from History"),
-        new("System Information", ": Windows, memory and drives at a glance"),
+        new("System Information", ": your PC at a glance, with details and reports"),
         new("System Restore", ": create and manage restore points"),
         new("Your Look", ": Honey, Classic or Glacier, light or dark, any accent"),
     };

@@ -27,7 +27,8 @@ public sealed class DataFoldersTests : IDisposable
         Assert.Equal(Path.Combine(data.Root, "Backups", "Registry"), data.Registry);
         Assert.Equal(Path.Combine(data.Root, "Logs"), data.Logs);
         var names = data.All.Select(Path.GetFileName).ToList();
-        Assert.Equal(new[] { "Event Logs", "Programs History", "Registry", "Settings", "Startup History", "Logs" }, names);
+        Assert.Equal(Path.Combine(data.Root, "Reports"), data.Reports);
+        Assert.Equal(new[] { "Event Logs", "Programs History", "Registry", "Settings", "Startup History", "Logs", "Reports" }, names);
         Assert.Equal(names.Take(5).OrderBy(n => n, StringComparer.OrdinalIgnoreCase), names.Take(5)); // A to Z
     }
 

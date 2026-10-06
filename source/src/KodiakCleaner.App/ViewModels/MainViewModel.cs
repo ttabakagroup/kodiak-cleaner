@@ -35,9 +35,10 @@ public sealed class MainViewModel : ObservableObject
         ToolPages.Add(new NavPage("Empty Folders", "\uE8B7", EmptyFolders, OnNavigated));
         ToolPages.Add(new NavPage("Large Files", "\uE8A5", LargeFiles, OnNavigated));
         ToolPages.Add(new NavPage("Scheduled Tasks", "\uE823", ScheduledTasks, OnNavigated));
-        ToolPages.Add(new NavPage("System Information", "\uE7F4", SystemInfo, OnNavigated));
         ToolPages.Add(new NavPage("System Restore", "", Restore, OnNavigated));
         FooterPages.Add(new NavPage("Settings", "", SettingsPage, OnNavigated));
+        // System Information sits with Settings and About (Ted, 0.8.46), not in Tools.
+        FooterPages.Add(new NavPage("System Information", "\uE7F4", SystemInfo, OnNavigated));
         FooterPages.Add(new NavPage("About", "\uE946", SettingsPage.About, OnNavigated));
         ToggleSidebarCommand = new RelayCommand(() => SidebarCollapsed = !SidebarCollapsed);
         ToggleSidebarLockCommand = new RelayCommand(() => SidebarLocked = !SidebarLocked);

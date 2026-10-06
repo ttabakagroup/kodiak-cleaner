@@ -131,6 +131,10 @@ public sealed class Settings
     public KodiakCleaner.Core.Updates.UpdateInterval UpdateInterval { get; set; } = KodiakCleaner.Core.Updates.UpdateInterval.OnStartup;
     public DateTime? LastUpdateCheckUtc { get; set; }
 
+    // [System Information]
+    /// <summary>The format Export Report saves in (Ted, 0.8.46): Text, HTML or CSV, remembered between runs.</summary>
+    public KodiakCleaner.Core.Tools.ReportFormat ReportFormat { get; set; } = KodiakCleaner.Core.Tools.ReportFormat.Html;
+
     // [Advanced]
     public bool TempOlderThan24h { get; set; } = true;
     public bool RecycleBinOlderThan24h { get; set; }
@@ -226,6 +230,8 @@ public sealed class Settings
         LastUpdateCheckUtc = DateTime.TryParse(ini.Get("Updates", "LastCheckUtc"), System.Globalization.CultureInfo.InvariantCulture,
             System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var d) ? d : null;
 
+        ReportFormat = Enum.TryParse<KodiakCleaner.Core.Tools.ReportFormat>(ini.Get("System Information", "ReportFormat"), ignoreCase: true, out var format) ? format : ReportFormat;
+
         TempOlderThan24h = ini.GetBool("Advanced", "TempOlderThan24h", TempOlderThan24h);
         RecycleBinOlderThan24h = ini.GetBool("Advanced", "RecycleBinOlderThan24h", RecycleBinOlderThan24h);
         PromptRegistryBackup = ini.GetBool("Advanced", "PromptRegistryBackup", PromptRegistryBackup);
@@ -273,6 +279,8 @@ public sealed class Settings
         ini.Set("Updates", "AutoUpdate", AutoUpdate);
         ini.Set("Updates", "Interval", UpdateInterval.ToString());
         ini.Set("Updates", "LastCheckUtc", LastUpdateCheckUtc?.ToString("o") ?? "");
+
+        ini.Set("System Information", "ReportFormat", ReportFormat.ToString());
 
         ini.Set("Advanced", "TempOlderThan24h", TempOlderThan24h);
         ini.Set("Advanced", "RecycleBinOlderThan24h", RecycleBinOlderThan24h);

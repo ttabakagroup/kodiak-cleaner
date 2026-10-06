@@ -12,6 +12,7 @@ namespace KodiakCleaner.Core.Util;
 ///   Backups\Settings\          Back Up Settings copies of KodiakCleaner.ini and both histories
 ///   Backups\Startup History\   startup entries seen and removed, with copies of their shortcuts
 ///   Logs\                      one activity log per month
+///   Reports\                   System Information reports you export (Ted, 0.8.46)
 /// </code>
 /// </summary>
 public sealed class DataFolders
@@ -25,6 +26,7 @@ public sealed class DataFolders
         Root = Path.TrimEndingDirectorySeparator(root);
         Backups = Path.Combine(Root, "Backups");
         Logs = Path.Combine(Root, "Logs");
+        Reports = Path.Combine(Root, "Reports");
     }
 
     /// <summary>Documents\Kodiak Cleaner for an installed copy.</summary>
@@ -33,6 +35,7 @@ public sealed class DataFolders
     public string Root { get; }
     public string Backups { get; }
     public string Logs { get; }
+    public string Reports { get; }
     public string EventLogs => Path.Combine(Backups, EventLogsName);
     public string ProgramsHistory => Path.Combine(Backups, ProgramsHistoryName);
     public string Registry => Path.Combine(Backups, RegistryName);
@@ -40,7 +43,7 @@ public sealed class DataFolders
     public string StartupHistory => Path.Combine(Backups, StartupHistoryName);
 
     /// <summary>The folders Kodiak Cleaner creates, A to Z.</summary>
-    public IEnumerable<string> All => new[] { EventLogs, ProgramsHistory, Registry, Settings, StartupHistory, Logs };
+    public IEnumerable<string> All => new[] { EventLogs, ProgramsHistory, Registry, Settings, StartupHistory, Logs, Reports };
 
     /// <summary>
     /// Moves backups from an older version's single Backups folder (beside KodiakCleaner.exe, everything in one place)
@@ -85,12 +88,12 @@ public sealed class DataFolders
     }
 
     /// <summary>
-    /// Deletes the backups and logs (Ted: uninstalling must be able to leave nothing behind). Only Kodiak Cleaner's own
-    /// Backups and Logs folders are removed; the main folder goes too when nothing else is left in it.
+    /// Deletes the backups, logs and reports (Ted: uninstalling must be able to leave nothing behind). Only Kodiak Cleaner's own
+    /// Backups, Logs and Reports folders are removed; the main folder goes too when nothing else is left in it.
     /// </summary>
     public void DeleteAll()
     {
-        foreach (var dir in new[] { Backups, Logs })
+        foreach (var dir in new[] { Backups, Logs, Reports })
             if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
         TryDeleteEmpty(Root);
     }

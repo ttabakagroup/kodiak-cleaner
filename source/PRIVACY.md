@@ -14,9 +14,9 @@ Nothing. Kodiak Cleaner has no accounts, no analytics, no telemetry, no crash re
 - **Backups** are saved in the Kodiak Cleaner folder in your Documents (the portable version keeps them beside KodiakCleaner.exe), in Backups, with a folder for each kind: Event Logs (copies of Windows logs saved before they are cleared), Programs History (what the Programs page removed), Registry (a .reg file before every registry change), Settings (backups you make under Settings) and Startup History (the startup entries Kodiak Cleaner has seen, with copies of startup shortcuts so removed ones can be put back). They are only read on your PC.
 - **The activity log**, in the Logs folder beside Backups, notes what Kodiak Cleaner did (cleanings, registry fixes, backups, startup and program changes, errors) with counts, sizes and item names, never the contents of your files. One file is kept per month, for a year. You can turn it off under Settings, Application, Keep an Activity Log. It is never sent anywhere.
 - **Your supporter code**, if you enter one, is saved in KodiakCleaner.ini and checked on your computer only.
-- **Tools** such as Disk Analyzer, Large Files, Empty Folders, Browser Extensions, Scheduled Tasks and System Information read your computer to show you what they find. Results are shown on screen only; they aren't saved or sent anywhere. System Information's Copy to Clipboard copies its list, which includes your computer's name, only when you click it, and only to your own clipboard.
+- **Tools** such as Disk Analyzer, Large Files, Empty Folders, Browser Extensions, Scheduled Tasks and System Information read your computer to show you what they find. Results are shown on screen only; they aren't saved or sent anywhere. System Information's Copy to Clipboard copies its list, which includes your computer's name, only when you click it, and only to your own clipboard. Its Export Report saves a report (which includes serial numbers and network addresses) only when you click it, as a file in the Reports folder on your PC; it is never sent anywhere.
 
-Kodiak Cleaner stores nothing in AppData, unless Windows Security blocks the Documents folder, in which case backups and logs go to AppData\Local\Kodiak Cleaner instead. A few optional features you turn on add small entries to Windows, and turning them off again removes them:
+Kodiak Cleaner stores nothing in AppData, unless Windows Security blocks the Documents folder, in which case backups, logs and reports go to AppData\Local\Kodiak Cleaner instead. A few optional features you turn on add small entries to Windows, and turning them off again removes them:
 
 - **Clean When Windows Starts** adds a startup entry for your Windows account.
 - **Jump List Tasks** are kept by Windows itself.
@@ -24,7 +24,7 @@ Kodiak Cleaner stores nothing in AppData, unless Windows Security blocks the Doc
 - **Scheduled cleanings** you set up under Cleaner, Schedule are added to Windows Task Scheduler.
 - **Skip the User Account Control Prompt** adds a scheduled task that starts Kodiak Cleaner with administrator rights.
 
-Uninstalling Kodiak Cleaner removes the program, its settings file and everything the optional features above added to Windows, and asks whether to delete your backups and logs too (keep them if you might still want to undo a registry fix). The portable version leaves no trace outside its own folder apart from the optional features above; turn those off, then delete the folder.
+Uninstalling Kodiak Cleaner removes the program, its settings file and everything the optional features above added to Windows, and asks whether to delete your backups, logs and reports too (keep them if you might still want to undo a registry fix). The portable version leaves no trace outside its own folder apart from the optional features above; turn those off, then delete the folder.
 
 ## When Kodiak Cleaner Goes Online
 

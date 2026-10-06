@@ -76,15 +76,15 @@ public static class UninstallCleanup
             return;
         }
         bool remove = delete ?? (uiLevel > 2 && Ask(data));
-        ActivityLog.Write("Uninstall", $"{AppInfo.Name} {AppInfo.VersionName} was uninstalled; backups and logs " + (remove ? "deleted." : $"kept in {data.Root}."));
+        ActivityLog.Write("Uninstall", $"{AppInfo.Name} {AppInfo.VersionName} was uninstalled; backups, logs and reports " + (remove ? "deleted." : $"kept in {data.Root}."));
         if (remove) Try(data.DeleteAll);
     }
 
     private static bool Ask(DataFolders data)
     {
         ThemeManager.Apply();
-        return Dialogs.Choose(MessageKind.Question, "Remove Backups and Logs Too?",
-            $"{AppInfo.Name} is being removed. Its backups and activity logs are in:\n\n{data.Root}\n\n" +
+        return Dialogs.Choose(MessageKind.Question, "Remove Backups, Logs and Reports Too?",
+            $"{AppInfo.Name} is being removed. Its backups, activity logs and reports are in:\n\n{data.Root}\n\n" +
             "Delete them as well, so nothing is left behind?",
             "Registry backups let you undo registry fixes. Keep them if you might still need them.",
             new[] { "Delete Them", "Keep Them" }, defaultButton: 1, cancelButton: 1) == 0;

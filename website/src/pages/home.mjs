@@ -83,7 +83,7 @@ export default function home(ctx) {
     </div>
     <div class="grid cols-3">
       ${highlights.map(([ic, t, d]) => `<div class="card hover reveal"><span class="icon">${icons[ic]}</span><h3>${t}</h3><p>${d}</p></div>`).join("\n      ")}
-      <a class="card hover reveal link-card" href="/features/"><span class="icon">${icons.list}</span><h3>See Every Feature</h3><p class="muted">Cleaning, nine built-in tools, settings and safety, all in one place.</p></a>
+      <a class="card hover reveal link-card" href="/features/"><span class="icon">${icons.list}</span><h3>See Every Feature</h3><p class="muted">Cleaning, eight built-in tools, System Information, settings and safety, all in one place.</p></a>
     </div>
   </div>
 </section>
@@ -121,8 +121,8 @@ export default function home(ctx) {
     <div class="showcase reveal">
       <div class="text">
         <span class="eyebrow">Tools</span>
-        <h2>Nine Handy Tools, Built In</h2>
-        <p>Browser Extensions, Disk Analyzer, Drive Wiper, Duplicate Finder, Empty Folders, Large Files, Scheduled Tasks, System Information and System Restore. Anything removed goes to the Recycle Bin first.</p>
+        <h2>Eight Handy Tools, Built In</h2>
+        <p>Browser Extensions, Disk Analyzer, Drive Wiper, Duplicate Finder, Empty Folders, Large Files, Scheduled Tasks and System Restore. Anything removed goes to the Recycle Bin first. System Information has its own page, with an Advanced view and reports you can export.</p>
         <a href="/features/#tools">See all the tools →</a>
       </div>
       ${shot(ctx, "disk-analyzer.png", "Disk Analyzer showing folder sizes and the largest files")}
