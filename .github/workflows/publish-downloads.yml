@@ -1,0 +1,113 @@
+name: Publish Downloads and Website
+
+# Uploads the newest downloads in releases/ to the R2 bucket behind www.kodiakcleaner.app/download/
+# and deploys the website, so a push to main is all a new release needs.
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+
+on:
+  push:
+    branches: [main]
+    paths: ['releases/**', 'website/**', '.github/workflows/publish-downloads.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-downloads
+  cancel-in-progress: false
+
+env:
+  BUCKET: kodiakcleaner-downloads
+  PAGES_PROJECT: kodiakcleaner
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Check the Cloudflare secrets
+        id: secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::Add the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets to publish. Nothing was uploaded."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: 22
+
+      # The newest Windows-<ver>-dev and Linux-<ver>-dev folders, and the names the website links to (site.config.json).
+      - name: Find the newest downloads
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          win=$(ls -d releases/Windows-*/ | sort -V | tail -1)
+          lin=$(ls -d releases/Linux-*/ | sort -V | tail -1)
+          cfg=website/site.config.json
+          {
+            echo "WIN_DIR=$win"
+            echo "LIN_DIR=$lin"
+            echo "R2_INSTALLER=$(jq -r .hostedDownloads.installer $cfg)"
+            echo "R2_PORTABLE=$(jq -r .hostedDownloads.portable $cfg)"
+            echo "R2_APPIMAGE=$(jq -r .linux.appimage $cfg)"
+            echo "R2_DEB=$(jq -r .linux.deb $cfg)"
+          } >> "$GITHUB_ENV"
+          echo "Windows: $win  Linux: $lin"
+
+      - name: Upload the downloads to R2
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          put() {
+            [ -f "$1" ] || { echo "::error::Missing $1"; exit 1; }
+            echo "Uploading $1 as $2 ($(stat -c %s "$1") bytes)"
+            npx --yes wrangler@4 r2 object put "$BUCKET/$2" --file "$1" --content-type "$3" --remote
+          }
+          put "${WIN_DIR}KodiakCleaner-Dev-Setup.msi"     "$R2_INSTALLER" application/x-msi
+          put "${WIN_DIR}KodiakCleaner-Dev-Portable.zip"  "$R2_PORTABLE"  application/zip
+          put "${LIN_DIR}KodiakCleaner-Dev-AppImage.zip"  "$R2_APPIMAGE"  application/zip
+          put "${LIN_DIR}KodiakCleaner-Dev-Deb.zip"       "$R2_DEB"       application/zip
+
+      # The Download page shows each file's size; set them from the files just uploaded (not committed).
+      - name: Update the download sizes on the website
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          size() { node -e 'const b=+process.argv[1]; console.log(b>=1048576 ? (b/1048576).toFixed(1)+" MB" : Math.round(b/1024)+" KB")' "$(stat -c %s "$1")"; }
+          cfg=website/site.config.json
+          jq --arg i "$(size "${WIN_DIR}KodiakCleaner-Dev-Setup.msi")" \
+             --arg p "$(size "${WIN_DIR}KodiakCleaner-Dev-Portable.zip")" \
+             --arg a "$(size "${LIN_DIR}KodiakCleaner-Dev-AppImage.zip")" \
+             --arg d "$(size "${LIN_DIR}KodiakCleaner-Dev-Deb.zip")" \
+             '.hostedDownloads.installerSize=$i | .hostedDownloads.portableSize=$p | .linux.appimageSize=$a | .linux.debSize=$d' \
+             $cfg > $cfg.new && mv $cfg.new $cfg
+          jq '{hostedDownloads, linux}' $cfg
+
+      - name: Build, test and deploy the website
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: website
+        run: |
+          set -euo pipefail
+          node build.mjs
+          node --test tests/*.test.mjs
+          npx --yes wrangler@4 pages deploy public --project-name "$PAGES_PROJECT" --branch main --commit-dirty=true
+
+      - name: Check the live downloads
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          for f in "$R2_INSTALLER" "$R2_PORTABLE" "$R2_APPIMAGE" "$R2_DEB"; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -I "https://www.kodiakcleaner.app/download/$f")
+            echo "$f: HTTP $code"
+            [ "$code" = 200 ] || { echo "::error::$f is not downloadable (HTTP $code)"; exit 1; }
+          done
