@@ -248,15 +248,13 @@ public class DocumentTests
     [Fact]
     public void Packages_ship_the_docs_folder_and_nothing_private()
     {
-        // Both ZIPs carry KodiakCleaner.exe or the MSI plus a Docs folder made by tools/MakeDocs (build.ps1, and package-linux.sh
+        // The Portable ZIP carries KodiakCleaner.exe plus a Docs folder made by tools/MakeDocs (build.ps1, and package-linux.sh
         // on Linux); the MSI installs the same seven files to Program Files\Kodiak Cleaner\Docs (Ted's standard).
         var build = Repo.Read("build.ps1");
         var linux = Repo.Read("installer", "package-linux.sh");
         Assert.Contains(@"$files = @(""publish\KodiakCleaner.exe"", ""publish\Docs"")", build);
         Assert.Contains("dotnet run --project tools/MakeDocs -- publish\\Docs", build);
-        Assert.Contains(@"Copy-Item publish\Docs $stage", build);
         Assert.Contains(@"dotnet run --project tools/MakeDocs -- ""$STAGE/portable/Docs""", linux);
-        Assert.Contains(@"cp -r ""$STAGE/portable/Docs"" ""$STAGE/setup/""", linux);
         Assert.Contains(@"cp ""$PUBLISH/KodiakCleaner.exe"" ""$STAGE/portable/""", linux);
         var msi = XDocument.Load(Repo.File("installer", "Package.wxs")).Descendants()
             .Where(e => e.Name.LocalName == "File").Select(e => (string?)e.Attribute("Source") ?? "").ToList();
@@ -296,16 +294,18 @@ public class DocumentTests
     }
 
     [Fact]
-    public void Releases_ship_the_msi_bare_and_zipped_with_fixed_names()
+    public void Releases_ship_the_bare_msi_and_portable_zip_with_fixed_names()
     {
-        // Ted (0.8.31): GitHub releases carry the bare MSI (Download.url links it) plus the Setup ZIP and Portable ZIP.
-        // Names stay the same every release (standard). Files handed to Ted directly are always zipped.
+        // Ted: GitHub releases carry the bare MSI (Download.url links it; 0.8.31) and the Portable ZIP, and no Setup ZIP
+        // (0.8.37). Names stay the same every release (standard).
         var build = Repo.Read("build.ps1");
-        foreach (var name in new[] { @"""dist\$product-$branch-Setup.msi""", @"""dist\$product-$branch-Setup.zip""", @"""dist\$product-$branch-Portable.zip""" })
+        foreach (var name in new[] { @"""dist\$product-$branch-Setup.msi""", @"""dist\$product-$branch-Portable.zip""" })
             Assert.Contains(name, build);
+        Assert.DoesNotContain("Compress-Archive -Path \"$stage", build);
         var linux = Repo.Read("installer", "package-linux.sh");
-        foreach (var name in new[] { @"""$OUTDIR/$PRODUCT-Dev-Setup.msi""", @"""$OUTDIR/$PRODUCT-Dev-Setup.zip""", @"""$OUTDIR/$PRODUCT-Dev-Portable.zip""" })
+        foreach (var name in new[] { @"""$OUTDIR/$PRODUCT-Dev-Setup.msi""", @"""$OUTDIR/$PRODUCT-Dev-Portable.zip""" })
             Assert.Contains(name, linux);
+        Assert.DoesNotContain("Setup.zip", linux);
     }
 
     [Fact]

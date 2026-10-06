@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Linux counterpart of build.ps1's packaging step: builds the MSI under Wine and writes the
-# Setup ZIP (the MSI inside) and the Portable ZIP, with the same files build.ps1 puts in them. Development builds only.
+# bare Setup MSI and the Portable ZIP, with the same files build.ps1 makes. Development builds only.
 #
 #   installer/package-linux.sh [publish-folder] [output-folder]
 #
@@ -20,18 +20,15 @@ trap 'rm -rf "${STAGE:?}"' EXIT
 # The seven Docs files (Changelog.txt, Download.url, ...): the MSI installs them and both ZIPs carry them.
 dotnet run --project tools/MakeDocs -- "$STAGE/portable/Docs" dev >/dev/null
 
-# The bare MSI goes on the GitHub release (Docs/Download.url links it; Ted, 0.8.31), and the Setup ZIP holds it with Docs.
-# Files handed to Ted directly are always the ZIPs.
+# The installer is the bare MSI (Docs/Download.url links it; the MSI installs the Docs folder itself). No Setup ZIP since
+# 0.8.37 (Ted).
 mkdir -p "$STAGE/setup"
 bash installer/build-msi-wine.sh "$PUBLISH" "$STAGE/setup/$PRODUCT-Dev-Setup.msi" "$STAGE/portable/Docs"
-cp -r "$STAGE/portable/Docs" "$STAGE/setup/"
-rm -f "$OUTDIR/$PRODUCT-Dev-Setup.msi" "$OUTDIR/$PRODUCT-Dev-Setup.zip" "$OUTDIR/$PRODUCT-Dev-Portable.zip"
+rm -f "$OUTDIR/$PRODUCT-Dev-Setup.msi" "$OUTDIR/$PRODUCT-Dev-Portable.zip"
 cp "$STAGE/setup/$PRODUCT-Dev-Setup.msi" "$OUTDIR/$PRODUCT-Dev-Setup.msi"
-(cd "$STAGE/setup" && zip -qr "$OUTDIR/$PRODUCT-Dev-Setup.zip" ./*)
 
 # Portable ZIP: the app plus the Docs folder. Never tests, tools, keys or store assets.
 cp "$PUBLISH/KodiakCleaner.exe" "$STAGE/portable/"
 (cd "$STAGE/portable" && zip -qr "$OUTDIR/$PRODUCT-Dev-Portable.zip" ./*)
 echo "Output: $OUTDIR/$PRODUCT-Dev-Setup.msi"
-echo "Output: $OUTDIR/$PRODUCT-Dev-Setup.zip"
 echo "Output: $OUTDIR/$PRODUCT-Dev-Portable.zip"

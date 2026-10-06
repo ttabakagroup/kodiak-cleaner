@@ -104,7 +104,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   No Terms of Use link there (Ted removed it); Terms of Use and Privacy Policy are pages under Help.
 - Dev and Beta builds show the Beta Software notice at every start until it closes with Don't Show This Again at Startup
   on (`ShowBetaNotice`, also a switch under Settings > General). Stable builds never show it.
-- Automatic updates download the release's `-Setup.zip` (older `-msi` ZIPs still match), verify its SHA-256, extract the one MSI and start msiexec on exit without
+- Automatic updates download the release's `-Setup.msi` (older releases' `-Setup.zip` and `-msi` ZIPs still match and are unzipped), verify its SHA-256 and start msiexec on exit without
   waiting (so the exe isn't locked). Only a check that reached GitHub counts toward the once-a-day limit.
 - Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
   never `MessageBox` directly. Risky Yes is a `DangerButton`, No stays the default.
@@ -139,11 +139,12 @@ After each completed, tested change:
 4. Update README.md and this file if behavior or rules changed.
 5. Commit as `[version_name]: short summary` with a body listing changes by area.
 6. Tag `v[version]-[channel]` (e.g. `v0.8.1-dev`; stable as `v1.0.2`).
-7. Every GitHub release carries `KodiakCleaner-<Branch>-Setup.msi` (bare, so Download.url can link it; Ted, 0.8.31),
-   `KodiakCleaner-<Branch>-Setup.zip` (the MSI plus Docs) and `KodiakCleaner-<Branch>-Portable.zip`, Branch = Dev, Beta or Stable, the same
-   name every release (standard, 0.8.31; replaces Ted's 0.8.10 versioned names). Files handed to Ted directly are always zipped (Claude
-   can't hand him a bare .msi): never deliver a bare .msi on its own. On Windows `build.ps1` makes both; on Linux publish the exe,
-   then run `installer/package-linux.sh publish dist` (WiX under Wine; both ZIPs with the same files as build.ps1, a test checks it). Test the MSI installs before shipping.
+7. Every GitHub release carries `KodiakCleaner-<Branch>-Setup.msi` (bare, so Download.url can link it; Ted, 0.8.31) and
+   `KodiakCleaner-<Branch>-Portable.zip`, Branch = Dev, Beta or Stable, the same name every release (standard, 0.8.31; replaces
+   Ted's 0.8.10 versioned names). No Setup ZIP since 0.8.37 (Ted): the bare MSI is the installer deliverable everywhere,
+   including release folders (Ted gets builds through GitHub and the C:\Projects\KodiakCleaner copy). On Windows `build.ps1`
+   makes both; on Linux publish the exe, then run `installer/package-linux.sh publish dist` (WiX under Wine; the same files as
+   build.ps1, a test checks it). Test the MSI installs before shipping.
 8. Docs (standard): `tools/MakeDocs` writes Changelog.txt, Download.url, Homepage.url, License.txt, Privacy.txt, ReadMe.txt
    (from `dist-files/ReadMe.md`, the user-facing read me) and TermsOfUse.txt as plain text with CRLF. Both ZIPs have a `Docs\` folder and the
    MSI installs it to `Program Files\Kodiak Cleaner\Docs`. Download.url: `releases/download/latest-dev/KodiakCleaner-Dev-Setup.msi`

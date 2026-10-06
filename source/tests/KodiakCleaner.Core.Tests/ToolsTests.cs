@@ -252,17 +252,26 @@ public class UpdateParserTests
     }
 
     [Fact]
-    public void Finds_the_setup_zip_by_its_fixed_name()
+    public void Finds_the_installer_by_its_fixed_name()
     {
         const string json = """
             [{"tag_name":"v0.8.31-dev","assets":[
               {"name":"KodiakCleaner-Dev-Portable.zip","browser_download_url":"https://x/p.zip","size":50},
               {"name":"KodiakCleaner-Dev-Setup.zip","browser_download_url":"https://x/s.zip","size":40}]},
+             {"tag_name":"v0.8.37-dev","assets":[
+              {"name":"KodiakCleaner-Dev-Portable.zip","browser_download_url":"https://x/p2.zip","size":50},
+              {"name":"KodiakCleaner-Dev-Setup.msi","browser_download_url":"https://x/s2.msi","size":40}]},
              {"tag_name":"latest-dev","assets":[]}]
             """;
         var info = UpdateParser.PickLatest(json, ReleaseChannel.Dev)!;
-        Assert.Equal("v0.8.31-dev", info.Tag);
-        Assert.Equal("https://x/s.zip", info.Msi!.DownloadUrl);
+        Assert.Equal("v0.8.37-dev", info.Tag);
+        Assert.Equal("https://x/s2.msi", info.Msi!.DownloadUrl); // the bare MSI since 0.8.37
+        const string before = """
+            [{"tag_name":"v0.8.31-dev","assets":[
+              {"name":"KodiakCleaner-Dev-Portable.zip","browser_download_url":"https://x/p.zip","size":50},
+              {"name":"KodiakCleaner-Dev-Setup.zip","browser_download_url":"https://x/s.zip","size":40}]}]
+            """;
+        Assert.Equal("https://x/s.zip", UpdateParser.PickLatest(before, ReleaseChannel.Dev)!.Msi!.DownloadUrl); // 0.8.31 to 0.8.36
     }
 
     [Fact]

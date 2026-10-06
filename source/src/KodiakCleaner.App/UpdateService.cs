@@ -87,7 +87,7 @@ public static class UpdateService
             File.Delete(file);
             throw new InvalidOperationException("The downloaded installer did not match its published checksum and was deleted.");
         }
-        // Releases ship the MSI inside a ZIP: take the one .msi out of the verified ZIP, by file name only.
+        // Releases before 0.8.37 could ship the MSI inside a ZIP: take the one .msi out of the verified ZIP, by file name only.
         if (file.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
             string extracted;

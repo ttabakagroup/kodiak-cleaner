@@ -8,11 +8,12 @@ public sealed record UpdateAsset(string Name, string DownloadUrl, long Size, str
 public sealed record UpdateInfo(Version Version, string Tag, string PageUrl, IReadOnlyList<UpdateAsset> Assets)
 {
     /// <summary>
-    /// The installer: releases ship it zipped (KodiakCleaner-Dev-Setup.zip since 0.8.31, KodiakCleaner-0.8.30-x64-msi-dev.zip before;
-    /// Ted's rule); a bare .msi is accepted too.
+    /// The installer: the bare KodiakCleaner-Dev-Setup.msi (the only installer asset since 0.8.37, Ted). Older releases
+    /// also had it zipped (KodiakCleaner-Dev-Setup.zip from 0.8.31, KodiakCleaner-0.8.30-x64-msi-dev.zip before), still accepted.
     /// </summary>
     public UpdateAsset? Msi =>
-        Assets.FirstOrDefault(a => a.Name.EndsWith("-Setup.zip", StringComparison.OrdinalIgnoreCase))
+        Assets.FirstOrDefault(a => a.Name.EndsWith("-Setup.msi", StringComparison.OrdinalIgnoreCase))
+        ?? Assets.FirstOrDefault(a => a.Name.EndsWith("-Setup.zip", StringComparison.OrdinalIgnoreCase))
         ?? Assets.FirstOrDefault(a => a.Name.Contains("-msi", StringComparison.OrdinalIgnoreCase) && a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         ?? Assets.FirstOrDefault(a => a.Name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
 }

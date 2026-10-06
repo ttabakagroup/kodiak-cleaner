@@ -14,7 +14,7 @@ Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so
 
 ## Install
 
-- Installer: double-click the .msi file (downloaded on its own, or extracted from the Setup ZIP) and follow the steps. Kodiak Cleaner installs to Program Files\Kodiak Cleaner, with these documents in its Docs folder.
+- Installer: double-click KodiakCleaner-Dev-Setup.msi and follow the steps. Kodiak Cleaner installs to Program Files\Kodiak Cleaner, with these documents in its Docs folder.
 - Portable: extract the Portable ZIP to any folder, even a USB drive, and run KodiakCleaner.exe. It keeps its settings, backups and logs in that folder and leaves no trace outside it.
 
 The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click More info, then Run anyway.

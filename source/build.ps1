@@ -15,7 +15,7 @@ $label = (Get-Culture).TextInfo.ToTitleCase($channel)
 $versionName = if ($channel -eq "stable") { $version } else { "$version $label" }
 if ($channel -ne "stable" -and [version]$info.targetStable -gt [version]"1.0.0") { $versionName += " (for $($info.targetStable))" }
 # Package names keep the same name every release (Ted's standard, 0.8.31), so GitHub download links keep working:
-# KodiakCleaner-Dev-Setup.msi (Docs\Download.url links it), KodiakCleaner-Dev-Setup.zip (the MSI plus Docs) and KodiakCleaner-Dev-Portable.zip. The version is in the
+# KodiakCleaner-Dev-Setup.msi (Docs\Download.url links it) and KodiakCleaner-Dev-Portable.zip. The version is in the
 # release tag. Development builds are always Dev.
 $product = "KodiakCleaner"
 $branch = if (-not $Release) { "Dev" } else { $label }
@@ -44,17 +44,11 @@ dotnet build installer/KodiakCleaner.Installer.wixproj -c Release -p:PublishDir=
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 New-Item -ItemType Directory -Force dist | Out-Null
-# dist\ gets the bare MSI for the GitHub release (Ted, 0.8.31) and the Setup ZIP with the Docs folder beside it.
+# dist\ gets the bare MSI for the GitHub release (Ted, 0.8.31); it installs the Docs folder itself. No Setup ZIP since 0.8.37 (Ted).
 $msi = Get-ChildItem installer\bin -Recurse -Filter "$product-$version-x64.msi" | Select-Object -First 1
 if (-not $msi) { Write-Error "The MSI wasn't built." }
-$stage = Join-Path $env:TEMP "$product-$branch-Setup"
-Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory $stage | Out-Null
 Copy-Item $msi.FullName "dist\$product-$branch-Setup.msi" -Force
-Copy-Item $msi.FullName (Join-Path $stage "$product-$branch-Setup.msi")
-Copy-Item publish\Docs $stage -Recurse
-Compress-Archive -Path "$stage\*" -DestinationPath "dist\$product-$branch-Setup.zip" -Force
-Remove-Item $stage -Recurse -Force
+Remove-Item "dist\$product-$branch-Setup.zip" -ErrorAction SilentlyContinue # left over from builds before 0.8.37
 
 # Portable ZIP: the app plus the Docs folder. Never tests, tools, keys or store assets.
 $files = @("publish\KodiakCleaner.exe", "publish\Docs")

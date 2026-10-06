@@ -19,14 +19,14 @@ public static class DocsFolder
 
     /// <summary>
     /// The direct download of the newest installer for a channel. GitHub's releases/latest skips pre-releases, so Dev and
-    /// Beta use a fixed release (latest-dev, latest-beta) that each build replaces. It links the bare MSI, which releases
-    /// upload beside the Setup ZIP (Ted, 0.8.31).
+    /// Beta use a fixed release (latest-dev, latest-beta) that each build replaces. It links the bare MSI, the installer
+    /// every release carries (Ted, 0.8.31; the only installer file since 0.8.37).
     /// </summary>
     public static string DownloadUrl(ReleaseChannel channel) => channel == ReleaseChannel.Stable
         ? $"{Repository}/releases/latest/download/KodiakCleaner-{channel}-Setup.msi"
         : $"{Repository}/releases/download/latest-{channel.ToString().ToLowerInvariant()}/KodiakCleaner-{channel}-Setup.msi";
 
-    /// <summary>KodiakCleaner-Dev-Setup.zip, KodiakCleaner-Stable-Portable.zip: the same name every release, so links keep working.</summary>
+    /// <summary>KodiakCleaner-Dev-Setup.msi, KodiakCleaner-Stable-Portable.zip: the same name every release, so links keep working.</summary>
     public static string PackageName(ReleaseChannel channel, string kind) => $"KodiakCleaner-{channel}-{kind}.zip";
 
     /// <summary>Writes the seven files from the repository's sources into <paramref name="outDir"/>.</summary>

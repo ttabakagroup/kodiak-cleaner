@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Plain KodiakCleaner-0.8.10-x64.msi for every channel; build.ps1 renames it KodiakCleaner-<Branch>-Setup.msi inside the Setup ZIP. -->
+    <!-- Plain KodiakCleaner-0.8.10-x64.msi for every channel; build.ps1 copies it to dist as KodiakCleaner-<Branch>-Setup.msi. -->
     <OutputName>KodiakCleaner-$(ProductVersion)-x64</OutputName>
     <DefineConstants>ProductVersion=$(ProductVersion);ProductName=$(ProductName);InstallFolderName=$(InstallFolderName);UpgradeCode=$(UpgradeCode);PublishDir=$(PublishDir);DocsDir=$(DocsDir)</DefineConstants>
   </PropertyGroup>

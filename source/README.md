@@ -71,10 +71,10 @@ Get the newest build from the **[Releases page](https://github.com/ttabakagroup/
 
 | Download | File | Best for |
 |----------|------|----------|
-| **Installer** | `KodiakCleaner-<Channel>-Setup.msi`, or `KodiakCleaner-<Channel>-Setup.zip` with the Docs folder, for example `KodiakCleaner-Dev-Setup.msi` | Most people. Adds Start menu shortcuts, installs updates for you, and can skip the administrator prompt. |
+| **Installer** | `KodiakCleaner-<Channel>-Setup.msi`, for example `KodiakCleaner-Dev-Setup.msi` | Most people. Adds Start menu shortcuts, installs updates for you, and can skip the administrator prompt. |
 | **Portable** | `KodiakCleaner-<Channel>-Portable.zip`, for example `KodiakCleaner-Dev-Portable.zip` | Running without installing, from any folder or a USB drive. Leaves no trace outside its own folder. |
 
-Both are a single self-contained program, so there's nothing else to install. The file names stay the same every release (the version is in the release name), and each ZIP has a `Docs` folder with the changelog, read me, license, privacy policy, Terms of Use and links to the website and the newest download, as plain text. The installer puts the same folder in `Program Files\Kodiak Cleaner\Docs`.
+Both are a single self-contained program, so there's nothing else to install. The file names stay the same every release (the version is in the release name), and the Portable ZIP has a `Docs` folder with the changelog, read me, license, privacy policy, Terms of Use and links to the website and the newest download, as plain text. The installer puts the same folder in `Program Files\Kodiak Cleaner\Docs`.
 
 ### System Requirements
 
@@ -96,7 +96,7 @@ Every channel installs to `Program Files\Kodiak Cleaner`, and installing one rep
 
 ### Install
 
-1. Download `KodiakCleaner-Dev-Setup.msi` (or the **Setup** ZIP, then extract the `.msi`) from the [Releases page](https://github.com/ttabakagroup/kodiakcleaner/releases).
+1. Download `KodiakCleaner-Dev-Setup.msi` from the [Releases page](https://github.com/ttabakagroup/kodiakcleaner/releases).
 2. Double-click the `.msi` and follow the steps.
 
 The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click **More info**, then **Run anyway**.
@@ -322,13 +322,13 @@ Ideas, guidance and contributions are welcome. Kodiak Cleaner is open source so 
 You need Windows with the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0). WiX v5 comes from NuGet.
 
 ```powershell
-.\build.ps1            # development build: the Setup MSI, Setup ZIP and Portable ZIP in dist\
+.\build.ps1            # development build: the Setup MSI and Portable ZIP in dist\
 .\build.ps1 -Release   # release build: no Developer page; needs the supporter key and a CHANGELOG entry
 dotnet test tests/KodiakCleaner.Core.Tests   # tests (run on any OS)
 python3 tools/design/check_contrast.py tools/design/theme.css   # WCAG 2.2 AA check for every theme and accent
 ```
 
-GitHub Actions builds every push. For a tag that matches `version.json`, it makes a release build and attaches the Setup MSI, the Setup ZIP and the Portable ZIP to a GitHub release. Dev and Beta builds also replace the files in a fixed `latest-dev` or `latest-beta` release, which `Docs\Download.url` links to.
+GitHub Actions builds every push. For a tag that matches `version.json`, it makes a release build and attaches the Setup MSI and the Portable ZIP to a GitHub release. Dev and Beta builds also replace the files in a fixed `latest-dev` or `latest-beta` release, which `Docs\Download.url` links to.
 
 ### Project Layout
 

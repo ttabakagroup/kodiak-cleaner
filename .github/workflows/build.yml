@@ -59,7 +59,7 @@ jobs:
           name: KodiakCleaner-${{ steps.version.outputs.tag }}-run${{ github.run_number }}
           path: source/dist/*
 
-      - name: Attach the Setup and Portable ZIPs to the GitHub release
+      - name: Attach the MSI and Portable ZIP to the GitHub release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
