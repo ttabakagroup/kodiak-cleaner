@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.40 Dev] - 2026-10-06
+
+### Updates
+- Kodiak Cleaner now checks its own website, www.kodiakcleaner.app, for updates instead of GitHub, so Check Now and automatic updates keep working while the GitHub project is private. It reads one small update file naming the newest version and its installer's checksum, downloads the installer from the same website, and installs it only if the checksum matches.
+- Updates are only accepted from www.kodiakcleaner.app over a secure connection. If the website answers with anything else, such as a sign-in page, nothing is downloaded and the next start tries again.
+- The activity log notes when an update has been downloaded and verified.
+
+### Privacy
+- The privacy policy and About page now say that the update check goes to Kodiak Cleaner's website, and About no longer says backups are kept next to KodiakCleaner.exe.
+
 ## [0.8.39 Dev] - 2026-10-06
 
 ### Settings

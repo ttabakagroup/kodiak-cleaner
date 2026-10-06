@@ -216,85 +216,60 @@ public class IniFileTests
     }
 }
 
-public class UpdateParserTests
+public class UpdateManifestTests
 {
-    private const string Json = """
-        [
-         {"tag_name":"v1.3.0","html_url":"https://github.com/o/r/releases/tag/v1.3.0","draft":false,"prerelease":false,
-          "assets":[{"name":"KodiakCleaner-1.3.0-x64.msi","browser_download_url":"https://x/KodiakCleaner-1.3.0-x64.msi","size":100,"digest":"sha256:abcdef"},
-                    {"name":"KodiakCleaner-1.3.0-x64-portable.zip","browser_download_url":"https://x/p.zip","size":50}]},
-         {"tag_name":"v1.4.0","draft":true,"prerelease":false,"assets":[]},
-         {"tag_name":"v2.0.0","draft":false,"prerelease":true,"assets":[]},
-         {"tag_name":"v0.8.4-dev","draft":false,"prerelease":true,"assets":[]},
-         {"tag_name":"v0.8.12-dev","draft":false,"prerelease":true,"assets":[]},
-         {"tag_name":"v0.9.1-beta","draft":false,"prerelease":true,"assets":[]},
-         {"tag_name":"nightly","draft":false,"prerelease":false,"assets":[]}
-        ]
-        """;
+    private const string Sha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+    private static string File(string channel = "dev", string version = "0.8.40",
+        string url = "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi", string sha = Sha) =>
+        $$$"""{"channel":"{{{channel}}}","version":"{{{version}}}","msi":{"url":"{{{url}}}","sha256":"{{{sha}}}"}}""";
 
     [Fact]
-    public void Stable_picks_newest_published_stable_release_and_finds_msi_with_digest()
+    public void Reads_the_websites_update_file()
     {
-        var info = UpdateParser.PickLatest(Json, ReleaseChannel.Stable)!;
-        Assert.Equal(new Version(1, 3, 0), info.Version); // drafts and pre-releases skipped
-        Assert.Equal("ABCDEF", info.Msi!.Sha256);
-        Assert.Null(info.Assets[1].Sha256);
-        Assert.True(UpdateParser.IsNewer(info, new Version(1, 2, 0, 0)));
-        Assert.False(UpdateParser.IsNewer(info, new Version(1, 3, 0)));
+        Assert.Equal("https://www.kodiakcleaner.app/updates/dev.json", UpdateManifest.Url(ReleaseChannel.Dev));
+        Assert.Equal("https://www.kodiakcleaner.app/updates/stable.json", UpdateManifest.Url(ReleaseChannel.Stable));
+        var info = UpdateManifest.Parse(File(), ReleaseChannel.Dev)!;
+        Assert.Equal(new Version(0, 8, 40), info.Version);
+        Assert.Equal("https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi", info.MsiUrl);
+        Assert.Equal(Sha.ToUpperInvariant(), info.Sha256);
+        Assert.True(UpdateManifest.IsNewer(info, new Version(0, 8, 39, 0)));
+        Assert.False(UpdateManifest.IsNewer(info, new Version(0, 8, 40)));
     }
 
     [Fact]
-    public void Each_channel_only_sees_its_own_releases()
+    public void Each_channel_only_takes_its_own_file()
     {
-        Assert.Equal(new Version(0, 8, 12), UpdateParser.PickLatest(Json, ReleaseChannel.Dev)!.Version);
-        Assert.Equal(new Version(0, 9, 1), UpdateParser.PickLatest(Json, ReleaseChannel.Beta)!.Version);
-        Assert.Null(UpdateParser.PickLatest("[]", ReleaseChannel.Dev));
+        Assert.Null(UpdateManifest.Parse(File(channel: "beta"), ReleaseChannel.Dev));
+        Assert.NotNull(UpdateManifest.Parse(File(channel: "Beta"), ReleaseChannel.Beta));
     }
 
-    [Fact]
-    public void Finds_the_installer_by_its_fixed_name()
-    {
-        const string json = """
-            [{"tag_name":"v0.8.31-dev","assets":[
-              {"name":"KodiakCleaner-Dev-Portable.zip","browser_download_url":"https://x/p.zip","size":50},
-              {"name":"KodiakCleaner-Dev-Setup.zip","browser_download_url":"https://x/s.zip","size":40}]},
-             {"tag_name":"v0.8.37-dev","assets":[
-              {"name":"KodiakCleaner-Dev-Portable.zip","browser_download_url":"https://x/p2.zip","size":50},
-              {"name":"KodiakCleaner-Dev-Setup.msi","browser_download_url":"https://x/s2.msi","size":40}]},
-             {"tag_name":"latest-dev","assets":[]}]
-            """;
-        var info = UpdateParser.PickLatest(json, ReleaseChannel.Dev)!;
-        Assert.Equal("v0.8.37-dev", info.Tag);
-        Assert.Equal("https://x/s2.msi", info.Msi!.DownloadUrl); // the bare MSI since 0.8.37
-        const string before = """
-            [{"tag_name":"v0.8.31-dev","assets":[
-              {"name":"KodiakCleaner-Dev-Portable.zip","browser_download_url":"https://x/p.zip","size":50},
-              {"name":"KodiakCleaner-Dev-Setup.zip","browser_download_url":"https://x/s.zip","size":40}]}]
-            """;
-        Assert.Equal("https://x/s.zip", UpdateParser.PickLatest(before, ReleaseChannel.Dev)!.Msi!.DownloadUrl); // 0.8.31 to 0.8.36
-    }
+    [Theory]
+    [InlineData("http://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi")] // not HTTPS
+    [InlineData("https://evil.example/KodiakCleaner-Installer.msi")]                 // another host
+    [InlineData("https://www.kodiakcleaner.app.evil.example/x.msi")]
+    [InlineData("https://www.kodiakcleaner.app:8443/download/x.msi")]                 // another port
+    [InlineData("https://www.kodiakcleaner.app/download/KodiakCleaner-Portable.zip")] // not an installer
+    [InlineData("download/KodiakCleaner-Installer.msi")]
+    public void Only_accepts_an_installer_on_the_website(string url) =>
+        Assert.Null(UpdateManifest.Parse(File(url: url), ReleaseChannel.Dev));
 
     [Fact]
-    public void Prefers_the_zipped_msi_and_skips_incomplete_assets()
+    public void Needs_a_full_checksum_and_a_version()
     {
-        const string json = """
-            [{"tag_name":"v0.8.13-dev","draft":false,"prerelease":true,"assets":[
-              {"name":"broken.msi","size":"big"},
-              {"name":"KodiakCleaner-0.8.13-x64-portable-dev.zip","browser_download_url":"https://x/p.zip","size":50},
-              {"name":"KodiakCleaner-0.8.13-x64-msi-dev.zip","browser_download_url":"https://x/m.zip","size":40,"digest":"sha256:0a"}]},
-             {"tag_name":5,"assets":null}]
-            """;
-        var info = UpdateParser.PickLatest(json, ReleaseChannel.Dev)!;
-        Assert.Equal(2, info.Assets.Count);
-        Assert.Equal("https://x/m.zip", info.Msi!.DownloadUrl);
-        Assert.Equal("0A", info.Msi.Sha256);
+        Assert.Null(UpdateManifest.Parse(File(sha: "abcdef"), ReleaseChannel.Dev));
+        Assert.Null(UpdateManifest.Parse(File(sha: Sha[..63] + "g"), ReleaseChannel.Dev));
+        Assert.Null(UpdateManifest.Parse(File(version: "nightly"), ReleaseChannel.Dev));
+        Assert.Null(UpdateManifest.Parse("""{"channel":"dev","version":"0.8.40"}""", ReleaseChannel.Dev));
+        Assert.Null(UpdateManifest.Parse("[]", ReleaseChannel.Dev));
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => UpdateManifest.Parse("<html>Sign in</html>", ReleaseChannel.Dev));
     }
 
     [Fact]
     public void Reads_two_part_versions()
     {
-        Assert.True(UpdateParser.TryParseVersion("v1.4", out var v));
+        Assert.True(UpdateManifest.TryParseVersion("v1.4", out var v));
         Assert.Equal(new Version(1, 4, 0), v);
-        Assert.False(UpdateParser.TryParseVersion("nightly", out _));
+        Assert.False(UpdateManifest.TryParseVersion("nightly", out _));
     }
 }

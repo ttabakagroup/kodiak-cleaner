@@ -14,11 +14,10 @@ public static class AppInfo
     public const string Email = "www.kodiakcleaner.app/contact";
     public const string KoFiUrl = "https://ko-fi.com/ttabaka";
 
-    /// <summary>GitHub "owner/name". The repository is public.</summary>
+    /// <summary>GitHub "owner/name": source code and Star on GitHub.</summary>
     public const string Repository = "ttabakagroup/kodiakcleaner";
     public static string ProjectUrl => $"https://github.com/{Repository}";
-    public static string ReleasesUrl => $"{ProjectUrl}/releases";
-    /// <summary>Kodiak Cleaner's own website (Ted registered it in 0.8.28). Downloads stay on GitHub releases, code on the repository.</summary>
+    /// <summary>Kodiak Cleaner's own website (Ted registered it in 0.8.28). Updates come from it since 0.8.40; code stays on the repository.</summary>
     public const string HomepageUrl = "https://www.kodiakcleaner.app/";
     /// <summary>A hosted privacy policy. Empty = show the copy built into the app.</summary>
     public const string PrivacyUrl = "";

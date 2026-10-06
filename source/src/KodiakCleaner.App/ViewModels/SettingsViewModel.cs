@@ -409,7 +409,7 @@ public sealed class SettingsViewModel : ObservableObject
         {
             var result = await UpdateService.CheckAsync();
             _available = result.Available ? result.Info : null;
-            UpdateStatus = result.Message + (result.Available && !Integration.IsInstalled ? " Download it from the releases page." : "");
+            UpdateStatus = result.Message + (result.Available && !Integration.IsInstalled ? " Download it from the website." : "");
         }
         finally
         {
@@ -422,9 +422,9 @@ public sealed class SettingsViewModel : ObservableObject
     private async Task InstallUpdateAsync()
     {
         if (_available is not { } info) return;
-        if (!Integration.IsInstalled || info.Msi?.Sha256 is null)
+        if (!Integration.IsInstalled)
         {
-            Shell.OpenUrl(string.IsNullOrEmpty(info.PageUrl) ? AppInfo.ReleasesUrl : info.PageUrl);
+            Shell.OpenUrl(AppInfo.HomepageUrl + "download/");
             return;
         }
         IsCheckingUpdates = true;

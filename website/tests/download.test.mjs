@@ -41,3 +41,8 @@ test("serves the Mac disk image with its own type", async () => {
   assert.equal(res.status, 200);
   assert.equal(res.headers.get("content-type"), "application/x-apple-diskimage");
 });
+
+test("downloads are revalidated every time, so a replaced installer matches /updates/dev.json", async () => {
+  const res = await get("KodiakCleaner-Portable.zip");
+  assert.equal(res.headers.get("cache-control"), "no-cache");
+});

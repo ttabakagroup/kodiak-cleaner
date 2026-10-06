@@ -18,7 +18,9 @@ export async function onRequestGet({ request, env, params }) {
   headers.set("content-disposition", `attachment; filename="${name}"`);
   headers.set("etag", obj.httpEtag);
   headers.set("accept-ranges", "bytes");
-  headers.set("cache-control", "public, max-age=3600");
+  // no-cache: browsers and the app always check the ETag, so a file replaced in R2 is picked up straight away
+  // (the app compares the installer with the SHA-256 in /updates/dev.json).
+  headers.set("cache-control", "no-cache");
 
   if (!("body" in obj)) return new Response(null, { status: 304, headers }); // matched If-None-Match
   if (obj.range && request.headers.has("range")) {

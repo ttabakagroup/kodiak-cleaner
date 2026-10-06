@@ -134,3 +134,16 @@ test("Linux downloads are linked from the Download and Linux pages, and the Wind
   }
   assert.match(pages.find((p) => p.file === "/index.html").html, /Download for Mac/);
 });
+
+test("the update file for Kodiak Cleaner for Windows is valid and never cached for long", () => {
+  // The app reads /updates/dev.json (spec: plans/kodiak-update-file.md); the publish workflow rewrites it with each MSI.
+  const file = join(root, "updates", "dev.json");
+  assert.ok(existsSync(file), "public/updates/dev.json is missing");
+  const u = JSON.parse(readFileSync(file, "utf8"));
+  assert.equal(u.channel, "dev");
+  assert.match(u.version, /^\d+\.\d+\.\d+$/);
+  assert.equal(u.msi.url, "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi");
+  assert.match(u.msi.sha256, /^[0-9a-f]{64}$/);
+  const headers = readFileSync(join(root, "_headers"), "utf8");
+  assert.match(headers, /\/updates\/\*\n\s+Cache-Control: no-cache/);
+});

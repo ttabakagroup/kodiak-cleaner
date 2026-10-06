@@ -33,7 +33,7 @@ Only to check for updates:
 - When you click Check Now under Settings, Updates, or
 - Once a day at start-up, if you turn on Keep Kodiak Cleaner Updated Automatically (off by default). With it on, a new version is downloaded in the background and installed when you close Kodiak Cleaner.
 
-The check asks GitHub (api.github.com) for the list of Kodiak Cleaner releases. When an update is downloaded, Kodiak Cleaner saves the installer in your Windows temporary folder and checks it against the SHA-256 checksum GitHub publishes for it; an installer that doesn't match is deleted, not run. Like any website, GitHub can see your IP address and that the request came from Kodiak Cleaner. GitHub's own privacy statement covers what GitHub does with that. The portable version only checks; it never downloads or installs anything.
+The check reads one small update file from Kodiak Cleaner's own website (www.kodiakcleaner.app/updates), which names the newest version and its installer's SHA-256 checksum. When an update is downloaded, it comes from the same website; Kodiak Cleaner saves the installer in your Windows temporary folder and checks it against that checksum, and an installer that doesn't match is deleted, not run. Nothing about you or your PC is sent with either request. Like any website, the site's host, Cloudflare, can see your IP address and that the request came from Kodiak Cleaner; Cloudflare's own privacy policy covers what it does with that. The portable version only checks; it never downloads or installs anything.
 
 Buttons such as Support on Ko-fi, Star on GitHub, Website and Project Page open the website in your browser. Those websites have their own privacy policies.
 

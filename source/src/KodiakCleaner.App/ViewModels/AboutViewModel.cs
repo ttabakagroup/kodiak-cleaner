@@ -46,8 +46,8 @@ public sealed class AboutViewModel : ObservableObject
 
     public string PrivacySummary =>
         $"{AppInfo.ShortName} works entirely on this PC. It sends no usage data, crash reports or identifiers, and shows no ads. " +
-        "Your settings and registry backups are saved in plain files next to KodiakCleaner.exe and never leave your computer. " +
-        "The only time it goes online is to check GitHub for a new version, and only when you click Check for Updates or turn on " +
+        "Your settings, backups and activity log are saved in plain files on this PC and never leave your computer. " +
+        "The only time it goes online is to check its website for a new version, and only when you click Check for Updates or turn on " +
         "automatic updates. Feedback opens in your own email app, so nothing is sent unless you send it.";
 
     public IReadOnlyList<Credit> Credits => global::KodiakCleaner.App.Credits.All;

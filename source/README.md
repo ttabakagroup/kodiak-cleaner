@@ -273,7 +273,7 @@ Everything stays on your PC.
 - **No remote resources.** The Fredoka font is built in, and icons come from Windows' own icon font.
 - **No telemetry**, analytics, crash reports, accounts or ads. Nothing is sent automatically, ever.
 - **Settings, backups and logs** are plain files: `KodiakCleaner.ini` next to `KodiakCleaner.exe`, and the `Backups` and `Logs` folders in `Documents\Kodiak Cleaner` (beside the exe for the portable version). The activity log stays on your PC and can be turned off.
-- **Updates are the only network use.** Kodiak Cleaner asks GitHub for the list of releases only when you click **Check Now**, or once a day if you turn on automatic updates (off by default). Downloads are checked against their published SHA-256 checksum before they're installed.
+- **Updates are the only network use.** Kodiak Cleaner reads one small update file from its website, www.kodiakcleaner.app, only when you click **Check Now**, or once a day if you turn on automatic updates (off by default). The installer comes from the same website and is checked against the SHA-256 checksum in that file before it's installed.
 
 Read the full [Privacy Policy](PRIVACY.md) and [Terms of Use](terms-of-use.md).
 

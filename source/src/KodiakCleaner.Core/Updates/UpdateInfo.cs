@@ -1,74 +1,52 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using KodiakCleaner.Core.About;
 
 namespace KodiakCleaner.Core.Updates;
 
-public sealed record UpdateAsset(string Name, string DownloadUrl, long Size, string? Sha256);
+/// <summary>The newest release for a channel, as the website's update file describes it.</summary>
+public sealed record UpdateInfo(Version Version, string MsiUrl, string Sha256);
 
-public sealed record UpdateInfo(Version Version, string Tag, string PageUrl, IReadOnlyList<UpdateAsset> Assets)
+/// <summary>
+/// Reads the update file Kodiak Cleaner's website publishes for each channel, for example
+/// https://www.kodiakcleaner.app/updates/dev.json. Since 0.8.40 updates come from the website rather than GitHub,
+/// so they work while the GitHub repository is private (Ted). The file looks like:
+/// <code>
+/// { "channel": "dev", "version": "0.8.40",
+///   "msi": { "url": "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi", "sha256": "64 hex digits" } }
+/// </code>
+/// </summary>
+public static class UpdateManifest
 {
-    /// <summary>
-    /// The installer: the bare KodiakCleaner-Dev-Setup.msi (the only installer asset since 0.8.37, Ted). Older releases
-    /// also had it zipped (KodiakCleaner-Dev-Setup.zip from 0.8.31, KodiakCleaner-0.8.30-x64-msi-dev.zip before), still accepted.
-    /// </summary>
-    public UpdateAsset? Msi =>
-        Assets.FirstOrDefault(a => a.Name.EndsWith("-Setup.msi", StringComparison.OrdinalIgnoreCase))
-        ?? Assets.FirstOrDefault(a => a.Name.EndsWith("-Setup.zip", StringComparison.OrdinalIgnoreCase))
-        ?? Assets.FirstOrDefault(a => a.Name.Contains("-msi", StringComparison.OrdinalIgnoreCase) && a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-        ?? Assets.FirstOrDefault(a => a.Name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
-}
+    /// <summary>The only host an update file or installer is accepted from.</summary>
+    public const string Host = "www.kodiakcleaner.app";
 
-/// <summary>Reads GitHub's release list API response (GET /repos/{owner}/{repo}/releases).</summary>
-public static class UpdateParser
-{
+    public static string Url(ReleaseChannel channel) => $"https://{Host}/updates/{channel.ToString().ToLowerInvariant()}.json";
+
     /// <summary>
-    /// The newest published release for <paramref name="channel"/>: stable tags look like v1.0.2,
-    /// dev and beta tags end in -dev / -beta. Drafts are skipped. Each channel only ever updates to its own releases.
+    /// The release the file describes, or null when it is for another channel, is incomplete, has no SHA-256, or points
+    /// anywhere but an .msi on <see cref="Host"/> over HTTPS. Malformed JSON throws <see cref="JsonException"/>.
     /// </summary>
-    public static UpdateInfo? PickLatest(string releasesJson, ReleaseChannel channel)
+    public static UpdateInfo? Parse(string json, ReleaseChannel channel)
     {
-        using var doc = JsonDocument.Parse(releasesJson);
-        if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
-        return doc.RootElement.EnumerateArray()
-            .Select(r => Parse(r, channel))
-            .Where(r => r is not null)
-            .MaxBy(r => r!.Version);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        if (root.ValueKind != JsonValueKind.Object) return null;
+        if (Text(root, "channel") is not { } ch || !string.Equals(ch, channel.ToString(), StringComparison.OrdinalIgnoreCase)) return null;
+        if (Text(root, "version") is not { } v || !TryParseVersion(v, out var version)) return null;
+        if (!root.TryGetProperty("msi", out var msi) || msi.ValueKind != JsonValueKind.Object) return null;
+        if (Text(msi, "url") is not { } url || !IsOurs(url, ".msi")) return null;
+        if (Text(msi, "sha256") is not { } sha || !Regex.IsMatch(sha, "^[0-9A-Fa-f]{64}$")) return null;
+        return new UpdateInfo(version, url, sha.ToUpperInvariant());
     }
 
-    private static UpdateInfo? Parse(JsonElement root, ReleaseChannel channel)
-    {
-        if (root.TryGetProperty("draft", out var d) && d.ValueKind == JsonValueKind.True) return null;
-        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("tag_name", out var t) || t.ValueKind != JsonValueKind.String) return null;
-        var tag = t.GetString() ?? "";
-        if (ReleaseChannels.FromTag(tag) != channel) return null;
-        // A stable channel never picks up something GitHub marks as a pre-release.
-        if (channel == ReleaseChannel.Stable && root.TryGetProperty("prerelease", out var p) && p.ValueKind == JsonValueKind.True) return null;
-        if (!TryParseVersion(tag, out var version)) return null;
-        var page = root.TryGetProperty("html_url", out var h) && h.ValueKind == JsonValueKind.String ? h.GetString() ?? "" : "";
+    private static string? Text(JsonElement e, string name) =>
+        e.TryGetProperty(name, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : null;
 
-        var assets = new List<UpdateAsset>();
-        if (root.TryGetProperty("assets", out var arr) && arr.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var a in arr.EnumerateArray())
-            {
-                // Skip anything incomplete rather than failing the whole check.
-                if (a.ValueKind != JsonValueKind.Object ||
-                    !a.TryGetProperty("name", out var n) || n.ValueKind != JsonValueKind.String ||
-                    !a.TryGetProperty("browser_download_url", out var u) || u.ValueKind != JsonValueKind.String) continue;
-                string? sha = null;
-                // GitHub reports "digest": "sha256:<hex>" for release assets.
-                if (a.TryGetProperty("digest", out var dg) && dg.ValueKind == JsonValueKind.String && dg.GetString() is { } digest &&
-                    digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
-                    sha = digest[7..].ToUpperInvariant();
-                assets.Add(new UpdateAsset(
-                    n.GetString() ?? "",
-                    u.GetString() ?? "",
-                    a.TryGetProperty("size", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetInt64() : 0,
-                    sha));
-            }
-        }
-        return new UpdateInfo(version, tag, page, assets);
-    }
+    private static bool IsOurs(string url, string extension) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps &&
+        string.Equals(u.Host, Host, StringComparison.OrdinalIgnoreCase) && u.IsDefaultPort &&
+        u.AbsolutePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase);
 
     public static bool TryParseVersion(string tag, out Version version)
     {

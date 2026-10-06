@@ -218,7 +218,7 @@ public class DocumentTests
         var html = Repo.Read("store-assets", "privacy-policy.html");
         foreach (var heading in md.Where(b => b.Kind is MarkdownBlockKind.Heading1 or MarkdownBlockKind.Heading2))
             Assert.Contains(System.Net.WebUtility.HtmlEncode(heading.Text), html);
-        Assert.Contains("api.github.com", html);
+        Assert.Contains("www.kodiakcleaner.app/updates", html);
         Assert.Contains("www.kodiakcleaner.app/contact", html);
         Assert.DoesNotMatch(@"<(script|link)\b|https?://fonts\.", html); // nothing loaded from elsewhere
     }

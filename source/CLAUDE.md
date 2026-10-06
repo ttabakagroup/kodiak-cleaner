@@ -6,7 +6,8 @@ privacy first, local first, security paramount, convenient, practical and useful
 
 ## Privacy and Safety
 - No telemetry, analytics, crash reporting, ads, upsells or background services. Nothing is sent automatically.
-- The only network use is the GitHub update check, off by default and only on request. Any new online feature
+- The only network use is the update check on the website (`UpdateManifest`, https://www.kodiakcleaner.app/updates/<channel>.json, since 0.8.40
+  because the GitHub repo went private; Ted), off by default and only on request. Any new online feature
   must be off until turned on, explained where it's turned on, and added to PRIVACY.md and store-assets/privacy-policy.html.
 - No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
 - Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
@@ -104,8 +105,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   No Terms of Use link there (Ted removed it); Terms of Use and Privacy Policy are pages under Help.
 - Dev and Beta builds show the Beta Software notice at every start until it closes with Don't Show This Again at Startup
   on (`ShowBetaNotice`, also a switch under Settings > General). Stable builds never show it.
-- Automatic updates download the release's `-Setup.msi` (older releases' `-Setup.zip` and `-msi` ZIPs still match and are unzipped), verify its SHA-256 and start msiexec on exit without
-  waiting (so the exe isn't locked). Only a check that reached GitHub counts toward the once-a-day limit.
+- Automatic updates (0.8.40): read `updates/<channel>.json` ({channel, version, msi: {url, sha256}}) from the website, accept only an
+  .msi on https://www.kodiakcleaner.app (no redirects followed), verify its SHA-256 and start msiexec on exit without waiting (so the exe isn't
+  locked). Only a check that reached the website counts toward the once-a-day limit. Every release must refresh the website's update
+  file with the new version and the MSI's SHA-256 (release-<ver>/updates/dev.json).
 - Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
   never `MessageBox` directly. Risky Yes is a `DangerButton`, No stays the default.
 - Every window uses `UseLayoutRounding="True" TextOptions.TextFormattingMode="Display"` for crisp text (0.8.27).
@@ -118,8 +121,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   sent automatically, no hidden data in links, and bug-report Details never include files, folders or user names.
 - Security issues are reported privately, never in public issues. Contact & Feedback has four accent buttons (Ted, 0.8.24):
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
-- Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Downloads and updates stay on GitHub releases; source and Star on GitHub stay on the repo.
-- The repository (ttabakagroup/kodiakcleaner) is public. Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
+- Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Updates come from the website since 0.8.40; release downloads stay on GitHub releases; source and Star on GitHub stay on the repo.
+- The repository (ttabakagroup/kodiakcleaner) is private for now (2026-10-06). Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
 - Never offer anything in return for a rating. Support link: https://ko-fi.com/ttabaka, no nags or pop-ups.
 - Supporter tier only (Ted removed Premium). Codes are verified offline; never run `make-key` for Ted or touch his private key.
 

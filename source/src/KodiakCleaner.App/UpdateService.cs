@@ -11,11 +11,14 @@ namespace KodiakCleaner.App;
 public sealed record UpdateCheckResult(bool Available, UpdateInfo? Info, string Message);
 
 /// <summary>
-/// Checks GitHub Releases for a newer Kodiak Cleaner and installs it. Only runs when the user clicks
-/// "Check now" or turns on automatic updates; nothing else ever contacts the network.
+/// Checks Kodiak Cleaner's website for a newer version and installs it (since 0.8.40; earlier versions asked GitHub, which
+/// stopped answering once the repository went private). Only runs when the user clicks "Check now" or turns on automatic
+/// updates; nothing else ever contacts the network.
 /// </summary>
 public static class UpdateService
 {
+    // No redirects: the update file and the installer are only accepted from the website itself, never from wherever
+    // a redirect leads (a sign-in page, another host).
     private static readonly HttpClient Http = CreateClient();
     private static string? _pendingMsi;
     private static string? _pendingSha;
@@ -24,36 +27,36 @@ public static class UpdateService
 
     private static HttpClient CreateClient()
     {
-        var c = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        var c = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(30) };
         c.DefaultRequestHeaders.UserAgent.ParseAdd($"KodiakCleaner/{AppInfo.Version.ToString(3)}");
-        c.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         return c;
     }
 
     public static async Task<UpdateCheckResult> CheckAsync(CancellationToken ct = default)
     {
+        const string unreachable = "Could not reach the Kodiak Cleaner website to check for updates.";
         try
         {
-            using var resp = await Http.GetAsync($"https://api.github.com/repos/{AppInfo.Repository}/releases?per_page=30", ct);
-            // Only a check that reached GitHub counts toward the once-a-day limit, so an offline start tries again next time.
+            using var resp = await Http.GetAsync(UpdateManifest.Url(AppInfo.Channel), ct);
+            // Only a check that reached the website counts toward the once-a-day limit, so an offline start tries again next time.
             if (resp.StatusCode == HttpStatusCode.NotFound)
             {
                 MarkChecked();
-                return new(false, null, "No releases have been published yet.");
+                return new(false, null, $"No {AppInfo.Channel} updates have been published yet.");
             }
-            resp.EnsureSuccessStatusCode();
+            if (!resp.IsSuccessStatusCode || resp.Content.Headers.ContentType?.MediaType != "application/json")
+                return new(false, null, $"{unreachable} The website didn't answer with update information. Please try again later.");
+            var info = UpdateManifest.Parse(await resp.Content.ReadAsStringAsync(ct), AppInfo.Channel);
             MarkChecked();
-            // Dev, Beta and Stable each update only to their own channel's releases.
-            var info = UpdateParser.PickLatest(await resp.Content.ReadAsStringAsync(ct), AppInfo.Channel);
-            if (info is null) return new(false, null, $"No {AppInfo.Name} releases have been published yet.");
+            if (info is null) return new(false, null, "The website's update information couldn't be used, so nothing was downloaded.");
             var newName = ReleaseChannels.VersionName(info.Version, AppInfo.Channel, AppInfo.TargetStable);
-            return UpdateParser.IsNewer(info, AppInfo.Version)
+            return UpdateManifest.IsNewer(info, AppInfo.Version)
                 ? new(true, info, $"{AppInfo.Name} {newName} is available. You have {AppInfo.VersionName}.")
                 : new(false, info, $"You have the latest version ({AppInfo.VersionName}).");
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
-            return new(false, null, "Could not reach GitHub to check for updates. " + e.Message);
+            return new(false, null, $"{unreachable} {e.Message}");
         }
     }
 
@@ -64,48 +67,34 @@ public static class UpdateService
     }
 
     /// <summary>
-    /// Downloads the release MSI and checks it against the SHA-256 GitHub publishes for it.
+    /// Downloads the installer and checks it against the SHA-256 in the website's update file.
     /// The installer is then run when Kodiak Cleaner closes (or right away via <see cref="InstallPendingNow"/>).
     /// </summary>
     public static async Task<string> DownloadAsync(UpdateInfo info, CancellationToken ct = default)
     {
         if (!Integration.IsInstalled)
-            throw new InvalidOperationException("This is the portable version. Download the new ZIP from the releases page.");
-        var msi = info.Msi ?? throw new InvalidOperationException("The release has no MSI installer.");
-        if (msi.Sha256 is null)
-            throw new InvalidOperationException("GitHub did not publish a checksum for the installer, so it can't be verified. Install it from the releases page instead.");
+            throw new InvalidOperationException("This is the portable version. Download the new ZIP from the website.");
 
         var dir = Path.Combine(Path.GetTempPath(), AppInfo.Id + "-Update");
         Directory.CreateDirectory(dir);
-        var file = Path.Combine(dir, Path.GetFileName(new Uri(msi.DownloadUrl).LocalPath));
-        await using (var src = await Http.GetStreamAsync(msi.DownloadUrl, ct))
-        await using (var dst = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None))
+        var file = Path.Combine(dir, $"{AppInfo.Id}-{info.Version.ToString(3)}.msi");
+        using (var resp = await Http.GetAsync(info.MsiUrl, HttpCompletionOption.ResponseHeadersRead, ct))
+        {
+            if (!resp.IsSuccessStatusCode)
+                throw new InvalidOperationException($"The website didn't send the installer ({(int)resp.StatusCode}). Please try again later.");
+            await using var src = await resp.Content.ReadAsStreamAsync(ct);
+            await using var dst = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None);
             await src.CopyToAsync(dst, ct);
+        }
 
-        if (!HashMatches(file, msi.Sha256))
+        if (!HashMatches(file, info.Sha256))
         {
             File.Delete(file);
             throw new InvalidOperationException("The downloaded installer did not match its published checksum and was deleted.");
         }
-        // Releases before 0.8.37 could ship the MSI inside a ZIP: take the one .msi out of the verified ZIP, by file name only.
-        if (file.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-        {
-            string extracted;
-            using (var zip = System.IO.Compression.ZipFile.OpenRead(file))
-            {
-                var entries = zip.Entries.Where(e => e.Name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToList();
-                if (entries.Count != 1) throw new InvalidOperationException("The downloaded ZIP doesn't hold exactly one installer.");
-                extracted = Path.Combine(dir, Path.GetFileName(entries[0].Name));
-                using var from = entries[0].Open();
-                using var to = new FileStream(extracted, FileMode.Create, FileAccess.Write, FileShare.None);
-                from.CopyTo(to);
-            }
-            File.Delete(file);
-            file = extracted;
-        }
+        KodiakCleaner.Core.Util.ActivityLog.Write("Updates", $"Downloaded and verified Kodiak Cleaner {info.Version.ToString(3)}");
         _pendingMsi = file;
-        // The installer's own hash, checked again right before it runs.
-        using (var fs = File.OpenRead(file)) _pendingSha = Convert.ToHexString(SHA256.HashData(fs));
+        _pendingSha = info.Sha256;
         PendingVersion = info.Version.ToString(3);
         return file;
     }
@@ -146,7 +135,7 @@ public static class UpdateService
             await DownloadAsync(result.Info);
             notify($"{AppInfo.Name} {PendingVersion} has been downloaded and will install when you close {AppInfo.ShortName}.");
         }
-        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException or InvalidDataException or UnauthorizedAccessException)
+        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException or UnauthorizedAccessException)
         {
             notify($"{AppInfo.Name} {result.Info.Version.ToString(3)} is available, but it could not be downloaded: {e.Message}");
         }

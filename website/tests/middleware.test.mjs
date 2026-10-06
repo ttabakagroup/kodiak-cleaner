@@ -26,3 +26,10 @@ test("www pages are served normally", async () => {
     assert.equal(await (await run(u)).text(), "page", u);
   }
 });
+
+test("the update file and the installer are served on www without a redirect (the app doesn't follow redirects)", async () => {
+  for (const url of ["https://www.kodiakcleaner.app/updates/dev.json", "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi"]) {
+    const res = await run(url);
+    assert.equal(res.status, 200, url);
+  }
+});

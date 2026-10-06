@@ -193,7 +193,7 @@
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding AutoUpdate}" />
                         <StackPanel Margin="0,0,24,0">
                             <TextBlock Text="Keep Kodiak Cleaner Updated Automatically" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="Check GitHub for a new version once a day. Updates download in the background and install when you close Kodiak Cleaner." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            <TextBlock Text="Check the Kodiak Cleaner website for a new version once a day. Updates download in the background and install when you close Kodiak Cleaner." Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
                 </StackPanel>

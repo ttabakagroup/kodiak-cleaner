@@ -91,6 +91,18 @@ One-time setup:
 Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI is `KodiakCleaner-Dev-Setup.msi`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`, and the Mac files are `KodiakCleaner-Dev-Mac.dmg` and `KodiakCleaner-Dev-Mac.zip` from `../kodiak-mac/dist`.
 To go back to GitHub downloads, delete `hostedDownloads` from `site.config.json` and deploy.
 
+## Update File for Kodiak Cleaner for Windows
+
+From 0.8.40, Kodiak Cleaner for Windows checks `https://www.kodiakcleaner.app/updates/dev.json` for updates and downloads
+`/download/KodiakCleaner-Installer.msi` (spec: `plans/kodiak-update-file.md` in the project files).
+
+- The file lives at `src/static/updates/dev.json` and is copied to `public/updates/dev.json` on build. `_headers` serves it with
+  `Cache-Control: no-cache`, and downloads are served with `no-cache` too, so a new release shows up straight away.
+- Every time `KodiakCleaner-Installer.msi` is replaced in R2, write that build's `version` and `sha256` into this file and deploy,
+  in that order: MSI first, then the site. If the two disagree, the app throws the download away and tries again the next day.
+- The release folder has a ready-made copy at `release-<ver>/updates/dev.json`. A test checks the file's shape.
+- While Cloudflare Access protects the site, the app is sent to the login page and reports that it couldn't check.
+
 ## If Contact Us Says a Message Couldn't Be Sent
 
 The form now says what went wrong. The common causes:
@@ -105,7 +117,7 @@ After changing any setting in Cloudflare, deploy again; settings only reach the 
 
 ## Each New Kodiak Cleaner Release
 
-1. `npm run sync` copies CHANGELOG.md and the other documents from `../source` (or `../ccleaner-alt`), the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
+1. `npm run sync` copies CHANGELOG.md and the other documents from `../ccleaner-alt`, the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
 2. In `site.config.json`, add the version under `releases` with its two file sizes. Only versions listed there get download links; the rest show "Not published".
 3. `npm test`, then `npm run deploy`.
 
@@ -122,7 +134,7 @@ They work once that release exists on GitHub. Only the hosted installer and GitH
 | `npm test` | Builds, then checks links, images, downloads, Title Case, outside resources and the contact function |
 | `npm run preview` | Runs the site and the form locally with Wrangler (put test keys in a `.dev.vars` file) |
 | `npm run deploy` | Builds and uploads to Cloudflare Pages |
-| `npm run sync` | Copies the documents from `../source` (or `../ccleaner-alt`), `../kodiak-linux` and `../kodiak-mac`, then builds |
+| `npm run sync` | Copies the documents from `../ccleaner-alt`, `../kodiak-linux` and `../kodiak-mac`, then builds |
 
 Turnstile's test keys for local runs: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`.
 
@@ -143,6 +155,7 @@ src/assets/             CSS (theme.css from Ted's build standard, unchanged), sc
 src/static/_headers     security and caching headers for Cloudflare
 functions/download/[file].js  serves the hosted downloads from R2
 src/static/_redirects   short links (/github, /releases)
+src/static/updates/dev.json  update file Kodiak Cleaner for Windows reads (written by the publish workflow)
 functions/_middleware.js  sends kodiakcleaner.app, pages.dev and preview links to www.kodiakcleaner.app
 tests/                  site checks and contact function tests
 public/                 the built site (made by npm run build)
