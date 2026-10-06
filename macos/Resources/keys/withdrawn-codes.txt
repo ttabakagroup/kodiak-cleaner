@@ -1,0 +1,2 @@
+# Supporter code IDs that no longer unlock anything, one per line.
+# Add an ID here (make-code prints it) and ship an update to withdraw that code.

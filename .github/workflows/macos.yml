@@ -1,0 +1,92 @@
+# Builds, tests and packages Kodiak Cleaner for Mac on a GitHub Mac, then publishes the build, its screenshots and
+# its test log to the macos-dev-builds branch (the newest build only).
+name: Kodiak Cleaner for Mac
+
+on:
+  push:
+    branches: [macos-dev]
+    paths: ["macos/**", ".github/workflows/macos.yml"]
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: "Mac to build on"
+        default: "macos-26"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runner || 'macos-26' }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: macos
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest Xcode
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          ls -d /Applications/Xcode*.app
+          latest=$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -t_ -k2 -V | tail -1)
+          sudo xcode-select -s "$latest"
+          { sw_vers; uname -m; xcodebuild -version; swift --version; } 2>&1 | tee "$RUNNER_TEMP/out/build-machine.txt"
+
+      - name: Test
+        run: ./build.sh test 2>&1 | tee "$RUNNER_TEMP/out/test-log.txt"; exit ${PIPESTATUS[0]}
+
+      - name: Package
+        run: ./build.sh package 2>&1 | tee "$RUNNER_TEMP/out/package-log.txt"; exit ${PIPESTATUS[0]}
+
+      - name: Self-test on this Mac
+        run: ./build.sh self-test 2>&1 | tee "$RUNNER_TEMP/out/self-test.txt"; exit ${PIPESTATUS[0]}
+
+      - name: Check the packages
+        run: |
+          {
+            echo "ZIP contents:"; unzip -l dist/KodiakCleaner-Dev-Mac.zip | head -40
+            echo; echo "Disk image:"; hdiutil imageinfo dist/KodiakCleaner-Dev-Mac.dmg | grep -E "Format|Checksum Type" || true
+            hdiutil attach -nobrowse -readonly -mountpoint "$RUNNER_TEMP/dmg" dist/KodiakCleaner-Dev-Mac.dmg >/dev/null
+            ls -la "$RUNNER_TEMP/dmg" "$RUNNER_TEMP/dmg/Docs"
+            hdiutil detach "$RUNNER_TEMP/dmg" >/dev/null
+            echo; echo "Signature:"; codesign -dv --verbose=2 "dist/Kodiak Cleaner.app" 2>&1
+            echo; echo "Architectures:"; lipo -archs "dist/Kodiak Cleaner.app/Contents/MacOS/KodiakCleaner"
+            echo; echo "Gatekeeper's view (unsigned Dev build, expected to be rejected):"; spctl --assess --type execute -vv "dist/Kodiak Cleaner.app" 2>&1 || true
+            echo; ls -la dist
+          } 2>&1 | tee "$RUNNER_TEMP/out/package-check.txt"
+
+      - name: Screenshots
+        continue-on-error: true
+        run: |
+          ./build.sh screenshots > "$RUNNER_TEMP/out/screenshots-log.txt" 2>&1 &
+          pid=$!
+          for i in $(seq 1 240); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+          kill $pid 2>/dev/null || true
+          ls dist/screenshots | tee -a "$RUNNER_TEMP/out/screenshots-log.txt"
+
+      - name: Keep the build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KodiakCleaner-Dev-Mac
+          path: |
+            macos/dist/KodiakCleaner-Dev-Mac.zip
+            macos/dist/KodiakCleaner-Dev-Mac.dmg
+            macos/dist/screenshots
+          if-no-files-found: ignore
+
+      - name: Publish to the macos-dev-builds branch
+        if: always()
+        run: |
+          out="$RUNNER_TEMP/out"
+          cp dist/KodiakCleaner-Dev-Mac.zip dist/KodiakCleaner-Dev-Mac.dmg "$out/" 2>/dev/null || true
+          [ -d dist/screenshots ] && cp -R dist/screenshots "$out/screenshots"
+          echo "${{ github.sha }} ${{ job.status }} $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$out/BUILD.txt"
+          cd "$out"
+          git init -q -b macos-dev-builds
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Kodiak Cleaner for Mac build of ${{ github.sha }}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" macos-dev-builds
