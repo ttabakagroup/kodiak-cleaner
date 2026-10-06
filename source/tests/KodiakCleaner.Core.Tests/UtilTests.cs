@@ -90,3 +90,31 @@ public class CheckablePathTests
     public void Checkable_path_is_empty_when_the_program_was_guessed(string command, string expected) =>
         Assert.Equal(expected, CommandLine.CheckablePath(command));
 }
+
+public class SettingsSearchTests
+{
+    private static readonly string[] Appearance = ["Appearance", "Color scheme, accent color and light or dark mode.", "Accent Color", "Animations"];
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("dark")]
+    [InlineData("DARK MODE")]
+    [InlineData("mode dark")]
+    [InlineData("accent")]
+    public void Every_typed_word_must_appear(string query) => Assert.True(SettingsSearch.Matches(query, Appearance));
+
+    [Theory]
+    [InlineData("tray")]
+    [InlineData("dark tray")]
+    public void A_missing_word_hides_the_page(string query) => Assert.False(SettingsSearch.Matches(query, Appearance));
+
+    [Fact]
+    public void Hints_name_the_matching_labels()
+    {
+        Assert.Equal(["Accent Color"], SettingsSearch.Hints("accent", ["Accent Color", "Animations", "accent color"]));
+        Assert.Empty(SettingsSearch.Hints("", ["Accent Color"]));
+        Assert.Equal(2, SettingsSearch.Hints("a", ["Accent Color", "Animations", "Appearance"]).Count);
+        Assert.Equal(["Light or Dark"], SettingsSearch.Hints("dark", ["Honey theme in light and dark, with a long description after it.", "Light or Dark"], max: 1));
+    }
+}

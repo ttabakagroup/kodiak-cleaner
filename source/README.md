@@ -212,7 +212,7 @@ Windows Task Scheduler starts Kodiak Cleaner at that time; it cleans without ope
 
 ### Settings and Personalization
 
-Every setting is a switch and is saved straight away.
+Every setting is a switch and is saved straight away. Type in the search box above General to find a setting by name.
 
 | Area | What's there |
 |------|--------------|
@@ -222,7 +222,7 @@ Every setting is a switch and is saved straight away.
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening a short form that becomes an email in your own email app. |
 | **General** | What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
 | **Protect** | Back Up Now saves the registry areas Kodiak Cleaner can change into one `.reg` file (the very large ones are backed up with each fix instead), with an optional prompt before each registry fix. Back up, open or reset the settings file. |
-| **Updates** | Check Now (also on the About page as Check for Updates), or keep Kodiak Cleaner updated automatically (off by default), checking On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly. |
+| **Updates** | Check Now (also on the About page as Check for Updates), or keep Kodiak Cleaner updated automatically (off by default), with a dropdown for how often: On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly. |
 
 The sidebar can be widened, locked with the paperclip, or collapsed to icons only.
 

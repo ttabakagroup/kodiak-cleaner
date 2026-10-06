@@ -97,6 +97,9 @@ privacy first, local first, security paramount, convenient, practical and useful
   `ILoadOnFirstVisit.EnsureLoaded` (MainViewModel.OnNavigated); never call Refresh in a page view model's constructor. Grouped tables
   keep `VirtualizingPanel.IsVirtualizingWhenGrouping="True"`. Uncompressed or ReadyToRun single-file builds don't start under Wine.
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
+- Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
+  description or labels). Labels are read from the page templates themselves on the first search, so new settings are found automatically.
+  The Check for Updates interval is a dropdown (Ted, 0.8.45) so more choices fit.
 - Registry checks (Ted, 0.8.30): 15 categories in `RegistryScanner.Categories` (A to Z, Look For grid of 3 columns, Select All). Only report what is
   definitely gone (`PathChecks.IsMissing`); never files in the Windows folder (`MissingOutsideWindows`), drivers, boot/system-start services,
   or HKLM file extensions. COM classes and type libraries only when every listed file is gone.

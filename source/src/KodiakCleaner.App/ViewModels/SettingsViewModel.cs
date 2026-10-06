@@ -45,6 +45,15 @@ public sealed class SettingsSection : ObservableObject
             if (value) _onSelected(this);
         }
     }
+
+    /// <summary>Labels on the page (titles, switches, buttons) for the Settings search; filled by SettingsView the first time someone searches.</summary>
+    public IReadOnlyList<string> Labels { get; set; } = [];
+
+    public bool Matches(string query) => SettingsSearch.Matches(query, [Title, Description, Group, .. Labels]);
+
+    /// <summary>While searching, the labels on this page that match, shown in small text under its name.</summary>
+    private string _searchHint = "";
+    public string SearchHint { get => _searchHint; set => Set(ref _searchHint, value); }
 }
 
 /// <summary>
@@ -117,6 +126,22 @@ public sealed class SettingsViewModel : ObservableObject
     private static Settings S => Settings.Current;
 
     public ObservableCollection<SettingsSection> Sections { get; } = new();
+
+    /// <summary>The Settings search box above General (Ted, 0.8.45). SettingsView filters the sidebar as it changes.</summary>
+    private string _searchQuery = "";
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (!Set(ref _searchQuery, value ?? "")) return;
+            foreach (var s in Sections) s.SearchHint = string.Join(" · ", SettingsSearch.Hints(_searchQuery, s.Labels));
+        }
+    }
+
+    private bool _noMatches;
+    /// <summary>Set by SettingsView after filtering: shows "No settings match" under the search box.</summary>
+    public bool NoMatches { get => _noMatches; set => Set(ref _noMatches, value); }
 
     private SettingsSection? _current;
     public SettingsSection? CurrentSection { get => _current; private set => Set(ref _current, value); }
@@ -294,10 +319,9 @@ public sealed class SettingsViewModel : ObservableObject
         set => Apply(value, v => S.AutoUpdate = v);
     }
 
-    /// <summary>Check for Updates interval choices (Ted, 0.8.44), shown as segments under Keep Kodiak Cleaner Updated Automatically.</summary>
-    public IReadOnlyList<UpdateIntervalOption> UpdateIntervals => _updateIntervals ??=
-        UpdateSchedule.Options.Select(o => new UpdateIntervalOption(this, o.Interval, o.Label)).ToList();
-    private List<UpdateIntervalOption>? _updateIntervals;
+    /// <summary>Check for Updates interval choices (Ted, 0.8.44; a dropdown since 0.8.45, so more can be added).</summary>
+    public IReadOnlyList<UpdateIntervalOption> UpdateIntervals { get; } =
+        UpdateSchedule.Options.Select(o => new UpdateIntervalOption(o.Interval, o.Label)).ToList();
 
     public UpdateInterval UpdateInterval
     {
@@ -311,7 +335,6 @@ public sealed class SettingsViewModel : ObservableObject
             {
                 Dialogs.Error(e.Message);
             }
-            foreach (var o in UpdateIntervals) o.Changed();
             OnPropertyChanged();
             OnPropertyChanged(nameof(SaveError));
             OnPropertyChanged(nameof(HasSaveError));
@@ -547,10 +570,9 @@ public sealed class SettingsViewModel : ObservableObject
     }
 }
 
-/// <summary>One segment of Settings > Updates' Check for Updates interval.</summary>
-public sealed class UpdateIntervalOption(SettingsViewModel owner, UpdateInterval interval, string label) : ObservableObject
+/// <summary>One choice in Settings > Updates' Check for Updates dropdown.</summary>
+public sealed record UpdateIntervalOption(UpdateInterval Interval, string Label)
 {
-    public string Label { get; } = label;
-    public bool IsSelected { get => owner.UpdateInterval == interval; set { if (value) owner.UpdateInterval = interval; } }
-    public void Changed() => OnPropertyChanged(nameof(IsSelected));
+    // The themed ComboBox shows the chosen item's text, not DisplayMemberPath.
+    public override string ToString() => Label;
 }

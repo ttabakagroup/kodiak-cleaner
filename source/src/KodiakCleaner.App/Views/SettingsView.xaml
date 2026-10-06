@@ -196,7 +196,7 @@
                             <TextBlock Text="Check the Kodiak Cleaner website for a new version as often as you choose below. Updates download in the background, install when you close Kodiak Cleaner, and then Kodiak Cleaner opens again." Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
-                    <!-- How often to check (Ted, 0.8.44): shortest to longest, the order Ted listed them. -->
+                    <!-- How often to check (Ted, 0.8.44): shortest to longest, the order Ted listed them; a dropdown since 0.8.45 so more fit. -->
                     <StackPanel Margin="0,14,0,0" IsEnabled="{Binding AutoUpdate}">
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
@@ -209,19 +209,9 @@
                         </StackPanel.Style>
                         <TextBlock Text="Check for Updates" Style="{StaticResource SettingTitle}" />
                         <TextBlock Text="On Startup checks each time Kodiak Cleaner starts. The others check at start or while it's open, once that long has passed since the last check." Style="{StaticResource Caption}" TextWrapping="Wrap" />
-                        <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left" Margin="0,10,0,0">
-                            <ItemsControl ItemsSource="{Binding UpdateIntervals}" Focusable="False">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <RadioButton GroupName="UpdateInterval" Style="{StaticResource Segment}" Content="{Binding Label}"
-                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
+                        <ComboBox ItemsSource="{Binding UpdateIntervals}" DisplayMemberPath="Label" SelectedValuePath="Interval"
+                                  SelectedValue="{Binding UpdateInterval}" HorizontalAlignment="Left" MinWidth="200" Margin="0,10,0,0"
+                                  AutomationProperties.Name="Check for Updates" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -506,6 +496,13 @@
                     <TextBlock Text="{Binding PrivacyNote}" Style="{StaticResource Caption}" Width="170" />
                 </StackPanel>
             </StackPanel>
+            <!-- Search (Ted, 0.8.45): always above General, outside the scrolling list. Enter opens the first match, Esc clears. -->
+            <StackPanel DockPanel.Dock="Top" Margin="12,0,0,10">
+                <views:SearchBox x:Name="Search" Text="{Binding SearchQuery}" Placeholder="Search settings"
+                                 PreviewKeyDown="Search_PreviewKeyDown" AutomationProperties.Name="Search Settings" />
+                <TextBlock Text="No settings match." Style="{StaticResource Caption}" Margin="4,8,0,0"
+                           Visibility="{Binding NoMatches, Converter={StaticResource BoolToVis}}" />
+            </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Source={StaticResource GroupedSections}}" Focusable="False">
                     <ItemsControl.GroupStyle>
@@ -532,7 +529,20 @@
                             <RadioButton GroupName="SettingsNav" Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Glyph}" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
-                                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" />
+                                        <TextBlock Text="{Binding SearchHint}" FontSize="11" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" MaxWidth="150">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Caption}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SearchHint}" Value="">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
                                 </StackPanel>
                             </RadioButton>
                         </DataTemplate>

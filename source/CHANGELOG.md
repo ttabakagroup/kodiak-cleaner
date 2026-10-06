@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.45 Dev] - 2026-10-06
+
+### Settings
+- New search box above General in the Settings sidebar. Start typing and the list shows only the pages whose settings match, with the matching setting names under each page. Enter opens the first match and Esc clears the search.
+- Check for Updates under Settings > Updates is now a dropdown, so more choices can be added later. On Startup is still selected out of the box.
+
 ## [0.8.44 Dev] - 2026-10-06
 
 ### Updates
