@@ -153,10 +153,17 @@ jobs:
           done
           # The update file must name this build's MSI, or the app throws the download away.
           want=$(sha256sum "${WIN_DIR}KodiakCleaner-Dev-Setup.msi" | cut -d' ' -f1)
-          read -r code loc < <(curl -s -o /tmp/dev.json -w '%{http_code} %{redirect_url}\n' https://www.kodiakcleaner.app/updates/dev.json)
-          echo "updates/dev.json: HTTP $code ${loc}"
-          if [[ "$loc" == *cloudflareaccess.com* ]]; then
-            echo "::warning::updates/dev.json is behind the Cloudflare Access login, so the app's update check can't reach it until the site is public."
-          elif [ "$code" != 200 ] || [ "$(jq -r .msi.sha256 /tmp/dev.json 2>/dev/null)" != "$want" ]; then
-            echo "::error::updates/dev.json doesn't match the uploaded MSI (HTTP $code)"; exit 1
-          fi
+          # A fresh deploy can take a little while to reach every Cloudflare location, so allow up to two minutes.
+          for try in $(seq 1 12); do
+            read -r code loc < <(curl -s -H 'Cache-Control: no-cache' -o /tmp/dev.json -w '%{http_code} %{redirect_url}\n' \
+              "https://www.kodiakcleaner.app/updates/dev.json?check=$GITHUB_RUN_ID-$try")
+            got=$(jq -r .msi.sha256 /tmp/dev.json 2>/dev/null || true)
+            echo "updates/dev.json (try $try): HTTP $code ${loc} sha256 ${got}"
+            if [[ "$loc" == *cloudflareaccess.com* ]]; then
+              echo "::warning::updates/dev.json is behind the Cloudflare Access login, so the app's update check can't reach it until the site is public."
+              break
+            fi
+            [ "$code" = 200 ] && [ "$got" = "$want" ] && break
+            if [ "$try" = 12 ]; then echo "::error::updates/dev.json doesn't match the uploaded MSI (HTTP $code)"; exit 1; fi
+            sleep 10
+          done
