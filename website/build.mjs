@@ -68,7 +68,8 @@ const ctx = {
   longDate: (iso) => { if (!iso) return ""; const [y, m, d] = parts(iso); return `${MONTHS[m - 1]} ${d}, ${y}`; },
   shortDate: (iso) => { if (!iso) return ""; const [y, m, d] = parts(iso); return `${MONTHS[m - 1].slice(0, 3)} ${d}, ${y}`; },
   // Download links for a version. Release assets follow build.ps1 and the GitHub workflow, tag v0.8.35-dev.
-  // Files: KodiakCleaner-Dev-Setup.zip and KodiakCleaner-Dev-Portable.zip since 0.8.31,
+  // Files: KodiakCleaner-Dev-Setup.msi (0.8.37 on) or KodiakCleaner-Dev-Setup.zip (0.8.31 to 0.8.36), and
+  // KodiakCleaner-Dev-Portable.zip since 0.8.31,
   // KodiakCleaner-0.8.27-x64-msi-dev.zip and KodiakCleaner-0.8.27-x64-portable-dev.zip before that.
   dl(r) {
     const suffix = r.channel === "stable" ? "" : `-${r.channel}`;
@@ -76,7 +77,8 @@ const ctx = {
     const base = `${cfg.repo}/releases/download/${tag}/`;
     const fixedNames = r.version.split(".").map(Number).reduce((a, n) => a * 1000 + n, 0) >= 8031;
     const Channel = r.channel[0].toUpperCase() + r.channel.slice(1);
-    const installerFile = fixedNames ? `KodiakCleaner-${Channel}-Setup.zip` : `KodiakCleaner-${r.version}-x64-msi${suffix}.zip`;
+    const bareMsi = r.version.split(".").map(Number).reduce((a, n) => a * 1000 + n, 0) >= 8037;
+    const installerFile = bareMsi ? `KodiakCleaner-${Channel}-Setup.msi` : fixedNames ? `KodiakCleaner-${Channel}-Setup.zip` : `KodiakCleaner-${r.version}-x64-msi${suffix}.zip`;
     const portableFile = fixedNames ? `KodiakCleaner-${Channel}-Portable.zip` : `KodiakCleaner-${r.version}-x64-portable${suffix}.zip`;
     const info = cfg.releases[r.version];
     // While "hostedDownloads" is in site.config.json, the newest version downloads from this

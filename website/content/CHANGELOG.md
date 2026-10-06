@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.37 Dev] - 2026-10-06
+
+### Downloads
+- The installer is now just KodiakCleaner-Dev-Setup.msi; the extra Setup ZIP (the same MSI plus the Docs folder) is gone, since the installer puts the Docs folder in place itself. Automatic updates use the MSI directly, and still understand older releases that only had the ZIP.
+
 ## [0.8.36 Dev] - 2026-10-06
 
 ### Backups and Logs

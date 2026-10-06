@@ -132,6 +132,7 @@ ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning
       <div class="card"><span class="icon">${icons.mail}</span><h3>Feedback Through Your Email</h3><p>In-app feedback opens your own email app. Nothing is sent until you press Send.</p></div>
     </div>
     <div class="card mt-xl"><span class="icon">${icons.file}</span><h3>Docs Folder Included</h3><p>The installer, the portable ZIP and the Linux downloads each come with a Docs folder: Changelog, Download, Homepage, License, Privacy, ReadMe and Terms of Use, all in plain text.</p></div>
+    <div class="mt-xl">${shot(ctx, "application.png", "Application settings showing where backups and the activity log are kept")}</div>
     <div class="mt-xl">${betaNotice()}</div>
     <p class="center mt-xl"><a class="btn primary lg" href="/download/">${icons.download}Download Kodiak Cleaner</a></p>
   </div>

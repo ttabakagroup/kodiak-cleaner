@@ -53,7 +53,7 @@ export default function home(ctx) {
       <a class="btn lg" href="${cfg.repo}" rel="noopener">${icons.github}<span>View on GitHub<small>Open source, MIT License</small></span></a>
     </div>
     <p class="hero-meta"><span>Windows 10 and 11 (64-bit)</span><span>Linux (DEB or AppImage)</span><span>No account needed</span></p>
-    <div class="hero-shot">${shot(ctx, "cleaner.png", "Kodiak Cleaner's Cleaner page after Analyze, showing 709.3 MB that can be freed", { eager: true })}</div>
+    <div class="hero-shot">${shot(ctx, "cleaner.png", "Kodiak Cleaner's Cleaner page after Analyze, showing 717.1 MB that can be freed", { eager: true })}</div>
   </div>
 </section>
 

@@ -87,7 +87,7 @@ One-time setup:
 4. Workers & Pages > kodiakcleaner > Settings > Bindings > Add > R2 bucket. Variable name `DOWNLOADS`, bucket `kodiakcleaner-downloads`.
 5. `npm run deploy`.
 
-Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI comes out of `KodiakCleaner-Dev-Setup.zip`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, and the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`.
+Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI is `KodiakCleaner-Dev-Setup.msi`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, and the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`.
 To go back to GitHub downloads, delete `hostedDownloads` from `site.config.json` and deploy.
 
 ## If Contact Us Says a Message Couldn't Be Sent
@@ -109,9 +109,9 @@ After changing any setting in Cloudflare, deploy again; settings only reach the 
 3. `npm test`, then `npm run deploy`.
 
 Archive links point at the GitHub release files, for example
-`https://github.com/ttabakagroup/kodiakcleaner/releases/download/v0.8.35-dev/KodiakCleaner-Dev-Setup.zip`
-(0.8.30 and older: `KodiakCleaner-0.8.27-x64-msi-dev.zip`).
-They work once that release exists on GitHub. The installer is always the MSI inside a ZIP; a test fails if a bare `.msi` is ever linked.
+`https://github.com/ttabakagroup/kodiakcleaner/releases/download/v0.8.37-dev/KodiakCleaner-Dev-Setup.msi`
+(0.8.31 to 0.8.36: `KodiakCleaner-Dev-Setup.zip`; 0.8.30 and older: `KodiakCleaner-0.8.27-x64-msi-dev.zip`).
+They work once that release exists on GitHub. Only the hosted installer and GitHub releases from 0.8.37 on are a bare `.msi`; a test fails if any other bare `.msi` is linked.
 
 ## Commands
 
@@ -146,6 +146,6 @@ tests/                  site checks and contact function tests
 public/                 the built site (made by npm run build)
 ```
 
-Windows screenshots come from the 0.8.35 Dev portable build under Wine with sample programs and startup entries (the Developer item was painted out of the two Appearance shots). Linux screenshots (`linux-*.png`) come from Kodiak Cleaner for Linux 0.8.1 Dev via its `tools/screenshots.py`. Retake the Windows ones on Windows when convenient; real program icons look better.
+Windows screenshots come from the 0.8.36 Dev portable build under Wine with sample programs and startup entries (the Developer item was painted out of the Appearance shots, and the Application shot shows a sample folder path). Linux screenshots (`linux-*.png`) come from Kodiak Cleaner for Linux 0.8.1 Dev via its `tools/screenshots.py`. Retake the Windows ones on Windows when convenient; real program icons look better.
 
 Copyright © 2026 Ted Tabaka. MIT License.
