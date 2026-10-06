@@ -1,6 +1,6 @@
 name: Publish Downloads and Website
 
-# Uploads the newest downloads in releases/ to the R2 bucket behind www.kodiakcleaner.app/download/
+# Uploads the newest Windows, Linux and Mac downloads in releases/ to the R2 bucket behind www.kodiakcleaner.app/download/
 # and deploys the website, so a push to main is all a new release needs.
 # Needs two repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 
@@ -53,8 +53,13 @@ jobs:
           set -euo pipefail
           win=$(ls -d releases/Windows-*/ | sort -V | tail -1)
           lin=$(ls -d releases/Linux-*/ | sort -V | tail -1)
+          mac=$(ls -d releases/Mac-*/ 2>/dev/null | sort -V | tail -1 || true)
           cfg=website/site.config.json
           {
+            echo "MAC_DIR=$mac"
+            echo "R2_MAC_DMG=$(jq -r '.mac.dmg // "KodiakCleanerMac.dmg"' $cfg)"
+            echo "R2_MAC_ZIP=$(jq -r '.mac.zip // "KodiakCleanerMac.zip"' $cfg)"
+            echo "MAC_ON_SITE=$(jq -r 'if .mac then "true" else "false" end' $cfg)"
             echo "WIN_DIR=$win"
             echo "LIN_DIR=$lin"
             echo "R2_INSTALLER=$(jq -r .hostedDownloads.installer $cfg)"
@@ -62,7 +67,7 @@ jobs:
             echo "R2_APPIMAGE=$(jq -r .linux.appimage $cfg)"
             echo "R2_DEB=$(jq -r .linux.deb $cfg)"
           } >> "$GITHUB_ENV"
-          echo "Windows: $win  Linux: $lin"
+          echo "Windows: $win  Linux: $lin  Mac: ${mac:-none}"
 
       - name: Upload the downloads to R2
         if: steps.secrets.outputs.ready == 'true'
@@ -77,6 +82,10 @@ jobs:
           put "${WIN_DIR}KodiakCleaner-Dev-Portable.zip"  "$R2_PORTABLE"  application/zip
           put "${LIN_DIR}KodiakCleaner-Dev-AppImage.zip"  "$R2_APPIMAGE"  application/zip
           put "${LIN_DIR}KodiakCleaner-Dev-Deb.zip"       "$R2_DEB"       application/zip
+          if [ -n "$MAC_DIR" ]; then
+            put "${MAC_DIR}KodiakCleaner-Dev-Mac.dmg"     "$R2_MAC_DMG"   application/x-apple-diskimage
+            put "${MAC_DIR}KodiakCleaner-Dev-Mac.zip"     "$R2_MAC_ZIP"   application/zip
+          fi
 
       # The Download page shows each file's size; set them from the files just uploaded (not committed).
       - name: Update the download sizes on the website
@@ -91,7 +100,12 @@ jobs:
              --arg d "$(size "${LIN_DIR}KodiakCleaner-Dev-Deb.zip")" \
              '.hostedDownloads.installerSize=$i | .hostedDownloads.portableSize=$p | .linux.appimageSize=$a | .linux.debSize=$d' \
              $cfg > $cfg.new && mv $cfg.new $cfg
-          jq '{hostedDownloads, linux}' $cfg
+          # Mac sizes only once the site lists the Mac downloads (a "mac" entry in site.config.json).
+          if [ -n "$MAC_DIR" ] && [ "$MAC_ON_SITE" = true ]; then
+            jq --arg g "$(size "${MAC_DIR}KodiakCleaner-Dev-Mac.dmg")" --arg z "$(size "${MAC_DIR}KodiakCleaner-Dev-Mac.zip")" \
+               '.mac.dmgSize=$g | .mac.zipSize=$z' $cfg > $cfg.new && mv $cfg.new $cfg
+          fi
+          jq '{hostedDownloads, linux, mac}' $cfg
 
       - name: Build, test and deploy the website
         if: steps.secrets.outputs.ready == 'true'
@@ -106,7 +120,10 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          for f in "$R2_INSTALLER" "$R2_PORTABLE" "$R2_APPIMAGE" "$R2_DEB"; do
+          files=("$R2_INSTALLER" "$R2_PORTABLE" "$R2_APPIMAGE" "$R2_DEB")
+          # The Mac links are checked once the site lists them (its download function must also allow .dmg).
+          if [ -n "$MAC_DIR" ] && [ "$MAC_ON_SITE" = true ]; then files+=("$R2_MAC_DMG" "$R2_MAC_ZIP"); fi
+          for f in "${files[@]}"; do
             code=$(curl -s -o /dev/null -w '%{http_code}' -I "https://www.kodiakcleaner.app/download/$f")
             echo "$f: HTTP $code"
             [ "$code" = 200 ] || { echo "::error::$f is not downloadable (HTTP $code)"; exit 1; }

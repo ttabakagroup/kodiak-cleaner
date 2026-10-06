@@ -338,8 +338,9 @@ GitHub Actions builds every push. For a tag that matches `version.json`, it make
 ```
 .github/workflows/      GitHub Actions build and release (builds from source/)
 assets/logo/            the logo and every file made from it (README.txt explains each)
-releases/               the newest Windows (MSI and Portable ZIP) and Linux (AppImage and .deb ZIPs) downloads
-source/                 the app: everything needed to build Kodiak Cleaner
+macos/                  Kodiak Cleaner for Mac (SwiftUI), built and tested on a GitHub Mac
+releases/               the newest Windows (MSI and Portable ZIP), Linux (AppImage and .deb ZIPs) and Mac (DMG and ZIP) downloads
+source/                 the Windows app: everything needed to build Kodiak Cleaner
 website/                the Kodiak Cleaner website (Cloudflare Pages)
 website/github/         this page's screenshots and the release notes for GitHub releases
 LICENSE                 MIT License

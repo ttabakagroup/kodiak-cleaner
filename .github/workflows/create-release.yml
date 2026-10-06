@@ -2,7 +2,7 @@ name: Create GitHub Release
 
 # Makes a pre-release for the newest builds in releases/ when you click Run workflow.
 # Tag: v<windows version>-dev. Notes: website/github/release-notes/<version>-dev.md.
-# Attaches the MSI, the Portable ZIP, the Linux AppImage and .deb ZIPs and a source ZIP.
+# Attaches the MSI, the Portable ZIP, the Linux AppImage and .deb ZIPs, the Mac DMG and ZIP and a source ZIP.
 # A tag made by this workflow doesn't start the Build MSI release build.
 
 on:
@@ -26,17 +26,25 @@ jobs:
           lin=$(ls -d releases/Linux-*/ | sort -V | tail -1)
           ver=$(basename "$win"); ver=${ver#Windows-}; ver=${ver%-dev}
           linver=$(basename "$lin"); linver=${linver#Linux-}; linver=${linver%-dev}
+          mac=$(ls -d releases/Mac-*/ 2>/dev/null | sort -V | tail -1 || true)
+          title_extra="Linux $linver Dev"
+          extra=()
+          if [ -n "$mac" ]; then
+            macver=$(basename "$mac"); macver=${macver#Mac-}; macver=${macver%-dev}
+            title_extra="$title_extra, Mac $macver Dev"
+            extra=("${mac}KodiakCleaner-Dev-Mac.dmg" "${mac}KodiakCleaner-Dev-Mac.zip")
+          fi
           tag="v$ver-dev"
           notes="website/github/release-notes/$ver-dev.md"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "::error::Release $tag already exists."; exit 1
           fi
           [ -f "$notes" ] || { echo "::error::Missing $notes"; exit 1; }
-          git archive --format=zip --prefix=kodiakcleaner/ -o "KodiakCleaner-$ver-source.zip" HEAD source
+          git archive --format=zip --prefix=kodiakcleaner/ -o "KodiakCleaner-$ver-source.zip" HEAD source macos
           tail -n +2 "$notes" > notes.md   # the release has its own title
           gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
-            --title "Kodiak Cleaner $ver Dev (Linux $linver Dev)" --notes-file notes.md \
+            --title "Kodiak Cleaner $ver Dev ($title_extra)" --notes-file notes.md \
             "${win}KodiakCleaner-Dev-Setup.msi" "${win}KodiakCleaner-Dev-Portable.zip" \
             "${lin}KodiakCleaner-Dev-AppImage.zip" "${lin}KodiakCleaner-Dev-Deb.zip" \
-            "KodiakCleaner-$ver-source.zip"
+            "${extra[@]}" "KodiakCleaner-$ver-source.zip"
           echo "Created $(gh release view "$tag" --json url -q .url)"

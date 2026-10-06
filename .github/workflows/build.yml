@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     tags: ['v*']
-    paths-ignore: ['website/**', 'assets/**', 'releases/**']
+    paths-ignore: ['website/**', 'assets/**', 'releases/**', 'macos/**', '.github/workflows/macos.yml']
   pull_request:
-    paths-ignore: ['website/**', 'assets/**', 'releases/**']
+    paths-ignore: ['website/**', 'assets/**', 'releases/**', 'macos/**', '.github/workflows/macos.yml']
   workflow_dispatch:
 
 permissions:
