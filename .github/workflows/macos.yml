@@ -34,13 +34,13 @@ jobs:
           { sw_vers; uname -m; xcodebuild -version; swift --version; } 2>&1 | tee "$RUNNER_TEMP/out/build-machine.txt"
 
       - name: Test
-        run: ./build.sh test 2>&1 | tee "$RUNNER_TEMP/out/test-log.txt"; exit ${PIPESTATUS[0]}
+        run: bash build.sh test 2>&1 | tee "$RUNNER_TEMP/out/test-log.txt"; exit ${PIPESTATUS[0]}
 
       - name: Package
-        run: ./build.sh package 2>&1 | tee "$RUNNER_TEMP/out/package-log.txt"; exit ${PIPESTATUS[0]}
+        run: bash build.sh package 2>&1 | tee "$RUNNER_TEMP/out/package-log.txt"; exit ${PIPESTATUS[0]}
 
       - name: Self-test on this Mac
-        run: ./build.sh self-test 2>&1 | tee "$RUNNER_TEMP/out/self-test.txt"; exit ${PIPESTATUS[0]}
+        run: bash build.sh self-test 2>&1 | tee "$RUNNER_TEMP/out/self-test.txt"; exit ${PIPESTATUS[0]}
 
       - name: Check the packages
         run: |
@@ -59,7 +59,7 @@ jobs:
       - name: Screenshots
         continue-on-error: true
         run: |
-          ./build.sh screenshots > "$RUNNER_TEMP/out/screenshots-log.txt" 2>&1 &
+          bash build.sh screenshots > "$RUNNER_TEMP/out/screenshots-log.txt" 2>&1 &
           pid=$!
           for i in $(seq 1 240); do kill -0 $pid 2>/dev/null || break; sleep 1; done
           kill $pid 2>/dev/null || true
