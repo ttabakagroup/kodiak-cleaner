@@ -318,6 +318,17 @@ public class DocumentTests
     }
 
     [Fact]
+    public void Uninstall_cleanup_knows_the_installers_upgrade_code_and_the_update_reopens_to_the_front()
+    {
+        // UninstallCleanup skips everything while two products with this code are installed (an update in progress).
+        var wix = Regex.Match(Repo.Read("installer", "KodiakCleaner.Installer.wixproj"), "<UpgradeCode>([^<]+)</UpgradeCode>").Groups[1].Value;
+        Assert.Contains($"UpgradeCode = \"{{{wix}}}\"", Repo.Read("src", "KodiakCleaner.App", "UninstallCleanup.cs"));
+        var update = Repo.Read("src", "KodiakCleaner.App", "UpdateService.cs");
+        Assert.Contains("{UpdatedArg}", update);
+        Assert.Contains("UpdateService.UpdatedArg", Repo.Read("src", "KodiakCleaner.App", "App.xaml.cs"));
+    }
+
+    [Fact]
     public void Theme_dictionaries_use_only_the_listed_colors()
     {
         // Every color in the theme files must come from the standard's theme table (tools/design/theme.css, which

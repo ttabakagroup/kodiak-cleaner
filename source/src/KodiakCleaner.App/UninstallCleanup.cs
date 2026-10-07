@@ -18,6 +18,29 @@ public static class UninstallCleanup
 {
     public const string UserArg = "--uninstall-user", SystemArg = "--uninstall-system";
 
+    /// <summary>The installer's upgrade code (installer/KodiakCleaner.Installer.wixproj; a test keeps them equal).</summary>
+    public const string UpgradeCode = "{B2BD887F-AF40-4BAB-BF5B-668111F792A1}";
+
+    /// <summary>
+    /// True while an update is replacing Kodiak Cleaner: the new version installs before the old one is removed, so two
+    /// products with our upgrade code are registered. The MSI already skips cleanup during an upgrade, but not every
+    /// Windows Installer sets UPGRADINGPRODUCTCODE (Wine doesn't), and cleanup must never run, or ask, mid-update.
+    /// </summary>
+    private static bool IsUpgrading()
+    {
+        try
+        {
+            int count = 0;
+            var product = new System.Text.StringBuilder(39);
+            while (MsiEnumRelatedProducts(UpgradeCode, 0, (uint)count, product) == 0) count++;
+            return count > 1;
+        }
+        catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException) { return false; }
+    }
+
+    [System.Runtime.InteropServices.DllImport("msi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern uint MsiEnumRelatedProducts(string upgradeCode, uint reserved, uint index, System.Text.StringBuilder productCode);
+
     public static bool IsCleanupArg(string[] args) =>
         args.Length > 0 && (args[0].Equals(UserArg, StringComparison.OrdinalIgnoreCase) || args[0].Equals(SystemArg, StringComparison.OrdinalIgnoreCase));
 
@@ -28,6 +51,7 @@ public static class UninstallCleanup
     public static bool TryRunWithoutWindow(string[] args)
     {
         if (!IsCleanupArg(args)) return false;
+        if (IsUpgrading()) return true; // an update, not a removal: leave everything as it is
         if (args[0].Equals(SystemArg, StringComparison.OrdinalIgnoreCase))
         {
             Try(DeleteScheduledTasks);
@@ -47,6 +71,7 @@ public static class UninstallCleanup
     public static bool TryRun(string[] args)
     {
         if (!IsCleanupArg(args)) return false;
+        if (IsUpgrading()) return true;
         var (uiLevel, delete) = Read(args);
         Try(() => RunForUser(uiLevel, delete));
         return true;

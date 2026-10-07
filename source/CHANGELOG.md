@@ -5,6 +5,14 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.47 Dev] - 2026-10-07
+
+### Fixes
+- Kodiak Cleaner draws its window before anything else at startup. The Beta Software notice, What's New and the update check now wait until the window has appeared, and the Windows registrations (startup entry, Recycle Bin menu, jump list, scheduled cleanings) are checked once it's idle, so a first start after an update no longer looks frozen.
+- After an update installs, the reopened Kodiak Cleaner comes to the front instead of opening behind other windows with its notice hidden.
+- Uninstall cleanup never runs while an update is replacing Kodiak Cleaner, even where Windows Installer doesn't say an upgrade is under way, so an update can't ask about backups, logs and reports or remove the startup entry and Recycle Bin menu.
+- A start that takes 5 seconds or more is noted in the activity log, to help explain a slow start.
+
 ## [0.8.46 Dev] - 2026-10-06
 
 ### System Information

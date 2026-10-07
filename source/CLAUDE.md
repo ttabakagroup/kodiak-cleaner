@@ -18,7 +18,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   contents; Settings > Application > Keep an Activity Log turns it off. Log every user-visible change it makes.
 - Uninstall leaves nothing behind (Ted, 0.8.36): the MSI runs `KodiakCleaner.exe --uninstall-user` (as the user: HKCU
   entries, update temp folder, asks whether to delete Documents\Kodiak Cleaner) and `--uninstall-system` (elevated: the
-  Task Scheduler folder), only on REMOVE=ALL and never on upgrade. Anything new the app registers with Windows must be
+  Task Scheduler folder), only on REMOVE=ALL and never on upgrade (0.8.47: the exe also skips it while two products with our
+  upgrade code are registered, `UninstallCleanup.IsUpgrading`, since Wine runs it mid-upgrade). Anything new the app registers with Windows must be
   removed there too. Cleanup must never show an error or block the uninstall.
 - Every registry change is backed up to a `.reg` file first. Removed files go to the Recycle Bin where possible.
 
@@ -96,6 +97,9 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Startup speed (Ted, 0.8.33): only the Cleaner page loads at startup. Other pages read their lists on first visit through
   `ILoadOnFirstVisit.EnsureLoaded` (MainViewModel.OnNavigated); never call Refresh in a page view model's constructor. Grouped tables
   keep `VirtualizingPanel.IsVirtualizingWhenGrouping="True"`. Uncompressed or ReadyToRun single-file builds don't start under Wine.
+  First paint comes first (0.8.47, Ted's "not responding after an update" report): pop-ups (Beta notice, What's New, Getting Started)
+  and the update check run on the main window's first ContentRendered; `Integration.SyncAll` runs at ApplicationIdle. Starts of 5 s
+  or more are logged. The copy reopened after an update gets `--updated` and brings itself to the front (Topmost flip).
 - System Information (Ted, 0.8.46) is in the bottom sidebar group (Settings, System Information, About), not Tools. Summary | Advanced segments;
   Advanced (`SystemDetails`, read in the background on first open) adds drive/memory/PC serials, per-adapter MAC, IP, gateway, DNS and DHCP,
   memory type/speed/slots, CPU cores/threads/cache, BIOS/UEFI/Secure Boot/TPM, GPU memory/driver, audio, a few Windows settings and temperatures

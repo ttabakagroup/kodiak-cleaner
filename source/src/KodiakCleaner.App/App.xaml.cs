@@ -78,7 +78,8 @@ public partial class App : Application
             return;
         }
         bool restarted = args.Contains(Elevation.RestartedArg);
-        args = args.Where(a => a != Elevation.ElevatedArg && a != Elevation.RestartedArg).ToArray();
+        bool updated = args.Contains(UpdateService.UpdatedArg);
+        args = args.Where(a => a != Elevation.ElevatedArg && a != Elevation.RestartedArg && a != UpdateService.UpdatedArg).ToArray();
 
         if (!SingleInstance.Claim(waitForPrevious: restarted))
         {
@@ -90,12 +91,14 @@ public partial class App : Application
         ActivityLog.Write("Start", $"{AppInfo.Name} {AppInfo.VersionName} started" +
             $" ({(Elevation.IsAdministrator ? "as administrator" : "as a standard user")}, {(Integration.IsInstalled ? "installed" : "portable")})");
         ThemeManager.Apply();
-        var window = new MainWindow();
+        var window = new MainWindow { BringToFront = updated };
         MainWindow = window;
         _tray = new TrayIcon(window);
         window.Show();
 
-        Integration.SyncAll();
+        // Windows registrations (startup entry, Recycle Bin menu, jump list, scheduled cleanings) are checked once the
+        // window is drawn, so they never hold up the first paint (0.8.47).
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Integration.SyncAll);
         SingleInstance.Listen(a =>
         {
             // A scheduled cleaning runs quietly; anything else brings the window back.

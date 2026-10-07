@@ -20,6 +20,8 @@ public static class UpdateService
     // No redirects: the update file and the installer are only accepted from the website itself, never from wherever
     // a redirect leads (a sign-in page, another host).
     private static readonly HttpClient Http = CreateClient();
+    /// <summary>Given to the copy that reopens after an update, so it comes to the front (Windows keeps a program started in the background behind other windows).</summary>
+    public const string UpdatedArg = "--updated";
     private static string? _pendingMsi;
     private static string? _pendingSha;
 
@@ -120,7 +122,7 @@ public static class UpdateService
             var exe = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "KodiakCleaner.exe");
             var cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
             Process.Start(new ProcessStartInfo(cmd,
-                $"/d /s /c \"start \"\" /wait msiexec.exe /i \"{run}\" /passive /norestart & if not errorlevel 1 start \"\" \"{exe}\"\"")
+                $"/d /s /c \"start \"\" /wait msiexec.exe /i \"{run}\" /passive /norestart & if not errorlevel 1 start \"\" \"{exe}\" {UpdatedArg}\"")
             { UseShellExecute = false, CreateNoWindow = true });
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { }

@@ -20,8 +20,14 @@ public partial class MainWindow : Window
             if (e.PropertyName is nameof(MainViewModel.SidebarCollapsed) or nameof(MainViewModel.SidebarLocked)) ApplySidebar();
         };
         SourceInitialized += (_, _) => ThemeManager.ApplyTitleBar(this);
-        Loaded += async (_, _) =>
+        // Everything that can wait (pop-ups, the update check) waits until the window has been drawn once (0.8.47), so a
+        // first start, which is slower while Windows checks the new program, never shows a blank or frozen window.
+        ContentRendered += async (_, _) =>
         {
+            if (_started) return;
+            _started = true;
+            LogSlowStart();
+            if (BringToFront) ComeForward();
             if (BetaNoticeWindow.ShouldShow) BetaNoticeWindow.ShowFor(this);
             ShowWhatsNewIfUpdated();
             await UpdateService.AutoCheckAsync(msg => _vm.Notice = msg, atStartup: true);
@@ -30,6 +36,36 @@ public partial class MainWindow : Window
             timer.Tick += async (_, _) => await UpdateService.AutoCheckAsync(msg => _vm.Notice = msg, atStartup: false);
             timer.Start();
         };
+    }
+
+    private bool _started;
+
+    /// <summary>Set for the copy that reopens after an update (UpdateService.UpdatedArg).</summary>
+    public bool BringToFront { get; init; }
+
+    /// <summary>
+    /// A program started in the background (here, by the update once it finished) opens behind other windows, and its
+    /// pop-ups with it. Briefly making the window topmost brings it to the front without taking the keyboard from anyone.
+    /// </summary>
+    private void ComeForward()
+    {
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Topmost = true;
+        Topmost = false;
+        Activate();
+    }
+
+    /// <summary>Notes a slow start in the activity log (the time from launch to the first drawn window), to help explain one.</summary>
+    private static void LogSlowStart()
+    {
+        try
+        {
+            var seconds = (DateTime.Now - System.Diagnostics.Process.GetCurrentProcess().StartTime).TotalSeconds;
+            if (seconds >= 5)
+                KodiakCleaner.Core.Util.ActivityLog.Write("Start", string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                    $"The window took {seconds:0.0} seconds to appear."));
+        }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException) { }
     }
 
     // The sidebar logo dances on hover (LogoDance.Attach) and when the Home button is clicked.
