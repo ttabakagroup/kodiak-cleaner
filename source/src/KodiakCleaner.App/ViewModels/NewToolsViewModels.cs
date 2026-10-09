@@ -110,6 +110,11 @@ public sealed class LargeFilesViewModel : ObservableObject
             Summary = "That folder doesn't exist.";
             return;
         }
+        if (LargeFileFinder.IsProtected(Root, ProtectedFolders()))
+        {
+            Summary = "Windows and program folders need their files, so they aren't searched. Choose another folder.";
+            return;
+        }
         IsBusy = true;
         Show(Array.Empty<LargeFile>());
         _cts = new CancellationTokenSource();

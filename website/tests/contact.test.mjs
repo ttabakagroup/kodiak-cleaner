@@ -6,11 +6,11 @@ import { onRequestGet, onRequestPost, validate, buildEmail, settings, explainMai
 const env = { TURNSTILE_SITE_KEY: "site", TURNSTILE_SECRET_KEY: "secret", RESEND_API_KEY: "re_key" };
 const good = { topic: "Bug Report", name: "Pat", email: "pat@example.com", message: "Cleaner froze on Analyze.", "cf-turnstile-response": "tok" };
 let calls;
-function mockFetch({ human = true, mailOk = true, mailStatus = 500, mailBody = {} } = {}) {
+function mockFetch({ human = true, turnstileStatus = 200, mailOk = true, mailStatus = 500, mailBody = {} } = {}) {
   calls = [];
   globalThis.fetch = async (url, init) => {
     calls.push({ url: String(url), init });
-    if (String(url).includes("turnstile")) return new Response(JSON.stringify({ success: human }));
+    if (String(url).includes("turnstile")) return new Response(turnstileStatus === 200 ? JSON.stringify({ success: human }) : "<html>error</html>", { status: turnstileStatus });
     if (init.headers.authorization !== init.headers.authorization.trim() || /\s/.test(init.headers.authorization.slice(7))) throw new TypeError("Invalid header value");
     return new Response(JSON.stringify(mailBody), { status: mailOk ? 200 : mailStatus });
   };
@@ -91,4 +91,30 @@ test("Resend refusals are explained", async () => {
   assert.match(out.error, /Resend: "You can only send testing emails/);
   assert.match(explainMailError(401, { message: "API key is invalid" }), /RESEND_API_KEY/);
   assert.match(explainMailError(403, { message: "The kodiakcleaner.app domain is not verified." }), /CONTACT_FROM/);
+});
+
+test("a Turnstile outage is reported as such and logged, not blamed on the visitor", async () => {
+  mockFetch({ turnstileStatus: 503 });
+  const logged = [];
+  const orig = console.error;
+  console.error = (...a) => logged.push(a.join(" "));
+  try {
+    const res = await post(good);
+    assert.equal(res.status, 200); // never 5xx: Cloudflare would replace the reply with its own error page
+    const out = await res.json();
+    assert.equal(out.ok, false);
+    assert.equal(out.code, "spam_check_unavailable");
+    assert.equal(calls.length, 1); // no email sent
+    assert.ok(logged.some((l) => /siteverify/.test(l) && /503/.test(l)), logged.join("\n"));
+    assert.ok(!logged.some((l) => l.includes("secret")), "the Turnstile secret must not be logged");
+  } finally {
+    console.error = orig;
+  }
+});
+
+test("the Turnstile check is done server-side with the secret, the token and the visitor's IP", async () => {
+  const res = await onRequestPost({ request: new Request("https://x/api/contact", { method: "POST", headers: { "content-type": "application/json", "CF-Connecting-IP": "203.0.113.7" }, body: JSON.stringify(good) }), env });
+  assert.equal((await res.json()).ok, true);
+  const sent = Object.fromEntries(calls[0].init.body.entries());
+  assert.deepEqual(sent, { secret: "secret", response: "tok", remoteip: "203.0.113.7" });
 });

@@ -8,7 +8,8 @@ namespace KodiakCleaner.App;
 /// </summary>
 public static class Dialogs
 {
-    private static readonly string[] YesNo = { "Yes", "No" };
+    // No on the left, Yes on the right as the default (Enter) button; Esc or closing the window still means No (Ted, 0.8.50).
+    private static readonly string[] YesNo = { "No", "Yes" };
 
     private static int Show(MessageKind kind, string heading, string message, string? caution, string[] buttons, int defaultButton, int cancelButton)
     {
@@ -28,30 +29,38 @@ public static class Dialogs
             MessageKind.Info => MessageBoxImage.Information,
             _ => MessageBoxImage.Question,
         };
-        var (set, map) = buttons.Length switch
+        var set = buttons.Length switch { 1 => MessageBoxButton.OK, 2 => MessageBoxButton.YesNo, _ => MessageBoxButton.YesNoCancel };
+        // The Windows box has its own button order, so match ours by label; custom labels map to Yes, No, Cancel in order.
+        MessageBoxResult[] byPosition = buttons.Length == 1 ? [MessageBoxResult.OK] : [MessageBoxResult.Yes, MessageBoxResult.No, MessageBoxResult.Cancel];
+        var map = buttons.Select((label, n) => label switch
         {
-            1 => (MessageBoxButton.OK, new[] { MessageBoxResult.OK }),
-            2 => (MessageBoxButton.YesNo, new[] { MessageBoxResult.Yes, MessageBoxResult.No }),
-            _ => (MessageBoxButton.YesNoCancel, new[] { MessageBoxResult.Yes, MessageBoxResult.No, MessageBoxResult.Cancel }),
-        };
+            "Yes" => MessageBoxResult.Yes,
+            "No" => MessageBoxResult.No,
+            "Cancel" => MessageBoxResult.Cancel,
+            "OK" => MessageBoxResult.OK,
+            _ => byPosition[n],
+        }).ToArray();
         var r = MessageBox.Show(message, heading, set, icon, map[defaultButton]);
         var i = Array.IndexOf(map, r);
         return i < 0 ? cancelButton : i;
     }
 
     public static bool Confirm(string message, string? title = null) =>
-        Show(MessageKind.Question, title ?? "Please Confirm", message, null, YesNo, 1, 1) == 0;
+        Show(MessageKind.Question, title ?? "Please Confirm", message, null, YesNo, 1, 0) == 1;
 
-    /// <summary>A Yes/No question for steps that need care, with its <paramref name="caution"/> in a highlighted box. No is the default.</summary>
+    /// <summary>
+    /// A Yes/No question for steps that need care, with its <paramref name="caution"/> in a highlighted box. Yes is the default
+    /// (Ted, 0.8.50) and shown as the risky choice; Esc or closing the window means No.
+    /// </summary>
     public static bool Warn(string message, string? title = null, string? caution = null) =>
-        Show(MessageKind.Warning, title ?? "Caution", message, caution, YesNo, 1, 1) == 0;
+        Show(MessageKind.Warning, title ?? "Caution", message, caution, YesNo, 1, 0) == 1;
 
     /// <returns>true = Yes, false = No, null = Cancel.</returns>
     public static bool? YesNoCancel(string message, string? title = null) =>
-        Show(MessageKind.Question, title ?? "Please Choose", message, null, new[] { "Yes", "No", "Cancel" }, 0, 2) switch
+        Show(MessageKind.Question, title ?? "Please Choose", message, null, new[] { "No", "Yes", "Cancel" }, 1, 2) switch
         {
-            0 => true,
-            1 => false,
+            1 => true,
+            0 => false,
             _ => null,
         };
 

@@ -5,6 +5,32 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.50 Dev] - 2026-10-09
+
+### Pop-Ups
+- Yes and No have swapped places in every Yes/No question: No is on the left and Yes is on the right, and Yes is now the default, so pressing Enter answers Yes. Esc or closing the window still answers No. This covers confirmations (Remove, Uninstall, Delete Entry, Clean and the rest), the Advanced Cleaning warning and the cautions on risky items, where Yes stays red, and the Yes, No, Cancel questions.
+
+## [0.8.49 Dev] - 2026-10-09
+
+### Programs
+- Ctrl-click picks several programs and Shift-click picks a range, as in File Explorer. Right-click Uninstall and Delete Entry act on every highlighted program (one confirm for all), and the Uninstall button uses them when nothing is ticked. Repair and Rename work on one program at a time.
+
+### Startup
+- Ctrl-click picks several entries and Shift-click picks a range. Right-click Enable, Disable and Remove From Startup act on every highlighted entry, and the buttons above the list use them when nothing is ticked.
+- Right-clicking a highlighted row keeps the whole selection; right-clicking any other row picks just that one.
+
+## [0.8.48 Dev] - 2026-10-09
+
+### Fixes
+- Registry and Startup no longer report a working startup entry as missing when its command is a script that takes a program as its argument (for example start.cmd C:\Apps\app.exe), so Fix can't remove it.
+- With Always Start as Administrator (or after Restart as Administrator), opening Kodiak Cleaner again, using the jump list, or a scheduled cleaning now reaches the open window instead of silently doing nothing.
+
+### Tools
+- Duplicate Finder no longer lists a file as its own duplicate when a search folder is also reached through a link, and Delete checks that the copy you keep is still there and unchanged before removing the others.
+- Empty Folders never searches or lists any user's AppData, including other accounts' profiles under C:\Users.
+- Large Files refuses to start inside Windows or a program folder.
+- Wipe Free Space stops and removes its filler files when Kodiak Cleaner is closed mid-wipe, instead of leaving the drive full.
+
 ## [0.8.47 Dev] - 2026-10-07
 
 ### Fixes

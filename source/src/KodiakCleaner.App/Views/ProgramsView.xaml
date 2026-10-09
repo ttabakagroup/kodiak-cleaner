@@ -42,7 +42,7 @@
                     </StackPanel>
                 </Button>
                 <Button Command="{Binding UninstallCommand}" Style="{StaticResource AccentButton}" Margin="0"
-                        ToolTip="Uninstalls every ticked program, one at a time, or the selected program when none are ticked.">
+                        ToolTip="Uninstalls every ticked program, one at a time, or the highlighted programs when none are ticked. Ctrl-click or Shift-click to highlight several.">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                         <TextBlock Text="Uninstall" />
@@ -54,8 +54,10 @@
 
         <Border Style="{StaticResource Card}" Padding="8">
             <DataGrid ItemsSource="{Binding View}" SelectedItem="{Binding Selected}" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
-                      PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
-                <!-- Right-click a program for the same actions as the buttons above. -->
+                      PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                      SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged">
+                <!-- Right-click a program for the same actions as the buttons above. Ctrl-click and Shift-click highlight several programs
+                     (Ted, 0.8.49): Uninstall and Delete Entry act on all of them; Repair and Rename need just one. -->
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Uninstall" Command="{Binding UninstallSelectedCommand}">

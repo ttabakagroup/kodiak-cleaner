@@ -5,7 +5,10 @@ using System.Windows.Media;
 
 namespace KodiakCleaner.App.Views;
 
-/// <summary>Right-click selects the row under the mouse first, so a table's right-click menu acts on that row.</summary>
+/// <summary>
+/// Right-click selects the row under the mouse first, so a table's right-click menu acts on that row. A row that is already
+/// part of a Ctrl/Shift-click selection keeps the whole selection, so the menu acts on every highlighted row (as in Explorer).
+/// </summary>
 public static class GridRightClick
 {
     public static void SelectRowUnderMouse(MouseButtonEventArgs e)
@@ -15,6 +18,9 @@ public static class GridRightClick
         {
             if (d is DataGridRow row)
             {
+                if (!row.IsSelected && ItemsControl.ItemsControlFromItemContainer(row) is DataGrid owner &&
+                    owner.SelectionMode == DataGridSelectionMode.Extended)
+                    owner.UnselectAll();
                 row.IsSelected = true;
                 row.Focus();
                 return;
@@ -26,7 +32,7 @@ public static class GridRightClick
         {
             if (d is DataGrid grid)
             {
-                grid.SelectedItem = null;
+                grid.UnselectAll();
                 return;
             }
         }

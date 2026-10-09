@@ -48,6 +48,8 @@ public static class CommandLine
 
         // Unquoted: take the shortest prefix that ends in a known executable extension
         // and is followed by whitespace, a comma (rundll32 style) or the end of string.
+        // Shortest across every extension, so "start.cmd C:\Apps\app.exe" is the script with the program as its argument.
+        int shortest = -1;
         foreach (var ext in ExecutableExtensions)
         {
             int searchFrom = 0;
@@ -57,10 +59,14 @@ public static class CommandLine
                 if (idx < 0) break;
                 int end = idx + ext.Length;
                 if (end == text.Length || char.IsWhiteSpace(text[end]) || text[end] == ',')
-                    return (text[..end], text[end..].TrimStart(',').Trim());
+                {
+                    if (shortest < 0 || end < shortest) shortest = end;
+                    break;
+                }
                 searchFrom = end;
             }
         }
+        if (shortest > 0) return (text[..shortest], text[shortest..].TrimStart(',').Trim());
 
         int space = text.IndexOf(' ');
         return space < 0 ? (text, "") : (text[..space], text[(space + 1)..].Trim());

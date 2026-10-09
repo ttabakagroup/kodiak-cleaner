@@ -28,6 +28,24 @@ public class NewToolsTests
     }
 
     [Fact]
+    public void Large_files_never_starts_inside_a_protected_folder()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "kc-large-" + Guid.NewGuid().ToString("N"));
+        var guarded = Path.Combine(root, "Windows");
+        Directory.CreateDirectory(Path.Combine(guarded, "Installer"));
+        try
+        {
+            File.WriteAllBytes(Path.Combine(guarded, "Installer", "big.msi"), new byte[5000]);
+
+            Assert.Empty(LargeFileFinder.Find(guarded, 1000, 10, new[] { guarded }));
+            Assert.Empty(LargeFileFinder.Find(Path.Combine(guarded, "Installer"), 1000, 10, new[] { guarded }));
+            Assert.True(LargeFileFinder.IsProtected(Path.Combine(guarded, "Installer"), new[] { guarded }));
+            Assert.False(LargeFileFinder.IsProtected(root, new[] { guarded }));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public void System_report_groups_facts_as_plain_text()
     {
         var text = SystemReport.ToText(new[]

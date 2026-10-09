@@ -8,6 +8,16 @@ public sealed record LargeFile(string Path, long Size, DateTime Modified);
 /// </summary>
 public static class LargeFileFinder
 {
+    /// <summary>True when <paramref name="root"/> is one of the protected folders or inside one, so it is never searched.</summary>
+    public static bool IsProtected(string root, IEnumerable<string> protectedFolders)
+    {
+        var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+        return protectedFolders.Where(p => !string.IsNullOrEmpty(p))
+            .Select(p => Path.TrimEndingDirectorySeparator(Path.GetFullPath(p)))
+            .Any(g => string.Equals(full, g, StringComparison.OrdinalIgnoreCase) ||
+                      full.StartsWith(g + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+    }
+
     public static IReadOnlyList<LargeFile> Find(string root, long minBytes, int limit, IEnumerable<string> protectedFolders, CancellationToken ct = default)
     {
         var guarded = protectedFolders.Where(p => !string.IsNullOrEmpty(p))
@@ -17,6 +27,8 @@ public static class LargeFileFinder
             path.StartsWith(g + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
 
         var found = new List<LargeFile>();
+        // Starting inside Windows or Program Files would list (and offer to remove) exactly what is skipped below it.
+        if (IsGuarded(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)))) return found;
         var options = new EnumerationOptions
         {
             IgnoreInaccessible = true,

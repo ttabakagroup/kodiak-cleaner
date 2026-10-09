@@ -68,9 +68,9 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         RefreshCommand = new RelayCommand(Refresh);
         DeleteCommand = new RelayCommand(Delete, () => Picked().Count > 0);
         EnableSelectedCommand = new RelayCommand(() => SetPicked(true), () => Picked().Any(i => !i.Enabled));
-        EnableRowCommand = new RelayCommand(() => SetRow(true), () => Selected is { Enabled: false });
-        DisableRowCommand = new RelayCommand(() => SetRow(false), () => Selected is { Enabled: true });
-        RemoveRowCommand = new RelayCommand(() => { if (Selected is { } s) Remove(new List<StartupItemViewModel> { s }); }, () => Selected is not null);
+        EnableRowCommand = new RelayCommand(() => SetRows(true), () => Highlighted.Any(i => !i.Enabled));
+        DisableRowCommand = new RelayCommand(() => SetRows(false), () => Highlighted.Any(i => i.Enabled));
+        RemoveRowCommand = new RelayCommand(() => Remove(Highlighted.ToList()), () => Highlighted.Count > 0);
         DisableSelectedCommand = new RelayCommand(() => SetPicked(false), () => Picked().Any(i => i.Enabled));
         AddCommand = new RelayCommand(Add);
         HistoryCommand = new RelayCommand(() => { if (StartupHistoryWindow.Show(null)) Refresh(); });
@@ -96,16 +96,15 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         Selected = Items.FirstOrDefault(i => string.Equals(i.Item.FilePath, added, StringComparison.OrdinalIgnoreCase));
     }
     public ICommand DisableSelectedCommand { get; }
-    /// <summary>Right-click menu: act on the row that was right-clicked, whatever is ticked.</summary>
+    /// <summary>Right-click menu: act on the highlighted rows (the right-clicked row, or a Ctrl/Shift-click selection), whatever is ticked.</summary>
     public ICommand EnableRowCommand { get; }
     public ICommand DisableRowCommand { get; }
     public ICommand RemoveRowCommand { get; }
 
-    private void SetRow(bool enabled)
-    {
-        if (Selected is { } s && !s.TrySetEnabled(enabled))
-            Dialogs.Error("Changing this entry needs administrator rights. Use Restart as Administrator at the top.");
-    }
+    private void SetRows(bool enabled) => SetAll(Highlighted, enabled);
+
+    /// <summary>The highlighted rows (Ctrl-click and Shift-click pick several; Ted, 0.8.49). Set by the view.</summary>
+    public IReadOnlyList<StartupItemViewModel> Highlighted { get; set; } = Array.Empty<StartupItemViewModel>();
 
     /// <summary>The header checkbox: true when every entry shown is ticked, false when none, null when some. It ticks only what is shown.</summary>
     public bool? AllChecked
@@ -131,16 +130,18 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         set { if (Set(ref _filter, value)) { View.Refresh(); OnPropertyChanged(nameof(AllChecked)); } }
     }
 
-    /// <summary>Ticked entries, or the highlighted row when nothing is ticked.</summary>
+    /// <summary>Ticked entries, or the highlighted rows when nothing is ticked.</summary>
     private List<StartupItemViewModel> Picked()
     {
         var ticked = Items.Where(i => i.IsChecked).ToList();
-        return ticked.Count > 0 || Selected is null ? ticked : new List<StartupItemViewModel> { Selected };
+        return ticked.Count > 0 ? ticked : Highlighted.ToList();
     }
 
-    private void SetPicked(bool enabled)
+    private void SetPicked(bool enabled) => SetAll(Picked(), enabled);
+
+    private static void SetAll(IEnumerable<StartupItemViewModel> items, bool enabled)
     {
-        var failed = Picked().Count(i => !i.TrySetEnabled(enabled));
+        var failed = items.ToList().Count(i => !i.TrySetEnabled(enabled));
         if (failed > 0)
             Dialogs.Error($"{failed} entr{(failed == 1 ? "y needs" : "ies need")} administrator rights to change. Use Restart as Administrator at the top.");
     }

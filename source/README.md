@@ -146,13 +146,13 @@ Every fix is saved to a `.reg` backup first. To undo a fix, open `Backups\Regist
 ### Speed Up Start-Up
 
 1. Open **Startup** to see the programs that start when you sign in.
-2. Turn a program off with its switch, or tick several and click **Disable Selected**.
+2. Turn a program off with its switch, or tick several (or Ctrl-click or Shift-click to highlight them) and click **Disable Selected**.
 
 Turning a program off works exactly like Task Manager's Disable and can be undone at any time. **History** lists every entry Kodiak Cleaner has seen, so removed ones can be restored.
 
 ### Uninstall Programs
 
-1. Open **Programs** and tick one or more programs (or right-click one).
+1. Open **Programs** and tick one or more programs, or Ctrl-click or Shift-click to highlight several and right-click them.
 2. Click **Uninstall**. Kodiak Cleaner backs up the program's registry entries, runs its own uninstaller, then offers to remove the folders, shortcuts and registry keys it left behind.
 
 ### Schedule Cleanings

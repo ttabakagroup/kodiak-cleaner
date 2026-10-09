@@ -43,9 +43,9 @@ public partial class MessageWindow : Window
         {
             var index = i;
             var b = new Button { Content = buttons[i], MinWidth = 96, Margin = new Thickness(0, 0, i == buttons.Count - 1 ? 0 : 10, 0) };
-            // The default button is the highlighted one; on a warning, a Yes that isn't the default is shown as the risky choice.
-            if (index == defaultButton) b.Style = (Style)FindResource("AccentButton");
-            else if (warn && kind == MessageKind.Warning && index == 0 && buttons.Count > 1) b.Style = (Style)FindResource("DangerButton");
+            // On a warning, Yes is shown as the risky choice (even as the default); otherwise the default button is the highlighted one.
+            if (kind == MessageKind.Warning && buttons.Count > 1 && buttons[i] == "Yes") b.Style = (Style)FindResource("DangerButton");
+            else if (index == defaultButton) b.Style = (Style)FindResource("AccentButton");
             b.IsDefault = index == defaultButton;
             b.IsCancel = index == cancelButton;
             b.Click += (_, _) => { _result = index; DialogResult = true; };

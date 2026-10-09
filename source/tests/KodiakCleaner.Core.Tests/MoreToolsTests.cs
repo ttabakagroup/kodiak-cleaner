@@ -90,6 +90,24 @@ public sealed class MoreToolsTests : IDisposable
     }
 
     [Fact]
+    public void Empty_folder_finder_never_enters_another_users_AppData()
+    {
+        // Searching C:\Users: only the signed-in user's AppData is in the protected list, but every profile has one.
+        var mine = Dir(@"Users/me/AppData");
+        Dir(@"Users/other/AppData/Local/Vendor/cache");
+        Dir(@"Users/Default/AppData/Roaming/Microsoft/Windows/Templates");
+        Dir(@"Users/other/Documents/old");
+        var users = Path.Combine(_root, "Users");
+
+        var found = EmptyFolderFinder.Find(users, new[] { mine })
+            .Select(p => Path.GetRelativePath(users, p).Replace('\\', '/')).ToList();
+
+        Assert.Equal(new[] { "other/Documents" }, found);
+        Assert.NotNull(EmptyFolderFinder.WhyNotAllowed(Path.Combine(users, "other", "AppData", "Local"), new[] { mine }));
+        Assert.False(EmptyFolderFinder.IsStillEmpty(Path.Combine(users, "other", "AppData", "Local", "Vendor"), new[] { mine }));
+    }
+
+    [Fact]
     public void Empty_folder_finder_refuses_drives_and_protected_folders()
     {
         var windows = Dir("Windows");

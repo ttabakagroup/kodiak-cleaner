@@ -15,6 +15,26 @@ public static class FreeSpaceWiper
     private const int ChunkSize = 4 * 1024 * 1024;
     private const long FillerFileSize = 1024L * 1024 * 1024; // keep individual files under FAT32's 4 GB limit
 
+    // Wipes in progress. Closing Kodiak Cleaner ends the process without running a background wipe's finally,
+    // which would leave the drive completely full of filler files, so on exit each one is stopped and cleaned up first.
+    private static readonly object Gate = new();
+    private static readonly List<(CancellationTokenSource Stop, ManualResetEventSlim Done)> Running = new();
+
+    static FreeSpaceWiper() => AppDomain.CurrentDomain.ProcessExit += (_, _) => StopAll(TimeSpan.FromSeconds(30));
+
+    /// <summary>Cancels every wipe in progress and waits (up to <paramref name="wait"/> each) until its filler files are gone.</summary>
+    internal static void StopAll(TimeSpan wait)
+    {
+        List<(CancellationTokenSource Stop, ManualResetEventSlim Done)> running;
+        lock (Gate) running = Running.ToList();
+        foreach (var (stop, _) in running)
+        {
+            try { stop.Cancel(); }
+            catch (ObjectDisposedException) { } // it just finished
+        }
+        foreach (var (_, done) in running) done.Wait(wait);
+    }
+
     /// <param name="root">Drive root (or, for tests, any folder) to fill.</param>
     /// <param name="limitBytes">Stop after this many bytes per pass (tests); null = until the disk is full.</param>
     /// <param name="freeBytes">Function returning current free space, used for progress only.</param>
@@ -22,6 +42,23 @@ public static class FreeSpaceWiper
         CancellationToken ct = default, long? limitBytes = null)
     {
         if (passes < 1) throw new ArgumentOutOfRangeException(nameof(passes));
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        (CancellationTokenSource Stop, ManualResetEventSlim Done) entry = (stop, new ManualResetEventSlim());
+        lock (Gate) Running.Add(entry);
+        try
+        {
+            return WipeCore(root, passes, freeBytes, progress, stop.Token, limitBytes);
+        }
+        finally
+        {
+            lock (Gate) Running.Remove(entry);
+            entry.Done.Set();
+        }
+    }
+
+    private static long WipeCore(string root, int passes, Func<long> freeBytes, IProgress<WipeProgress>? progress,
+        CancellationToken ct, long? limitBytes)
+    {
         var work = Path.Combine(root, WorkFolderName);
         long totalWritten = 0;
         // A work folder left over from a crash would make every CreateNew fail; never follow a link planted there.

@@ -14,6 +14,8 @@ public static class EmptyFolderFinder
         if (string.IsNullOrWhiteSpace(root) || !Path.IsPathFullyQualified(root)) return "Choose a full folder path.";
         var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         if (Util.PathSafety.Depth(full) == 0) return "Choose a folder, not a whole drive.";
+        if (full.Split(Path.DirectorySeparatorChar).Any(IsAppData))
+            return "Programs keep their settings in AppData and can need empty folders there, so it isn't searched.";
         foreach (var p in protectedFolders.Where(p => !string.IsNullOrEmpty(p)))
         {
             var guarded = Path.TrimEndingDirectorySeparator(Path.GetFullPath(p));
@@ -64,6 +66,7 @@ public static class EmptyFolderFinder
         ct.ThrowIfCancellationRequested();
         if (dir.Attributes.HasFlag(FileAttributes.ReparsePoint) || dir.Attributes.HasFlag(FileAttributes.System)) return false;
         if (guarded.Contains(Path.TrimEndingDirectorySeparator(dir.FullName))) return false; // treat as holding files
+        if (IsAppData(dir.Name)) return false; // every user's AppData, not only the one passed in (C:\Users holds them all)
 
         bool empty = true;
         var emptyChildren = new List<string>();
@@ -94,6 +97,8 @@ public static class EmptyFolderFinder
         found.AddRange(emptyChildren);
         return false;
     }
+
+    private static bool IsAppData(string name) => string.Equals(name, "AppData", StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<DirectoryInfo> SafeSubfolders(DirectoryInfo dir)
     {

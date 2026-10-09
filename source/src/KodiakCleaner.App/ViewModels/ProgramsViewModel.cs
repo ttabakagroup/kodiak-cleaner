@@ -38,10 +38,11 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
             p.Publisher.Contains(Filter, StringComparison.CurrentCultureIgnoreCase));
         RefreshCommand = new RelayCommand(Refresh);
         UninstallCommand = new RelayCommand(UninstallAsync, () => !IsBusy && Targets().Count > 0);
-        UninstallSelectedCommand = new RelayCommand(UninstallSelectedAsync, () => !IsBusy && Selected?.Program.CanUninstall == true);
-        RepairCommand = new RelayCommand(RepairAsync, () => Selected?.Program.CanRepair == true);
-        RenameCommand = new RelayCommand(Rename, () => Selected is not null);
-        DeleteCommand = new RelayCommand(DeleteEntry, () => Selected is not null);
+        UninstallSelectedCommand = new RelayCommand(UninstallSelectedAsync, () => !IsBusy && Highlighted.Any(p => p.Program.CanUninstall));
+        // Repair and Rename work on one program, so they wait until only one row is highlighted.
+        RepairCommand = new RelayCommand(RepairAsync, () => Highlighted.Count == 1 && Selected?.Program.CanRepair == true);
+        RenameCommand = new RelayCommand(Rename, () => Highlighted.Count == 1 && Selected is not null);
+        DeleteCommand = new RelayCommand(DeleteEntries, () => !IsBusy && Highlighted.Count > 0);
         HistoryCommand = new RelayCommand(() => { if (ProgramHistoryWindow.Show(null)) Refresh(); });
     }
 
@@ -66,6 +67,9 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
 
     private ProgramItem? _selected;
     public ProgramItem? Selected { get => _selected; set => Set(ref _selected, value); }
+
+    /// <summary>The highlighted rows (Ctrl-click and Shift-click pick several; Ted, 0.8.49). Set by the view.</summary>
+    public IReadOnlyList<ProgramItem> Highlighted { get; set; } = Array.Empty<ProgramItem>();
 
     private string _filter = "";
     public string Filter
@@ -151,42 +155,57 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         }
     }
 
-    private void DeleteEntry()
+    /// <summary>Delete Entry: every highlighted program, after one confirm, each backed up first.</summary>
+    private void DeleteEntries()
     {
-        if (Selected is not { } s) return;
-        if (!Dialogs.Confirm($"Delete '{s.Name}' from the programs list?\n\n" +
+        var items = Highlighted.ToList();
+        if (items.Count == 0) return;
+        var question = items.Count == 1 ? $"Delete '{items[0].Name}' from the programs list?\n\n"
+            : $"Delete these {items.Count} entries from the programs list?\n\n" +
+              string.Join("\n", items.Take(15).Select(i => "• " + i.Name)) + (items.Count > 15 ? "\n…" : "") + "\n\n";
+        if (!Dialogs.Confirm(question +
                              "Use this only for leftovers whose uninstaller is gone. It removes the entry without uninstalling, " +
                              "so the program's files stay where they are. The entry is backed up first and can be put back from History.")) return;
-        try
+        var done = new List<string>();
+        var denied = 0;
+        var errors = new List<string>();
+        foreach (var s in items)
         {
-            var backup = ProgramInventory.RemoveEntry(s.Program);
-            ProgramHistoryStore.Add(ProgramChange.DeletedEntry, s.Program, "Removed from the programs list", backup);
+            try
+            {
+                var backup = ProgramInventory.RemoveEntry(s.Program);
+                ProgramHistoryStore.Add(ProgramChange.DeletedEntry, s.Program, "Removed from the programs list", backup);
+                var line = $"Deleted the entry for '{s.Name}'. Backup saved to {backup}.";
+                ActivityLog.Write("Programs", line);
+                done.Add(line);
+            }
+            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException) { denied++; }
+            catch (IOException e) { errors.Add($"'{s.Name}': {e.Message}"); }
+        }
+        if (done.Count > 0)
+        {
             Refresh();
-            Summary = $"Deleted the entry for '{s.Name}'. Backup saved to {backup}.";
-            ActivityLog.Write("Programs", Summary);
+            Summary = done.Count == 1 ? done[0] : $"Deleted {done.Count} entries from the programs list. Backups are in History.";
         }
-        catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException)
-        {
-            Dialogs.Error("Deleting a program installed for all users needs administrator rights. Use Restart as Administrator at the top.");
-        }
-        catch (IOException e)
-        {
-            Dialogs.Error(e.Message);
-        }
+        if (denied > 0)
+            Dialogs.Error(denied == 1 && items.Count == 1
+                ? "Deleting a program installed for all users needs administrator rights. Use Restart as Administrator at the top."
+                : $"{denied} entr{(denied == 1 ? "y needs" : "ies need")} administrator rights to delete. Use Restart as Administrator at the top.");
+        if (errors.Count > 0) Dialogs.Error(string.Join("\n\n", errors));
     }
 
     private bool _isBusy;
     public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
 
-    /// <summary>The Uninstall button: every ticked program, or the selected one when none are ticked.</summary>
+    /// <summary>The Uninstall button: every ticked program, or the highlighted ones when none are ticked.</summary>
     private List<ProgramItem> Targets() =>
         Programs.Any(p => p.IsChecked) ? Programs.Where(p => p.IsChecked && p.Program.CanUninstall).ToList()
-        : Selected is { } s && s.Program.CanUninstall ? new List<ProgramItem> { s } : new List<ProgramItem>();
+        : Highlighted.Where(p => p.Program.CanUninstall).ToList();
 
     private Task UninstallAsync() => UninstallManyAsync(Targets());
 
-    private Task UninstallSelectedAsync() =>
-        UninstallManyAsync(Selected is { } s ? new List<ProgramItem> { s } : new List<ProgramItem>());
+    /// <summary>Right-click Uninstall: the highlighted programs, whatever is ticked.</summary>
+    private Task UninstallSelectedAsync() => UninstallManyAsync(Highlighted.Where(p => p.Program.CanUninstall).ToList());
 
     /// <summary>Uninstalls the programs strictly one after another, each with the full backup, uninstall and leftovers steps.</summary>
     private async Task UninstallManyAsync(List<ProgramItem> items)

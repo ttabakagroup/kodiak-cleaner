@@ -1,5 +1,7 @@
 using System.IO;
 using System.IO.Pipes;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 
 namespace KodiakCleaner.App;
@@ -56,6 +58,27 @@ public static class SingleInstance
         catch (Exception e) when (e is IOException or TimeoutException or UnauthorizedAccessException) { }
     }
 
+    /// <summary>
+    /// The pipe later launches write to, open to this person's account only. Not PipeOptions.CurrentUserOnly: that allows only
+    /// the token's owner, which for a copy running as administrator is the Administrators group, so a normal launch (a
+    /// second start, the jump list, a scheduled cleaning) couldn't reach a copy started with Always Start as Administrator
+    /// or Restart as Administrator, and was silently dropped.
+    /// </summary>
+    private static NamedPipeServerStream CreateServer()
+    {
+        using var me = WindowsIdentity.GetCurrent();
+        var user = me.User!;
+        var security = new PipeSecurity();
+        security.AddAccessRule(new PipeAccessRule(user, PipeAccessRights.ReadWrite, AccessControlType.Allow));
+        security.SetOwner(user);
+        try { return NamedPipeServerStreamAcl.Create(Name, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, security); }
+        catch (UnauthorizedAccessException)
+        {
+            // Windows refused that owner: keep the previous behavior rather than stop listening.
+            return new NamedPipeServerStream(Name, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        }
+    }
+
     /// <summary>Listens for later launches and passes their arguments to <paramref name="onArgs"/> on the UI thread.</summary>
     public static void Listen(Action<string[]> onArgs)
     {
@@ -66,7 +89,7 @@ public static class SingleInstance
             {
                 try
                 {
-                    await using var server = new NamedPipeServerStream(Name, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+                    await using var server = CreateServer();
                     await server.WaitForConnectionAsync();
                     using var reader = new StreamReader(server, Encoding.UTF8);
                     var text = await reader.ReadToEndAsync();

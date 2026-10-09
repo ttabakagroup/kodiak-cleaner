@@ -1,5 +1,25 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.3 Dev] - 2026-10-09
+
+### Cleaner
+- Old Kernels now orders kernel versions by number, so backported kernels such as 6.12.12+bpo are no longer mistaken for older than 6.12.9+bpo (the newest kernel could have been removed), and a mix of kernel names no longer stops the scan.
+- Old Log Files removes only rotated log files again: it no longer deletes empty log folders that programs such as nginx need, or links inside /var/log. Administrator cleanups now remove each file through the folder it was found in, so a folder swapped for a link mid-clean can't redirect a delete.
+- A home folder reached through a link (for example /home on another drive) is now cleaned; before, nothing in it was found.
+- A link where a Cleaner item points (for example ~/.cache/pip pointing at another folder) now stays in place, like the folders themselves.
+- Files are checked again just before they go: one used again since the scan (with Keep Recent Temporary Files on), or no longer a plain file, stays.
+- Temporary Files is skipped when Kodiak Cleaner runs as administrator, since every file in /tmp would count as its own, including those of running services.
+
+### Triggers
+- Removing a cron job no longer rewrites your crontab when it couldn't be read, or when the job is already gone; you see why instead.
+- Service names starting with "-" are refused, and systemctl is told where its options end.
+
+### Scheduled Cleaning
+- Clean When You Sign In now works when Kodiak Cleaner's path holds a dollar sign, a double quote or a backtick (the autostart entry is quoted as the desktop file standard asks).
+
+### Settings
+- A damaged settings file that isn't UTF-8 no longer stops Kodiak Cleaner from starting; it starts with the default settings.
+
 ## [0.8.2 Dev] - 2026-10-06
 
 ### Programs

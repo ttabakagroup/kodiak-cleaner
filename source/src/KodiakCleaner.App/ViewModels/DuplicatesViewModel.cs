@@ -159,14 +159,25 @@ public sealed class DuplicatesViewModel : ObservableObject
         }
     }
 
+    private static bool StillThere(DuplicateFile f)
+    {
+        try
+        {
+            var info = new FileInfo(f.Path);
+            return info.Exists && info.Length == f.Size && info.LastWriteTimeUtc == f.LastWriteUtc;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { return false; }
+    }
+
     private async Task DeleteAsync()
     {
         var chosen = AllFiles.Where(f => f.IsChecked).ToList();
         // Never let every copy in a set go.
-        var wipedOut = Groups.Where(g => g.Files.All(f => f.IsChecked)).ToList();
+        // The copy that stays must still be there: one deleted or changed since the search doesn't count.
+        var wipedOut = Groups.Where(g => !g.Files.Any(f => !f.IsChecked && StillThere(f.File))).ToList();
         if (wipedOut.Count > 0)
         {
-            Dialogs.Error($"Every copy is ticked in {wipedOut.Count} set(s), for example \"{wipedOut[0].Header}\". Leave at least one copy unticked in each set.");
+            Dialogs.Error($"No unticked copy is left in {wipedOut.Count} set(s), for example \"{wipedOut[0].Header}\". Leave at least one copy unticked in each set, or search again if files changed since.");
             return;
         }
         if (!Dialogs.Confirm($"Move {chosen.Count} file(s) ({ByteSize.Format(chosen.Sum(f => f.File.Size))}) to the Recycle Bin?")) return;

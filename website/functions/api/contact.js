@@ -72,6 +72,7 @@ export function validate(input) {
   return { data };
 }
 
+// Returns true (human), false (check failed) or null (Turnstile itself couldn't answer).
 async function verifyTurnstile(token, secret, ip) {
   if (!token) return false;
   const form = new FormData();
@@ -79,8 +80,11 @@ async function verifyTurnstile(token, secret, ip) {
   form.append("response", token);
   if (ip) form.append("remoteip", ip);
   const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
-  if (!res.ok) return false;
-  const out = await res.json().catch(() => ({}));
+  const out = res.ok ? await res.json().catch(() => null) : null;
+  if (!out) {
+    console.error("Turnstile siteverify didn't answer:", res.status);
+    return null;
+  }
   if (out.success !== true) console.error("Turnstile check failed:", JSON.stringify(out["error-codes"] || out));
   return out.success === true;
 }
@@ -137,6 +141,7 @@ async function handlePost({ request, env }) {
 
   const token = input["cf-turnstile-response"] || input.token;
   const human = await verifyTurnstile(token, cfg.secret, request.headers.get("CF-Connecting-IP"));
+  if (human === null) return json({ ok: false, code: "spam_check_unavailable", error: "The spam check couldn't be completed right now. Please try again in a few minutes, or email www.kodiakcleaner.app/contact instead." });
   if (!human) return json({ ok: false, code: "spam_check", error: "The spam check didn't pass. Please try it again." }, 400);
 
   const res = await fetch("https://api.resend.com/emails", {

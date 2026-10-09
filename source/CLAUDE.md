@@ -39,7 +39,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - `why-it-was-made.md` is Ted's own story. Change its wording only when Ted asks (0.8.4: light edit, no em dashes, "Kodiak Cleaner"
   wherever it said Cleaner; 0.8.13: light wording edit at Ted's invitation, his voice and first person kept; 0.8.25: opens "For well over two decades", Ted's words); it shows under Settings > Help > Why It Was Made, in larger text (17, Ted, 0.8.24).
 - Tools must stay local and reversible: read-only, or removals go to the Recycle Bin after a confirm. Browser
-  Extensions only lists; removal happens in the browser. Empty Folders never searches Windows, program folders or AppData, as a starting point or inside one (`EmptyFolderFinder.Find`/`IsStillEmpty` take the protected list), and never lists Desktop, Documents and the other Windows user folders (the kept list; searched inside). Large Files skips Windows, program folders and hidden/system files.
+  Extensions only lists; removal happens in the browser. Empty Folders never searches Windows, program folders or any user's AppData (0.8.48), as a starting point or inside one (`EmptyFolderFinder.Find`/`IsStillEmpty` take the protected list), and never lists Desktop, Documents and the other Windows user folders (the kept list; searched inside). Large Files skips Windows, program folders and hidden/system files.
   Scheduled Tasks only turns tasks on or off, never deletes them, and hides Windows tasks unless asked.
 - Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several
   choices (color scheme, accent color, light or dark) use tiles, swatches or segmented buttons.
@@ -69,6 +69,9 @@ privacy first, local first, security paramount, convenient, practical and useful
   `LeftoverNames`/`LeftoverFinder` match exact names only, never generic names, protected folders, roots or other programs' folders.
 - Programs (0.8.15): program icons (`ProgramIcons`: DisplayIcon, Installer ProductIcon, main exe), tick boxes + Select All; batch uninstall
   runs the full flow per program strictly one at a time, waiting for helper uninstallers (Temp, Un/Au_/_iu/unins) to close.
+- Multi-select (Ted, 0.8.49): Startup and Programs tables use `SelectionMode="Extended"` (the shared DataGrid style stays Single) and pass
+  their highlighted rows to the view model's `Highlighted`. Right-click actions act on every highlighted row (`GridRightClick` keeps a
+  selection when the clicked row is in it); the buttons act on ticked rows, else the highlighted ones. Repair and Rename need exactly one row.
 - Icons (0.8.16): only from files already on the PC (`ProgramIcons`, `FileIcons`: exe icons via ExtractIconEx, others via SHGetFileInfo), never bundled brand logos;
   a plain Segoe glyph when nothing is found. Cleaner groups take the icon from `CleanTarget.AppFiles`, then App Paths.
 - Cleaner Advanced Cleaning (Ted, 0.8.16): `CleanTarget.Advanced` items sit in one group, hidden behind the Advanced Cleaning button, never ticked
@@ -79,7 +82,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Programs History (Ted, 0.8.22): `ProgramHistoryStore` (Backups\Programs History\history.json) records every Delete Entry, Rename, uninstall
   and removed leftover. Restore uses the .reg backup (reg.exe import), the Recycle Bin, or the Startup history; uninstalls are record only.
   Every new removal on the Programs page must be recorded there. Back Up Settings copies it.
-- Advanced Cleaning shows a warning (Yes/No, No default) every time it is opened (Ted, 0.8.17).
+- Advanced Cleaning shows a warning (Yes/No) every time it is opened (Ted, 0.8.17).
 - Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
   vssadmin, wevtutil, netsh, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
   shadow copies keep the newest. `CleanTarget.Warning` items: caution text, confirm on tick, skipped by Select All and by AutoClean.
@@ -107,6 +110,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   per-core and SMART tables; CAS/cache latency needs a driver, so it isn't shown. Export Report saves Summary + Advanced to `Settings.Data.Reports`
   as Text, HTML (self-contained, current theme colors passed in as `ReportStyle`, no scripts) or CSV (formula cells made text), chosen in a
   dropdown remembered as `[System Information] ReportFormat` (default HTML).
+- Single instance (0.8.48): the hand-off pipe allows this person's account (`WindowsIdentity.User`), never `PipeOptions.CurrentUserOnly`, which only lets in the token owner (Administrators for an elevated copy) and so dropped every normal launch's hand-off.
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
 - Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
   description or labels). Labels are read from the page templates themselves on the first search, so new settings are found automatically.
@@ -126,7 +130,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   locked); a hidden cmd.exe reopens Kodiak Cleaner when msiexec exits with 0 (Ted, 0.8.43). With automatic updates on, the check follows `UpdateSchedule` ([Updates] Interval, Ted 0.8.44: On Startup (default), Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month (15 days), Monthly; listed in that order, not A to Z), checked at start and by a 5-minute timer while open. Every release must refresh the website's update
   file with the new version and the MSI's SHA-256 (release-<ver>/updates/dev.json).
 - Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
-  never `MessageBox` directly. Risky Yes is a `DangerButton`, No stays the default.
+  never `MessageBox` directly. Yes/No pop-ups show No on the left and Yes on the right as the default (Enter) button (Ted, 0.8.50,
+  replacing No as the default); Esc or closing means No. On a warning, Yes is a `DangerButton`.
 - Every window uses `UseLayoutRounding="True" TextOptions.TextFormattingMode="Display"` for crisp text (0.8.27).
 - README screenshots live in `docs/images/` (never shipped in packages); retake them when pages change.
 - Clipboard copies go through `ClipboardHelper` (retries, then a plain message), never `Clipboard.SetText`.

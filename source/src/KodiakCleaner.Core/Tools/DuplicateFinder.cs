@@ -47,7 +47,9 @@ public static class DuplicateFinder
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var bySize = new Dictionary<(long, string), List<DuplicateFile>>();
         int scanned = 0;
-        foreach (var folder in options.Folders.Where(Directory.Exists))
+        // Roots are followed to where they really are, so a folder reached through a link and directly is one folder:
+        // otherwise each file there would be listed as its own duplicate and removing "the copy" would remove the only one.
+        foreach (var folder in options.Folders.Where(Directory.Exists).Select(RealFolder))
         {
             IEnumerable<string> files;
             try { files = Directory.EnumerateFiles(folder, "*", enumeration); }
@@ -76,13 +78,13 @@ public static class DuplicateFinder
         foreach (var sameSize in candidates)
         {
             ct.ThrowIfCancellationRequested();
-            foreach (var partial in GroupByHash(sameSize, PartialBytes, ct).Where(g => g.Count > 1))
+            foreach (var (partialHash, partial) in GroupByHash(sameSize, PartialBytes, ct).Where(g => g.Files.Count > 1))
             {
+                // Files up to 64 KB were read whole, so the partial hash is already the full one; big files are read once more, not twice.
                 var needFull = partial[0].Size > PartialBytes;
-                var finals = needFull ? GroupByHash(partial, long.MaxValue, ct) : new List<List<DuplicateFile>> { partial };
-                foreach (var g in finals.Where(g => g.Count > 1))
-                    groups.Add(new DuplicateGroup(HashOf(g[0].Path, long.MaxValue) ?? "", g[0].Size,
-                        g.OrderBy(f => f.LastWriteUtc).ToList()));
+                var finals = needFull ? GroupByHash(partial, long.MaxValue, ct) : new List<(string Hash, List<DuplicateFile> Files)> { (partialHash, partial) };
+                foreach (var (hash, g) in finals.Where(g => g.Files.Count > 1))
+                    groups.Add(new DuplicateGroup(hash, g[0].Size, g.OrderBy(f => f.LastWriteUtc).ToList()));
             }
             done += sameSize.Count;
             progress?.Report(new DuplicateProgress("Comparing", scanned, done, total));
@@ -91,7 +93,7 @@ public static class DuplicateFinder
         return groups.OrderByDescending(g => g.WastedBytes).ToList();
     }
 
-    private static List<List<DuplicateFile>> GroupByHash(List<DuplicateFile> files, long bytes, CancellationToken ct)
+    private static List<(string Hash, List<DuplicateFile> Files)> GroupByHash(List<DuplicateFile> files, long bytes, CancellationToken ct)
     {
         var map = new Dictionary<string, List<DuplicateFile>>();
         foreach (var f in files)
@@ -102,7 +104,29 @@ public static class DuplicateFinder
             if (!map.TryGetValue(h, out var list)) map[h] = list = new List<DuplicateFile>();
             list.Add(f);
         }
-        return map.Values.ToList();
+        return map.Select(kv => (kv.Key, kv.Value)).ToList();
+    }
+
+    /// <summary>The folder with every link or junction on its path followed, so the same folder always has the same path.</summary>
+    internal static string RealFolder(string folder)
+    {
+        var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder));
+        var root = Path.GetPathRoot(full) ?? "";
+        var real = root;
+        foreach (var part in full[root.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+        {
+            real = Path.Combine(real, part);
+            try
+            {
+                if (!new DirectoryInfo(real).Attributes.HasFlag(FileAttributes.ReparsePoint)) continue;
+                // A volume mount point or cloud placeholder has no plain path to follow, so it stays as it is.
+                if (Directory.ResolveLinkTarget(real, returnFinalTarget: true) is { } target &&
+                    Path.IsPathFullyQualified(target.FullName) && !target.FullName.StartsWith(@"\\?\", StringComparison.Ordinal))
+                    real = Path.TrimEndingDirectorySeparator(target.FullName);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        return real;
     }
 
     internal static string? HashOf(string path, long maxBytes)

@@ -78,6 +78,35 @@ public sealed class DuplicateFinderTests : IDisposable
         var groups = DuplicateFinder.Find(new DuplicateSearchOptions { Folders = new[] { _root, Path.Combine(_root, "sub") } });
         Assert.Equal(2, Assert.Single(groups).Files.Count);
     }
+
+    [Fact]
+    public void A_folder_also_chosen_through_a_link_is_not_its_own_duplicate()
+    {
+        // Same file reached as real/a.bin and link/a.bin: listing it would let "the copy" (the only copy) be removed.
+        Write("real/a.bin", new byte[100]);
+        var link = Path.Combine(_root, "link");
+        Directory.CreateSymbolicLink(link, Path.Combine(_root, "real"));
+
+        Assert.Empty(DuplicateFinder.Find(new DuplicateSearchOptions { Folders = new[] { Path.Combine(_root, "real"), link } }));
+        Assert.Empty(DuplicateFinder.Find(new DuplicateSearchOptions { Folders = new[] { link, Path.Combine(_root, "real") } }));
+        Assert.Equal(Path.Combine(_root, "real"), DuplicateFinder.RealFolder(link));
+    }
+
+    [Fact]
+    public void Group_hash_is_the_full_content_hash()
+    {
+        var big = new byte[200_000];
+        big[199_999] = 7;
+        Write("p/big.bin", big);
+        Write("q/big.bin", big);
+        Write("p/small.bin", new byte[] { 1, 2, 3 });
+        Write("q/small.bin", new byte[] { 1, 2, 3 });
+
+        var groups = DuplicateFinder.Find(new DuplicateSearchOptions { Folders = new[] { _root } });
+
+        Assert.Equal(2, groups.Count);
+        foreach (var g in groups) Assert.Equal(DuplicateFinder.HashOf(g.Files[0].Path, long.MaxValue), g.Hash);
+    }
 }
 
 public sealed class FreeSpaceWiperTests : IDisposable
@@ -117,6 +146,26 @@ public sealed class FreeSpaceWiperTests : IDisposable
         Assert.ThrowsAny<OperationCanceledException>(() =>
             FreeSpaceWiper.Wipe(_root, 1, () => 0, ct: cts.Token, limitBytes: 1024 * 1024));
         Assert.False(Directory.Exists(Path.Combine(_root, FreeSpaceWiper.WorkFolderName)));
+    }
+
+    private sealed class Signal(ManualResetEventSlim started) : IProgress<WipeProgress>
+    {
+        public void Report(WipeProgress value) => started.Set(); // runs on the wiping thread, as it writes
+    }
+
+    [Fact]
+    public void Closing_Kodiak_Cleaner_stops_a_wipe_and_removes_its_filler_files_first()
+    {
+        // On exit the process ends without running a background wipe's finally; the exit hook calls StopAll.
+        using var started = new ManualResetEventSlim();
+        var wipe = Task.Run(() => FreeSpaceWiper.Wipe(_root, 1, () => 0, new Signal(started), limitBytes: 10L * 1024 * 1024 * 1024));
+        Assert.True(started.Wait(TimeSpan.FromSeconds(60)), "the wipe never started writing");
+        Assert.True(Directory.Exists(Path.Combine(_root, FreeSpaceWiper.WorkFolderName)));
+
+        FreeSpaceWiper.StopAll(TimeSpan.FromSeconds(30));
+
+        Assert.False(Directory.Exists(Path.Combine(_root, FreeSpaceWiper.WorkFolderName))); // already gone when StopAll returns
+        Assert.ThrowsAny<OperationCanceledException>(() => wipe.GetAwaiter().GetResult());
     }
 }
 

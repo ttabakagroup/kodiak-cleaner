@@ -14,6 +14,9 @@ public class CommandLineTests
     [InlineData("MsiExec.exe /X{1234}", "MsiExec.exe", "/X{1234}")]
     [InlineData("\"C:\\unterminated\\app.exe", "C:\\unterminated\\app.exe", "")]
     [InlineData("", "", "")]
+    // The earliest program path wins, whatever its extension: a script that takes a program as its argument.
+    [InlineData("C:\\Tools\\start.cmd C:\\Apps\\app.exe", "C:\\Tools\\start.cmd", "C:\\Apps\\app.exe")]
+    [InlineData("C:\\Scripts\\sync.bat --run C:\\Apps\\app.exe /quiet", "C:\\Scripts\\sync.bat", "--run C:\\Apps\\app.exe /quiet")]
     public void Split_extracts_executable_and_arguments(string input, string exe, string args)
     {
         var (e, a) = CommandLine.Split(input);

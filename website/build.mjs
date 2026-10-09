@@ -54,9 +54,13 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 const parts = (iso) => iso.split("-").map(Number);
 
 // PNG width and height straight from the file header, for width/height attributes.
+// Only real PNGs are read, so a stray Thumbs.db or .DS_Store in the folder doesn't stop the build.
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const imageSizes = {};
 for (const f of readdirSync(at("src", "assets", "images", "screens"))) {
+  if (!/\.png$/i.test(f)) continue;
   const b = readFileSync(at("src", "assets", "images", "screens", f));
+  if (b.length < 24 || !b.subarray(0, 8).equals(PNG_SIGNATURE)) throw new Error(`src/assets/images/screens/${f} isn't a PNG file`);
   imageSizes[f] = [b.readUInt32BE(16), b.readUInt32BE(20)];
 }
 

@@ -53,8 +53,10 @@
         <local:SearchBox DockPanel.Dock="Top" Margin="0,0,0,16" Text="{Binding Filter}" Placeholder="Search by name, command or location" />
 
         <Border Style="{StaticResource Card}" Padding="8">
-            <DataGrid ItemsSource="{Binding View}" IsSynchronizedWithCurrentItem="False" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
-                <!-- Right-click an entry to turn it on or off, or remove it. -->
+            <DataGrid ItemsSource="{Binding View}" IsSynchronizedWithCurrentItem="False" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                      SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged">
+                <!-- Right-click an entry to turn it on or off, or remove it. Ctrl-click and Shift-click highlight several entries
+                     (Ted, 0.8.49) and the menu acts on all of them; the buttons above use them when nothing is ticked. -->
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Enable" Command="{Binding EnableRowCommand}">
