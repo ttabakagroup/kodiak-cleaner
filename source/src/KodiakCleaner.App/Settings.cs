@@ -126,7 +126,10 @@ public sealed class Settings
     public List<CleaningSchedule> Schedules { get; set; } = new();
 
     // [Updates]
+    /// <summary>Check for updates on the schedule below and say when one is available (Ted, 0.8.51: checking alone never installs).</summary>
     public bool AutoUpdate { get; set; }
+    /// <summary>Also download a found update and install it when Kodiak Cleaner closes (Ted, 0.8.51). Only used while AutoUpdate is on.</summary>
+    public bool AutoInstall { get; set; }
     /// <summary>How often automatic updates check (Ted, 0.8.44); On Startup was the only behavior in 0.8.43.</summary>
     public KodiakCleaner.Core.Updates.UpdateInterval UpdateInterval { get; set; } = KodiakCleaner.Core.Updates.UpdateInterval.OnStartup;
     public DateTime? LastUpdateCheckUtc { get; set; }
@@ -226,6 +229,8 @@ public sealed class Settings
         Schedules = CleaningSchedule.ReadAll(ini).ToList();
 
         AutoUpdate = ini.GetBool("Updates", "AutoUpdate", AutoUpdate);
+        // Before 0.8.51 automatic updates always downloaded and installed, so anyone who had them on keeps that.
+        AutoInstall = ini.GetBool("Updates", "AutoInstall", AutoUpdate);
         UpdateInterval = Enum.TryParse<KodiakCleaner.Core.Updates.UpdateInterval>(ini.Get("Updates", "Interval"), ignoreCase: true, out var every) ? every : UpdateInterval;
         LastUpdateCheckUtc = DateTime.TryParse(ini.Get("Updates", "LastCheckUtc"), System.Globalization.CultureInfo.InvariantCulture,
             System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var d) ? d : null;
@@ -277,6 +282,7 @@ public sealed class Settings
         ini.Set("Cleaner", "SortBy", CleanerSort.ToString()); // "Sort" (0.8.21) meant A to Z for everyone, so it isn't read
 
         ini.Set("Updates", "AutoUpdate", AutoUpdate);
+        ini.Set("Updates", "AutoInstall", AutoInstall);
         ini.Set("Updates", "Interval", UpdateInterval.ToString());
         ini.Set("Updates", "LastCheckUtc", LastUpdateCheckUtc?.ToString("o") ?? "");
 

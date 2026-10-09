@@ -176,12 +176,13 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
     public SystemInfoViewModel()
     {
         RefreshCommand = new RelayCommand(Refresh, () => !IsBusy);
+        CancelCommand = new RelayCommand(Cancel, () => IsBusy);
         CopyCommand = new RelayCommand(() =>
         {
             if (ClipboardHelper.CopyOrExplain(SystemReport.ToText(CurrentFacts, $"{AppInfo.Name} {AppInfo.VersionName}: System Information")))
                 Status = "Copied. Paste it wherever you need it; nothing was sent anywhere.";
-        });
-        ExportCommand = new RelayCommand(Export, () => !IsBusy);
+        }, () => CurrentFacts.Count > 0);
+        ExportCommand = new RelayCommand(Export, () => !_exporting);
         OpenReportCommand = new RelayCommand(() =>
         {
             if (LastReport is not null && File.Exists(LastReport)) Elevation.ShowInExplorer(LastReport);
@@ -190,19 +191,26 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
     }
 
     private bool _loaded;
-    /// <summary>Reads the list the first time the page is shown, so starting Kodiak Cleaner stays quick.</summary>
+    /// <summary>
+    /// Starts reading the first time the page is shown, so starting Kodiak Cleaner stays quick. Everything is read in the
+    /// background (0.8.51, Ted: the page used to read drives on the main thread, so a sleeping or disconnected drive froze
+    /// Kodiak Cleaner); the page shows progress and can be left and come back to while it reads.
+    /// </summary>
     public void EnsureLoaded()
     {
         if (_loaded) return;
         _loaded = true;
-        LoadSummary();
+        _summaryTask = LoadSummaryAsync(NewToken());
     }
 
-    public ObservableCollection<SystemFact> Facts { get; } = new();
-    public ObservableCollection<SystemFact> AdvancedFacts { get; } = new();
-    public IEnumerable<SystemFact> CurrentFacts => ShowAdvanced ? AdvancedFacts : Facts;
+    private IReadOnlyList<SystemFact> _facts = Array.Empty<SystemFact>();
+    public IReadOnlyList<SystemFact> Facts { get => _facts; private set { _facts = value; OnStateChanged(); } }
+    private IReadOnlyList<SystemFact> _advancedFacts = Array.Empty<SystemFact>();
+    public IReadOnlyList<SystemFact> AdvancedFacts { get => _advancedFacts; private set { _advancedFacts = value; OnStateChanged(); } }
+    public IReadOnlyList<SystemFact> CurrentFacts => ShowAdvanced ? AdvancedFacts : Facts;
 
     public ICommand RefreshCommand { get; }
+    public ICommand CancelCommand { get; }
     public ICommand CopyCommand { get; }
     public ICommand ExportCommand { get; }
     public ICommand OpenReportCommand { get; }
@@ -216,18 +224,54 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
         {
             if (!Set(ref _showAdvanced, value)) return;
             OnPropertyChanged(nameof(ShowSummary));
-            OnPropertyChanged(nameof(CurrentFacts));
             Status = "";
-            if (value && !_advancedLoaded) _ = LoadAdvancedAsync();
+            if (value && !_advancedLoaded && !_advancedBusy) { Stopped = false; _advancedTask = LoadAdvancedAsync(NewToken()); }
+            if (!value && !_summaryLoaded && !_summaryBusy) { Stopped = false; _summaryTask = LoadSummaryAsync(NewToken()); }
+            OnStateChanged();
         }
     }
     public bool ShowSummary { get => !ShowAdvanced; set => ShowAdvanced = !value; }
 
-    private bool _busy;
-    public bool IsBusy
+    // ---- What the list area shows: the facts, a progress panel while reading, or a plain panel after Cancel.
+
+    private bool _summaryBusy, _advancedBusy, _summaryLoaded, _advancedLoaded, _stopped, _exporting;
+    private Task? _summaryTask, _advancedTask;
+    private CancellationTokenSource? _cts;
+
+    public bool IsBusy => _summaryBusy || _advancedBusy;
+    /// <summary>The view shown is still being read.</summary>
+    public bool ShowLoading => ShowAdvanced ? _advancedBusy : _summaryBusy;
+    /// <summary>Cancel was clicked before the view shown had anything to show.</summary>
+    public bool ShowStopped => !ShowLoading && Stopped && CurrentFacts.Count == 0;
+    public bool ShowList => !ShowLoading && !ShowStopped;
+
+    private bool Stopped { get => _stopped; set { _stopped = value; OnStateChanged(); } }
+
+    private string _progressText = "";
+    public string ProgressText { get => _progressText; private set => Set(ref _progressText, value); }
+    private double _progressValue;
+    public double ProgressValue { get => _progressValue; private set => Set(ref _progressValue, value); }
+    /// <summary>Summary has no steps worth counting, so its bar just moves; Advanced counts its parts.</summary>
+    public bool ProgressIsIndeterminate => !ShowAdvanced;
+
+    private void OnStateChanged()
     {
-        get => _busy;
-        private set { if (Set(ref _busy, value)) CommandManager.InvalidateRequerySuggested(); }
+        OnPropertyChanged(nameof(Facts));
+        OnPropertyChanged(nameof(AdvancedFacts));
+        OnPropertyChanged(nameof(CurrentFacts));
+        OnPropertyChanged(nameof(IsBusy));
+        OnPropertyChanged(nameof(ShowLoading));
+        OnPropertyChanged(nameof(ShowStopped));
+        OnPropertyChanged(nameof(ShowList));
+        OnPropertyChanged(nameof(ProgressIsIndeterminate));
+        OnPropertyChanged(nameof(ProgressText));
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private CancellationToken NewToken()
+    {
+        if (_cts is null || _cts.IsCancellationRequested) _cts = new CancellationTokenSource();
+        return _cts.Token;
     }
 
     private string _status = "";
@@ -258,50 +302,111 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
 
     private void Refresh()
     {
-        LoadSummary();
         Status = "";
-        if (_advancedLoaded || ShowAdvanced) _ = LoadAdvancedAsync();
+        Stopped = false;
+        var ct = NewToken();
+        _summaryTask = LoadSummaryAsync(ct);
+        if (_advancedLoaded || ShowAdvanced) _advancedTask = LoadAdvancedAsync(ct);
     }
 
-    private void LoadSummary()
+    /// <summary>Stops reading. A WMI query already under way finishes in the background and its answer is dropped.</summary>
+    private void Cancel()
     {
-        Facts.Clear();
-        foreach (var f in Collect()) Facts.Add(f);
+        _cts?.Cancel();
+        Stopped = true;
+        ActivityLog.Write("System Information", "Reading was cancelled");
     }
 
-    private bool _advancedLoaded;
-    private Task? _advancedTask;
-
-    private Task LoadAdvancedAsync()
+    private async Task LoadSummaryAsync(CancellationToken ct)
     {
-        if (_advancedTask is { IsCompleted: false }) return _advancedTask;
-        return _advancedTask = LoadAdvancedCore();
-    }
-
-    private async Task LoadAdvancedCore()
-    {
-        IsBusy = true;
-        Status = "Reading details. This can take a few seconds.";
+        _summaryBusy = true;
+        ProgressText = "Reading Windows, the processor, memory and each drive…";
+        OnStateChanged();
         try
         {
-            var facts = await Task.Run(SystemDetails.Collect);
-            AdvancedFacts.Clear();
-            foreach (var f in facts) AdvancedFacts.Add(f);
-            _advancedLoaded = true;
-            Status = "";
+            var facts = await CollectSummaryAsync(ct);
+            ct.ThrowIfCancellationRequested();
+            Facts = facts;
+            _summaryLoaded = true;
         }
+        catch (OperationCanceledException) { }
         catch (Exception e) when (e is not OutOfMemoryException)
         {
             ActivityLog.Error("System Information", e);
             Status = "Some details couldn't be read.";
         }
-        finally { IsBusy = false; }
+        finally
+        {
+            _summaryBusy = false;
+            OnStateChanged();
+        }
+    }
+
+    private async Task LoadAdvancedAsync(CancellationToken ct)
+    {
+        _advancedBusy = true;
+        ProgressValue = 0;
+        ProgressText = "Reading details…";
+        OnStateChanged();
+        // Progress<T> reports back on the main thread, where the bar lives.
+        var progress = new Progress<(string Group, int Done, int Total)>(p =>
+        {
+            if (ct.IsCancellationRequested) return; // a late report from a cancelled read
+            ProgressValue = p.Total == 0 ? 0 : 100.0 * p.Done / p.Total;
+            ProgressText = p.Group.Length == 0 ? "Finishing…" : $"Reading {p.Group} ({p.Done + 1} of {p.Total})…";
+        });
+        IProgress<(string, int, int)> report = progress;
+        try
+        {
+            // WaitAsync: Cancel returns at once, even while a slow WMI query is still under way in the background.
+            var facts = await Task.Run(() => SystemDetails.Collect((g, done, total) => report.Report((g, done, total)), ct), ct).WaitAsync(ct);
+            ct.ThrowIfCancellationRequested();
+            AdvancedFacts = facts;
+            _advancedLoaded = true;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            ActivityLog.Error("System Information", e);
+            Status = "Some details couldn't be read.";
+        }
+        finally
+        {
+            _advancedBusy = false;
+            OnStateChanged();
+        }
     }
 
     private async void Export()
     {
-        if (!_loaded) EnsureLoaded();
-        if (!_advancedLoaded) await LoadAdvancedAsync();
+        _exporting = true;
+        CommandManager.InvalidateRequerySuggested();
+        try
+        {
+            // The report holds both views, so read whatever hasn't been read yet (or wait for it) first.
+            if (!_loaded) EnsureLoaded();
+            if (!_summaryLoaded && !_summaryBusy) _summaryTask = LoadSummaryAsync(NewToken());
+            if (!_advancedLoaded && !_advancedBusy) _advancedTask = LoadAdvancedAsync(NewToken());
+            Stopped = false;
+            if (IsBusy) Status = "Reading details first…";
+            if (_summaryTask is not null) await _summaryTask;
+            if (_advancedTask is not null) await _advancedTask;
+            if (!_summaryLoaded || !_advancedLoaded)
+            {
+                Status = "Reading was stopped, so no report was saved. Click Refresh, then Export Report again.";
+                return;
+            }
+            SaveReport();
+        }
+        finally
+        {
+            _exporting = false;
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    private void SaveReport()
+    {
         var format = ReportFormat;
         var now = DateTime.Now;
         var title = $"{AppInfo.Name} {AppInfo.VersionName}: System Report for {Environment.MachineName}";
@@ -334,7 +439,43 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
         return new ReportStyle(Hex("Bg"), Hex("Surface"), Hex("Text"), Hex("Muted"), Hex("Line"), Hex("Accent"), Hex("AccentText"), font);
     }
 
-    private static IEnumerable<SystemFact> Collect()
+    /// <summary>How long one drive gets to answer before it's listed as not answering (a sleeping disk or a lost network drive).</summary>
+    private static readonly TimeSpan DriveWait = TimeSpan.FromSeconds(5);
+
+    /// <summary>Summary: the basics, then every drive at once, each given <see cref="DriveWait"/> to answer, then Kodiak Cleaner itself.</summary>
+    private static async Task<List<SystemFact>> CollectSummaryAsync(CancellationToken ct)
+    {
+        var facts = await Task.Run(() => Basics().ToList(), ct).WaitAsync(ct);
+        var drives = await Task.Run(DriveInfo.GetDrives, ct).WaitAsync(ct);
+        var lines = await Task.WhenAll(drives.Select(async d =>
+        {
+            var name = "Drive " + d.Name.TrimEnd('\\').TrimEnd(':');
+            try { return (name, await Task.Run(() => DriveLine(d)).WaitAsync(DriveWait, ct)); }
+            catch (TimeoutException)
+            {
+                ActivityLog.Write("System Information", $"{name} didn't answer within {DriveWait.TotalSeconds:0} seconds");
+                return (name, (string?)"Didn't answer in time (asleep, busy or disconnected). Click Refresh to try again.");
+            }
+        }));
+        facts.AddRange(lines.Where(l => l.Item2 is not null).Select(l => new SystemFact("Drives", l.name, l.Item2!)));
+        facts.Add(new(AppInfo.Name, "Version", AppInfo.VersionName));
+        facts.Add(new(AppInfo.Name, "Install Type", Integration.IsInstalled ? "Installed (MSI)" : "Portable"));
+        facts.Add(new(AppInfo.Name, ".NET", RuntimeInformation.FrameworkDescription));
+        facts.Add(new(AppInfo.Name, "Running As", Elevation.IsAdministrator ? "Administrator" : "Standard user"));
+        return facts;
+    }
+
+    /// <returns>The drive's free and total space, or null when it isn't ready (an empty card reader, say).</returns>
+    private static string? DriveLine(DriveInfo d)
+    {
+        try
+        {
+            return d.IsReady ? $"{ByteSize.Format(d.AvailableFreeSpace)} free of {ByteSize.Format(d.TotalSize)} ({d.DriveFormat}, {d.DriveType})" : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return null; }
+    }
+
+    private static IEnumerable<SystemFact> Basics()
     {
         string? Reg(string key, string value)
         {
@@ -361,23 +502,6 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
             yield return new("Computer", "Memory", ByteSize.Format(total));
             yield return new("Computer", "Memory Available", ByteSize.Format(free));
         }
-
-        foreach (var d in DriveInfo.GetDrives())
-        {
-            string? line = null;
-            try
-            {
-                if (d.IsReady)
-                    line = $"{ByteSize.Format(d.AvailableFreeSpace)} free of {ByteSize.Format(d.TotalSize)} ({d.DriveFormat}, {d.DriveType})";
-            }
-            catch (IOException) { }
-            if (line is not null) yield return new("Drives", "Drive " + d.Name.TrimEnd('\\').TrimEnd(':'), line);
-        }
-
-        yield return new(AppInfo.Name, "Version", AppInfo.VersionName);
-        yield return new(AppInfo.Name, "Install Type", Integration.IsInstalled ? "Installed (MSI)" : "Portable");
-        yield return new(AppInfo.Name, ".NET", RuntimeInformation.FrameworkDescription);
-        yield return new(AppInfo.Name, "Running As", Elevation.IsAdministrator ? "Administrator" : "Standard user");
     }
 
     [StructLayout(LayoutKind.Sequential)]

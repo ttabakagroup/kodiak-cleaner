@@ -319,6 +319,13 @@ public sealed class SettingsViewModel : ObservableObject
         set => Apply(value, v => S.AutoUpdate = v);
     }
 
+    /// <summary>Download and install found updates by themselves (Ted, 0.8.51); greyed out while checking is off.</summary>
+    public bool AutoInstall
+    {
+        get => S.AutoInstall;
+        set => Apply(value, v => S.AutoInstall = v);
+    }
+
     /// <summary>Check for Updates interval choices (Ted, 0.8.44; a dropdown since 0.8.45, so more can be added).</summary>
     public IReadOnlyList<UpdateIntervalOption> UpdateIntervals { get; } =
         UpdateSchedule.Options.Select(o => new UpdateIntervalOption(o.Interval, o.Label)).ToList();

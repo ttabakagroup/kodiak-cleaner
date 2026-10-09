@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.51 Dev] - 2026-10-09
+
+### Updates
+- Settings > Updates now has two switches. Check for Updates Automatically looks for a new version as often as you choose and tells you when one is available; it no longer downloads anything by itself. Download and Install Updates Automatically also downloads the update and installs it when you close Kodiak Cleaner, which then opens again. It's greyed out while checking is off. If you had automatic updates on before, both switches start on, so nothing changes for you.
+
+### System Information
+- Opening System Information no longer freezes Kodiak Cleaner. It used to check every drive on the main window's thread, so a sleeping disk or a disconnected network drive could hang the window. Everything is now read in the background, and a drive that doesn't answer within 5 seconds is listed as not answering.
+- While it reads, the page shows a progress bar (Advanced shows which part it's on) and a Cancel button. Cancel shows a plain screen with Refresh. You can switch to other pages while it reads and come back when it's done.
+- Parts of Advanced that take 5 seconds or more are noted in the activity log, to help find slow ones.
+
 ## [0.8.50 Dev] - 2026-10-09
 
 ### Pop-Ups

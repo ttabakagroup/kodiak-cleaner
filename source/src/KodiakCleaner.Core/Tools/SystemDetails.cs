@@ -19,27 +19,39 @@ namespace KodiakCleaner.Core.Tools;
 [SupportedOSPlatform("windows")]
 public static partial class SystemDetails
 {
-    public static List<SystemFact> Collect()
+    public static List<SystemFact> Collect() => Collect(null, CancellationToken.None);
+
+    /// <summary>
+    /// Reads every part in turn, telling <paramref name="progress"/> which part is next (its name, how many are done, how many
+    /// there are), and stops between parts once <paramref name="ct"/> is cancelled (0.8.51: System Information shows progress and
+    /// can be cancelled). A part already being read finishes in the background; its rows are dropped.
+    /// </summary>
+    public static List<SystemFact> Collect(Action<string, int, int>? progress, CancellationToken ct)
     {
-        var facts = new List<SystemFact>();
-        void Add(string group, Func<IEnumerable<SystemFact>> part)
+        var parts = new (string Group, Func<IEnumerable<SystemFact>> Read)[]
         {
-            try { facts.AddRange(part()); }
+            ("Audio", Audio), ("Graphics", Graphics), ("Memory", Memory), ("Motherboard and BIOS", Board), ("Network", Network),
+            ("Processor", Processor), ("Storage", Storage), ("Temperatures", Temperatures), ("Windows Settings", WindowsSettings),
+        };
+        var facts = new List<SystemFact>();
+        for (int i = 0; i < parts.Length; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var (group, read) = parts[i];
+            progress?.Invoke(group, i, parts.Length);
+            var started = Environment.TickCount64;
+            try { facts.AddRange(read()); }
             catch (Exception e) when (Expected(e) || e is InvalidOperationException or IOException or NetworkInformationException)
             {
                 // Leave the rest of that part out rather than fail the whole page, and note why in the activity log.
                 ActivityLog.Write("System Information", $"{group} couldn't be read: {e.GetType().Name}: {e.Message}");
             }
+            // A slow part is what makes the page feel stuck, so note which one it was.
+            var seconds = (Environment.TickCount64 - started) / 1000.0;
+            if (seconds >= 5) ActivityLog.Write("System Information", $"Reading {group} took {seconds:0.#} seconds");
         }
-        Add("Audio", Audio);
-        Add("Graphics", Graphics);
-        Add("Memory", Memory);
-        Add("Motherboard and BIOS", Board);
-        Add("Network", Network);
-        Add("Processor", Processor);
-        Add("Storage", Storage);
-        Add("Temperatures", Temperatures);
-        Add("Windows Settings", WindowsSettings);
+        ct.ThrowIfCancellationRequested();
+        progress?.Invoke("", parts.Length, parts.Length);
         return facts;
     }
 

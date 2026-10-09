@@ -105,7 +105,7 @@ The installer isn't code-signed yet, so Windows SmartScreen may warn you the fir
 
 ### Update
 
-- **Installed:** click **Check for Updates** on the **About** page or **Check Now** under **Settings > Updates**, or turn on automatic updates there. You can also run a newer MSI over the old one. Your settings and backups are kept either way.
+- **Installed:** click **Check for Updates** on the **About** page or **Check Now** under **Settings > Updates**, or turn on Check for Updates Automatically there (it tells you when a new version is out) and, if you like, Download and Install Updates Automatically. You can also run a newer MSI over the old one. Your settings and backups are kept either way.
 - **Portable:** replace `KodiakCleaner.exe` and the `Docs` folder with the new ones, and keep `KodiakCleaner.ini` and the `Backups` and `Logs` folders next to it.
 
 To be extra safe, use **Settings > Application > Back Up Settings** before updating.
@@ -211,7 +211,7 @@ Windows Task Scheduler starts Kodiak Cleaner at that time; it cleans without ope
 
 ### System Information
 
-System Information sits at the bottom of the sidebar, between Settings and About. It is read-only, and nothing it reads leaves your PC.
+System Information sits at the bottom of the sidebar, between Settings and About. It is read-only, and nothing it reads leaves your PC. It reads in the background with a progress bar and a Cancel button, so you can use other pages while it works.
 
 - **Summary**: Windows edition, version and build, up time, processor, memory, drives, and how Kodiak Cleaner is running.
 - **Advanced**: drive models, serial numbers, health and connection; memory type, speed, slots and each module's maker, part and serial number; processor cores, threads, speeds and L1/L2/L3 cache; PC model and serial number, motherboard, BIOS, UEFI, Secure Boot and TPM; graphics memory, driver and resolution; each network adapter's MAC, IPv4 and IPv6 addresses, gateway, DNS and DHCP; audio devices; a few Windows settings (antivirus, firewall, power plan, page file, Remote Desktop, UAC and more); and temperatures where Windows shares them.
@@ -233,7 +233,7 @@ Every setting is a switch and is saved straight away. Type in the search box abo
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening a short form that becomes an email in your own email app. |
 | **General** | What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
 | **Protect** | Back Up Now saves the registry areas Kodiak Cleaner can change into one `.reg` file (the very large ones are backed up with each fix instead), with an optional prompt before each registry fix. Back up, open or reset the settings file. |
-| **Updates** | Check Now (also on the About page as Check for Updates), or keep Kodiak Cleaner updated automatically (off by default), with a dropdown for how often: On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly. |
+| **Updates** | Check Now (also on the About page as Check for Updates). Check for Updates Automatically (off by default) looks for a new version as often as you pick (On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly) and tells you when one is out. Download and Install Updates Automatically (off by default) also downloads it and installs it when you close Kodiak Cleaner. |
 
 The sidebar can be widened, locked with the paperclip, or collapsed to icons only.
 
@@ -284,7 +284,7 @@ Everything stays on your PC.
 - **No remote resources.** The Fredoka font is built in, and icons come from Windows' own icon font.
 - **No telemetry**, analytics, crash reports, accounts or ads. Nothing is sent automatically, ever.
 - **Settings, backups and logs** are plain files: `KodiakCleaner.ini` next to `KodiakCleaner.exe`, and the `Backups`, `Logs` and `Reports` folders in `Documents\Kodiak Cleaner` (beside the exe for the portable version). The activity log stays on your PC and can be turned off.
-- **Updates are the only network use.** Kodiak Cleaner reads one small update file from its website, www.kodiakcleaner.app, only when you click **Check for Updates** on the About page or **Check Now** in Settings, or on the schedule you pick if you turn on automatic updates (off by default; on startup, every hour up to monthly). The installer comes from the same website and is checked against the SHA-256 checksum in that file before it's installed.
+- **Updates are the only network use.** Kodiak Cleaner reads one small update file from its website, www.kodiakcleaner.app, only when you click **Check for Updates** on the About page or **Check Now** in Settings, or on the schedule you pick if you turn on Check for Updates Automatically (off by default; on startup, every hour up to monthly). The installer comes from the same website and is checked against the SHA-256 checksum in that file before it's installed.
 
 Read the full [Privacy Policy](PRIVACY.md) and [Terms of Use](terms-of-use.md).
 

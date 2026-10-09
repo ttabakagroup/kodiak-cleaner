@@ -110,6 +110,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   per-core and SMART tables; CAS/cache latency needs a driver, so it isn't shown. Export Report saves Summary + Advanced to `Settings.Data.Reports`
   as Text, HTML (self-contained, current theme colors passed in as `ReportStyle`, no scripts) or CSV (formula cells made text), chosen in a
   dropdown remembered as `[System Information] ReportFormat` (default HTML).
+  Loading (Ted, 0.8.51): nothing is read on the main thread. Summary reads the basics in the background and every drive at once,
+  each given 5 s (`DriveWait`) before it's listed as not answering (a sleeping disk or lost network drive used to freeze the page);
+  Advanced reports progress per part (`SystemDetails.Collect(progress, ct)`) and logs parts taking 5 s or more. The list area shows a
+  progress panel with Cancel while reading and a plain "Reading Stopped" panel after Cancel; the page can be left and returned to.
 - Single instance (0.8.48): the hand-off pipe allows this person's account (`WindowsIdentity.User`), never `PipeOptions.CurrentUserOnly`, which only lets in the token owner (Administrators for an elevated copy) and so dropped every normal launch's hand-off.
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
 - Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
@@ -127,7 +131,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   on (`ShowBetaNotice`, also a switch under Settings > General). Stable builds never show it.
 - Automatic updates (0.8.40): read `updates/<channel>.json` ({channel, version, msi: {url, sha256}}) from the website, accept only an
   .msi on https://www.kodiakcleaner.app (no redirects followed), verify its SHA-256 and start msiexec on exit without waiting (so the exe isn't
-  locked); a hidden cmd.exe reopens Kodiak Cleaner when msiexec exits with 0 (Ted, 0.8.43). With automatic updates on, the check follows `UpdateSchedule` ([Updates] Interval, Ted 0.8.44: On Startup (default), Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month (15 days), Monthly; listed in that order, not A to Z), checked at start and by a 5-minute timer while open. Every release must refresh the website's update
+  locked); a hidden cmd.exe reopens Kodiak Cleaner when msiexec exits with 0 (Ted, 0.8.43). Two switches (Ted, 0.8.51): Check for Updates Automatically (`[Updates] AutoUpdate`) only checks and shows a notice; Download and Install Updates Automatically (`AutoInstall`, greyed out while checking is off; defaults to the old AutoUpdate value so earlier opt-ins keep installing) also downloads and installs. With checking on, the check follows `UpdateSchedule` ([Updates] Interval, Ted 0.8.44: On Startup (default), Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month (15 days), Monthly; listed in that order, not A to Z), checked at start and by a 5-minute timer while open. Every release must refresh the website's update
   file with the new version and the MSI's SHA-256 (release-<ver>/updates/dev.json).
 - Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
   never `MessageBox` directly. Yes/No pop-ups show No on the left and Yes on the right as the default (Enter) button (Ted, 0.8.50,
@@ -179,7 +183,7 @@ After each completed, tested change:
    Every release package also carries the newest Linux app ZIPs (Ted, 2026-10-05): KodiakCleaner-Dev-AppImage.zip and
    KodiakCleaner-Dev-Deb.zip from /mnt/project-files/kodiak-linux/dist (built by the Linux thread), listed in FILE-LIST.md.
    The changelog resets only when Ted moves to Beta or Stable; ChangelogComplete.txt is the running history.
-Never push or publish unless Ted asks.
+Push each valid build to the private repo without asking, then have the PC copy synced (Ted, 2026-10-09).
 
 ## Testing on Linux
 The app builds on Linux (WindowsDesktop SDK copied in) and runs under Wine for screenshots. Wine can't check

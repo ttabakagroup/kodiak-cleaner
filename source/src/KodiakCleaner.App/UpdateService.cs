@@ -135,6 +135,7 @@ public static class UpdateService
     /// <summary>
     /// Automatic updates: a background check at start (<paramref name="atStartup"/>) and, while Kodiak Cleaner is open, whenever
     /// Settings > Updates' interval says one is due (Ted, 0.8.44). Nothing more is checked once an update is waiting to install.
+    /// A found update is only announced unless Download and Install Updates Automatically is also on (Ted, 0.8.51).
     /// </summary>
     public static async Task AutoCheckAsync(Action<string> notify, bool atStartup)
     {
@@ -150,6 +151,11 @@ public static class UpdateService
     {
         var result = await CheckAsync();
         if (!result.Available || result.Info is null) return;
+        if (!Settings.Current.AutoInstall)
+        {
+            notify($"{result.Message} Install it from Settings > Updates or About > Check for Updates.");
+            return;
+        }
         try
         {
             await DownloadAsync(result.Info);
