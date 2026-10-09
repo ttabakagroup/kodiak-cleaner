@@ -16,6 +16,7 @@ No trackers, ads, cookies or outside fonts. The only outside script is Cloudflar
 | Changelog | `/changelog/` | `content/CHANGELOG.md` |
 | Archive | `/archive/` | `content/CHANGELOG.md` and `site.config.json` |
 | Contact Us | `/contact/` | `src/pages/contact.mjs` and `functions/api/contact.js` |
+| Donate | `/donate/` | `src/pages/donate.mjs` (Ko-fi link from `site.config.json` "kofi") |
 | Why It Was Made | `/why-it-was-made/` | `content/why-it-was-made.md` (word for word) |
 | Privacy Policy | `/privacy/` | website section plus `content/PRIVACY.md` |
 | Terms of Use | `/terms/` | `content/terms-of-use.md` |

@@ -11,6 +11,7 @@ export const NAV = [
   { id: "changelog", href: "/changelog/", label: "Changelog" },
   { id: "archive", href: "/archive/", label: "Archive" },
   { id: "contact", href: "/contact/", label: "Contact Us" },
+  { id: "donate", href: "/donate/", label: "Donate", cls: "nav-donate" },
 ];
 
 export const wordmark = `<span class="wordmark"><span class="w1">Kodiak</span> <span class="w2">Cleaner</span></span>`;
@@ -33,7 +34,7 @@ export function layout(page, ctx) {
   const { cfg, latest, linuxLatest, macLatest } = ctx;
   const url = cfg.siteUrl.replace(/\/$/, "") + page.path;
   const fullTitle = page.id === "home" ? "Kodiak Cleaner: A Free, Private Cleaner for Windows, Mac and Linux" : `${page.title} | Kodiak Cleaner`;
-  const nav = NAV.map((n) => `<a href="${n.href}"${n.id === page.id ? ' aria-current="page"' : ""}>${n.label}</a>`).join("");
+  const nav = NAV.map((n) => `<a href="${n.href}"${n.cls ? ` class="${n.cls}"` : ""}${n.id === page.id ? ' aria-current="page"' : ""}>${n.label}</a>`).join("");
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -103,7 +104,7 @@ ${page.body}
       <div><h2>Elsewhere</h2><ul>
         <li><a href="${cfg.repo}" rel="noopener">GitHub</a></li>
         <li><a href="${cfg.repo}/releases" rel="noopener">GitHub Releases</a></li>
-        <li><a href="${cfg.kofi}" rel="noopener">Support on Ko-fi</a></li>
+        <li><a href="/donate/">Donate</a></li>
         <li><a href="${cfg.homepage}" rel="noopener">tedtabaka.com</a></li>
       </ul></div>
     </div>

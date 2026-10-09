@@ -52,7 +52,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .brand:hover { text-decoration: none; }
 .brand img { width: 42px; height: 42px; }
 .nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
-.nav a { color: var(--text); padding: 8px 12px; border-radius: var(--radius); font-weight: 500; font-size: .98rem; }
+.nav a { color: var(--text); padding: 8px 12px; border-radius: var(--radius); font-weight: 500; font-size: .98rem; white-space: nowrap; }
+@media (max-width: 1300px) { .nav a { padding: 8px 9px; } }
 .nav a:hover { background: var(--accent-tint); text-decoration: none; }
 .nav a[aria-current="page"] { background: var(--accent-tint); color: var(--accent-text); font-weight: 600; }
 .icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; padding: 0; }
@@ -60,7 +61,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .icon-btn svg { width: 20px; height: 20px; }
 .header-tools { display: flex; gap: 8px; align-items: center; }
 .menu-btn { display: none; }
-@media (max-width: 1060px) {
+@media (max-width: 1160px) {
   .menu-btn { display: inline-grid; }
   .nav { position: absolute; top: 70px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 2px; padding: 12px var(--gutter) 18px; background: var(--bg); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); display: none; }
   .nav.open { display: flex; }
@@ -335,3 +336,4 @@ dialog.intro .close { position: absolute; top: 14px; right: 14px; }
 @media (max-width: 560px) { dialog.intro { padding: 14px; } dialog.intro .btn-row .btn { flex: 1 1 100%; } }
 dialog.intro [hidden] { display: none; }
 .hero .hero-video { margin-top: 14px; }
+.nav a.nav-donate:not([aria-current]) { color: var(--accent-text); font-weight: 600; }

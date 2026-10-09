@@ -176,3 +176,13 @@ test("launch video: homepage only, muted, never autoplays from markup, can be cl
   assert.match(js, /prefers-reduced-motion/);
   assert.match(js, /localStorage/);
 });
+
+test("Donate is in the main menu and footer on every page, and its page links to Ko-fi", () => {
+  for (const p of pages) {
+    const nav = p.html.match(/<nav class="nav"[^>]*>([\s\S]*?)<\/nav>/)[1];
+    assert.match(nav, /<a href="\/donate\/" class="nav-donate"[^>]*>Donate<\/a>/, p.file);
+    assert.match(p.html, /<footer[\s\S]*href="\/donate\/"/, p.file);
+  }
+  const d = pages.find((p) => p.file === "/donate/index.html").html;
+  assert.ok(d.includes(`href="${cfg.kofi}"`), "Donate page links Ko-fi");
+});
