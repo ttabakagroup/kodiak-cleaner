@@ -324,3 +324,13 @@ td.nowrap { white-space: nowrap; }
 .field input, .field textarea { background: var(--surface-alt); border: 1px solid var(--line); }
 .field input:hover, .field textarea:hover { border-color: var(--control-border); }
 .form-status:focus { outline: none; }
+
+/* Launch video on the homepage */
+dialog.intro { border: 1px solid var(--line); border-radius: var(--radius-card); padding: 20px; background: var(--surface); color: var(--text); width: min(960px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+dialog.intro::backdrop { background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(6px); }
+dialog.intro .intro-title { font-size: 1.15rem; margin: 0 48px 14px 0; }
+dialog.intro video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; max-height: calc(100vh - 200px); border-radius: 12px; background: #000; }
+dialog.intro .btn-row { margin-top: 16px; }
+dialog.intro .close { position: absolute; top: 14px; right: 14px; }
+@media (max-width: 560px) { dialog.intro { padding: 14px; } dialog.intro .btn-row .btn { flex: 1 1 100%; } }
+dialog.intro [hidden] { display: none; }

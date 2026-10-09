@@ -72,5 +72,11 @@
     "dmgSize": "2.2 MB",
     "zip": "KodiakCleanerMac.zip",
     "zipSize": "1.7 MB"
+  },
+  "launchVideo": {
+    "file": "kodiak-cleaner-launch.mp4",
+    "poster": "kodiak-cleaner-launch.jpg",
+    "id": "launch-1",
+    "title": "Meet Kodiak Cleaner"
   }
 }

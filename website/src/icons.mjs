@@ -34,6 +34,7 @@ export const icons = {
   package: p('<path d="M12 3 4 7v10l8 4 8-4V7l-8-4z"/><path d="m4 7 8 4 8-4M12 11v10M8 5l8 4"/>'),
   palette: p('<path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-1.3-1.1-1.6-1.1-2.7 0-.9.7-1.5 1.6-1.5H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10" cy="7" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/>'),
   pie: p('<path d="M12 3v9h9a9 9 0 1 1-9-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15V3.5z"/>'),
+  play: p('<path d="M7 4.5v15l13-7.5z"/>'),
   power: p('<path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>'),
   puzzle: p('<path d="M9 4h3a2 2 0 1 1 4 0h2a2 2 0 0 1 2 2v3a2 2 0 1 1 0 4v5a2 2 0 0 1-2 2h-4a2 2 0 1 0-4 0H6a2 2 0 0 1-2-2v-4a2 2 0 1 0 0-4V6a2 2 0 0 1 2-2h3z"/>'),
   restore: p('<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>'),
@@ -45,6 +46,7 @@ export const icons = {
   tasks: p('<rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 3h6v3H9zM8 11l1.5 1.5L12 10M8 16.5l1.5 1.5L12 15.5M14 11.5h3M14 17h3"/>'),
   terminal: p('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/>'),
   trash: p('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3"/>'),
+  volume: p('<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>'),
   windows: p('<path d="M3 5.5 10.5 4.5v7H3zM13 4.2 21 3v8.5h-8zM3 13h7.5v7L3 19zM13 13h8v8l-8-1.2z"/>'),
   zap: p('<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>'),
 };

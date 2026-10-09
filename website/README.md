@@ -115,6 +115,14 @@ The form now says what went wrong. The common causes:
 
 After changing any setting in Cloudflare, deploy again; settings only reach the site on the next deploy. To see the details, open Workers & Pages > kodiakcleaner > Deployments > the newest one > Functions > Real-time logs, then send a test message.
 
+## Launch Video on the Homepage
+
+The homepage opens with the launch video over the page when `src/assets/video/` holds the file named in `site.config.json` under `"launchVideo"` (`file`, optional `poster` image, `title`, and `id`). Without the file the build prints a note and the homepage has no overlay.
+
+- It plays muted with Turn Sound On, and doesn't start by itself for visitors who prefer reduced motion.
+- The X, Esc, a click outside it and Continue to the Site close it. Closing is remembered in the browser, so each visitor sees it once; change `id` to show a new video to everyone again.
+- Use an H.264 MP4 of 25 MiB or less (Cloudflare Pages' file limit). `/video/*` is cached for a week, so give a replacement video a new file name.
+
 ## Each New Kodiak Cleaner Release
 
 1. `npm run sync` copies CHANGELOG.md and the other documents from `../ccleaner-alt`, the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).

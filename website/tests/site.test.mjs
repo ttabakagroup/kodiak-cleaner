@@ -149,3 +149,29 @@ test("the update file for Kodiak Cleaner for Windows is valid and never cached f
   const headers = readFileSync(join(root, "_headers"), "utf8");
   assert.match(headers, /\/updates\/\*\n\s+Cache-Control: no-cache/);
 });
+
+test("launch video: homepage only, muted, never autoplays from markup, can be closed, small enough for Pages", () => {
+  const lv = cfg.launchVideo;
+  const home = pages.find((p) => p.file === "/index.html").html;
+  const others = pages.filter((p) => p.file !== "/index.html");
+  for (const p of others) assert.ok(!p.html.includes('id="intro"') && !p.html.includes("/js/intro.js"), `${p.file} shouldn't have the launch video`);
+  if (!lv || !existsSync(join(root, "video", lv.file))) {
+    assert.ok(!home.includes('id="intro"'), "no overlay without the video file");
+    return;
+  }
+  const dlg = home.match(/<dialog class="intro"[\s\S]*?<\/dialog>/);
+  assert.ok(dlg, "homepage has the video dialog");
+  const v = dlg[0].match(/<video[^>]*>/)[0];
+  assert.match(v, /\bmuted\b/);
+  assert.match(v, /\bplaysinline\b/);
+  assert.match(v, /\bcontrols\b/);
+  assert.ok(!/\bautoplay\b/.test(v), "intro.js starts playback, and skips it for reduced motion");
+  assert.match(v, new RegExp(`src="/video/${lv.file.replace(/\./g, "\\.")}"`));
+  assert.match(dlg[0], /class="icon-btn close"[^>]*data-intro-close[^>]*aria-label="Close the video"/);
+  assert.match(dlg[0], /data-intro-sound/);
+  assert.match(home, /<script src="\/js\/intro\.js\?v=[^"]+" defer><\/script>/);
+  assert.ok(statSync(join(root, "video", lv.file)).size <= 25 * 1024 * 1024, "Cloudflare Pages files must be 25 MiB or less");
+  const js = readFileSync(join(root, "js", "intro.js"), "utf8");
+  assert.match(js, /prefers-reduced-motion/);
+  assert.match(js, /localStorage/);
+});

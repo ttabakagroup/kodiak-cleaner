@@ -229,12 +229,26 @@ export default function home(ctx) {
   </div>
 </section>`;
 
+  // Launch video, shown over the page once per visitor (see js/intro.js).
+  const lv = ctx.launchVideo;
+  const intro = lv ? `
+<dialog class="intro" id="intro" aria-labelledby="intro-title" data-intro-id="${esc(lv.id)}">
+  <button class="icon-btn close" type="button" data-intro-close aria-label="Close the video">${icons.close}</button>
+  <h2 id="intro-title" class="intro-title">${esc(lv.title)}</h2>
+  <video src="/video/${esc(lv.file)}"${lv.posterExists ? ` poster="/video/${esc(lv.poster)}"` : ""} muted playsinline preload="none" controls></video>
+  <div class="btn-row centered">
+    <button class="btn" type="button" data-intro-sound>${icons.volume}Turn Sound On</button>
+    <button class="btn primary" type="button" data-intro-close>Continue to the Site</button>
+  </div>
+</dialog>` : "";
+
   return {
     id: "home",
     path: "/",
     out: "index.html",
     title: "Home",
     description: "Kodiak Cleaner is a free, open source cleaner for Windows, Mac and Linux with no telemetry, no ads and no upsells. Clean junk files, fix the registry, manage start-up programs and uninstall software cleanly.",
-    body,
+    body: body + intro,
+    scripts: lv ? `<script src="/js/intro.js?v=${ctx.buildId}" defer></script>` : "",
   };
 }

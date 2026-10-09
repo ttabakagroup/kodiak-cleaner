@@ -64,8 +64,18 @@ for (const f of readdirSync(at("src", "assets", "images", "screens"))) {
   imageSizes[f] = [b.readUInt32BE(16), b.readUInt32BE(20)];
 }
 
+// Launch video overlay on the homepage, shown when site.config.json "launchVideo" names a file in src/assets/video/.
+const lv = cfg.launchVideo;
+const launchVideo = lv && existsSync(at("src", "assets", "video", lv.file)) ? { ...lv, posterExists: !!lv.poster && existsSync(at("src", "assets", "video", lv.poster)) } : null;
+if (lv && !launchVideo) console.warn(`Note: launch video src/assets/video/${lv.file} isn't there yet, so the homepage has no video overlay.`);
+if (launchVideo) {
+  const size = readFileSync(at("src", "assets", "video", lv.file)).length;
+  if (size > 25 * 1024 * 1024) throw new Error(`src/assets/video/${lv.file} is over Cloudflare Pages' 25 MiB file limit; serve it from R2 instead`);
+}
+
 const ctx = {
   cfg,
+  launchVideo,
   releases,
   latest,
   linuxReleases,
@@ -133,6 +143,7 @@ cpSync(at("src", "assets", "css"), join(out, "css"), { recursive: true });
 cpSync(at("src", "assets", "js"), join(out, "js"), { recursive: true });
 cpSync(at("src", "assets", "fonts"), join(out, "fonts"), { recursive: true });
 cpSync(at("src", "assets", "images"), join(out, "images"), { recursive: true });
+if (existsSync(at("src", "assets", "video"))) cpSync(at("src", "assets", "video"), join(out, "video"), { recursive: true });
 cpSync(at("src", "assets", "favicon.ico"), join(out, "favicon.ico"));
 cpSync(at("src", "static"), out, { recursive: true });
 
