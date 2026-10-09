@@ -84,7 +84,7 @@ export default function home(ctx) {
     </div>
     <div class="grid cols-3">
       ${highlights.map(([ic, t, d]) => `<div class="card hover reveal"><span class="icon">${icons[ic]}</span><h3>${t}</h3><p>${d}</p></div>`).join("\n      ")}
-      <a class="card hover reveal link-card" href="/features/"><span class="icon">${icons.list}</span><h3>See Every Feature</h3><p class="muted">Cleaning, eight built-in tools, System Information, settings and safety, all in one place.</p></a>
+      <a class="card hover reveal link-card" href="/features/list/"><span class="icon">${icons.list}</span><h3>See Every Feature</h3><p class="muted">The full list for Windows, Mac and Linux, each marked Free or Supporter.</p></a>
     </div>
   </div>
 </section>

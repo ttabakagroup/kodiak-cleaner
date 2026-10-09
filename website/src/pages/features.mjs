@@ -72,6 +72,7 @@ export default function features(ctx) {
   const body = `
 ${pageHead("Features", "Everything Kodiak Cleaner can do, from everyday cleaning to eight built-in tools. Every feature is free.")}
 <nav class="jump" aria-label="On this page"><div class="wrap chips">
+  <a class="chip-link" href="/features/list/">Full Feature List</a>
   <a class="chip-link" href="#cleaning-pages">Cleaning</a>
   <a class="chip-link" href="#tools">Tools</a>
   <a class="chip-link" href="#system-information">System Information</a>

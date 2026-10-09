@@ -337,3 +337,34 @@ dialog.intro .close { position: absolute; top: 14px; right: 14px; }
 dialog.intro [hidden] { display: none; }
 .hero .hero-video { margin-top: 14px; }
 .nav a.nav-donate:not([aria-current]) { color: var(--accent-text); font-weight: 600; }
+
+/* Full Feature List */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+table.feature-list th[scope="row"] { font-family: inherit; font-size: inherit; font-weight: 400; color: var(--text); background: none; white-space: normal; }
+table.feature-list th[scope="row"] strong { display: block; }
+table.feature-list .desc { display: block; color: var(--muted); font-size: .92rem; margin-top: 2px; }
+table.feature-list { table-layout: fixed; }
+table.feature-list col.plan-col { width: 150px; }
+table.feature-list col.os-col { width: 96px; }
+table.feature-list .os { text-align: center; }
+table.feature-list .os-label { display: none; }
+.plan-note { display: flex; gap: 16px; align-items: flex-start; }
+.plan-note p { margin: 0; }
+.plan-note .icon { flex: none; margin: 0; }
+table.feature-list td.os svg { width: 20px; height: 20px; color: var(--accent-text); vertical-align: middle; }
+table.feature-list td.os.no { color: var(--muted); }
+.plan { display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px; border-radius: 999px; font-size: .85rem; font-weight: 600; white-space: nowrap; border: 1.5px solid var(--line); }
+.plan svg { width: 14px; height: 14px; }
+.plan.free { background: var(--surface-alt); color: var(--text); }
+.plan.supporter { background: var(--accent-tint); color: var(--accent-text); border-color: transparent; }
+@media (max-width: 640px) {
+  table.feature-list, table.feature-list tbody { display: block; }
+  table.feature-list thead, table.feature-list colgroup { display: none; }
+  table.feature-list tr { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  table.feature-list th[scope="row"] { flex: 1 1 100%; padding: 0; border: 0; }
+  table.feature-list td { padding: 0; border: 0; }
+  table.feature-list td.os { display: inline-flex; align-items: center; gap: 4px; font-size: .88rem; }
+  table.feature-list td.os svg { width: 16px; height: 16px; }
+  table.feature-list .os-label { display: inline; }
+  table.feature-list td.os.no .os-label { text-decoration: line-through; }
+}

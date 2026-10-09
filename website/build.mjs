@@ -16,6 +16,7 @@ import contact from "./src/pages/contact.mjs";
 import linux from "./src/pages/linux.mjs";
 import mac from "./src/pages/mac.mjs";
 import donate from "./src/pages/donate.mjs";
+import featureList from "./src/pages/featurelist.mjs";
 import { story, privacy, terms, notFound } from "./src/pages/docs.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -149,7 +150,7 @@ cpSync(at("src", "assets", "favicon.ico"), join(out, "favicon.ico"));
 cpSync(at("src", "static"), out, { recursive: true });
 
 // Pages
-const pages = [home, features, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, notFound].map((p) => p(ctx));
+const pages = [home, features, featureList, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, notFound].map((p) => p(ctx));
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });

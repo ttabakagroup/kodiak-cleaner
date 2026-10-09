@@ -186,3 +186,21 @@ test("Donate is in the main menu and footer on every page, and its page links to
   const d = pages.find((p) => p.file === "/donate/index.html").html;
   assert.ok(d.includes(`href="${cfg.kofi}"`), "Donate page links Ko-fi");
 });
+
+test("Full Feature List marks every feature Free or Supporter, sorted A to Z, and only themes and the badge are Supporter", async () => {
+  const { featureGroups } = await import("../src/pages/featurelist.mjs");
+  const names = featureGroups.map(([g]) => g);
+  assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b)), "groups A to Z");
+  for (const [g, list] of featureGroups) {
+    const n = list.map((f) => f[0]);
+    assert.deepEqual(n, [...n].sort((a, b) => a.localeCompare(b)), `${g} A to Z`);
+    for (const f of list) assert.match(f[2], /^W?M?L?$/, `${f[0]} editions`);
+  }
+  const supporter = featureGroups.flatMap(([, l]) => l).filter((f) => f[3] === "Supporter").map((f) => f[0]).sort();
+  assert.deepEqual(supporter, ["Classic Color Scheme", "Glacier Color Scheme", "Support Link Hidden", "Supporter Badge"]);
+  const html = pages.find((p) => p.file === "/features/list/index.html").html;
+  const rows = (html.match(/<tr><th scope="row">/g) || []).length;
+  assert.equal(rows, featureGroups.flatMap(([, l]) => l).length);
+  assert.equal((html.match(/class="plan (free|supporter)"/g) || []).length, rows, "every row has a plan");
+  assert.ok(!/premium/i.test(html.replace(/no paid or Premium version/, "")), "no Premium tier");
+});
