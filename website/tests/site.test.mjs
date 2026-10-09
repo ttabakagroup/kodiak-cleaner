@@ -169,6 +169,7 @@ test("launch video: homepage only, muted, never autoplays from markup, can be cl
   assert.match(v, new RegExp(`src="/video/${lv.file.replace(/\./g, "\\.")}"`));
   assert.match(dlg[0], /class="icon-btn close"[^>]*data-intro-close[^>]*aria-label="Close the video"/);
   assert.match(dlg[0], /data-intro-sound/);
+  assert.match(home, /<button class="btn" type="button" data-intro-open>/, "Watch the Video reopens it");
   assert.match(home, /<script src="\/js\/intro\.js\?v=[^"]+" defer><\/script>/);
   assert.ok(statSync(join(root, "video", lv.file)).size <= 25 * 1024 * 1024, "Cloudflare Pages files must be 25 MiB or less");
   const js = readFileSync(join(root, "js", "intro.js"), "utf8");

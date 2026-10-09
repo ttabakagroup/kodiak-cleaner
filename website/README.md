@@ -120,7 +120,7 @@ After changing any setting in Cloudflare, deploy again; settings only reach the 
 The homepage opens with the launch video over the page when `src/assets/video/` holds the file named in `site.config.json` under `"launchVideo"` (`file`, optional `poster` image, `title`, and `id`). Without the file the build prints a note and the homepage has no overlay.
 
 - It plays muted with Turn Sound On, and doesn't start by itself for visitors who prefer reduced motion.
-- The X, Esc, a click outside it and Continue to the Site close it. Closing is remembered in the browser, so each visitor sees it once; change `id` to show a new video to everyone again.
+- The X, Esc, a click outside it and Continue to the Site close it. Closing is remembered in the browser, so it opens by itself once per visitor; change `id` to show a new video to everyone again. Watch the Video, under the download buttons, opens it any time.
 - Use an H.264 MP4 of 25 MiB or less (Cloudflare Pages' file limit). `/video/*` is cached for a week, so give a replacement video a new file name.
 
 ## Each New Kodiak Cleaner Release

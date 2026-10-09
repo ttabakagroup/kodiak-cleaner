@@ -334,3 +334,4 @@ dialog.intro .btn-row { margin-top: 16px; }
 dialog.intro .close { position: absolute; top: 14px; right: 14px; }
 @media (max-width: 560px) { dialog.intro { padding: 14px; } dialog.intro .btn-row .btn { flex: 1 1 100%; } }
 dialog.intro [hidden] { display: none; }
+.hero .hero-video { margin-top: 14px; }
