@@ -4,7 +4,8 @@ namespace KodiakCleaner.Core.Tests;
 
 public sealed class MoreToolsTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "kodiakcleaner-more-" + Guid.NewGuid().ToString("N"));
+    // Beside the test assembly, not in %TEMP%: on Windows %TEMP% is inside AppData, which Empty Folders never searches (0.8.48).
+    private readonly string _root = Path.Combine(AppContext.BaseDirectory, "kodiakcleaner-more-" + Guid.NewGuid().ToString("N"));
 
     public MoreToolsTests() => Directory.CreateDirectory(_root);
 
