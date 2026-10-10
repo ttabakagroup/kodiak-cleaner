@@ -117,7 +117,7 @@ private struct GeneralSettings: View {
         Card(title: "Reset", subtitle: "Puts every setting back to how it was at first. Your supporter code and history stay.") {
             Button("Reset All Settings") {
                 model.ask(DialogRequest(title: "Reset All Settings?",
-                                        message: "Every setting goes back to its default. Your supporter code, cleaning history and Triggers History stay.",
+                                        message: "Every setting goes back to its default, and the start count for the donation reminder starts again. Your supporter code, cleaning history and Triggers History stay.",
                                         confirm: "Reset", danger: true) {
                     model.settings = model.settings.reset()
                     model.applyAppearance()

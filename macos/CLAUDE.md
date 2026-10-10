@@ -79,10 +79,10 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   after an update.
 - Donation reminder (Ted, 2026-10-10, the only nag allowed; logic in `Sources/KodiakCore/Donation.swift`, tested): `launchCount`
   goes up each time the main window opens (not `--screenshots` or `--self-test`). The startup pop-up (`SheetKind.donation`,
-  `DonationView`) shows while `showDonationPrompt` is on, never for Supporters and never on a start that already shows the
-  Beta notice or What's New. Its Don't Show This Again switch and Settings > General > Ask Me to Donate at Startup stay greyed
+  `DonationView`) shows while `showDonationPrompt` is on, never for Supporters, never with What's New, and after the
+  Beta notice closes when that shows (never stacked). Its Don't Show This Again switch and Settings > General > Ask Me to Donate at Startup stay greyed
   until 10 starts. A banner (`DonationBanner`) shows on every 10th start. Supporters see neither, and a code turns the reminder
-  off. Reset All Settings keeps `launchCount`. Keep the wording identical to Windows and Linux. Getting Started's features list (`features` in HomeAbout.swift) stays A to Z and current.
+  off. Reset All Settings starts `launchCount` again (Ted, 0.8.2); Supporters stay off. Keep the wording identical to Windows and Linux. Getting Started's features list (`features` in HomeAbout.swift) stays A to Z and current.
 
 ## Feedback and Support
 - Contact & Feedback: four accent buttons (Send Feedback, Report a Bug, Request a Feature, Security) open the website's

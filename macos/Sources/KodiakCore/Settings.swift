@@ -83,14 +83,13 @@ public struct AppSettings: Codable, Equatable {
         try? data.write(to: URL(fileURLWithPath: path), options: .atomic)
     }
 
-    /// Reset All Settings: everything back to its default, keeping the supporter code, the cleaning history and the
-    /// start count.
+    /// Reset All Settings: everything back to its default, keeping the supporter code and the cleaning history. The
+    /// donation reminder's start count starts again (Ted, 0.8.2); AppModel turns the reminder off again for Supporters.
     public func reset() -> AppSettings {
         var fresh = AppSettings()
         fresh.supporterCode = supporterCode
         fresh.cleanerHistory = cleanerHistory
         fresh.lastVersionRun = lastVersionRun
-        fresh.launchCount = launchCount
         return fresh
     }
 }

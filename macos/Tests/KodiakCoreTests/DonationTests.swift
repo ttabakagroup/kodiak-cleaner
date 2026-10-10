@@ -76,13 +76,13 @@ final class DonationTests: TempHomeTestCase {
         XCTAssertFalse(settings.showDonationPrompt)
     }
 
-    func testResetKeepsTheCount() {
+    func testResetStartsTheCountAgain() {
         var settings = AppSettings()
         for _ in 0..<12 { settings.countLaunch() }
         settings.setDonationPrompt(false, isSupporter: false)
         settings.supporterCode = "abc"
         let reset = settings.reset()
-        XCTAssertEqual(reset.launchCount, 12)
+        XCTAssertEqual(reset.launchCount, 0)
         XCTAssertEqual(reset.supporterCode, "abc")
         XCTAssertTrue(reset.showDonationPrompt)
     }
