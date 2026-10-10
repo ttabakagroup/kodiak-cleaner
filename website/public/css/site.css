@@ -368,3 +368,13 @@ table.feature-list td.os.no { color: var(--muted); }
   table.feature-list .os-label { display: inline; }
   table.feature-list td.os.no .os-label { text-decoration: line-through; }
 }
+
+/* Thank-you pop-up after a download */
+dialog.thanks { border: 1px solid var(--line); border-radius: var(--radius-card); padding: 32px 28px 26px; background: var(--surface); color: var(--text); width: min(520px, calc(100vw - 32px)); text-align: center; box-shadow: var(--shadow); }
+dialog.thanks::backdrop { background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(4px); }
+dialog.thanks .icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--accent-tint); color: var(--accent-text); margin: 0 auto 14px; }
+dialog.thanks .icon svg { width: 30px; height: 30px; }
+dialog.thanks h2 { font-size: 1.5rem; margin: 0 0 12px; }
+dialog.thanks p { margin: 0 0 12px; }
+dialog.thanks .btn-row { margin-top: 18px; }
+dialog.thanks .close { position: absolute; top: 12px; right: 12px; }

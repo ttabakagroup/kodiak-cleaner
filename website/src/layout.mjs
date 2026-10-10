@@ -114,6 +114,17 @@ ${page.body}
     </div>
   </div>
 </footer>
+<dialog class="thanks" id="download-thanks" aria-labelledby="thanks-title">
+  <button class="icon-btn close" type="button" data-thanks-close aria-label="Close">${icons.close}</button>
+  <span class="icon">${icons.heart}</span>
+  <h2 id="thanks-title">Thanks for Downloading!</h2>
+  <p>Your download is on its way. Kodiak Cleaner is free and open source, with no ads, no tracking and no upsells, and it's built by one person, Ted Tabaka, in his spare time.</p>
+  <p>If it saves you time or space, a small tip on Ko-fi keeps it free and keeps new features coming. As a thank-you, supporters get a code that unlocks the Classic and Glacier color schemes.</p>
+  <div class="btn-row centered">
+    <a class="btn primary" href="${cfg.kofi}" target="_blank" rel="noopener" data-thanks-close>${icons.heart}Donate on Ko-fi</a>
+    <button class="btn" type="button" data-thanks-close>Maybe Later</button>
+  </div>
+</dialog>
 <dialog class="lightbox" id="lightbox" aria-label="Screenshot"><button class="icon-btn close" type="button" aria-label="Close">${icons.close}</button><img src="data:," alt=""><p></p></dialog>
 <script src="/js/site.js?v=${ctx.buildId}" defer></script>
 ${page.scripts || ""}

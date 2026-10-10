@@ -125,6 +125,10 @@ The homepage opens with the launch video over the page when `src/assets/video/` 
 - The X, Esc, a click outside it and Continue to the Site close it. Closing is remembered in the browser, so it opens by itself once per visitor; change `id` to show a new video to everyone again. Watch the Video, under the download buttons, opens it any time.
 - Use an H.264 MP4 of 25 MiB or less (Cloudflare Pages' file limit). `/video/*` is cached for a week, so give a replacement video a new file name.
 
+## Download Thank-You Pop-Up
+
+Every page carries a small pop-up (`#download-thanks` in `src/layout.mjs`, script at the end of `js/site.js`). Clicking any download button (Installer, Portable, DMG, Mac ZIP, AppImage, DEB, or an Archive release file) starts the download as normal and then shows a thank-you asking for a tip on Ko-fi. X, Esc, Maybe Later and a click outside close it. Ko-fi links open in a new tab.
+
 ## Each New Kodiak Cleaner Release
 
 1. `npm run sync` copies CHANGELOG.md and the other documents from `../ccleaner-alt`, the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).

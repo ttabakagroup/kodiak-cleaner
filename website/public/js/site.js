@@ -84,3 +84,22 @@
     items.forEach(function (el) { el.classList.add("seen"); });
   }
 })();
+
+// Thank-you pop-up after a download starts. The download itself goes ahead untouched;
+// the pop-up only appears over the page and closes with X, Esc, Maybe Later or a click outside.
+(function () {
+  var box = document.getElementById("download-thanks");
+  if (!box || !box.showModal) return;
+  var isDownload = /^\/download\/[^/]+\.(msi|zip|dmg)$|\/releases\/download\/[^/]+\/[^/]+\.(msi|zip|dmg|deb|AppImage)$/i;
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || box.contains(a) || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    var url;
+    try { url = new URL(a.href, location.href); } catch (err) { return; }
+    var path = url.origin === location.origin ? url.pathname : url.href;
+    if (!isDownload.test(path)) return;
+    setTimeout(function () { if (!box.open) box.showModal(); }, 0);
+  });
+  box.querySelectorAll("[data-thanks-close]").forEach(function (b) { b.addEventListener("click", function () { box.close(); }); });
+  box.addEventListener("click", function (e) { if (e.target === box) box.close(); });
+})();

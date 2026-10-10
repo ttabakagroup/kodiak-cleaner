@@ -14,7 +14,7 @@ ${pageHead("Donate", "Kodiak Cleaner is free and always will be. If it saves you
       <h2>Support Kodiak Cleaner on Ko-fi</h2>
       <p>Any amount helps, one time or monthly. Tips go straight to Ted Tabaka, who builds and tests Kodiak Cleaner for Windows, Mac and Linux in his own time.</p>
       <div class="btn-row centered mt">
-        <a class="btn primary lg" href="${cfg.kofi}" rel="noopener">${icons.heart}<span>Donate on Ko-fi<small>Opens ko-fi.com</small></span></a>
+        <a class="btn primary lg" href="${cfg.kofi}" target="_blank" rel="noopener">${icons.heart}<span>Donate on Ko-fi<small>Opens ko-fi.com in a new tab</small></span></a>
       </div>
       <p class="muted mt">Ko-fi handles the payment. This website never sees your card or account details.</p>
     </div>

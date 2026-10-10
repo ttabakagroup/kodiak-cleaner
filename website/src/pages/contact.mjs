@@ -42,7 +42,7 @@ ${pageHead("Contact Us", "Questions, ideas, bug reports or a quick thank-you. Fi
       <div class="card"><span class="icon">${icons.mail}</span><h3>Prefer Email?</h3><p>Write to <a href="mailto:${cfg.email}">${cfg.email}</a>. Inside Kodiak Cleaner, Settings &gt; Contact &amp; Feedback opens a ready-made message in your own email app.</p></div>
       <div class="card"><span class="icon">${icons.shield}</span><h3>Security Problems</h3><p>Please report them privately: choose <strong>Security</strong> above, and don't post details in public until a fix is out.</p></div>
       <div class="card"><span class="icon">${icons.lock}</span><h3>Your Privacy</h3><p>Your message is emailed to Ted and isn't stored on this website. A Cloudflare Turnstile check keeps out spam. <a href="/privacy/#website">More details</a>.</p></div>
-      <div class="card"><span class="icon">${icons.heart}</span><h3>Say Thanks</h3><p>If Kodiak Cleaner helps you, an optional thank-you on <a href="${cfg.kofi}" rel="noopener">Ko-fi</a> is always appreciated.</p></div>
+      <div class="card"><span class="icon">${icons.heart}</span><h3>Say Thanks</h3><p>If Kodiak Cleaner helps you, an optional thank-you on <a href="${cfg.kofi}" target="_blank" rel="noopener">Ko-fi</a> is always appreciated.</p></div>
     </aside>
   </div>
 </section>`;

@@ -204,3 +204,16 @@ test("Full Feature List marks every feature Free or Supporter, sorted A to Z, an
   assert.equal((html.match(/class="plan (free|supporter)"/g) || []).length, rows, "every row has a plan");
   assert.ok(!/premium/i.test(html.replace(/no paid or Premium version/, "")), "no Premium tier");
 });
+
+test("download thank-you pop-up is on every page, and Ko-fi links open in a new tab", () => {
+  for (const p of pages) {
+    const d = p.html.match(/<dialog class="thanks" id="download-thanks"[\s\S]*?<\/dialog>/);
+    assert.ok(d, `${p.file} has the thank-you pop-up`);
+    assert.match(d[0], /aria-label="Close"/);
+    assert.match(d[0], /Maybe Later/);
+    for (const a of p.html.match(/<a [^>]*href="https:\/\/ko-fi\.com[^"]*"[^>]*>/g) || []) assert.match(a, /target="_blank" rel="noopener"/, `${p.file}: ${a}`);
+  }
+  const js = readFileSync(join(root, "js", "site.js"), "utf8");
+  assert.match(js, /download-thanks/);
+  assert.ok(!/preventDefault/.test(js.slice(js.indexOf("download-thanks"))), "the pop-up never blocks the download");
+});
