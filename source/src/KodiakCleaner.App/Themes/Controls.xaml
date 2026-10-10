@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:app="clr-namespace:KodiakCleaner.App">
+                    xmlns:app="clr-namespace:KodiakCleaner.App"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
     <!-- Every color, corner radius and font comes from the active theme dictionary (HoneyLight, HoneyDark,
          GlacierLight or GlacierDark), so everything here is a DynamicResource and switches live. -->
 
@@ -648,6 +649,16 @@
         <Setter Property="Background" Value="{DynamicResource Surface}" />
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="MaxWidth" Value="640" />
+        <Style.Resources>
+            <!-- Long tooltips (the row details in Registry, Startup and Programs) wrap instead of running off the screen. -->
+            <DataTemplate DataType="{x:Type sys:String}">
+                <TextBlock Text="{Binding}" TextWrapping="Wrap" LineHeight="18" />
+            </DataTemplate>
+        </Style.Resources>
     </Style>
 
     <Style TargetType="ProgressBar">
@@ -883,6 +894,13 @@
                 <Setter Property="Background" Value="{DynamicResource AccentTint}" />
             </Trigger>
         </Style.Triggers>
+    </Style>
+    <!-- Rows that show everything about their entry when hovered (Ted, 0.8.63): Registry, Startup and Programs. The item's Details
+         property holds the text; it stays up while the pointer is on the row. -->
+    <Style x:Key="DetailsRow" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+        <Setter Property="ToolTip" Value="{Binding Details}" />
+        <Setter Property="ToolTipService.InitialShowDelay" Value="700" />
+        <Setter Property="ToolTipService.ShowDuration" Value="60000" />
     </Style>
     <Style TargetType="DataGridCell">
         <Setter Property="BorderThickness" Value="0" />

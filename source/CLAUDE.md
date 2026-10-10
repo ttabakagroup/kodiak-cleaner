@@ -91,6 +91,9 @@ privacy first, local first, security paramount, convenient, practical and useful
   Language Resource Files, RetailDemo, Temporary Setup Files, Temporary Windows Installation Files, User File History) run
   `cleanmgr /sagerun:617` with a temporary StateFlags0617 tick on that one VolumeCaches handler (found by its shown name, then key
   name), removed again afterwards. Disk Cleanup items Kodiak Cleaner already had are merged into the existing items, not duplicated.
+- Settings cards A to Z (Ted, 0.8.63): every Settings card, and every setting inside a card, is A to Z (a test checks); Reset to
+  Default stays the last card in Advanced. Row hover details (0.8.63): Registry, Startup and Programs rows use the DetailsRow style,
+  whose tooltip is the item's Details (DetailText.Lines).
 - A to Z rule (Ted, 0.8.21): anything added to any list (Cleaner items, tools, menus, options, browsers) goes in A to Z order, unless a
   list has a stated priority (Windows first in the Cleaner; Advanced Cleaning last).
 - Cleaner order (Ted, 0.8.20): `CleanCatalog.Order` sorts Windows first, then programs A to Z, Advanced Cleaning last, items A to Z

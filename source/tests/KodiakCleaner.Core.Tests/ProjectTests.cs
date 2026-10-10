@@ -383,3 +383,40 @@ public class IdleTests
         Assert.Contains("<RemoveStoryboard BeginStoryboardName=\"Slide\" />", xaml);
     }
 }
+
+public class SettingsOrderTests
+{
+    /// <summary>
+    /// Ted (0.8.63): every Settings card is in A to Z order, and so is every setting inside a card. Reset to Default stays the
+    /// last card in Advanced (Ted, 0.8.59).
+    /// </summary>
+    [Fact]
+    public void Settings_cards_and_their_settings_are_A_to_Z()
+    {
+        var xaml = Repo.Read("src", "KodiakCleaner.App", "Views", "SettingsView.xaml");
+        var pages = System.Text.RegularExpressions.Regex.Matches(xaml, @"<DataTemplate x:Key=""(\w+Page)"">(.*?)</DataTemplate>\s*\n\s*\n",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        Assert.True(pages.Count >= 6);
+        foreach (System.Text.RegularExpressions.Match page in pages)
+        {
+            var cards = page.Groups[2].Value.Split("Style=\"{StaticResource Card}\"").Skip(1).ToList();
+            var titles = cards.Select(c => System.Text.RegularExpressions.Regex.Match(c, @"Text=""([^""{]+)"" Style=""\{StaticResource SectionTitle\}""").Groups[1].Value)
+                .Where(t => t.Length > 0 && t != "Reset to Default").ToList();
+            Assert.Equal(titles.OrderBy(t => t, StringComparer.OrdinalIgnoreCase), titles);
+            foreach (var card in cards)
+            {
+                var rows = System.Text.RegularExpressions.Regex.Matches(card, @"Text=""([^""{]+)"" Style=""\{StaticResource SettingTitle\}""")
+                    .Select(m => m.Groups[1].Value).ToList();
+                Assert.Equal(rows.OrderBy(t => t, StringComparer.OrdinalIgnoreCase), rows);
+            }
+        }
+        Assert.Matches(@"Text=""Reset to Default"" Style=""\{StaticResource SectionTitle\}""(?:(?!StaticResource Card).)*</DataTemplate>",
+            System.Text.RegularExpressions.Regex.Replace(xaml, @"\s+", " "));
+    }
+
+    [Fact]
+    public void Hover_details_skip_empty_values()
+    {
+        Assert.Equal("Name: App\nCommand: app.exe", KodiakCleaner.Core.Util.DetailText.Lines(("Name", "App"), ("Publisher", ""), ("Command", "app.exe")));
+    }
+}

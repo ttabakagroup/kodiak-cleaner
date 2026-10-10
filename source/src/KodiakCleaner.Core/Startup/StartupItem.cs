@@ -30,4 +30,13 @@ public sealed class StartupItem
         StartupSource.CommonStartupFolder => "Startup Folder (All Users)",
         _ => Source.ToString(),
     };
+
+    /// <summary>Exactly where the entry lives: the full Run key and value name, or the startup folder file.</summary>
+    public string FullLocation => Source switch
+    {
+        StartupSource.UserRunKey => $@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run : {Name}",
+        StartupSource.MachineRunKey => $@"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run : {Name}",
+        StartupSource.MachineRunKey32 => $@"HKEY_LOCAL_MACHINE\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run : {Name}",
+        _ => FilePath ?? Location,
+    };
 }

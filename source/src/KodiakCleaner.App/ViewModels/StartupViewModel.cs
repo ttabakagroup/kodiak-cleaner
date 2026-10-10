@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Windows.Data;
 using System.Windows.Input;
 using KodiakCleaner.Core.Startup;
@@ -15,6 +17,22 @@ public sealed class StartupItemViewModel : ObservableObject
     public string Command => Item.Command;
     public string Location => Item.Location;
     public string Note => Item.FileMissing ? "Program not found" : "";
+
+    private string? _details;
+    /// <summary>Everything about the entry, shown when the row is hovered (Ted, 0.8.63). The publisher is read from the program file once.</summary>
+    public string Details => _details ??= DetailText.Lines(
+        ("Name", Name), ("Command", Command), ("Starts", FileIcons.ProgramOf(Command)), ("Publisher", Publisher()),
+        ("Location", Item.FullLocation), ("Note", Note));
+
+    private string Publisher()
+    {
+        try
+        {
+            var file = FileIcons.ProgramOf(Command);
+            return File.Exists(file) ? FileVersionInfo.GetVersionInfo(file).CompanyName?.Trim() ?? "" : "";
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { return ""; }
+    }
 
     private System.Windows.Media.ImageSource? _icon;
     /// <summary>The icon of the program the entry starts, loaded in the background; null shows a plain placeholder.</summary>

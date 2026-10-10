@@ -53,7 +53,7 @@
         </DockPanel>
 
         <Border Style="{StaticResource Card}" Padding="8">
-            <DataGrid ItemsSource="{Binding View}" SelectedItem="{Binding Selected}" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
+            <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding View}" SelectedItem="{Binding Selected}" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
                       PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
                       SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged">
                 <!-- Right-click a program for the same actions as the buttons above. Ctrl-click and Shift-click highlight several programs

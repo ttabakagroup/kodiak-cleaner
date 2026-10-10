@@ -60,7 +60,7 @@
         </Border>
 
         <Border Style="{StaticResource Card}" Padding="8">
-            <DataGrid ItemsSource="{Binding Issues}" SelectedItem="{Binding Selected}" SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+            <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding Issues}" SelectedItem="{Binding Selected}" SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="{Binding FixRowLabel}" Command="{Binding FixRowCommand}">

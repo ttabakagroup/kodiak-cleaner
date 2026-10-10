@@ -1,5 +1,21 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.7 Dev] - 2026-10-10
+
+### Settings
+- Every Settings page now lists its cards A to Z, and the settings in each card A to Z. Reset stays the last card on General. Each switch keeps its own label and does what it did before.
+- General: Settings Backup, Startup, Your Files, then Reset. Startup starts with Ask Me to Donate at Startup; Your Files lists Activity Log, Backups and History, Keep an Activity Log, then Settings.
+- Cleaning: Administrator Items now comes before Before Cleaning, and Clean When You Sign In moved up to second.
+- Triggers: Changes and Backups now comes before What to Show.
+- Appearance: Accent Color, Color Scheme, Light or Dark, then Motion.
+- Supporter: Support Kodiak Cleaner now comes before Supporter Code.
+
+### Triggers
+- Hover over an entry to see everything about it: its name, type, status, who it runs for, description, the full command, the program it starts, the service unit, the file it lives in, its notes, a warning for entries that are part of your system, and whether Kodiak Cleaner can change it. Details that are empty are left out.
+
+### Programs
+- Hover over a program to see everything about it: name, description, version, publisher (Snaps), where it came from (system package and package manager, Flatpak and its remote, or Snap), when it was installed or last updated, size, where it lives, its menu entry, package name, app ID, the command that removes it, and any note. Details Kodiak Cleaner doesn't know are left out.
+
 ## [0.8.6 Dev] - 2026-10-10
 
 ### Donations

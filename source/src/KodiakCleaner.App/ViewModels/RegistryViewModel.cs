@@ -23,6 +23,9 @@ public sealed class IssueItem : ObservableObject
     public string Description => Issue.Description;
     public string Data => Issue.Data;
     public string Key => Issue.Location.ToString();
+    /// <summary>Everything about the issue in one place, shown when the row is hovered (Ted, 0.8.63).</summary>
+    public string Details => DetailText.Lines(
+        ("Type", Category), ("Problem", Description), ("Data", Data), ("Registry Key", Key));
     private bool _isChecked = true;
     public bool IsChecked { get => _isChecked; set => Set(ref _isChecked, value); }
 }

@@ -5,6 +5,14 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.63 Dev] - 2026-10-10
+
+### Settings
+- Every Settings card is now in A to Z order, and so is every setting inside a card, so each switch is easy to find. Reset to Default stays the last card in Advanced.
+
+### Registry, Startup and Programs
+- Hover over an entry to see everything about it. Registry shows the type, problem, data and full registry key. Startup shows the command, the program it starts, its publisher and exactly where the entry lives. Programs shows the publisher, version, install date, size, install folder, uninstall command, Product Code and registry key.
+
 ## [0.8.62 Dev] - 2026-10-10
 
 ### Performance

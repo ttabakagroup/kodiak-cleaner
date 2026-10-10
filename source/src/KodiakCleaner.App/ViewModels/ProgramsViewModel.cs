@@ -31,6 +31,12 @@ public sealed class ProgramItem : ObservableObject
     public bool HasProductCode => ProductCode.Length > 0;
     /// <summary>The command an administrator can run to remove it quietly; only Windows Installer programs have one.</summary>
     public string MsiUninstallCommand => Program.IsWindowsInstaller && Program.IsProductCode ? $"msiexec /x {ProductCode} /qn" : "";
+    /// <summary>Everything about the program, shown when the row is hovered (Ted, 0.8.63).</summary>
+    public string Details => DetailText.Lines(
+        ("Name", Name), ("Publisher", Publisher), ("Version", Version),
+        ("Installed", InstallDate?.ToString("d") ?? ""), ("Size", Size), ("For", Scope),
+        ("Install Folder", Program.InstallLocation), ("Uninstall Command", Program.UninstallString),
+        ("Product Code", ProductCode), ("Registry Key", Program.Location.ToString()));
 }
 
 public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
