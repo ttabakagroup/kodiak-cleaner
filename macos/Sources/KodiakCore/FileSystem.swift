@@ -86,6 +86,12 @@ public enum FS {
 
     public static func exists(_ path: String) -> Bool { info(path) != nil }
 
+    /// True when the path is a folder, or a link that leads to one.
+    public static func isDirectoryFollowingLinks(_ path: String) -> Bool {
+        var st = stat()
+        return stat(path, &st) == 0 && (st.st_mode & S_IFMT) == S_IFDIR
+    }
+
     /// Lists a folder: nil when it can't be read, with `denied` set when permission was the reason.
     public static func list(_ path: String, denied: inout Bool) -> [String]? {
         do {
@@ -175,20 +181,52 @@ public enum Run {
         do { try process.run() } catch {
             return Result(code: -1, output: "", error: error.localizedDescription)
         }
+        // Both pipes are read at the same time, on their own threads, so a program that fills one of them while we
+        // wait on the other never blocks, and the timeout below is really enforced.
+        let collected = Collected()
+        let readers = DispatchGroup()
+        for (handle, isOutput) in [(out.fileHandleForReading, true), (err.fileHandleForReading, false)] {
+            readers.enter()
+            DispatchQueue.global(qos: .utility).async {
+                let data = handle.readDataToEndOfFile()
+                collected.set(data, output: isOutput)
+                readers.leave()
+            }
+        }
         if let input {
             inPipe.fileHandleForWriting.write(input.data(using: .utf8) ?? Data())
             try? inPipe.fileHandleForWriting.close()
         }
-        // Read before waiting so a full pipe never blocks the program.
-        let outData = out.fileHandleForReading.readDataToEndOfFile()
-        let errData = err.fileHandleForReading.readDataToEndOfFile()
         let deadline = Date().addingTimeInterval(timeout)
         while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.02) }
-        if process.isRunning { process.terminate() }
+        if process.isRunning {
+            process.terminate()
+            let grace = Date().addingTimeInterval(3)
+            while process.isRunning && Date() < grace { Thread.sleep(forTimeInterval: 0.02) }
+            if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+        }
         process.waitUntilExit()
+        // A program can leave a child behind that keeps the pipes open; don't wait on it for long.
+        _ = readers.wait(timeout: .now() + 2)
+        let (outData, errData) = collected.get()
         return Result(code: process.terminationStatus,
                       output: String(decoding: outData, as: UTF8.self),
                       error: String(decoding: errData, as: UTF8.self))
+    }
+
+    /// What the reader threads collected.
+    private final class Collected: @unchecked Sendable {
+        private let lock = NSLock()
+        private var output = Data()
+        private var error = Data()
+        func set(_ data: Data, output isOutput: Bool) {
+            lock.lock(); defer { lock.unlock() }
+            if isOutput { output = data } else { error = data }
+        }
+        func get() -> (Data, Data) {
+            lock.lock(); defer { lock.unlock() }
+            return (output, error)
+        }
     }
 
     /// The full path of a command-line tool, looking where Homebrew and the system put them (apps opened from

@@ -227,7 +227,9 @@ public enum Triggers {
                 line = String(line.dropFirst(cronMarker.count))
             }
             if line.isEmpty || line.hasPrefix("#") { continue }
-            let fields = line.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+            // crontab(5): fields are separated by spaces or tabs.
+            let fields = line.split(omittingEmptySubsequences: true, whereSeparator: { $0 == " " || $0 == "\t" })
+                .map(String.init)
             // Variables such as PATH=... aren't jobs.
             if let first = fields.first, first.contains("="), !first.hasPrefix("@") { continue }
             let commandStart = line.hasPrefix("@") ? 1 : 5
@@ -346,8 +348,14 @@ public enum Triggers {
         return (result.code == 0, result.error.contains("-128") ? "Cancelled" : result.error)
     }
 
+    /// One change or restore at a time: each reads and rewrites the crontab and history.json, so two at once (a
+    /// double-clicked Restore, or a second change while the administrator prompt is up) could lose one.
+    static let changeLock = NSRecursiveLock()
+
     /// Turns entries on or off, or removes them. Returns error messages by trigger id (empty when all went well).
     public static func change(_ items: [Trigger], to action: Action) -> [String: String] {
+        changeLock.lock()
+        defer { changeLock.unlock() }
         var errors: [String: String] = [:]
         var adminCommands: [String] = []
         var adminItems: [(Trigger, String)] = []
@@ -440,11 +448,19 @@ public enum Triggers {
 
     /// Puts a change back. Returns an error message, or nil when it worked.
     public static func restore(_ entry: HistoryEntry) -> String? {
+        changeLock.lock()
+        defer { changeLock.unlock() }
+        // The entry may be stale (a second click on Restore): put a change back only once.
+        if history().first(where: { $0.id == entry.id })?.restored == true { return nil }
         let item: Trigger
         switch entry.action {
         case .removed:
             if entry.kind == .cron {
                 guard let text = readCrontab() else { return "The crontab couldn't be read" }
+                if text.components(separatedBy: "\n").contains(where: { $0.trimmingCharacters(in: .whitespaces) == entry.cronLine }) {
+                    markRestored(entry)
+                    return nil
+                }
                 let body = (text.isEmpty || text.hasSuffix("\n") ? text : text + "\n") + entry.cronLine + "\n"
                 let result = Run.program(crontab, ["-"], input: body)
                 if result.code != 0 { return result.error }

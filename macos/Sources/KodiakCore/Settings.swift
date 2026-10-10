@@ -7,6 +7,10 @@ public struct AppSettings: Codable, Equatable {
     public var showBetaNotice = true
     public var showWhatsNew = true
     public var lastVersionRun = ""
+    /// How many times the main window has opened (the donation reminder counts these). Reset keeps it.
+    public var launchCount = 0
+    /// The donation reminder at startup. It can be turned off after 10 starts; Supporters never see it.
+    public var showDonationPrompt = true
     // Cleaning
     public var confirmBeforeCleaning = true
     public var skipOpenPrograms = true
@@ -42,6 +46,8 @@ public struct AppSettings: Codable, Equatable {
         showBetaNotice = get(.showBetaNotice, d.showBetaNotice)
         showWhatsNew = get(.showWhatsNew, d.showWhatsNew)
         lastVersionRun = get(.lastVersionRun, d.lastVersionRun)
+        launchCount = max(0, get(.launchCount, d.launchCount))
+        showDonationPrompt = get(.showDonationPrompt, d.showDonationPrompt)
         confirmBeforeCleaning = get(.confirmBeforeCleaning, d.confirmBeforeCleaning)
         skipOpenPrograms = get(.skipOpenPrograms, d.skipOpenPrograms)
         keepRecentTempFiles = get(.keepRecentTempFiles, d.keepRecentTempFiles)
@@ -77,12 +83,14 @@ public struct AppSettings: Codable, Equatable {
         try? data.write(to: URL(fileURLWithPath: path), options: .atomic)
     }
 
-    /// Reset All Settings: everything back to its default, keeping the supporter code and the cleaning history.
+    /// Reset All Settings: everything back to its default, keeping the supporter code, the cleaning history and the
+    /// start count.
     public func reset() -> AppSettings {
         var fresh = AppSettings()
         fresh.supporterCode = supporterCode
         fresh.cleanerHistory = cleanerHistory
         fresh.lastVersionRun = lastVersionRun
+        fresh.launchCount = launchCount
         return fresh
     }
 }

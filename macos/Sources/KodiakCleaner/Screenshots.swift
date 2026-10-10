@@ -45,6 +45,7 @@ enum Screenshots {
                     await capture(MainLayout(), dark: dark, to: "\(folder)/\(name)-\(suffix).png", model: model)
                 }
                 await capture(BetaNoticeView(), dark: dark, to: "\(folder)/beta-notice-\(suffix).png", model: model, fit: true)
+                await capture(DonationView(), dark: dark, to: "\(folder)/donation-\(suffix).png", model: model, fit: true)
                 await capture(DialogView(request: DialogRequest(title: "Clean Now?", message: "Kodiak Cleaner will remove 1,204 files (812 MB) from 9 items. Files it removes can't be brought back.", confirm: "Clean", danger: true)),
                               dark: dark, to: "\(folder)/dialog-\(suffix).png", model: model, fit: true)
             }
@@ -61,6 +62,13 @@ enum Screenshots {
         model.settings.accent = ""
         model.settings.preview = "free"
         await capture(MainLayout(), dark: false, to: "\(folder)/settings-appearance-free.png", model: model)
+        // The donation banner (every 10th start) and the pop-up as a Free copy sees it before 10 starts.
+        model.page = .home
+        model.showDonationBanner = true
+        await capture(MainLayout(), dark: false, to: "\(folder)/donation-banner.png", model: model)
+        model.showDonationBanner = false
+        model.settings.launchCount = 3
+        await capture(DonationView(), dark: false, to: "\(folder)/donation-free.png", model: model, fit: true)
         model.settings = saved
     }
 

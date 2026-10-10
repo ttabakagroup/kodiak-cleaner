@@ -20,10 +20,11 @@ struct DialogRequest: Identifiable {
 }
 
 enum SheetKind: Identifiable, Equatable {
-    case beta, whatsNew(previous: String), changelog, triggersHistory
+    case beta, whatsNew(previous: String), changelog, triggersHistory, donation
     var id: String {
         switch self {
         case .beta: return "beta"
+        case .donation: return "donation"
         case .whatsNew(let previous): return "whatsnew-\(previous)"
         case .changelog: return "changelog"
         case .triggersHistory: return "history"
@@ -37,13 +38,19 @@ final class AppModel: ObservableObject {
     static let shared = AppModel()
 
     @Published var settings: AppSettings {
-        didSet { if settings != oldValue { settings.save() } }
+        didSet {
+            // A Supporter (a code just entered, or the Developer page's preview) never gets the donation reminder.
+            if settings.showDonationPrompt && plan.isSupporter { settings.showDonationPrompt = false }
+            if settings != oldValue { settings.save() }
+        }
     }
     @Published var page: Page = .home
     @Published var settingsPage: SettingsPage = .general
     @Published var dialog: DialogRequest?
     @Published var sheet: SheetKind?
     @Published var systemAccent: String? = Theme.systemAccentHex()
+    /// The donation banner at the top of the page, on every 10th start until Dismiss.
+    @Published var showDonationBanner = false
     /// Fixes the look for screenshots (nil follows Light or Dark).
     @Published var forcedDark: Bool?
 
@@ -101,33 +108,65 @@ final class AppModel: ObservableObject {
 
     // MARK: Startup
 
-    /// The Beta Software notice (Dev and Beta builds), then What's New after an update.
+    /// `--screenshots` opens the window too, but isn't a start the person made: it isn't counted and shows no reminder.
+    static var isAutomatedRun: Bool {
+        CommandLine.arguments.contains("--screenshots") || CommandLine.arguments.contains("--self-test")
+    }
+
+    /// The Beta Software notice (Dev and Beta builds), then What's New after an update. On a start with neither, the
+    /// donation reminder (never stacked on another pop-up). Every 10th start also shows the donation banner.
     func startup() {
         applyAppearance()
+        guard !startedUp else { return }
+        startedUp = true
         let previous = settings.lastVersionRun
         settings.lastVersionRun = AppInfo.version
+        let counted = !AppModel.isAutomatedRun
+        let isSupporter = plan.isSupporter
+        if counted {
+            settings.countLaunch()
+            settings.applyDonationRules(isSupporter: isSupporter)
+            showDonationBanner = Donation.shouldShowBanner(launchCount: settings.launchCount, isSupporter: isSupporter)
+        }
         if AppInfo.channel != "stable" && settings.showBetaNotice {
             sheet = .beta
             pendingWhatsNew = previous
-        } else {
-            showWhatsNewIfUpdated(previous)
+        } else if !showWhatsNewIfUpdated(previous) && counted
+                    && Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: isSupporter) {
+            sheet = .donation
         }
     }
 
+    private var startedUp = false
     private var pendingWhatsNew: String?
+
+    var canOptOutOfDonation: Bool {
+        Donation.canOptOut(launchCount: settings.launchCount, isSupporter: plan.isSupporter)
+    }
+
+    /// However the donation pop-up closes: Don't Show This Again at Startup turns the reminder off once that's allowed.
+    func donationPromptClosed(dontShowAgain: Bool) {
+        guard dontShowAgain else { return }
+        let isSupporter = plan.isSupporter
+        settings.setDonationPrompt(false, isSupporter: isSupporter)
+    }
 
     func betaNoticeClosed() {
         sheet = nil
         if let previous = pendingWhatsNew {
             pendingWhatsNew = nil
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.showWhatsNewIfUpdated(previous) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { _ = self.showWhatsNewIfUpdated(previous) }
         }
     }
 
-    private func showWhatsNewIfUpdated(_ previous: String) {
+    /// Returns true when What's New opened.
+    @discardableResult
+    private func showWhatsNewIfUpdated(_ previous: String) -> Bool {
         if !previous.isEmpty && settings.showWhatsNew && AppInfo.isNewer(AppInfo.version, than: previous) {
             sheet = .whatsNew(previous: previous)
+            return true
         }
+        return false
     }
 
     // MARK: Cleaner
@@ -257,9 +296,11 @@ final class AppModel: ObservableObject {
 
     private func clean(_ chosen: [CleanTarget]) {
         let findings = chosen.compactMap { self.findings[$0.id] }
+        // Programs may have been opened since Analyze: check again right before cleaning.
+        let running = settings.skipOpenPrograms ? AppModel.runningPrograms() : nil
         working = "Cleaning…"
         Task.detached(priority: .userInitiated) {
-            let results = Cleaner.clean(findings) { target in
+            let results = Cleaner.clean(findings, running: running) { target in
                 Task { @MainActor in AppModel.shared.working = "Cleaning \(target.group): \(target.name)…" }
             }
             await MainActor.run {

@@ -48,6 +48,8 @@ public struct Finding {
     public var skipped = ""
     public var unknownSize = false
     public var needsAccess = false
+    /// Keep Temporary Files from the Last Day, as it was when this was found; cleaning checks each file's age again.
+    public var keepRecent = true
 }
 
 public enum Cleaner {
@@ -363,6 +365,8 @@ public enum Cleaner {
     static func walk(_ start: String, target: CleanTarget, now: Double, keepRecent: Bool, top: Bool,
                      denied: inout Bool, yield: (String, Int64) -> Void) {
         guard let info = FS.info(start) else { return }
+        // A pattern's own folder that is a link stays, like every folder a pattern points at.
+        if top && info.kind == .link && FS.isDirectoryFollowingLinks(start) { return }
         let minAge = keepRecent ? Double(target.minAgeDays) * day : 0
         if info.kind != .directory {
             // Sockets, pipes and devices belong to running programs; only plain files and links go.
@@ -383,6 +387,7 @@ public enum Cleaner {
     /// programs that are open, or nil to skip that check.
     public static func find(_ target: CleanTarget, keepRecent: Bool = true, running: Set<String>? = nil) -> Finding {
         var finding = Finding(target: target)
+        finding.keepRecent = keepRecent
         if let running, !target.processes.isEmpty, target.processes.contains(where: { running.contains($0.lowercased()) }) {
             finding.skipped = "Close \(target.group) first"
             return finding
@@ -420,8 +425,14 @@ public enum Cleaner {
     static func removeFiles(_ finding: Finding) -> Int64 {
         var freed: Int64 = 0
         var folders = Set<String>()
+        let target = finding.target
+        let minAge = finding.keepRecent ? Double(target.minAgeDays) * day : 0
+        let now = Date().timeIntervalSince1970
         for path in finding.files where allowed(path) {
             guard let info = FS.info(path), info.kind == .file || info.kind == .link else { continue }
+            // The list can be minutes old: a file made or changed since then, or now someone else's, stays.
+            if target.onlyOwnFiles && info.owner != FS.userID { continue }
+            if minAge > 0 && now - info.modified < minAge { continue }
             if FS.remove(path) {
                 freed += info.size
                 folders.insert((path as NSString).deletingLastPathComponent)
@@ -450,13 +461,20 @@ public enum Cleaner {
         public var message: String
     }
 
-    /// Cleans what was found. Returns what each target freed.
-    public static func clean(_ findings: [Finding], progress: ((CleanTarget) -> Void)? = nil) -> [String: Result] {
+    /// Cleans what was found. Returns what each target freed. `running` (lowercased bundle IDs and names of the
+    /// programs open now, or nil to skip that check) is checked again here, because a program may have been opened
+    /// since the findings were made.
+    public static func clean(_ findings: [Finding], running: Set<String>? = nil,
+                             progress: ((CleanTarget) -> Void)? = nil) -> [String: Result] {
         var results: [String: Result] = [:]
         for finding in findings {
             let target = finding.target
             if !finding.skipped.isEmpty {
                 results[target.id] = Result(freed: 0, message: finding.skipped)
+                continue
+            }
+            if let running, target.processes.contains(where: { running.contains($0.lowercased()) }) {
+                results[target.id] = Result(freed: 0, message: "Close \(target.group) first")
                 continue
             }
             progress?(target)
