@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.60 Dev] - 2026-10-10
+
+### Settings
+- Reset to Default now starts the donation reminder's count again: the reminder is back on and can be turned off after 10 more starts. Supporters keep their code and still never see it.
+
 ## [0.8.59 Dev] - 2026-10-10
 
 ### Why It Was Made

@@ -591,6 +591,7 @@ public sealed class SettingsViewModel : ObservableObject
         }
         Integration.SyncAll();
         Supporter.Refresh();
+        Donation.SupporterTurnsPromptOff(); // the reminder comes back with the count at 0, but never for Supporters
         ThemeManager.Apply();
         Motion.Instance.Refresh();
         MainViewModel.NotifySidebarSettingsChanged(); // the sidebar's width, lock and collapse follow the reset

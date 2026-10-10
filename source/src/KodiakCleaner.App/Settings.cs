@@ -193,7 +193,10 @@ public sealed class Settings
         }
     }
 
-    /// <summary>Restores every preference to its default but keeps the update bookkeeping, the launch count and the supporter code.</summary>
+    /// <summary>
+    /// Restores every preference to its default but keeps the update bookkeeping and the supporter code. The launch count starts
+    /// again, so the donation reminder is back until 10 more starts (Ted, 0.8.60); Supporters still never see it.
+    /// </summary>
     public static void Reset()
     {
         Current = new Settings
@@ -201,7 +204,6 @@ public sealed class Settings
             LastSeenVersion = Current.LastSeenVersion,
             LastUpdateCheckUtc = Current.LastUpdateCheckUtc,
             SupporterCode = Current.SupporterCode,
-            LaunchCount = Current.LaunchCount,
             // Kept: the schedules have Windows tasks that point at them, and the history is a record, not a preference.
             History = Current.History,
             Schedules = Current.Schedules,

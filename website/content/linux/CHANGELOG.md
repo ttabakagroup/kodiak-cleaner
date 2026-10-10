@@ -1,5 +1,11 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.6 Dev] - 2026-10-10
+
+### Donations
+- Reset All Settings now starts the donation reminder's count again, so the reminder is back on and can be turned off after 10 more starts. Supporters keep their code and still never see it.
+- On a start with the Beta Software notice, the donation pop-up now waits until the notice is closed instead of being skipped.
+
 ## [0.8.5 Dev] - 2026-10-10
 
 ### Donations
@@ -7,7 +13,7 @@
 - Don't Show This Again at Startup in the pop-up, and Ask Me to Donate at Startup in Settings > General, turn the reminder off. Both stay greyed out until Kodiak Cleaner has started 10 times, and say how many starts are left.
 - On every 10th start a slim banner above the page asks for a donation, with Donate on Ko-fi and Dismiss.
 - Supporters see neither: the reminder turns off as soon as a supporter code is entered.
-- Only starts that open the window count; Clean Now and scheduled cleanings don't. Reset All Settings keeps the count.
+- Only starts that open the window count; Clean Now and scheduled cleanings don't. Reset All Settings keeps the count (changed in 0.8.6).
 
 ## [0.8.4 Dev] - 2026-10-10
 
