@@ -26,6 +26,11 @@ public sealed class ProgramItem : ObservableObject
     public long SizeBytes => Program.SizeBytes;
     public string Size => Program.SizeBytes > 0 ? ByteSize.Format(Program.SizeBytes) : "";
     public string Scope => Program.PerUser ? "You" : "All Users";
+    /// <summary>The uninstall entry's GUID, which is the Windows Installer ProductCode for MSI installs (msiexec /x {GUID}).</summary>
+    public string ProductCode => Program.IsProductCode ? Program.KeyName.ToUpperInvariant() : "";
+    public bool HasProductCode => ProductCode.Length > 0;
+    /// <summary>The command an administrator can run to remove it quietly; only Windows Installer programs have one.</summary>
+    public string MsiUninstallCommand => Program.IsWindowsInstaller && Program.IsProductCode ? $"msiexec /x {ProductCode} /qn" : "";
 }
 
 public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
@@ -35,7 +40,8 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         View = CollectionViewSource.GetDefaultView(Programs);
         View.Filter = o => o is ProgramItem p && (string.IsNullOrWhiteSpace(Filter) ||
             p.Name.Contains(Filter, StringComparison.CurrentCultureIgnoreCase) ||
-            p.Publisher.Contains(Filter, StringComparison.CurrentCultureIgnoreCase));
+            p.Publisher.Contains(Filter, StringComparison.CurrentCultureIgnoreCase) ||
+            p.ProductCode.Contains(Filter, StringComparison.OrdinalIgnoreCase));
         RefreshCommand = new RelayCommand(Refresh);
         UninstallCommand = new RelayCommand(UninstallAsync, () => !IsBusy && Targets().Count > 0);
         UninstallSelectedCommand = new RelayCommand(UninstallSelectedAsync, () => !IsBusy && Highlighted.Any(p => p.Program.CanUninstall));
@@ -44,6 +50,8 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         RenameCommand = new RelayCommand(Rename, () => Highlighted.Count == 1 && Selected is not null);
         DeleteCommand = new RelayCommand(DeleteEntries, () => !IsBusy && Highlighted.Count > 0);
         HistoryCommand = new RelayCommand(() => { if (ProgramHistoryWindow.Show(null)) Refresh(); });
+        CopyProductCodeCommand = new RelayCommand(() => CopyLines(p => p.ProductCode), () => Highlighted.Any(p => p.ProductCode.Length > 0));
+        CopyUninstallCommandCommand = new RelayCommand(() => CopyLines(p => p.MsiUninstallCommand), () => Highlighted.Any(p => p.MsiUninstallCommand.Length > 0));
     }
 
     private bool _loaded;
@@ -58,6 +66,15 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
     public ObservableCollection<ProgramItem> Programs { get; } = new();
     public ICollectionView View { get; }
     public ICommand RefreshCommand { get; }
+    /// <summary>Right-click › Copy Product Code / Copy Uninstall Command: one line per highlighted program that has one.</summary>
+    public ICommand CopyProductCodeCommand { get; }
+    public ICommand CopyUninstallCommandCommand { get; }
+
+    private void CopyLines(Func<ProgramItem, string> pick)
+    {
+        var lines = Highlighted.Select(pick).Where(l => l.Length > 0).ToList();
+        if (lines.Count > 0) ClipboardHelper.CopyOrExplain(string.Join(Environment.NewLine, lines));
+    }
     public ICommand UninstallCommand { get; }
     public ICommand UninstallSelectedCommand { get; }
     public ICommand RepairCommand { get; }
@@ -324,7 +341,7 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         int quiet = 0;
         while (DateTime.Now < deadline)
         {
-            quiet = UninstallHelperRunning(started) ? 0 : quiet + 1;
+            quiet = UninstallFlow.UninstallHelperRunning(started) ? 0 : quiet + 1;
             bool installed = ProgramInventory.IsStillInstalled(program);
             if (!installed && quiet >= 3) return true;
             if (installed && quiet >= 5) break; // no uninstaller window left, and it's still installed
@@ -338,31 +355,5 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
             if (answer == false) return false;
         }
         return true;
-    }
-
-    /// <summary>True while an uninstaller started since <paramref name="since"/> is still running (NSIS, Inno Setup, InstallShield and the like).</summary>
-    private static bool UninstallHelperRunning(DateTime since)
-    {
-        var temp = Path.GetFullPath(Path.GetTempPath());
-        foreach (var p in System.Diagnostics.Process.GetProcesses())
-        {
-            using (p)
-            {
-                try
-                {
-                    var n = p.ProcessName;
-                    // NSIS runs "Un.exe" or "Au_.exe" from Temp; Inno Setup "_iu*.tmp"; others call themselves unins*/uninst*.
-                    if (n.Equals("Un", StringComparison.OrdinalIgnoreCase) || n.StartsWith("Au_", StringComparison.OrdinalIgnoreCase) || n.StartsWith("Un_", StringComparison.OrdinalIgnoreCase) ||
-                        n.StartsWith("_iu", StringComparison.OrdinalIgnoreCase) || n.Contains("unins", StringComparison.OrdinalIgnoreCase) ||
-                        n.Contains("uninst", StringComparison.OrdinalIgnoreCase))
-                        return true;
-                    if (p.StartTime >= since.AddSeconds(-2) && p.MainModule?.FileName is { } file &&
-                        file.StartsWith(temp, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-                catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException) { }
-            }
-        }
-        return false;
     }
 }

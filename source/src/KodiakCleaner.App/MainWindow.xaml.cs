@@ -117,6 +117,8 @@ public partial class MainWindow : Window
         Activate();
     }
 
+    public void RefreshStartup() => _vm.Startup.RefreshCommand.Execute(null);
+
     /// <summary>Opens a Settings page by key ("terms", "about", ...).</summary>
     public void OpenSettings(string key)
     {

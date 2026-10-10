@@ -169,4 +169,30 @@ public static class UninstallFlow
         }
         return new RemoveResult(removed, failed, backup, done);
     }
+
+    /// <summary>True while an uninstaller started since <paramref name="since"/> is still running (NSIS, Inno Setup, InstallShield and the like).</summary>
+    public static bool UninstallHelperRunning(DateTime since)
+    {
+        var temp = Path.GetFullPath(Path.GetTempPath());
+        foreach (var p in System.Diagnostics.Process.GetProcesses())
+        {
+            using (p)
+            {
+                try
+                {
+                    var n = p.ProcessName;
+                    // NSIS runs "Un.exe" or "Au_.exe" from Temp; Inno Setup "_iu*.tmp"; others call themselves unins*/uninst*.
+                    if (n.Equals("Un", StringComparison.OrdinalIgnoreCase) || n.StartsWith("Au_", StringComparison.OrdinalIgnoreCase) || n.StartsWith("Un_", StringComparison.OrdinalIgnoreCase) ||
+                        n.StartsWith("_iu", StringComparison.OrdinalIgnoreCase) || n.Contains("unins", StringComparison.OrdinalIgnoreCase) ||
+                        n.Contains("uninst", StringComparison.OrdinalIgnoreCase))
+                        return true;
+                    if (p.StartTime >= since.AddSeconds(-2) && p.MainModule?.FileName is { } file &&
+                        file.StartsWith(temp, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException) { }
+            }
+        }
+        return false;
+    }
 }

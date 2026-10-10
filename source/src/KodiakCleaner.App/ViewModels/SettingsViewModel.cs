@@ -291,6 +291,12 @@ public sealed class SettingsViewModel : ObservableObject
         set => Apply(value, v => { Integration.SetRecycleBinMenu(v); S.RecycleBinMenu = v; });
     }
 
+    public bool NotifyNewStartup
+    {
+        get => S.NotifyNewStartup;
+        set => Apply(value, v => S.NotifyNewStartup = v);
+    }
+
     public bool ShowWhatsNewAfterUpdate
     {
         get => S.ShowWhatsNewAfterUpdate;

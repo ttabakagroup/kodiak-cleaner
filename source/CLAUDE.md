@@ -123,6 +123,16 @@ privacy first, local first, security paramount, convenient, practical and useful
   definitely gone (`PathChecks.IsMissing`); never files in the Windows folder (`MissingOutsideWindows`), drivers, boot/system-start services,
   or HKLM file extensions. COM classes and type libraries only when every listed file is gone.
 - Registry backups keep rare value types (hex(N) via RegQueryValueEx) so restores bring back the same type.
+- Command line (Ted, 0.8.53, `Cli` in CommandLine.cs): `/clean [/items:]`, `/list-items`, `/registry [/scan-only] [/categories:]`, `/uninstall:<name|{GUID}> [/quiet]`,
+  `/list-programs`, `/help`; `-` and `=` work too. Handled in `App.Start` before single-instance and the Always Admin/Skip UAC relaunch, so it never
+  opens a window. Same rules as the GUI: caution items never run, registry fixes always back up, uninstall backs up first, leftovers only from
+  Programs. Output attaches to the parent console; exit codes 0 done, 1 some failures, 2 bad switch/not found, 3 uninstall didn't finish.
+  Document any new switch in `Cli.Help` and the README's Command Line section.
+- Programs: Product Code column (`ProgramItem.ProductCode`, the uninstall key's GUID) with right-click Copy Product Code and Copy Uninstall
+  Command (`msiexec /x {GUID} /qn`, Windows Installer programs only) (Ted, 0.8.53).
+- New startup programs (Ted, 0.8.53, `NewStartupWatch`): at start (after `Integration.SyncAll`) and every 10 minutes while running, entries not in
+  the Startup History (`StartupHistory.NotYetSeen`) pop up in `NewStartupWindow` with Keep/Disable/Delete each; Kodiak Cleaner's own entries are
+  skipped and the first look only records. `[General] NotifyNewStartup` (default on) turns it off.
 - Programs actions (Uninstall, Repair, Rename, Delete Entry) are buttons and a right-click menu. Rename and Delete Entry
   back up the uninstall entry first; Delete Entry never touches program files. Tools are listed alphabetically.
 - Settings footer, two lines: `Copyright © 2026 TED TABAKA.` then `Free and open source under the MIT License.`

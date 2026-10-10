@@ -49,6 +49,15 @@ public partial class App : Application
             return;
         }
 
+        // Command-line switches (/clean, /registry, /uninstall, /help): no window; the exit code says how it went.
+        if (Cli.IsCommand(args))
+        {
+            int code = Cli.BadArgs;
+            try { code = Cli.Run(args); }
+            finally { Shutdown(code); }
+            return;
+        }
+
         // A scheduled cleaning started by Windows Task Scheduler: no window either.
         // When Kodiak Cleaner is already open, that copy runs it, so both don't write the settings file.
         if (args.FirstOrDefault(a => a.StartsWith(ScheduledCleaning.Arg, StringComparison.OrdinalIgnoreCase)) is { } scheduled)
@@ -99,6 +108,8 @@ public partial class App : Application
         // Windows registrations (startup entry, Recycle Bin menu, jump list, scheduled cleanings) are checked once the
         // window is drawn, so they never hold up the first paint (0.8.47).
         Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Integration.SyncAll);
+        // New startup programs pop up once the window is drawn and the registrations above are done (0.8.53).
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, NewStartupWatch.Start);
         SingleInstance.Listen(a =>
         {
             // A scheduled cleaning runs quietly; anything else brings the window back.
@@ -107,6 +118,16 @@ public partial class App : Application
         });
         window.HandleArgs(args);
     }
+
+    /// <summary>Brings the window back (from the tray too) on a page such as "startup".</summary>
+    public void ShowPage(string key)
+    {
+        _tray?.Restore();
+        (MainWindow as MainWindow)?.OpenSettings(key);
+    }
+
+    /// <summary>Startup entries changed outside the Startup page; it reads the list again.</summary>
+    public void StartupChanged() => (MainWindow as MainWindow)?.RefreshStartup();
 
     protected override void OnExit(ExitEventArgs e)
     {

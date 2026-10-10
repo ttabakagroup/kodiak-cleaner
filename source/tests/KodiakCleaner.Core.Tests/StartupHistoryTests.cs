@@ -42,6 +42,18 @@ public sealed class StartupHistoryTests : IDisposable
     }
 
     [Fact]
+    public void NotYetSeenListsNewEntriesAndOnesThatCameBack()
+    {
+        var h = new StartupHistory();
+        h.Observe(new[] { Run("Chat", "chat.exe"), Run("Sync", "sync.exe") }, Day1, _ => null);
+        Assert.Empty(h.NotYetSeen(new[] { Run("Chat", "chat.exe --tray"), Run("Sync", "sync.exe") }));
+
+        h.Observe(new[] { Run("Sync", "sync.exe") }, Day2, _ => null); // Chat left startup
+        var fresh = h.NotYetSeen(new[] { Run("Chat", "chat.exe"), Run("Sync", "sync.exe"), Run("Updater", "upd.exe") });
+        Assert.Equal(new[] { "Chat", "Updater" }, fresh.Select(f => f.Name));
+    }
+
+    [Fact]
     public void RemovalByKodiakCleanerKeepsItsBackupAndAReturningEntryReusesItsRecord()
     {
         var h = new StartupHistory();

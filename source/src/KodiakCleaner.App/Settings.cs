@@ -92,6 +92,8 @@ public sealed class Settings
     public bool CleanOnStartup { get; set; }
     public bool RecycleBinMenu { get; set; }
     public bool ShowWhatsNewAfterUpdate { get; set; } = true;
+    /// <summary>Pop up when new startup programs appear, with Keep, Disable or Delete for each (Ted, 0.8.53).</summary>
+    public bool NotifyNewStartup { get; set; } = true;
     public string? LastSeenVersion { get; set; }
     /// <summary>Whether the Tools group in the sidebar is open. Open by default since 0.8.11 (Ted), saved under a new key
     /// so copies that saved the old closed default open too.</summary>
@@ -207,6 +209,7 @@ public sealed class Settings
         CleanOnStartup = ini.GetBool("General", "CleanOnStartup", CleanOnStartup);
         RecycleBinMenu = ini.GetBool("General", "RecycleBinMenu", RecycleBinMenu);
         ShowWhatsNewAfterUpdate = ini.GetBool("General", "ShowWhatsNewAfterUpdate", ShowWhatsNewAfterUpdate);
+        NotifyNewStartup = ini.GetBool("General", "NotifyNewStartup", NotifyNewStartup);
         LastSeenVersion = ini.Get("General", "LastSeenVersion");
         ToolsExpanded = ini.GetBool("General", "ToolsOpen", ToolsExpanded);
         SidebarWidth = Math.Clamp(ini.GetInt("General", "SidebarWidth", SidebarWidth), MinSidebarWidth, MaxSidebarWidth);
@@ -263,6 +266,7 @@ public sealed class Settings
         ini.Set("General", "CleanOnStartup", CleanOnStartup);
         ini.Set("General", "RecycleBinMenu", RecycleBinMenu);
         ini.Set("General", "ShowWhatsNewAfterUpdate", ShowWhatsNewAfterUpdate);
+        ini.Set("General", "NotifyNewStartup", NotifyNewStartup);
         ini.Set("General", "LastSeenVersion", LastSeenVersion ?? "");
         ini.Set("General", "ToolsOpen", ToolsExpanded);
         ini.Set("General", "SidebarWidth", SidebarWidth);

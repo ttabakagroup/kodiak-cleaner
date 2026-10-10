@@ -5,6 +5,17 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.53 Dev] - 2026-10-10
+
+### Command Line
+- Kodiak Cleaner can now run from the command line with no window. `/clean` cleans the ticked Cleaner items (or `/items:ID,ID`), `/registry` scans and fixes the registry with a backup first (`/scan-only` changes nothing), and `/uninstall:"Name"` or `/uninstall:{GUID}` runs a program's uninstaller after backing up its registry entries (`/quiet` for a silent uninstall). `/list-items`, `/list-programs` and `/help` list what's there. Output goes to the console, everything is written to the activity log, and the exit code says how it went.
+
+### Programs
+- A new Product Code column shows each Windows Installer program's GUID, and the search box finds programs by it. Right-click Copy Product Code copies it, and Copy Uninstall Command copies `msiexec /x {GUID} /qn` for administrators.
+
+### Startup
+- When a program adds itself to startup, a pop-up lists it the next time Kodiak Cleaner starts, or within 10 minutes while it's open or in the tray. Choose Keep, Disable or Delete for each one; deleting is backed up and can be restored from History. Turn it off under Settings > General > Tell Me About New Startup Programs.
+
 ## [0.8.52 Dev] - 2026-10-10
 
 ### Registry

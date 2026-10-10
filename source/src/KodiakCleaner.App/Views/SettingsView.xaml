@@ -37,6 +37,14 @@
                             <TextBlock Text="The first time Kodiak Cleaner starts after an update, list the changes since your previous version." Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding NotifyNewStartup}" />
+                        <StackPanel Margin="0,0,24,0">
+                            <TextBlock Text="Tell Me About New Startup Programs" Style="{StaticResource SettingTitle}" />
+                            <TextBlock Text="When Kodiak Cleaner starts, and every 10 minutes while it's open or in the tray, check for programs that have added themselves to startup. If any have, a pop-up lists them so you can keep, disable or delete each one." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
                     <StackPanel Visibility="{Binding IsPreRelease, Converter={StaticResource BoolToVis}}">
                         <Border Style="{StaticResource RowDivider}" />
                         <DockPanel Style="{StaticResource SettingRow}">

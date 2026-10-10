@@ -36,6 +36,22 @@ public static class ProgramInventory
         return Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = true });
     }
 
+    /// <summary>
+    /// Starts the program's uninstaller with no questions (for the command line's /quiet): msiexec /x {ProductCode} /qn for
+    /// Windows Installer programs, otherwise the program's own QuietUninstallString. Null when it has neither.
+    /// </summary>
+    public static Process? StartQuietUninstall(InstalledProgram program)
+    {
+        var (exe, args) = program.IsWindowsInstaller && program.IsProductCode
+            ? ("msiexec.exe", $"/x {program.KeyName} /qn /norestart")
+            : Util.CommandLine.Split(Environment.ExpandEnvironmentVariables(program.QuietUninstallString ?? ""));
+        if (exe.Length == 0) return null;
+        return Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = true });
+    }
+
+    public static bool CanUninstallQuietly(InstalledProgram program) =>
+        (program.IsWindowsInstaller && program.IsProductCode) || !string.IsNullOrWhiteSpace(program.QuietUninstallString);
+
     /// <summary>True while the program's uninstall entry is still there, which means it hasn't been uninstalled.</summary>
     public static bool IsStillInstalled(InstalledProgram program)
     {

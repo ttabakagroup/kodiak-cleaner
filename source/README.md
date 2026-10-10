@@ -37,6 +37,7 @@ A small, honest cleaner for Windows. No telemetry, no ads, no upsells, no bundle
 - [Download](#download)
 - [Install, Update and Uninstall](#install-update-and-uninstall)
 - [How to Use](#how-to-use)
+- [Command Line](#command-line)
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Privacy](#privacy)
@@ -150,10 +151,14 @@ Every fix is saved to a `.reg` backup first. To undo a fix, open `Backups\Regist
 
 Turning a program off works exactly like Task Manager's Disable and can be undone at any time. **History** lists every entry Kodiak Cleaner has seen, so removed ones can be restored.
 
+When a program adds itself to startup, Kodiak Cleaner tells you the next time it starts (or within 10 minutes while it's open or in the tray). The pop-up lists the new entries so you can **Keep**, **Disable** or **Delete** each one. Turn it off in **Settings > General > Tell Me About New Startup Programs**.
+
 ### Uninstall Programs
 
 1. Open **Programs** and tick one or more programs, or Ctrl-click or Shift-click to highlight several and right-click them.
 2. Click **Uninstall**. Kodiak Cleaner backs up the program's registry entries, runs its own uninstaller, then offers to remove the folders, shortcuts and registry keys it left behind.
+
+The **Product Code** column shows each Windows Installer program's GUID. Right-click a program and choose **Copy Product Code**, or **Copy Uninstall Command** for a ready-to-run `msiexec /x {GUID} /qn`.
 
 ### Schedule Cleanings
 
@@ -161,6 +166,21 @@ Turning a program off works exactly like Task Manager's Disable and can be undon
 2. Give it a name, pick the days and time, tick the items, and click **Save Schedule**.
 
 Windows Task Scheduler starts Kodiak Cleaner at that time; it cleans without opening a window and then closes, so nothing runs in the background.
+
+### Command Line
+
+Scripts and system administrators can run Kodiak Cleaner without a window:
+
+| Command | What it does |
+|---|---|
+| `KodiakCleaner.exe /clean` | Cleans the items ticked on the Cleaner page. Add `/items:ID,ID` to clean just those items. |
+| `KodiakCleaner.exe /list-items` | Lists every Cleaner item ID, marking the ticked ones. |
+| `KodiakCleaner.exe /registry` | Scans the registry and fixes what it finds, backing up every fix to a `.reg` file first. Add `/scan-only` to change nothing, or `/categories:"Fonts,Help Files"` for some checks only. |
+| `KodiakCleaner.exe /uninstall:"Program Name"` | Backs up the program's registry entries and runs its uninstaller. A product code works too: `/uninstall:{GUID}`. Add `/quiet` for a silent uninstall (`msiexec /x {GUID} /qn`, or the program's own quiet uninstall). |
+| `KodiakCleaner.exe /list-programs` | Lists installed programs with their version and product code. |
+| `KodiakCleaner.exe /help` | Shows these switches. |
+
+Exit codes: `0` done, `1` done with some failures, `2` wrong switch or nothing found, `3` the uninstall didn't finish. Items with a caution never run from the command line, and leftovers after an uninstall are only removed from the Programs page. Run it as administrator for anything shared by all users. Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it: use `start /wait KodiakCleaner.exe /clean` and then `%ERRORLEVEL%`, or in PowerShell `Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru`. Everything is also written to the activity log.
 
 ## Features
 
@@ -170,10 +190,10 @@ Windows Task Scheduler starts Kodiak Cleaner at that time; it cleans without ope
 |------|--------------|
 | **Advanced Cleaning** | Deeper items, shown only after a warning: more temp folders and caches, old Windows logs, Prefetch, the print queue, and Windows tasks run with Windows' own tools (DNS cache, clipboard, Run history, Windows Update cleanup, event logs, older shadow copies, hibernation file, CompactOS). Never ticked by default. Risky items carry a caution, ask before they're ticked and never run on a schedule. |
 | **Cleaner** | Windows temp files, Recycle Bin, thumbnail cache, error reports, crash dumps, DirectX shader cache, Windows Update and Delivery Optimization caches, and the recent documents list. Browser cache, history and cookies for Ablaze Floorp, Brave, Google Chrome, Helium, Microsoft Edge, Mozilla Firefox, Mullvad Browser, Opera, Opera GX, Vivaldi and Waterfox, each shown with the browser's own icon. Search, Sort By, a Last Cleaned column, and Reset to Default. |
-| **Programs** | Searchable list of installed programs with their icons. Uninstall several at once (one at a time, with leftover removal), Repair, Rename and Delete Entry. History records everything removed or changed and can restore it. |
+| **Programs** | Searchable list of installed programs with their icons. Uninstall several at once (one at a time, with leftover removal), Repair, Rename and Delete Entry. A Product Code column with Copy Product Code and Copy Uninstall Command for administrators. History records everything removed or changed and can restore it. |
 | **Registry** | Finds entries that point at files or programs that no longer exist, across 15 checks: ActiveX and class issues, applications, application paths, fonts, help files, installer, missing shared DLLs, MUI cache, obsolete software, run at startup, sound events, Start menu ordering, type libraries, unused file extensions and Windows services. Fix all, a selection, or Ctrl-click or Shift-click to highlight several and right-click them. Every fix is backed up first. |
 | **Scheduled Cleaning** | Named cleanings that run on chosen weekdays or a day of the month, through Windows Task Scheduler. A cleaning missed while the PC was off runs at the next chance. |
-| **Startup** | Programs that start when you sign in (per user and all users), each with its icon. Turn them off or on one at a time or in a batch, add a program to your Startup folder, remove entries (backed up first), and restore removed ones from History. |
+| **Startup** | Programs that start when you sign in (per user and all users), each with its icon. Turn them off or on one at a time or in a batch, add a program to your Startup folder, remove entries (backed up first), and restore removed ones from History. A pop-up tells you when a program adds itself to startup. |
 
 <table>
   <tr>

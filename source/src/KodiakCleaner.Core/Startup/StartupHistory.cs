@@ -99,6 +99,16 @@ public sealed class StartupHistory
             r.RemovedOn = now;
     }
 
+    /// <summary>
+    /// Entries in <paramref name="current"/> that aren't in startup as far as the history knows: new ones, and ones that
+    /// came back after being removed. Used for the new startup programs pop-up (0.8.53).
+    /// </summary>
+    public List<StartupItem> NotYetSeen(IEnumerable<StartupItem> current)
+    {
+        var known = Records.Where(r => !r.IsRemoved).Select(r => r.Key).ToHashSet(StringComparer.Ordinal);
+        return current.Where(i => !known.Contains(StartupRecord.KeyOf(i))).ToList();
+    }
+
     /// <summary>Notes that Kodiak Cleaner removed this entry, with the backup it made.</summary>
     public void MarkRemoved(StartupItem item, string? registryBackup, DateTime now)
     {
