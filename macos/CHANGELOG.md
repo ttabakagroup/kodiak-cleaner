@@ -1,5 +1,13 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.3 Dev] - 2026-10-10
+
+### Added
+- **Triggers:** hover over an entry to see everything about it: its name, kind, label, program and full command, cron line, file, when it runs, who it runs for, whether it's on, what can be changed, when it last changed, and any warnings or notes.
+
+### Changed
+- **Settings:** the cards on each page are in A to Z order, and so are the switches inside each card. Reset stays last on General. Every switch still changes the same setting.
+
 ## [0.8.2 Dev] - 2026-10-10
 
 ### Changed

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Source checks that don't need a Mac: Title Case, colors only in the theme files, no network code, A to Z lists.
+"""Source checks that don't need a Mac: Title Case, colors only in the theme files, no network code, A to Z lists
+and Settings cards.
 
 Run: python3 tests/check_source.py   (build.sh test runs it too)
 """
@@ -116,6 +117,31 @@ def check_features_sorted(errors):
         errors.append(f"Getting Started features aren't A to Z: {names}")
 
 
+def check_settings_sorted(errors):
+    """Settings cards A to Z on every page with Reset last, and switches A to Z inside each card (Ted, 0.8.3).
+    Supporter's Free and Supporter cards sit side by side as one comparison, placed by "Free"."""
+    text = (SOURCES / "KodiakCleaner" / "SettingsView.swift").read_text(encoding="utf-8")
+    pages = re.split(r"^private struct (\w+Settings): View \{", text, flags=re.M)
+    checked = 0
+    for name, body in zip(pages[1::2], pages[2::2]):
+        cards = re.findall(r'\bCard\(title: "([^"]+)"', body)
+        if name == "SupporterSettings" and cards[:2] == ["Free", "Supporter"]:
+            cards = cards[:1] + cards[2:]
+        resets = [card for card in cards if card.lower().startswith("reset")]
+        if resets and cards[-1] != resets[-1]:
+            errors.append(f"{name}: the Reset card must be last: {cards}")
+        cards = [card for card in cards if card not in resets]
+        if cards != sorted(cards, key=str.lower):
+            errors.append(f"{name}: cards aren't A to Z: {cards}")
+        for chunk in re.split(r"\bCard\(title: ", body):
+            rows = re.findall(r'\bSwitchRow\(title: "([^"]+)"', chunk)
+            if rows != sorted(rows, key=str.lower):
+                errors.append(f"{name}: switches aren't A to Z: {rows}")
+        checked += 1
+    if checked < 6:
+        errors.append(f"Settings order check found only {checked} pages; the pattern may be out of date")
+
+
 def check_docs(errors):
     for name in ("CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "LICENSE", "packaging/ReadMe.md", "README.md", "CLAUDE.md"):
         if not (ROOT / name).is_file():
@@ -150,6 +176,7 @@ def main():
     check_colors(errors)
     check_no_network(errors)
     check_features_sorted(errors)
+    check_settings_sorted(errors)
     check_docs(errors)
     check_no_email(errors)
     if errors:

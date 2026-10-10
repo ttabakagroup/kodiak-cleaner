@@ -4,7 +4,7 @@ Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
 Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a small, honest cleaner for caches, logs, temporary files and browser data, plus Triggers, one list of everything that starts by itself on your Mac. No telemetry, no ads, no upsells, no background services. Free and open source under the MIT License.
 
-**Status:** 0.8.2 Dev, beta software. Use at your own risk and keep your own backups.
+**Status:** 0.8.3 Dev, beta software. Use at your own risk and keep your own backups.
 
 ## Contents
 
@@ -30,6 +30,7 @@ Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a sma
 - Launch agents (yours and everyone's), launch daemons, cron jobs and shell startup files, with Apple's own items available for reference.
 - Notes flag missing programs, programs in temporary, Downloads or hidden folders, code that is downloaded and run, recent changes and items that restart themselves. Needs a Look shows just those.
 - Turn launch agents, launch daemons and cron jobs off or on, and remove your own. Every change is backed up first and can be restored from Triggers History.
+- Hover over an entry to see everything about it: its name, kind, program and full command, file, when it runs, who it runs for, whether it's on, and any notes.
 
 ## Download and Install
 

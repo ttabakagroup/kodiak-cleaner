@@ -178,6 +178,8 @@ private struct TriggerRow: View {
         .background(hover ? theme.rowHover : (alternate ? theme.rowAlt : theme.surface))
         .overlay(alignment: .bottom) { Rectangle().fill(theme.rowLine).frame(height: 1) }
         .onHover { hover = $0 }
+        // Hover details: everything about the entry, one "Label: value" line each (Ted, 0.8.3).
+        .help(DetailText.lines(item.detailFields))
         .contextMenu {
             if FileManager.default.fileExists(atPath: item.path) { Button("Show in Finder") { model.reveal(item.path) } }
         }

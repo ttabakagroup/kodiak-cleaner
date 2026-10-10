@@ -491,3 +491,64 @@ public enum Triggers {
         saveHistory(entries)
     }
 }
+
+// MARK: Hover details
+
+extension Trigger {
+    /// The full command: the program and its arguments (the first argument is the program itself).
+    public var command: String {
+        let head: [String] = program.isEmpty ? [] : [program]
+        return (head + Array(arguments.dropFirst())).joined(separator: " ")
+    }
+
+    /// Everything about the entry for its hover details on the Triggers page (`DetailText.lines`); empty ones are skipped.
+    public var detailFields: [(String, String)] {
+        let scope: String
+        switch kind {
+        case .userAgent, .cron, .shellFile: scope = "Just you"
+        case .globalAgent, .systemShellFile: scope = "All users"
+        case .daemon: scope = "All users, starts with the Mac"
+        case .appleAgent, .appleDaemon: scope = "All users, part of macOS"
+        }
+        let state: String
+        switch enabled {
+        case .some(true): state = "On"
+        case .some(false): state = "Off"
+        case .none: state = "Always runs"
+        }
+        let changes: String
+        if isProtected { changes = "Shown for reference only" }
+        else if !canToggle { changes = "Shown so you can check it" }
+        else if needsAdmin { changes = "Asks for your administrator password" }
+        else { changes = canRemove ? "Can be turned off or removed" : "Can be turned off" }
+        var changed = ""
+        if modified > 0 {
+            let format = DateFormatter()
+            format.dateStyle = .medium
+            format.timeStyle = .short
+            changed = format.string(from: Date(timeIntervalSince1970: modified))
+        }
+        let isLaunchItem = ![.cron, .shellFile, .systemShellFile].contains(kind)
+        let shownLabel: String = isLaunchItem && label != name ? label : ""
+        let fullCommand: String = command == program ? "" : command
+        let file: String = kind == .cron ? "Your crontab" : Paths.display(path)
+        let warnings: String = notes.filter { $0.look }.map { $0.text }.joined(separator: "; ")
+        let information: String = notes.filter { !$0.look }.map { $0.text }.joined(separator: "; ")
+        return [
+            ("Name", name),
+            ("Kind", group),
+            ("Label", shownLabel),
+            ("Program", Paths.display(program)),
+            ("Command", fullCommand),
+            ("Cron Line", cronLine),
+            ("File", file),
+            ("Runs", schedule),
+            ("For", scope),
+            ("Status", state),
+            ("Changes", changes),
+            ("Last Changed", changed),
+            ("Warnings", warnings),
+            ("Notes", information),
+        ]
+    }
+}
