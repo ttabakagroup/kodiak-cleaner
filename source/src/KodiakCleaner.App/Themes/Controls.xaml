@@ -655,6 +655,50 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Height" Value="4" />
+        <!-- Windows' own template slides a busy bar with a storyboard that repeats forever and never stops once started, even
+             after the bar is hidden or its page is closed, so the window kept redrawing 60 times a second while Kodiak Cleaner
+             sat idle (Ted, 0.8.62). This one looks the same but slides only while the bar is busy and on screen. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
+                        <Rectangle x:Name="PART_Track" />
+                        <Grid x:Name="PART_Indicator" ClipToBounds="True" HorizontalAlignment="Left">
+                            <Rectangle x:Name="Indicator" Fill="{TemplateBinding Foreground}" />
+                            <Rectangle x:Name="Slider" Fill="{TemplateBinding Foreground}" Visibility="Collapsed" RenderTransformOrigin="-0.5,0.5">
+                                <Rectangle.RenderTransform>
+                                    <ScaleTransform ScaleX="0.25" />
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                        </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsIndeterminate" Value="True">
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsIndeterminate" Value="True" />
+                                <Condition Property="IsVisible" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Slider" Property="Visibility" Value="Visible" />
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard x:Name="Slide">
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <PointAnimation Storyboard.TargetName="Slider" Storyboard.TargetProperty="RenderTransformOrigin"
+                                                        From="-0.5,0.5" To="1.5,0.5" Duration="0:0:2" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="Slide" />
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
             <!-- With animations off (Settings > Appearance or Windows), a busy bar holds still instead of sliding. -->
             <MultiDataTrigger>

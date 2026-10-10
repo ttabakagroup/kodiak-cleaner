@@ -368,3 +368,18 @@ public class DocumentTests
             Assert.DoesNotMatch(@"[""']#[0-9A-Fa-f]{6,8}[""']|Color\.FromRgb|\bColors\.[A-Z]", File.ReadAllText(file));
     }
 }
+
+public class IdleTests
+{
+    /// <summary>
+    /// Windows' own busy bar animation never stops once started, so a hidden bar kept the window redrawing 60 times a second
+    /// while Kodiak Cleaner sat idle (0.8.62). The bar's own template must stop sliding when it is hidden or done.
+    /// </summary>
+    [Fact]
+    public void Busy_bars_stop_sliding_when_hidden()
+    {
+        var xaml = Repo.Read("src", "KodiakCleaner.App", "Themes", "Controls.xaml");
+        Assert.Contains("<Condition Property=\"IsVisible\" Value=\"True\" />", xaml);
+        Assert.Contains("<RemoveStoryboard BeginStoryboardName=\"Slide\" />", xaml);
+    }
+}

@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.62 Dev] - 2026-10-10
+
+### Performance
+- Kodiak Cleaner no longer keeps working while it sits idle. A hidden busy bar on the Cleaner page kept its sliding animation running from startup, so the window redrew 60 times a second for as long as the app was open, even minimized or in the tray. Busy bars now slide only while they are busy and on screen; under Wine idle CPU use fell from about 4 seconds a minute to almost nothing.
+
 ## [0.8.61 Dev] - 2026-10-10
 
 ### Cleaner
