@@ -49,8 +49,8 @@ A small, honest cleaner for Windows. No telemetry, no ads, no upsells, no bundle
 
 ## Why Kodiak Cleaner
 
-For well over two decades, Ted Tabaka used the same cleaning app. Then an upgrade made simple tasks harder and familiar
-features harder to find, so he built his own and made it open source.
+For more than two decades, Ted Tabaka used the same cleaning app. Then an upgrade made routine tasks harder and familiar
+features harder to find, which inspired Kodiak Cleaner: an open source app focused on simplicity, privacy and practical functionality.
 
 The idea is simple: open Kodiak Cleaner, choose what you want to clean, get it done, and get on with your day.
 It is private first, local first, and built with security as a top priority. Read the full story in

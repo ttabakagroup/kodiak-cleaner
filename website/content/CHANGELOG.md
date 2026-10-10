@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.57 Dev] - 2026-10-10
+
+### Why It Was Made
+- A new story from Ted, in his own words, under Settings > Help > Why It Was Made.
+
 ## [0.8.56 Dev] - 2026-10-10
 
 ### Contact & Feedback

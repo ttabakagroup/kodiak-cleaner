@@ -37,7 +37,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   the automatic-updates switch is only in Settings.
 - Slogan (`AppInfo.Slogan`, Ted's exact words): "Not a Crap Cleaner. A Cleaner App, Built Around What Matters."
 - `why-it-was-made.md` is Ted's own story. Change its wording only when Ted asks (0.8.4: light edit, no em dashes, "Kodiak Cleaner"
-  wherever it said Cleaner; 0.8.13: light wording edit at Ted's invitation, his voice and first person kept; 0.8.25: opens "For well over two decades", Ted's words); it shows under Settings > Help > Why It Was Made, in larger text (17, Ted, 0.8.24).
+  wherever it said Cleaner; 0.8.13: light wording edit at Ted's invitation, his voice and first person kept; 0.8.25: opens "For well over two decades", Ted's words; 0.8.57: replaced word for word with Ted's new text, heading "Built Around What Matters.", ending with a donation ask); it shows under Settings > Help > Why It Was Made, in larger text (17, Ted, 0.8.24).
 - Tools must stay local and reversible: read-only, or removals go to the Recycle Bin after a confirm. Browser
   Extensions only lists; removal happens in the browser. Empty Folders never searches Windows, program folders or any user's AppData (0.8.48), as a starting point or inside one (`EmptyFolderFinder.Find`/`IsStillEmpty` take the protected list), and never lists Desktop, Documents and the other Windows user folders (the kept list; searched inside). Large Files skips Windows, program folders and hidden/system files.
   Scheduled Tasks only turns tasks on or off, never deletes them, and hides Windows tasks unless asked.
