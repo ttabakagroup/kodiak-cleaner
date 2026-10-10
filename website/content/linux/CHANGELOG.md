@@ -1,14 +1,5 @@
 # Kodiak Cleaner for Linux Changelog
 
-## [0.8.5 Dev] - 2026-10-10
-
-### Donations
-- A Help Keep Kodiak Cleaner Free pop-up at startup asks you to consider a donation on Ko-fi. Donate on Ko-fi opens Ko-fi in your browser; Not Now, the window's close button or Esc closes it. It never opens on top of What's New or the Beta Software notice.
-- Don't Show This Again at Startup in the pop-up, and Ask Me to Donate at Startup in Settings > General, turn the reminder off. Both stay greyed out until Kodiak Cleaner has started 10 times, and say how many starts are left.
-- On every 10th start a slim banner above the page asks for a donation, with Donate on Ko-fi and Dismiss.
-- Supporters see neither: the reminder turns off as soon as a supporter code is entered.
-- Only starts that open the window count; Clean Now and scheduled cleanings don't. Reset All Settings keeps the count.
-
 ## [0.8.4 Dev] - 2026-10-10
 
 ### Contact & Feedback
