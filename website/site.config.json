@@ -86,9 +86,9 @@
   },
   "linux": {
     "appimage": "KodiakCleanerLinux-AppImage.zip",
-    "appimageSize": "626 KB",
+    "appimageSize": "630 KB",
     "deb": "KodiakCleanerLinux-DEB.zip",
-    "debSize": "179 KB"
+    "debSize": "182 KB"
   },
   "mac": {
     "dmg": "KodiakCleanerMac.dmg",
