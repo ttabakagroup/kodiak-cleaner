@@ -53,6 +53,9 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   types must do the same.
 - Notes: missing program, temporary/Downloads/hidden folder, downloads or unpacks code and runs it, changed in the last 7 days
   (all count toward Needs a Look), and "starts again whenever it stops" (information only).
+- Hover details (Ted, 0.8.3; same as Windows 0.8.63): each row's `.help` is `DetailText.lines(item.detailFields)`, one
+  "Label: value" line per field with empty ones skipped (`Sources/KodiakCore/DetailText.swift`, tested). New Trigger fields go
+  into `detailFields` (an extension at the end of Triggers.swift, outside the groupNames block the Title Case check reads).
 
 ## Interface
 - Colors only in `Sources/KodiakCore/Themes.swift` (the standard's exact tokens, same tables as Linux) and turned into SwiftUI
@@ -61,6 +64,9 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   swatch), Blue, Teal, Green, Purple, Pink, Orange, Slate, shaded by `accentTokens` (port of accent.js, checked against the
   Linux values). Classic hides its duplicate Blue. `ThemeTests` checks WCAG 2.2 AA for every scheme, mode and accent.
 - Classic and Glacier are Supporter themes (fall back to Honey without a code); Honey and all accents are free.
+- Settings order (Ted, 0.8.3; same as Windows 0.8.63): on every Settings page the cards are A to Z by title and the switches
+  inside each card are A to Z; a Reset card stays last. Supporter's Free and Supporter cards stay side by side as one comparison.
+  Add new cards and switches in their A to Z place; `tests/check_source.py` checks it. Captions never point "above" or "below".
 - Every setting is a switch (`SwitchRow`/`KCSwitchStyle`); checkmarks (`KCCheckboxStyle`) only for batch selections. One-of-several
   choices use tiles, `Segmented` or swatches. The focus ring is drawn in the theme's focus color (`FocusRing`).
 - Title Case for page names, card titles, headings, labels, column headers, buttons, switches, options and chips; help text
