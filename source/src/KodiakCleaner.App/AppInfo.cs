@@ -11,7 +11,6 @@ public static class AppInfo
     public const string ShortName = "Kodiak Cleaner";
     public const string Slogan = "Not a Crap Cleaner. A Cleaner App, Built Around What Matters.";
     public const string Developer = "Ted Tabaka";
-    public const string Email = "www.kodiakcleaner.app/contact";
     public const string KoFiUrl = "https://ko-fi.com/ttabaka";
 
     /// <summary>GitHub "owner/name": source code and Star on GitHub.</summary>
@@ -22,8 +21,11 @@ public static class AppInfo
     /// <summary>A hosted privacy policy. Empty = show the copy built into the app.</summary>
     public const string PrivacyUrl = "";
 
-    /// <summary>Where Contact &amp; Feedback messages go: mailto: or https: form. Empty entries use the default.</summary>
-    public static readonly FeedbackAddresses Feedback = new(Default: "mailto:" + Email);
+    /// <summary>The website's Contact Us form. Ted's email address is never shown anywhere (Ted, 0.8.56).</summary>
+    public const string ContactUrl = "https://www.kodiakcleaner.app/contact/";
+
+    /// <summary>Where Contact &amp; Feedback messages go: the Contact Us form, with the topic picked for each button.</summary>
+    public static readonly FeedbackAddresses Feedback = new(Default: ContactUrl);
 
     private static readonly Assembly Me = Assembly.GetExecutingAssembly();
 

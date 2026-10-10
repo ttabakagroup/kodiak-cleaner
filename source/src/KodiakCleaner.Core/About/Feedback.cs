@@ -85,7 +85,8 @@ public static class FeedbackLinks
     }
 
     /// <summary>
-    /// mailto: links get a subject and body. https: forms get ?type=feedback|bug|idea|security&amp;version=…
+    /// mailto: links get a subject and body. https: forms get ?topic=General Feedback|Bug Report|Feature Request|Security&amp;version=…
+    /// (the website's Contact Us form picks the topic from it).
     /// Returns null when no address is set.
     /// </summary>
     public static string? Build(FeedbackKind kind, FeedbackAddresses addresses, ReportDetails details)
@@ -102,7 +103,7 @@ public static class FeedbackLinks
         if (address.StartsWith("https:", StringComparison.OrdinalIgnoreCase))
         {
             var sep = address.Contains('?') ? '&' : '?';
-            return $"{address}{sep}type={TypeName(kind)}&version={Uri.EscapeDataString(details.VersionName)}";
+            return $"{address}{sep}topic={Uri.EscapeDataString(TopicName(kind))}&version={Uri.EscapeDataString(details.VersionName)}";
         }
         throw new ArgumentException($"Feedback addresses must start with mailto: or https: ({address}).");
     }
@@ -151,6 +152,15 @@ public static class FeedbackLinks
         var q = a.IndexOf('?');
         return q >= 0 ? a[..q] : a;
     }
+
+    /// <summary>The topic as the website's Contact Us form names it.</summary>
+    public static string TopicName(FeedbackKind kind) => kind switch
+    {
+        FeedbackKind.Bug => "Bug Report",
+        FeedbackKind.Idea => "Feature Request",
+        FeedbackKind.Security => "Security",
+        _ => "General Feedback",
+    };
 
     public static string TypeName(FeedbackKind kind) => kind switch
     {

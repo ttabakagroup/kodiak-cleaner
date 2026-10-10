@@ -14,7 +14,7 @@
 
     <Icon Id="AppIcon" SourceFile="..\src\KodiakCleaner.App\Assets\app.ico" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
-    <Property Id="ARPCONTACT" Value="www.kodiakcleaner.app/contact" />
+    <Property Id="ARPCONTACT" Value="https://www.kodiakcleaner.app/contact/" />
     <Property Id="ARPCOMMENTS" Value="Not a Crap Cleaner. A Cleaner App, Built Around What Matters." />
     <Property Id="ARPURLINFOABOUT" Value="https://www.kodiakcleaner.app/" />
     <Property Id="ARPHELPLINK" Value="https://www.kodiakcleaner.app/" />

@@ -5,6 +5,21 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.56 Dev] - 2026-10-10
+
+### Contact & Feedback
+- Send Feedback, Report a Bug, Request a Feature and Security now open the Contact Us form on kodiakcleaner.app in your browser, with the topic already picked. The in-app email form is gone, and Kodiak Cleaner no longer shows an email address anywhere: the privacy policy, terms, security notes, Read Me and the installer's support contact all point to the form. Copy Details still copies your version and Windows details to paste into a bug report.
+
+## [0.8.55 Dev] - 2026-10-10
+
+### Donations
+- A pop-up at startup asks you to consider a donation on Ko-fi to keep Kodiak Cleaner free and open source. Close it with Not Now or the X. Its Don't Show This Again switch, and Settings > General > Ask Me to Donate at Startup, can be turned off once Kodiak Cleaner has been started 10 times; until then they're greyed out and say how many starts are left. The pop-up never appears on top of Getting Started or What's New.
+- On every 10th start, a small banner at the top of the window says Kodiak Cleaner is made for free and a donation keeps the work going, with Donate on Ko-fi and Dismiss.
+- Supporters see neither: entering a supporter code turns the pop-up off and hides the banner.
+
+### Developer
+- A Reset to Default card under Status puts every setting back to its default after a Yes/No check. It keeps the start count, your supporter code, scheduled cleanings, history, backups, reports and logs.
+
 ## [0.8.54 Dev] - 2026-10-10
 
 ### Programs

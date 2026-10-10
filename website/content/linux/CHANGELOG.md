@@ -1,5 +1,13 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.4 Dev] - 2026-10-10
+
+### Contact & Feedback
+- Contact & Feedback now opens the contact form on kodiakcleaner.app in your browser instead of an email. Send Feedback, Report a Bug, Request a Feature and Security each pick the matching topic and fill in your Kodiak Cleaner version; nothing is sent until you press Send there. Copy Details copies the details for a bug report to paste into the form.
+
+### Documents
+- The Privacy Policy, Terms of Use, ReadMe and Security notes point to the contact form instead of an email address.
+
 ## [0.8.3 Dev] - 2026-10-09
 
 ### Cleaner

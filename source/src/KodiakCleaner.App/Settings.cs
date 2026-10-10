@@ -94,6 +94,10 @@ public sealed class Settings
     public bool ShowWhatsNewAfterUpdate { get; set; } = true;
     /// <summary>Pop up when new startup programs appear, with Keep, Disable or Delete for each (Ted, 0.8.53).</summary>
     public bool NotifyNewStartup { get; set; } = true;
+    /// <summary>How many times the window has opened (command-line and scheduled runs don't count). Kept by Reset.</summary>
+    public int LaunchCount { get; set; }
+    /// <summary>The donation pop-up at startup (Ted, 0.8.55). It can only be turned off after <see cref="Donation.LaunchesBeforeOptOut"/> launches.</summary>
+    public bool ShowDonationPrompt { get; set; } = true;
     public string? LastSeenVersion { get; set; }
     /// <summary>Whether the Tools group in the sidebar is open. Open by default since 0.8.11 (Ted), saved under a new key
     /// so copies that saved the old closed default open too.</summary>
@@ -189,7 +193,7 @@ public sealed class Settings
         }
     }
 
-    /// <summary>Restores every preference to its default but keeps the update bookkeeping and the supporter code.</summary>
+    /// <summary>Restores every preference to its default but keeps the update bookkeeping, the launch count and the supporter code.</summary>
     public static void Reset()
     {
         Current = new Settings
@@ -197,6 +201,7 @@ public sealed class Settings
             LastSeenVersion = Current.LastSeenVersion,
             LastUpdateCheckUtc = Current.LastUpdateCheckUtc,
             SupporterCode = Current.SupporterCode,
+            LaunchCount = Current.LaunchCount,
             // Kept: the schedules have Windows tasks that point at them, and the history is a record, not a preference.
             History = Current.History,
             Schedules = Current.Schedules,
@@ -210,6 +215,8 @@ public sealed class Settings
         RecycleBinMenu = ini.GetBool("General", "RecycleBinMenu", RecycleBinMenu);
         ShowWhatsNewAfterUpdate = ini.GetBool("General", "ShowWhatsNewAfterUpdate", ShowWhatsNewAfterUpdate);
         NotifyNewStartup = ini.GetBool("General", "NotifyNewStartup", NotifyNewStartup);
+        LaunchCount = Math.Max(0, ini.GetInt("General", "LaunchCount", LaunchCount));
+        ShowDonationPrompt = ini.GetBool("General", "ShowDonationPrompt", ShowDonationPrompt);
         LastSeenVersion = ini.Get("General", "LastSeenVersion");
         ToolsExpanded = ini.GetBool("General", "ToolsOpen", ToolsExpanded);
         SidebarWidth = Math.Clamp(ini.GetInt("General", "SidebarWidth", SidebarWidth), MinSidebarWidth, MaxSidebarWidth);
@@ -267,6 +274,8 @@ public sealed class Settings
         ini.Set("General", "RecycleBinMenu", RecycleBinMenu);
         ini.Set("General", "ShowWhatsNewAfterUpdate", ShowWhatsNewAfterUpdate);
         ini.Set("General", "NotifyNewStartup", NotifyNewStartup);
+        ini.Set("General", "LaunchCount", LaunchCount);
+        ini.Set("General", "ShowDonationPrompt", ShowDonationPrompt);
         ini.Set("General", "LastSeenVersion", LastSeenVersion ?? "");
         ini.Set("General", "ToolsOpen", ToolsExpanded);
         ini.Set("General", "SidebarWidth", SidebarWidth);

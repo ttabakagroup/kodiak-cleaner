@@ -38,6 +38,21 @@
                         </StackPanel>
                     </DockPanel>
                     <Border Style="{StaticResource RowDivider}" />
+                    <DockPanel IsEnabled="{Binding CanTurnOffDonationPrompt}">
+                        <DockPanel.Style>
+                            <Style TargetType="DockPanel" BasedOn="{StaticResource SettingRow}">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5" /></Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DockPanel.Style>
+                        <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ShowDonationPrompt}" />
+                        <StackPanel Margin="0,0,24,0">
+                            <TextBlock Text="Ask Me to Donate at Startup" Style="{StaticResource SettingTitle}" />
+                            <TextBlock Text="{Binding DonationPromptCaption}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" />
                     <DockPanel Style="{StaticResource SettingRow}">
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding NotifyNewStartup}" />
                         <StackPanel Margin="0,0,24,0">

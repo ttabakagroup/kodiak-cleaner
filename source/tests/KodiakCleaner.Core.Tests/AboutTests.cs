@@ -124,14 +124,14 @@ public class FeedbackLinksTests
     }
 
     [Theory]
-    [InlineData(FeedbackKind.Feedback, "feedback")]
-    [InlineData(FeedbackKind.Bug, "bug")]
-    [InlineData(FeedbackKind.Idea, "idea")]
-    [InlineData(FeedbackKind.Security, "security")]
-    public void Web_forms_get_type_and_version(FeedbackKind kind, string type)
+    [InlineData(FeedbackKind.Feedback, "General Feedback")]
+    [InlineData(FeedbackKind.Bug, "Bug Report")]
+    [InlineData(FeedbackKind.Idea, "Feature Request")]
+    [InlineData(FeedbackKind.Security, "Security")]
+    public void Web_forms_get_topic_and_version(FeedbackKind kind, string topic)
     {
         var url = FeedbackLinks.Build(kind, Form, Details)!;
-        Assert.Equal(type, Param(url, "type"));
+        Assert.Equal(topic, Param(url, "topic"));
         Assert.Equal("0.8.0 Dev", Param(url, "version"));
         Assert.DoesNotContain("body", url);
     }

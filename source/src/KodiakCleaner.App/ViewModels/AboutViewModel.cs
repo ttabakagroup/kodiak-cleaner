@@ -51,7 +51,7 @@ public sealed class AboutViewModel : ObservableObject
         $"{AppInfo.ShortName} works entirely on this PC. It sends no usage data, crash reports or identifiers, and shows no ads. " +
         "Your settings, backups and activity log are saved in plain files on this PC and never leave your computer. " +
         "The only time it goes online is to check its website for a new version, and only when you click Check for Updates or turn on " +
-        "automatic updates. Feedback opens in your own email app, so nothing is sent unless you send it.";
+        "automatic updates. Contact & Feedback opens the Contact Us form on the website in your browser, so nothing is sent unless you send it.";
 
     public IReadOnlyList<Credit> Credits => global::KodiakCleaner.App.Credits.All;
 

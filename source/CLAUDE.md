@@ -130,6 +130,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   Document any new switch in `Cli.Help` and the README's Command Line section.
 - Kodiak Cleaner never uninstalls itself (Ted, 0.8.54, `SelfGuard`): its own entry (upgrade code's product codes, or "Kodiak Cleaner" by Ted Tabaka,
   or this copy's folder) is left out of Uninstall, batches, Delete Entry and `/uninstall`, with a message pointing to Control Panel.
+- Developer page: Reset to Default card below Status (Ted, 0.8.55) runs Settings' Reset; `Settings.Reset` keeps LaunchCount and the supporter code.
 - Programs: Product Code column (`ProgramItem.ProductCode`, the uninstall key's GUID) with right-click Copy Product Code and Copy Uninstall
   Command (`msiexec /x {GUID} /qn`, Windows Installer programs only) (Ted, 0.8.53).
 - New startup programs (Ted, 0.8.53, `NewStartupWatch`): at start (after `Integration.SyncAll`) and every 10 minutes while running, entries not in
@@ -153,14 +154,16 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Clipboard copies go through `ClipboardHelper` (retries, then a plain message), never `Clipboard.SetText`.
 
 ## Feedback and Support
-- Contact & Feedback buttons open an in-app form; Send Email opens the person's email app with it ready
-  (www.kodiakcleaner.app/contact, set in `AppInfo.Feedback`). No mail service or hosted form (that would be network use). Nothing is
-  sent automatically, no hidden data in links, and bug-report Details never include files, folders or user names.
+- Never put Ted's email address anywhere: app, docs, installer, tests, website (Ted, 2026-10-10, 0.8.56; a test checks).
+  Contact & Feedback buttons open the website's Contact Us form (`AppInfo.ContactUrl`) in the browser with `?topic=` and
+  `&version=`. Nothing is sent automatically, no hidden data in links, and Copy Details never includes files, folders or user names.
 - Security issues are reported privately, never in public issues. Contact & Feedback has four accent buttons (Ted, 0.8.24):
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
 - Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Updates come from the website since 0.8.40; release downloads stay on GitHub releases; source and Star on GitHub stay on the repo.
 - The repository (ttabakagroup/kodiakcleaner) is private for now (2026-10-06). Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
-- Never offer anything in return for a rating. Support link: https://ko-fi.com/ttabaka, no nags or pop-ups.
+- Never offer anything in return for a rating. Support link: https://ko-fi.com/ttabaka. The only donation asks are the ones Ted asked for in 0.8.55
+  (`Donation`): the startup pop-up (`DonationWindow`, `[General] ShowDonationPrompt`, can't be turned off before 10 launches counted in
+  `[General] LaunchCount`, never stacked on Getting Started/What's New) and the banner on every 10th launch. Supporters see neither.
 - Supporter tier only (Ted removed Premium). Codes are verified offline; never run `make-key` for Ted or touch his private key.
 
 ## Versions and Channels

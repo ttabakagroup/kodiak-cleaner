@@ -1,6 +1,6 @@
 # Terms of Use
 
-**Effective date:** October 4, 2026
+**Effective date:** October 10, 2026
 
 These terms cover your use of Kodiak Cleaner, a free Windows cleaner made by Ted Tabaka, an independent developer. By using Kodiak Cleaner you agree to them. If you don't agree, please don't use Kodiak Cleaner.
 

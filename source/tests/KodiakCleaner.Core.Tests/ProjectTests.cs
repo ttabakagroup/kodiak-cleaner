@@ -211,6 +211,21 @@ public class TitleCaseTests
 
 public class DocumentTests
 {
+    /// <summary>Ted's email address appears nowhere (Ted, 0.8.56): people use the website's Contact Us form.</summary>
+    [Fact]
+    public void No_file_shows_the_developer_email_address()
+    {
+        var root = Repo.Root;
+        var hits = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Where(f => !f.Split(Path.DirectorySeparatorChar).Any(d => d is ".git" or "bin" or "obj" or "publish" or "dist-out"))
+            .Where(f => Path.GetExtension(f) is ".cs" or ".xaml" or ".md" or ".txt" or ".html" or ".wxs" or ".json" or ".ps1" or ".sh" or ".xml" or ".props" or ".csproj")
+            .Where(f => File.ReadAllText(f).Contains("ttabakagroup@", StringComparison.OrdinalIgnoreCase)
+                        && !f.EndsWith("ProjectTests.cs"))
+            .Select(f => Path.GetRelativePath(root, f))
+            .ToList();
+        Assert.Empty(hits);
+    }
+
     [Fact]
     public void Hosted_privacy_policy_matches_the_built_in_one()
     {

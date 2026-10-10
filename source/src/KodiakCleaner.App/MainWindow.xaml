@@ -227,6 +227,16 @@
                     <TextBlock Text="{Binding Notice}" VerticalAlignment="Center" TextWrapping="Wrap" />
                 </DockPanel>
             </Border>
+            <Border DockPanel.Dock="Top" Background="{DynamicResource AccentTint}" Padding="20,10"
+                    Visibility="{Binding ShowDonationBanner, Converter={StaticResource BoolToVis}}">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Dismiss" Style="{StaticResource LinkButton}" Margin="16,0,0,0" Click="DismissDonation_Click" />
+                    <Button DockPanel.Dock="Right" Content="Donate on Ko-fi" Style="{StaticResource LinkButton}" Margin="16,0,0,0" Click="Donate_Click" />
+                    <TextBlock Text="&#xEB51;" DockPanel.Dock="Left" Style="{StaticResource Icon}" FontSize="14" Foreground="{DynamicResource AccentText}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
+                               Text="Kodiak Cleaner is made for free in spare time. A donation, however small, really keeps the work going." />
+                </DockPanel>
+            </Border>
             <ContentControl Content="{Binding CurrentContent}" Margin="32,28,32,24" Focusable="False" />
         </DockPanel>
     </Grid>

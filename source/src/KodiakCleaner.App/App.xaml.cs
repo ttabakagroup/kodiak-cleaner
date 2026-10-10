@@ -100,6 +100,7 @@ public partial class App : Application
         ActivityLog.Write("Start", $"{AppInfo.Name} {AppInfo.VersionName} started" +
             $" ({(Elevation.IsAdministrator ? "as administrator" : "as a standard user")}, {(Integration.IsInstalled ? "installed" : "portable")})");
         ThemeManager.Apply();
+        Donation.CountLaunch();
         var window = new MainWindow { BringToFront = updated };
         MainWindow = window;
         _tray = new TrayIcon(window);
@@ -108,8 +109,6 @@ public partial class App : Application
         // Windows registrations (startup entry, Recycle Bin menu, jump list, scheduled cleanings) are checked once the
         // window is drawn, so they never hold up the first paint (0.8.47).
         Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Integration.SyncAll);
-        // New startup programs pop up once the window is drawn and the registrations above are done (0.8.53).
-        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, NewStartupWatch.Start);
         SingleInstance.Listen(a =>
         {
             // A scheduled cleaning runs quietly; anything else brings the window back.

@@ -21,6 +21,13 @@ public sealed class MainViewModel : ObservableObject
         Restore = new RestoreViewModel();
         Wiper = new WiperViewModel();
         SettingsPage = new SettingsViewModel(Cleaner.ReloadTargets);
+        // Entering a Supporter code turns the donation reminder off and hides the banner.
+        Supporter.Changed += () =>
+        {
+            if (!Supporter.IsSupporter) return;
+            Donation.SupporterTurnsPromptOff();
+            ShowDonationBanner = false;
+        };
 
         // Glyphs from Segoe Fluent Icons / Segoe MDL2 Assets.
         MainPages.Add(new NavPage("Cleaner", "", Cleaner, OnNavigated));
@@ -157,6 +164,10 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>One-line message shown under the admin banner (e.g. an update was downloaded).</summary>
     public string Notice { get => _notice; set { Set(ref _notice, value); OnPropertyChanged(nameof(HasNotice)); } }
     public bool HasNotice => !string.IsNullOrEmpty(Notice);
+
+    private bool _showDonationBanner = Donation.ShouldShowBanner;
+    /// <summary>The small donation banner on every 10th launch; never for Supporters (Ted, 0.8.55).</summary>
+    public bool ShowDonationBanner { get => _showDonationBanner; set => Set(ref _showDonationBanner, value); }
 
     public void ShowChangelog()
     {

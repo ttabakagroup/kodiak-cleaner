@@ -103,13 +103,17 @@ public sealed class SettingsViewModel : ObservableObject
 #if DEVTOOLS
         // Development builds only; release builds leave this page (and its code) out.
         Add("developer", "Developer", "\uEC7A", "Developer", "Test plans and check how this build is set up.",
-            new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel() });
+            new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel(ResetCommand) });
 #endif
         Sections[0].IsSelected = true;
 
         Supporter.Changed += () =>
         {
             OnPropertyChanged(nameof(ShowSupportLink));
+            Donation.SupporterTurnsPromptOff();
+            OnPropertyChanged(nameof(ShowDonationPrompt));
+            OnPropertyChanged(nameof(CanTurnOffDonationPrompt));
+            OnPropertyChanged(nameof(DonationPromptCaption));
             BuildChoices();
         };
         ThemeManager.Applied += () =>
@@ -290,6 +294,19 @@ public sealed class SettingsViewModel : ObservableObject
         get => S.RecycleBinMenu;
         set => Apply(value, v => { Integration.SetRecycleBinMenu(v); S.RecycleBinMenu = v; });
     }
+
+    /// <summary>Settings > General's donation switch: on shows the reminder at startup; it can only go off after 10 launches.</summary>
+    public bool ShowDonationPrompt
+    {
+        get => S.ShowDonationPrompt;
+        set => Apply(value, v => S.ShowDonationPrompt = v || !Donation.CanOptOut);
+    }
+    public bool CanTurnOffDonationPrompt => Donation.CanOptOut;
+    public string DonationPromptCaption => Supporter.IsSupporter
+        ? "Thank you for being a Supporter! The reminder is off for you."
+        : Donation.CanOptOut
+            ? "At startup, a short note asks you to consider donating to keep Kodiak Cleaner free and open source."
+            : $"At startup, a short note asks you to consider donating. It can be turned off after Kodiak Cleaner has started {Donation.LaunchesBeforeOptOut} times ({Donation.LaunchesLeft} more to go).";
 
     public bool NotifyNewStartup
     {

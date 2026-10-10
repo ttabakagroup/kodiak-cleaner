@@ -254,7 +254,7 @@ Every setting is a switch and is saved straight away. Type in the search box abo
 | **Advanced** | Always start as administrator, and skip the User Account Control prompt (installed copies only). |
 | **Appearance** | Honey, Classic or Glacier color scheme, an optional accent color, Match Device, Light or Dark, and an Animations switch. |
 | **Cleaning** | Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours. |
-| **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening a short form that becomes an email in your own email app. |
+| **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on the website in your browser with the topic picked. |
 | **General** | What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
 | **Protect** | Back Up Now saves the registry areas Kodiak Cleaner can change into one `.reg` file (the very large ones are backed up with each fix instead), with an optional prompt before each registry fix. Back up, open or reset the settings file. |
 | **Updates** | Check Now (also on the About page as Check for Updates). Check for Updates Automatically (off by default) looks for a new version as often as you pick (On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly) and tells you when one is out. Download and Install Updates Automatically (off by default) also downloads it and installs it when you close Kodiak Cleaner. |
@@ -304,7 +304,7 @@ The sidebar can be widened, locked with the paperclip, or collapsed to icons onl
 
 Everything stays on your PC.
 
-- **Feedback** opens a message in your own email app. Nothing is sent until you press Send there.
+- **Feedback** opens the Contact Us form on the website in your browser. Nothing is sent until you press Send Message there.
 - **No remote resources.** The Fredoka font is built in, and icons come from Windows' own icon font.
 - **No telemetry**, analytics, crash reports, accounts or ads. Nothing is sent automatically, ever.
 - **Settings, backups and logs** are plain files: `KodiakCleaner.ini` next to `KodiakCleaner.exe`, and the `Backups`, `Logs` and `Reports` folders in `Documents\Kodiak Cleaner` (beside the exe for the portable version). The activity log stays on your PC and can be turned off.
@@ -332,7 +332,7 @@ It's designed to be careful (see [Built-In Safety](#built-in-safety)), but it's 
 No. There's no service and nothing running unless you open it. Scheduled cleanings are started by Windows Task Scheduler and close when they're done.
 
 **Is it really free?**
-Yes, with every feature. If it helps you, an optional one-time thank-you on [Ko-fi](https://ko-fi.com/ttabaka) gets a supporter code that unlocks the Classic and Glacier color schemes and a Supporter badge.
+Yes, with every feature. If it helps you, an optional one-time thank-you on [Ko-fi](https://ko-fi.com/ttabaka) gets a supporter code that unlocks the Classic and Glacier color schemes and a Supporter badge. Kodiak Cleaner asks for a donation in a pop-up when it starts and in a small banner on every 10th start. The pop-up can be turned off after 10 starts (in the pop-up or in **Settings > General**), and supporters never see either.
 
 **Why does Windows show a SmartScreen warning?**
 The installer isn't code-signed yet. Click **More info**, then **Run anyway**. You can check the source in this repository and build it yourself.
@@ -345,7 +345,7 @@ No. Backups and logs go in your Documents folder, which you can always write to.
 
 ## Feedback and Support
 
-- **Feedback, bug reports and feature requests:** use **Settings > Contact & Feedback** in Kodiak Cleaner, or email [www.kodiakcleaner.app/contact](mailto:www.kodiakcleaner.app/contact).
+- **Feedback, bug reports and feature requests:** use **Settings > Contact & Feedback** in Kodiak Cleaner, or the [Contact Us form](https://www.kodiakcleaner.app/contact/) on the website.
 - **Website:** [www.kodiakcleaner.app](https://www.kodiakcleaner.app/)
 - **Say thanks:** [Support Kodiak Cleaner on Ko-fi](https://ko-fi.com/ttabaka).
 - **Security problems:** please report them privately. See [SECURITY.md](source/SECURITY.md).
