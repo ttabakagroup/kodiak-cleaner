@@ -190,8 +190,8 @@ export default function home(ctx) {
 <section class="alt">
   <div class="wrap narrow center reveal">
     <span class="eyebrow">Why It Was Made</span>
-    <p class="quote">For well over two decades, I used the same cleaning app. Then came the latest upgrade.</p>
-    <p class="lead">Simple tasks got harder and familiar features moved, so Ted built his own cleaner and made it open source: a simple, private and practical tool that respects your time.</p>
+    <p class="quote">For more than two decades, I used the same cleaning app. The latest upgrade changed that.</p>
+    <p class="lead">Routine tasks took more effort and familiar features got harder to find, so Ted built his own cleaner and made it open source: a simple, private and practical tool that respects your time.</p>
     <div class="signature"><img src="/images/logo.svg" alt="" width="48" height="48"><span>Ted Tabaka, creator of Kodiak Cleaner</span></div>
     <p class="mt"><a class="btn" href="/why-it-was-made/">Read the Full Story</a></p>
   </div>

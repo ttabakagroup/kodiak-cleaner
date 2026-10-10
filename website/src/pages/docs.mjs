@@ -5,7 +5,7 @@ export function story(ctx) {
   const body = `
 ${pageHead("Why It Was Made", "The story behind Kodiak Cleaner, in Ted's own words.")}
 <section class="tight"><div class="wrap narrow"><article class="card pad prose story">${render(ctx.content.story)}</article>
-<p class="center mt-xl"><a class="btn primary lg" href="/download/">Try Kodiak Cleaner</a></p></div></section>`;
+<div class="btn-row centered mt-xl"><a class="btn primary lg" href="/download/">Try Kodiak Cleaner</a><a class="btn lg" href="/donate/">Donate</a></div></div></section>`;
   return { id: "story", path: "/why-it-was-made/", out: "why-it-was-made/index.html", title: "Why It Was Made", description: "Why Ted Tabaka built Kodiak Cleaner: a simple, private and practical Windows cleaner that respects your time.", body };
 }
 
