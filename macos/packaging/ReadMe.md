@@ -61,7 +61,7 @@ Everything stays on your Mac, and Kodiak Cleaner sends nothing on its own. It ne
 
 ## Help and Feedback
 
-- Feedback, bug reports and feature requests: Settings > Contact & Feedback, or email www.kodiakcleaner.app/contact
+- Feedback, bug reports and feature requests: Settings > Contact & Feedback, or the contact form at https://www.kodiakcleaner.app/contact/
 - Website: https://www.kodiakcleaner.app/
 - Source code and releases: https://github.com/ttabakagroup/kodiakcleaner
 - Say thanks: https://ko-fi.com/ttabaka

@@ -49,31 +49,19 @@ public enum Changelog {
     }
 }
 
-/// Contact & Feedback links. Nothing is sent automatically: every message opens in the person's own email app to read
-/// and edit first. No hidden data in links.
+/// Contact & Feedback links. Nothing is sent automatically: every link opens the contact form on the website in the
+/// person's own browser, with the topic and version filled in, to write and send there. No hidden data in links.
 public enum Feedback {
     public static let kinds = ["feedback", "bug", "idea", "security"]
-    public static let subjects = [
-        "feedback": "[Feedback] \(AppInfo.name) ",
-        "bug": "[Bug Report] \(AppInfo.name) ",
-        "idea": "[Feature Request] \(AppInfo.name) ",
-        "security": "[Security] \(AppInfo.name) ",
-    ]
-    static let templates = [
-        "feedback": "",
-        "bug": "What I was doing:\n\n\nWhat I expected:\n\n\nWhat happened:\n\n\nSteps to repeat:\n1. \n",
-        "idea": "What I'd like:\n\n\nWhy it would help:\n",
-        "security": "What I found:\n\n\nSteps to repeat (please leave out personal data):\n1. \n",
+    /// The contact form's topics (its ?topic= values), by kind.
+    public static let topics = [
+        "feedback": "General Feedback",
+        "bug": "Bug Report",
+        "idea": "Feature Request",
+        "security": "Security",
     ]
 
-    /// Only bug reports include the Details.
-    public static func defaultBody(_ kind: String) -> String {
-        var body = templates[kind] ?? ""
-        if kind == "bug" { body += "\n\nDetails for Your Report:\n" + details() + "\n" }
-        return body
-    }
-
-    /// What a bug report includes. Never files, folders, user names or findings.
+    /// What a bug report can include (Copy Details). Never files, folders, user names or findings.
     public static func details() -> String {
         [
             "\(AppInfo.name) \(AppInfo.versionName)",
@@ -89,12 +77,13 @@ public enum Feedback {
         return text.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
     }
 
-    public static func link(kind: String, subject: String, body: String) -> URL? {
-        let target = AppInfo.feedbackAddress
-        if target.hasPrefix("mailto:") {
-            return URL(string: "\(target)?subject=\(encode(subject))&body=\(encode(body))")
-        }
-        let joiner = target.contains("?") ? "&" : "?"
-        return URL(string: "\(target)\(joiner)type=\(kind)&version=\(encode(AppInfo.versionName))")
+    /// "0.8.0 Dev (Mac)": the version the contact form fills into the message.
+    public static var versionText: String { "\(AppInfo.versionName) (Mac)" }
+
+    /// The contact form with the kind's topic chosen, e.g.
+    /// https://www.kodiakcleaner.app/contact/?topic=Bug%20Report&version=0.8.0%20Dev%20%28Mac%29
+    public static func link(kind: String) -> URL? {
+        let topic = topics[kind] ?? "General Feedback"
+        return URL(string: "\(AppInfo.contactURL.absoluteString)?topic=\(encode(topic))&version=\(encode(versionText))")
     }
 }

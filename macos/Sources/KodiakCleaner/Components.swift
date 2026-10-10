@@ -359,7 +359,7 @@ struct MarkdownView: View {
     }
 }
 
-/// Opens a web page or email in the person's own browser or email app.
+/// Opens a web page in the person's own browser.
 @MainActor
 func openLink(_ url: URL?) {
     if let url { NSWorkspace.shared.open(url) }

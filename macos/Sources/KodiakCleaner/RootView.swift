@@ -47,7 +47,6 @@ struct MainLayout: View {
                 case .beta: BetaNoticeView()
                 case .whatsNew(let previous): ChangesView(previous: previous)
                 case .changelog: ChangesView(previous: nil)
-                case .feedback(let kind): FeedbackForm(kind: kind)
                 case .triggersHistory: TriggersHistoryView()
                 }
             }

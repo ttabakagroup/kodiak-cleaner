@@ -100,7 +100,7 @@ struct AboutView: View {
                 Button("See All Changes") { model.sheet = .changelog }.kcButton(.secondary)
             }
             Card(title: "Privacy") {
-                Text("Kodiak Cleaner works only on this Mac. It has no telemetry, no ads and no accounts, and it never goes online by itself. Links you click open in your own browser or email app. Settings and history stay in your Library folder.")
+                Text("Kodiak Cleaner works only on this Mac. It has no telemetry, no ads and no accounts, and it never goes online by itself. Links you click open in your own browser. Settings and history stay in your Library folder.")
                     .font(theme.body(13)).foregroundStyle(theme.text).fixedSize(horizontal: false, vertical: true)
                 Button("Privacy Policy") { model.showSettings(.privacy) }.kcButton(.secondary)
             }
@@ -124,8 +124,8 @@ struct AboutView: View {
                 }
                 HStack(spacing: 8) {
                     Button("Contact & Feedback") { model.showSettings(.feedback) }.kcButton(.secondary)
-                    Button("Report a Bug") { model.sheet = .feedback("bug") }.kcButton(.secondary)
-                    Button("Request a Feature") { model.sheet = .feedback("idea") }.kcButton(.secondary)
+                    Button("Report a Bug") { openLink(Feedback.link(kind: "bug")) }.kcButton(.secondary)
+                    Button("Request a Feature") { openLink(Feedback.link(kind: "idea")) }.kcButton(.secondary)
                     Button("Getting Started") { model.page = .home }.kcButton(.secondary)
                 }
             }

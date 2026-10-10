@@ -39,7 +39,8 @@ The Dev build isn't signed with an Apple Developer ID or notarized yet, so the f
 
 ## Privacy and Safety
 
-- Nothing leaves the Mac. Kodiak Cleaner has no network code; links open in your own browser or email app.
+- Nothing leaves the Mac. Kodiak Cleaner has no network code; links open in your own browser.
+- Contact & Feedback opens the contact form on the website, https://www.kodiakcleaner.app/contact/, with the topic and version filled in.
 - Files are only removed inside your home folder and your own temporary folder, and links are removed, never followed.
 - Cleaning never needs your administrator password. Launch daemon changes ask for it through macOS's own prompt, once per batch.
 - Safari, Mail and the Trash need Full Disk Access, which you grant (and can take back) in System Settings.

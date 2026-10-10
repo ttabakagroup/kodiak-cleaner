@@ -43,4 +43,4 @@ These terms may be updated in a new version of Kodiak Cleaner. The effective dat
 
 ## Contact
 
-Questions about these terms: www.kodiakcleaner.app/contact
+Questions about these terms: use the contact form at https://www.kodiakcleaner.app/contact/

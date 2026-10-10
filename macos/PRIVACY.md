@@ -17,7 +17,7 @@ Kodiak Cleaner for Mac has no telemetry, analytics, crash reporting, ads or acco
 
 ## Going Online
 
-Kodiak Cleaner for Mac never goes online by itself. When you click a link (such as Website, Source Code, Ko-fi or Star on GitHub), it opens in your own browser. Contact & Feedback opens your own email app with a message ready for you to read, edit and send yourself; nothing is sent until you send it there.
+Kodiak Cleaner for Mac never goes online by itself. When you click a link (such as Website, Source Code, Ko-fi or Star on GitHub), it opens in your own browser. Contact & Feedback opens the contact form on the Kodiak Cleaner website in your own browser, with the topic and the Kodiak Cleaner version filled in; nothing is sent until you send it there.
 
 ## Administrator Rights
 
@@ -37,4 +37,4 @@ A new version of Kodiak Cleaner for Mac may update this policy. The effective da
 
 ## Contact
 
-Questions about privacy: www.kodiakcleaner.app/contact
+Questions about privacy: use the contact form at https://www.kodiakcleaner.app/contact/

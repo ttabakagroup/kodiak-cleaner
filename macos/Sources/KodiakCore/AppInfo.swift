@@ -7,7 +7,6 @@ public enum AppInfo {
     public static let shortName = "Kodiak Cleaner"
     public static let slogan = "Not a Crap Cleaner. A Cleaner App, Built Around What Matters."
     public static let developer = "Ted Tabaka"
-    public static let email = "www.kodiakcleaner.app/contact"
     public static let bundleID = "app.kodiakcleaner.Mac"
 
     public static let repository = "ttabakagroup/kodiakcleaner"
@@ -16,8 +15,8 @@ public enum AppInfo {
     public static let homepageURL = URL(string: "https://www.kodiakcleaner.app/")!
     public static let kofiURL = URL(string: "https://ko-fi.com/ttabaka")!
 
-    /// Where Contact & Feedback messages go: mailto: or https:.
-    public static let feedbackAddress = "mailto:" + email
+    /// Contact & Feedback goes through the contact form on the website. Never put an email address in the app.
+    public static let contactURL = URL(string: "https://www.kodiakcleaner.app/contact/")!
 
     public static let channelLabels = ["dev": "Dev", "beta": "Beta", "stable": "Stable"]
 

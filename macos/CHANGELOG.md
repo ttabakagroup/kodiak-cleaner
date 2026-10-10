@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## Unreleased
+
+### Changed
+- **Contact & Feedback:** Send Feedback, Report a Bug, Request a Feature and Security open the contact form on the Kodiak Cleaner website with the topic and version filled in, instead of an email. The app and its documents no longer show an email address.
+
 ## [0.8.0 Dev] - 2026-10-06
 
 ### Added

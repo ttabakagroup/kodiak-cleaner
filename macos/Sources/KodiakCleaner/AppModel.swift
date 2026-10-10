@@ -20,13 +20,12 @@ struct DialogRequest: Identifiable {
 }
 
 enum SheetKind: Identifiable, Equatable {
-    case beta, whatsNew(previous: String), changelog, feedback(String), triggersHistory
+    case beta, whatsNew(previous: String), changelog, triggersHistory
     var id: String {
         switch self {
         case .beta: return "beta"
         case .whatsNew(let previous): return "whatsnew-\(previous)"
         case .changelog: return "changelog"
-        case .feedback(let kind): return "feedback-\(kind)"
         case .triggersHistory: return "history"
         }
     }

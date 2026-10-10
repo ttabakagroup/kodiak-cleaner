@@ -315,11 +315,31 @@ final class SettingsAndTextTests: TempHomeTestCase {
     }
 
     func testFeedbackLinkHasNoHiddenData() {
-        let url = Feedback.link(kind: "idea", subject: "Hi & bye", body: "A=1\nB")!.absoluteString
-        XCTAssertTrue(url.hasPrefix("mailto:www.kodiakcleaner.app/contact?subject=Hi%20%26%20bye&body=A%3D1%0AB"))
-        XCTAssertFalse(Feedback.defaultBody("feedback").contains("Details"))
-        XCTAssertTrue(Feedback.defaultBody("bug").contains("Details for Your Report"))
+        let version = Feedback.encode(Feedback.versionText)
+        XCTAssertEqual(Feedback.link(kind: "bug")!.absoluteString,
+                       "https://www.kodiakcleaner.app/contact/?topic=Bug%20Report&version=\(version)")
+        XCTAssertEqual(Feedback.link(kind: "feedback")!.absoluteString,
+                       "https://www.kodiakcleaner.app/contact/?topic=General%20Feedback&version=\(version)")
+        XCTAssertTrue(Feedback.link(kind: "idea")!.absoluteString.contains("?topic=Feature%20Request&version="))
+        XCTAssertTrue(Feedback.link(kind: "security")!.absoluteString.contains("?topic=Security&version="))
+        XCTAssertTrue(Feedback.versionText.hasSuffix(" (Mac)"))
         XCTAssertFalse(Feedback.details().contains(NSUserName()))
+    }
+
+    /// Ted's email address is never shown or used anywhere; contact goes through the website's contact form.
+    func testNoEmailAddressInLinks() {
+        let oldAddress = ("removed" + "@" + "example.com").lowercased()
+        XCTAssertEqual(Feedback.kinds.count, Feedback.topics.count)
+        for kind in Feedback.kinds {
+            let url = Feedback.link(kind: kind)!.absoluteString.lowercased()
+            XCTAssertTrue(url.hasPrefix(AppInfo.contactURL.absoluteString), kind)
+            XCTAssertFalse(url.hasPrefix("mailto:"), kind)
+            XCTAssertFalse(url.contains(oldAddress), kind)
+            XCTAssertFalse(url.contains("%40gmail"), kind)
+        }
+        for name in ["PRIVACY.md", "terms-of-use.md", "CHANGELOG.md"] {
+            XCTAssertFalse(Resources.text(name).lowercased().contains(oldAddress), name)
+        }
     }
 }
 

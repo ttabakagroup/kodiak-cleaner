@@ -333,7 +333,6 @@ private struct SupporterSettings: View {
 }
 
 private struct FeedbackSettings: View {
-    @EnvironmentObject var model: AppModel
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -349,11 +348,12 @@ private struct FeedbackSettings: View {
             HStack(spacing: 8) {
                 ForEach([("feedback", "Send Feedback"), ("bug", "Report a Bug"), ("idea", "Request a Feature"), ("security", "Security")],
                         id: \.0) { kind, title in
-                    Button(title) { model.sheet = .feedback(kind) }.kcButton(.accent)
+                    Button(title) { openLink(Feedback.link(kind: kind)) }.kcButton(.accent)
                 }
             }
+            Caption("Each button opens the contact form on the Kodiak Cleaner website in your browser, with the topic and version already filled in. Nothing is sent until you send it there.")
         }
-        Card(title: "Details for Your Report", subtitle: "Only bug reports include these, and you can edit them before sending. They never include files, folders, user names or what was found.") {
+        Card(title: "Details for Your Report", subtitle: "Copy these into a bug report if they help. They never include files, folders, user names or what was found.") {
             Text(Feedback.details()).font(.system(size: 12, design: .monospaced)).foregroundStyle(theme.text).textSelection(.enabled)
                 .padding(10).frame(maxWidth: .infinity, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.surfaceAlt))

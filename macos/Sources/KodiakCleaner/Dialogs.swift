@@ -103,66 +103,6 @@ struct ChangesView: View {
     }
 }
 
-/// The form the Contact & Feedback buttons open. Send Email opens the person's own email app; nothing is sent until
-/// they send it there.
-struct FeedbackForm: View {
-    var kind: String
-    @EnvironmentObject var model: AppModel
-    @Environment(\.theme) private var theme
-    @State private var subject = ""
-    @State private var message = ""
-
-    static let titles = ["feedback": "Send Feedback", "bug": "Report a Bug", "idea": "Request a Feature",
-                         "security": "Report a Security Problem"]
-    static let intros = [
-        "feedback": "Tell us what's working, what isn't, and what you'd like next.",
-        "bug": "Describe what went wrong. The details below help track it down; they never include files, folders or user names.",
-        "idea": "Missing a feature you'd like? Let us know and we'll look into it.",
-        "security": "Security problems are reported privately, never in public issues or reviews.",
-    ]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(FeedbackForm.titles[kind] ?? "Send Feedback").font(theme.display(22)).foregroundStyle(theme.text)
-            Caption(FeedbackForm.intros[kind] ?? "")
-            Text("Subject").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
-            TextField("Subject", text: $subject, prompt: Text("e.g. Cleaner skipped Firefox"))
-                .kcField()
-            Text("Message").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
-            TextEditor(text: $message)
-                .font(theme.body(13))
-                .foregroundStyle(theme.text)
-                .scrollContentBackground(.hidden)
-                .padding(8)
-                .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.surface))
-                .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(theme.controlBorder, lineWidth: 1))
-                .accessibilityLabel("Message")
-            Caption("Send Email opens your own email app with this message ready to \(AppInfo.email). Nothing is sent until you send it there.")
-            HStack(spacing: 8) {
-                Button("Copy Message") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString("To: \(AppInfo.email)\nSubject: \(subject)\n\n\(message)", forType: .string)
-                }
-                .kcButton(.secondary)
-                Spacer()
-                Button("Cancel") { model.sheet = nil }.kcButton(.secondary).keyboardShortcut(.cancelAction)
-                Button("Send Email") {
-                    openLink(Feedback.link(kind: kind, subject: subject, body: message))
-                    model.sheet = nil
-                }
-                .kcButton(.primary)
-            }
-        }
-        .padding(24)
-        .frame(width: 620, height: 560)
-        .background(theme.bg)
-        .onAppear {
-            subject = Feedback.subjects[kind] ?? ""
-            message = Feedback.defaultBody(kind)
-        }
-    }
-}
-
 /// Text boxes: the theme's surface with the control border, so their edges show on any card.
 struct KCField: ViewModifier {
     @Environment(\.theme) private var theme

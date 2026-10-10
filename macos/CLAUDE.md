@@ -18,7 +18,7 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
 
 ## Privacy and Safety
 - No telemetry, analytics, crash reporting, ads, upsells, accounts or background services. No network code at all
-  (`tests/check_source.py` fails on URLSession and friends). Links open in the person's own browser or email app.
+  (`tests/check_source.py` fails on URLSession and friends). Links open in the person's own browser.
 - No remote resources. Fredoka is bundled and registered for this process only; icons are SF Symbols or the apps' own icons.
 - Settings: `~/Library/Application Support/Kodiak Cleaner/Settings.json`. Backups and Triggers History: `.../Backups`.
 - The Cleaner only removes files inside the home folder and the person's own temporary folder (`Cleaner.allowed`), never
@@ -77,9 +77,12 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   after an update. Getting Started's features list (`features` in HomeAbout.swift) stays A to Z and current.
 
 ## Feedback and Support
-- Contact & Feedback: four accent buttons (Send Feedback, Report a Bug, Request a Feature, Security) open the in-app form;
-  Send Email opens the person's email app (www.kodiakcleaner.app/contact). Only bug reports include Details, which never contain
-  files, folders, user names or findings.
+- Contact & Feedback: four accent buttons (Send Feedback, Report a Bug, Request a Feature, Security) open the website's
+  contact form in the browser (`Feedback.link`): https://www.kodiakcleaner.app/contact/?topic=<General Feedback | Bug Report |
+  Feature Request | Security>&version=<"0.8.0 Dev (Mac)">, percent-encoded. Copy Details copies the Details, which never
+  contain files, folders, user names or findings.
+- Never put Ted's email address anywhere (app, docs, tests, packaging, store text). All contact goes through the website's
+  contact form (Ted, 2026-10-10). Security reports use the Security topic, never public issues.
 - Supporter codes: the same ECDSA P-256 codes as Windows and Linux, verified offline with CryptoKit. Put Ted's
   `supporter-public.pem` in `Resources/keys/` once he has made it. Never handle his private key.
 
