@@ -87,7 +87,7 @@ test("a crash still answers with JSON the form can show", async () => {
 test("Resend refusals are explained", async () => {
   mockFetch({ mailOk: false, mailStatus: 403, mailBody: { message: "You can only send testing emails to your own email address (someone@else.com)." } });
   const out = await (await post(good)).json();
-  assert.match(out.error, /Sign up for Resend with www.kodiakcleaner.app/contact/);
+  assert.match(out.error, /Sign up for Resend with the address in CONTACT_TO/);
   assert.match(out.error, /Resend: "You can only send testing emails/);
   assert.match(explainMailError(401, { message: "API key is invalid" }), /RESEND_API_KEY/);
   assert.match(explainMailError(403, { message: "The kodiakcleaner.app domain is not verified." }), /CONTACT_FROM/);

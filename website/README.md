@@ -1,6 +1,6 @@
 # Kodiak Cleaner Website
 
-The website for Kodiak Cleaner (Windows) and Kodiak Cleaner for Linux, built for Cloudflare Pages. It is a static site plus one small Pages Function that sends the Contact Us form to www.kodiakcleaner.app/contact.
+The website for Kodiak Cleaner (Windows) and Kodiak Cleaner for Linux, built for Cloudflare Pages. It is a static site plus one small Pages Function that sends the Contact Us form to Ted's inbox (set by `CONTACT_TO`).
 
 No trackers, ads, cookies or outside fonts. The only outside script is Cloudflare Turnstile (the spam check), and it loads only on Contact Us.
 
@@ -55,7 +55,7 @@ If kodiakcleaner.app is registered with Cloudflare or already uses Cloudflare's 
 
 **3. Make the Turnstile spam check.** Cloudflare dashboard > Turnstile > Add widget. Name it "Kodiak Cleaner", add the hostnames `www.kodiakcleaner.app`, `kodiakcleaner.app` and `kodiakcleaner.pages.dev`, Widget Mode: Managed. Copy the **Site Key** and **Secret Key**.
 
-**4. Make a Resend key (sends the emails).** Sign up free at resend.com **using www.kodiakcleaner.app/contact**, then API Keys > Create API Key (Sending access). Copy the key. While you send from Resend's test address, messages can only go to the email you signed up with, which is exactly where they should go.
+**4. Make a Resend key (sends the emails).** Sign up free at resend.com **using the email address messages should go to**, then API Keys > Create API Key (Sending access). Copy the key. While you send from Resend's test address, messages can only go to the email you signed up with, which is exactly where they should go.
 
 Optional, for a nicer sender: in Resend > Domains, add `kodiakcleaner.app` and add the DNS records it shows in Cloudflare (DNS > Records). Once it says Verified, set `CONTACT_FROM` below to `Kodiak Cleaner Website <contact@kodiakcleaner.app>`. Messages can then go to any address.
 
@@ -66,7 +66,7 @@ Optional, for a nicer sender: in Resend > Domains, add `kodiakcleaner.app` and a
 | `TURNSTILE_SITE_KEY` | Text | Site Key from step 3 |
 | `TURNSTILE_SECRET_KEY` | Secret | Secret Key from step 3 |
 | `RESEND_API_KEY` | Secret | Key from step 4 |
-| `CONTACT_TO` | Text (optional) | Where messages go. Default www.kodiakcleaner.app/contact |
+| `CONTACT_TO` | Text (optional) | Where messages go. Defaults to the address in functions/api/contact.js |
 | `CONTACT_FROM` | Text (optional) | Sender, only after kodiakcleaner.app is verified in Resend |
 
 **6. Deploy again** with `npm run deploy` so the settings take effect, then open https://www.kodiakcleaner.app/contact/ and send yourself a test message.
@@ -111,7 +111,7 @@ The form now says what went wrong. The common causes:
 
 - **"error 404" or "error 405"**: the form code wasn't uploaded. Deploy with `npm run deploy` (or Git), not drag-and-drop.
 - **"error 403"**: a Cloudflare security setting blocked the form. Check Security > Bots (Bot Fight Mode) and Security > WAF for kodiakcleaner.app.
-- **"Sign up for Resend with www.kodiakcleaner.app/contact"**: Resend's test sender only delivers to the email the Resend account was made with.
+- **"Sign up for Resend with the address in CONTACT_TO"**: Resend's test sender only delivers to the email the Resend account was made with.
 - **"Resend API key was refused"**: make a new key in Resend and paste it again into `RESEND_API_KEY`.
 - **"CONTACT_FROM isn't verified"**: delete `CONTACT_FROM`, or finish verifying kodiakcleaner.app in Resend.
 

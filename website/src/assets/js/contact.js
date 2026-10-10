@@ -25,7 +25,7 @@
   function unavailable() {
     sendBtn.disabled = true;
     document.getElementById("turnstile").hidden = true;
-    say("The form isn't switched on yet. Please email www.kodiakcleaner.app/contact in the meantime.", "error");
+    say("The form isn't switched on yet. Please try again later.", "error");
   }
 
   fetch("/api/contact", { headers: { accept: "application/json" } })
@@ -53,7 +53,7 @@
       .then(function (r) {
         return r.json().catch(function () {
           // Not our reply: usually the form code wasn't uploaded, or a Cloudflare security rule stepped in.
-          return { ok: false, error: "Your message couldn't be sent (the website replied with error " + r.status + "). Please email www.kodiakcleaner.app/contact instead." };
+          return { ok: false, error: "Your message couldn't be sent (the website replied with error " + r.status + "). Please try again in a few minutes." };
         });
       })
       .then(function (out) {
@@ -62,10 +62,10 @@
           counter.textContent = "0 / 5,000";
           say("Thank you. Your message is on its way to Ted, and replies come to the email address you gave.", "ok");
         } else {
-          say(out.error || "Your message couldn't be sent. Please email www.kodiakcleaner.app/contact instead.", "error");
+          say(out.error || "Your message couldn't be sent. Please try again in a few minutes.", "error");
         }
       })
-      .catch(function () { say("Your message couldn't be sent. Please check your connection, or email www.kodiakcleaner.app/contact.", "error"); })
+      .catch(function () { say("Your message couldn't be sent. Please check your connection and try again.", "error"); })
       .finally(function () {
         sendBtn.disabled = false;
         sendBtn.textContent = "Send Message";

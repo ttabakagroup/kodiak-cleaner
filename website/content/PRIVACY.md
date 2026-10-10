@@ -39,7 +39,7 @@ Buttons such as Support on Ko-fi, Star on GitHub, Website and Project Page open 
 
 ## Feedback
 
-Send Feedback, Report a Bug and Request a Feature open a short form. Your name and email are optional. Send Email then opens your own email app with the message ready to www.kodiakcleaner.app/contact, and nothing is sent until you press Send there. Kodiak Cleaner uses no mail service of its own. Messages can include a few details (Kodiak Cleaner version, Windows version, plan, install type and theme) that you can see first and switch off. They never include file names, folders, user names or anything you cleaned.
+Send Feedback, Report a Bug and Request a Feature open a short form. Your name and email are optional. Send Email then opens your own email app with the message ready to send to Ted, and nothing is sent until you press Send there. Kodiak Cleaner uses no mail service of its own. Messages can include a few details (Kodiak Cleaner version, Windows version, plan, install type and theme) that you can see first and switch off. They never include file names, folders, user names or anything you cleaned.
 
 ## Children
 
@@ -51,4 +51,4 @@ If Kodiak Cleaner ever changes what it does with information, this policy will b
 
 ## Contact
 
-www.kodiakcleaner.app/contact
+Use the Contact Us form at https://www.kodiakcleaner.app/contact/

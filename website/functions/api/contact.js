@@ -45,7 +45,7 @@ function ready(cfg) {
 export function explainMailError(status, body) {
   const detail = String((body && (body.message || body.error)) || "").slice(0, 200);
   if (status === 401 || /api key/i.test(detail)) return "the Resend API key was refused. Check RESEND_API_KEY in Cloudflare.";
-  if (/verify a domain|testing emails|own email/i.test(detail)) return "Resend only sends test emails to the address its account was made with. Sign up for Resend with www.kodiakcleaner.app/contact, or verify kodiakcleaner.app in Resend.";
+  if (/verify a domain|testing emails|own email/i.test(detail)) return "Resend only sends test emails to the address its account was made with. Sign up for Resend with the address in CONTACT_TO, or verify kodiakcleaner.app in Resend.";
   if (/domain is not verified|not verified/i.test(detail)) return "the sender domain in CONTACT_FROM isn't verified in Resend. Remove CONTACT_FROM or finish verifying the domain.";
   return `Resend said: ${detail || "error " + status}`;
 }
@@ -116,13 +116,13 @@ export async function onRequestPost(context) {
   } catch (err) {
     // Never let a crash turn into Cloudflare's HTML error page; the form needs JSON.
     console.error("Contact form error:", err && err.stack ? err.stack : err);
-    return json({ ok: false, code: "server_error", error: `Your message couldn't be sent (${String(err && err.message || err).slice(0, 150)}). Please email www.kodiakcleaner.app/contact instead.` });
+    return json({ ok: false, code: "server_error", error: `Your message couldn't be sent (${String(err && err.message || err).slice(0, 150)}). Please try again in a few minutes.` });
   }
 }
 
 async function handlePost({ request, env }) {
   const cfg = settings(env);
-  if (!ready(cfg)) return json({ ok: false, code: "not_set_up", error: "The contact form isn't set up yet. Please email www.kodiakcleaner.app/contact instead." });
+  if (!ready(cfg)) return json({ ok: false, code: "not_set_up", error: "The contact form isn't set up yet. Please try again in a few minutes." });
 
   let input;
   try {
@@ -141,7 +141,7 @@ async function handlePost({ request, env }) {
 
   const token = input["cf-turnstile-response"] || input.token;
   const human = await verifyTurnstile(token, cfg.secret, request.headers.get("CF-Connecting-IP"));
-  if (human === null) return json({ ok: false, code: "spam_check_unavailable", error: "The spam check couldn't be completed right now. Please try again in a few minutes, or email www.kodiakcleaner.app/contact instead." });
+  if (human === null) return json({ ok: false, code: "spam_check_unavailable", error: "The spam check couldn't be completed right now. Please try again in a few minutes." });
   if (!human) return json({ ok: false, code: "spam_check", error: "The spam check didn't pass. Please try it again." }, 400);
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -152,7 +152,7 @@ async function handlePost({ request, env }) {
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     console.error("Resend refused the message:", res.status, JSON.stringify(body));
-    return json({ ok: false, code: "mail_failed", error: `Your message couldn't be sent: ${withDetail(res.status, body)} You can also email www.kodiakcleaner.app/contact.` });
+    return json({ ok: false, code: "mail_failed", error: `Your message couldn't be sent: ${withDetail(res.status, body)} Please try again in a few minutes.` });
   }
 
   return json({ ok: true });

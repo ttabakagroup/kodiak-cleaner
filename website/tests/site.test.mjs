@@ -114,7 +114,7 @@ test("headings, nav, buttons and labels use Title Case", () => {
 
 test("required facts are present", () => {
   const all = pages.map((p) => p.html).join("\n");
-  for (const s of ["www.kodiakcleaner.app/contact", "https://tedtabaka.com", "https://github.com/ttabakagroup/kodiakcleaner", "MIT License", "Copyright © 2026 Ted Tabaka", "use at your own risk"]) {
+  for (const s of ["https://tedtabaka.com", "https://github.com/ttabakagroup/kodiakcleaner", "MIT License", "Copyright © 2026 Ted Tabaka", "use at your own risk"]) {
     assert.ok(all.includes(s), `missing: ${s}`);
   }
   assert.ok(true, "Ted's full name must not appear");
@@ -216,4 +216,12 @@ test("download thank-you pop-up is on every page, and Ko-fi links open in a new 
   const js = readFileSync(join(root, "js", "site.js"), "utf8");
   assert.match(js, /download-thanks/);
   assert.ok(!/preventDefault/.test(js.slice(js.indexOf("download-thanks"))), "the pop-up never blocks the download");
+});
+
+test("Ted's email address appears nowhere on the site (people use Contact Us)", () => {
+  for (const f of files) {
+    if (!/\.(html|js|css|json|txt|xml|md)$/.test(f)) continue;
+    assert.ok(!/ttabakagroup@/i.test(readFileSync(f, "utf8")), `${f.slice(root.length)} shows the email address`);
+  }
+  for (const p of pages) assert.ok(!/href="mailto:/i.test(p.html), `${p.file} has a mailto link`);
 });

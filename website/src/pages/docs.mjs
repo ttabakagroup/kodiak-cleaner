@@ -19,11 +19,11 @@ ${pageHead("Privacy Policy", "Kodiak Cleaner keeps everything on your PC, and th
     <ul>
       <li><strong>No analytics, ads or tracking.</strong> This website has no trackers, no advertising and no cookies of its own. Your Light or Dark choice is remembered in your own browser only.</li>
       <li><strong>Hosting.</strong> The website is hosted on Cloudflare Pages. Like any web host, Cloudflare handles your IP address to deliver pages and protect the site from attacks.</li>
-      <li><strong>Contact Us form.</strong> When you send a message, your topic, name (if given), email address and message are emailed to Ted at ${cfg.email} through the Resend email service, so he can read and answer it. The website doesn't store them. Ted uses your email address only to reply.</li>
+      <li><strong>Contact Us form.</strong> When you send a message, your topic, name (if given), email address and message are emailed to Ted through the Resend email service, so he can read and answer it. The website doesn't store them. Ted uses your email address only to reply.</li>
       <li><strong>Spam check.</strong> The Contact Us page uses Cloudflare Turnstile to tell people from bots. It loads only on that page and checks signals from your browser without showing ads or building a profile.</li>
       <li><strong>Downloads.</strong> Download buttons take you to GitHub, which has its own privacy statement.</li>
     </ul>
-    <p>Questions? Write to <a href="mailto:${cfg.email}">${cfg.email}</a>.</p>
+    <p>Questions? Use the <a href="/contact/">Contact Us</a> form.</p>
   </div>
   <div class="card pad mt-xl">${render(ctx.content.privacy, { headingShift: 1 })}</div>
 </div></section>`;
