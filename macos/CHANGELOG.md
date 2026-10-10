@@ -1,5 +1,21 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.1 Dev] - 2026-10-10
+
+### Added
+- **Donation reminder:** at startup, a short pop-up asks you to consider a donation on Ko-fi (Donate on Ko-fi opens it in your browser; Not Now, the close button or Esc close it). Its Don't Show This Again at Startup switch, and Ask Me to Donate at Startup in Settings > General, can turn it off once Kodiak Cleaner has started 10 times; until then they are greyed out and say how many starts are left. It never shows on a start that already has the Beta Software notice or What's New.
+- **Donation banner:** on every 10th start, a slim banner at the top of the page asks for a donation, with Donate on Ko-fi and Dismiss.
+- **Supporter:** Supporters see neither; entering a supporter code turns the reminder off for good. Reset All Settings keeps the start count.
+
+### Changed
+- **Contact & Feedback:** Send Feedback, Report a Bug, Request a Feature and Security open the contact form on the Kodiak Cleaner website with the topic and version filled in, instead of an email. The app and its documents no longer show an email address.
+- **Switches:** a switch that can't be changed yet is greyed out, its name included.
+
+### Fixed
+- **Cleaner:** programs opened between Analyze and Clean are skipped, and files that changed or became someone else's since Analyze stay. A pattern's own folder that is a link stays in place.
+- **Triggers:** cron lines separated by tabs are read correctly, and a second click on Restore never adds a cron job twice. Changes and restores happen one at a time.
+- **Reliability:** commands Kodiak Cleaner runs can no longer hang it by filling their output, and a command that runs too long is stopped.
+
 ## [0.8.0 Dev] - 2026-10-06
 
 ### Added

@@ -1,6 +1,6 @@
 # Kodiak Cleaner for Mac Privacy Policy
 
-**Effective date:** October 6, 2026
+**Effective date:** October 10, 2026
 
 Kodiak Cleaner for Mac is made by Ted Tabaka, an independent developer. This policy explains exactly what it does with your information. The short version: nothing leaves your Mac.
 
@@ -9,6 +9,7 @@ Kodiak Cleaner for Mac is made by Ted Tabaka, an independent developer. This pol
 - Your settings are saved in `~/Library/Application Support/Kodiak Cleaner/Settings.json`.
 - Triggers History and its backup copies are saved in `~/Library/Application Support/Kodiak Cleaner/Backups`.
 - The Cleaner's history (when each item was last cleaned and how much it freed) is saved with your settings.
+- How many times Kodiak Cleaner has started is saved with your settings, for the donation reminder. It is never sent anywhere.
 - What the Cleaner and Triggers pages find is shown to you and never saved anywhere else.
 
 ## What Is Never Collected
@@ -17,7 +18,7 @@ Kodiak Cleaner for Mac has no telemetry, analytics, crash reporting, ads or acco
 
 ## Going Online
 
-Kodiak Cleaner for Mac never goes online by itself. When you click a link (such as Website, Source Code, Ko-fi or Star on GitHub), it opens in your own browser. Contact & Feedback opens your own email app with a message ready for you to read, edit and send yourself; nothing is sent until you send it there.
+Kodiak Cleaner for Mac never goes online by itself. When you click a link (such as Website, Source Code, Ko-fi or Star on GitHub), it opens in your own browser. Contact & Feedback opens the contact form on the Kodiak Cleaner website in your own browser, with the topic and the Kodiak Cleaner version filled in; nothing is sent until you send it there.
 
 ## Administrator Rights
 
@@ -37,4 +38,4 @@ A new version of Kodiak Cleaner for Mac may update this policy. The effective da
 
 ## Contact
 
-Questions about privacy: www.kodiakcleaner.app/contact
+Questions about privacy: use the contact form at https://www.kodiakcleaner.app/contact/

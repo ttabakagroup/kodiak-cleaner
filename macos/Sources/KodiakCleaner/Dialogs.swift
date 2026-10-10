@@ -66,6 +66,79 @@ struct BetaNoticeView: View {
     }
 }
 
+/// The donation reminder at startup (Ted, 2026-10-10). Not Now, the close button and Esc close it; Donate on Ko-fi
+/// opens Ko-fi in the browser and closes it. Don't Show This Again at Startup works once Kodiak Cleaner has started
+/// 10 times, and applies however the pop-up closes.
+struct DonationView: View {
+    @EnvironmentObject var model: AppModel
+    @Environment(\.theme) private var theme
+    @State private var dontShowAgain = false
+
+    var body: some View {
+        let canOptOut = model.canOptOutOfDonation
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                Image(systemName: "heart.fill").font(.system(size: 24)).foregroundStyle(theme.accentText)
+                    .accessibilityHidden(true)
+                Text(Donation.title).font(theme.display(22)).foregroundStyle(theme.text)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button { model.sheet = nil } label: {
+                    Image(systemName: "xmark").font(.system(size: 12, weight: .semibold)).frame(width: 14, height: 14)
+                }
+                .kcButton(.secondary)
+                .accessibilityLabel("Close")
+                .help("Close")
+            }
+            Card {
+                Text(Donation.paragraphs[0]).font(theme.body(13)).foregroundStyle(theme.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(Donation.paragraphs[1]).font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                Caption(Donation.paragraphs[2])
+            }
+            SwitchRow(title: "Don't Show This Again at Startup",
+                      help: Donation.promptCaption(launchCount: model.settings.launchCount, isSupporter: model.plan.isSupporter),
+                      isOn: Binding(get: { canOptOut && dontShowAgain }, set: { dontShowAgain = canOptOut && $0 }))
+                .disabled(!canOptOut)
+            HStack(spacing: 8) {
+                Spacer()
+                Button("Not Now") { model.sheet = nil }.kcButton(.secondary).keyboardShortcut(.cancelAction)
+                Button("Donate on Ko-fi") {
+                    openLink(AppInfo.kofiURL)
+                    model.sheet = nil
+                }
+                .kcButton(.primary).keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(24)
+        .frame(width: 520)
+        .background(theme.bg)
+        .onDisappear { model.donationPromptClosed(dontShowAgain: canOptOut && dontShowAgain) }
+    }
+}
+
+/// The slim bar at the top of the page on every 10th start (never for Supporters). Dismiss hides it until next time.
+struct DonationBanner: View {
+    @EnvironmentObject var model: AppModel
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "heart.fill").foregroundStyle(theme.accentText).accessibilityHidden(true)
+            Text(Donation.bannerText).font(theme.body(13)).foregroundStyle(theme.text)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button("Donate on Ko-fi") { openLink(AppInfo.kofiURL) }.kcButton(.link)
+            Button("Dismiss") { model.showDonationBanner = false }.kcButton(.secondary)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.accentTint))
+        .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(theme.accent, lineWidth: 1))
+        .accessibilityElement(children: .contain)
+    }
+}
+
 /// What's New since the previous version (with View Full Changelog), or the whole changelog.
 struct ChangesView: View {
     var previous: String?
@@ -100,66 +173,6 @@ struct ChangesView: View {
         .padding(24)
         .frame(width: 680, height: 600)
         .background(theme.bg)
-    }
-}
-
-/// The form the Contact & Feedback buttons open. Send Email opens the person's own email app; nothing is sent until
-/// they send it there.
-struct FeedbackForm: View {
-    var kind: String
-    @EnvironmentObject var model: AppModel
-    @Environment(\.theme) private var theme
-    @State private var subject = ""
-    @State private var message = ""
-
-    static let titles = ["feedback": "Send Feedback", "bug": "Report a Bug", "idea": "Request a Feature",
-                         "security": "Report a Security Problem"]
-    static let intros = [
-        "feedback": "Tell us what's working, what isn't, and what you'd like next.",
-        "bug": "Describe what went wrong. The details below help track it down; they never include files, folders or user names.",
-        "idea": "Missing a feature you'd like? Let us know and we'll look into it.",
-        "security": "Security problems are reported privately, never in public issues or reviews.",
-    ]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(FeedbackForm.titles[kind] ?? "Send Feedback").font(theme.display(22)).foregroundStyle(theme.text)
-            Caption(FeedbackForm.intros[kind] ?? "")
-            Text("Subject").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
-            TextField("Subject", text: $subject, prompt: Text("e.g. Cleaner skipped Firefox"))
-                .kcField()
-            Text("Message").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
-            TextEditor(text: $message)
-                .font(theme.body(13))
-                .foregroundStyle(theme.text)
-                .scrollContentBackground(.hidden)
-                .padding(8)
-                .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.surface))
-                .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(theme.controlBorder, lineWidth: 1))
-                .accessibilityLabel("Message")
-            Caption("Send Email opens your own email app with this message ready to \(AppInfo.email). Nothing is sent until you send it there.")
-            HStack(spacing: 8) {
-                Button("Copy Message") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString("To: \(AppInfo.email)\nSubject: \(subject)\n\n\(message)", forType: .string)
-                }
-                .kcButton(.secondary)
-                Spacer()
-                Button("Cancel") { model.sheet = nil }.kcButton(.secondary).keyboardShortcut(.cancelAction)
-                Button("Send Email") {
-                    openLink(Feedback.link(kind: kind, subject: subject, body: message))
-                    model.sheet = nil
-                }
-                .kcButton(.primary)
-            }
-        }
-        .padding(24)
-        .frame(width: 620, height: 560)
-        .background(theme.bg)
-        .onAppear {
-            subject = Feedback.subjects[kind] ?? ""
-            message = Feedback.defaultBody(kind)
-        }
     }
 }
 

@@ -91,6 +91,15 @@ private struct GeneralSettings: View {
             }
             SwitchRow(title: "Show What's New After Updates", help: "Opens the list of changes the first time a new version starts.",
                       isOn: $model.settings.showWhatsNew)
+            // Greyed out until Kodiak Cleaner has started 10 times; Supporters have it off for good.
+            SwitchRow(title: "Ask Me to Donate at Startup",
+                      help: Donation.settingsCaption(launchCount: model.settings.launchCount, isSupporter: model.plan.isSupporter),
+                      isOn: Binding(get: { model.settings.showDonationPrompt },
+                                    set: { on in
+                                        let isSupporter = model.plan.isSupporter
+                                        model.settings.setDonationPrompt(on, isSupporter: isSupporter)
+                                    }))
+                .disabled(!model.canOptOutOfDonation || model.plan.isSupporter)
         }
         Card(title: "Full Disk Access", subtitle: "macOS keeps Safari, Mail and the Trash private. To clean them, allow Kodiak Cleaner under Full Disk Access in Privacy & Security, then open Kodiak Cleaner again. Everything else works without it.") {
             HStack(spacing: 10) {
@@ -294,7 +303,7 @@ private struct SupporterSettings: View {
             Card(title: "Supporter") {
                 Text("One-time thank-you. Yours to keep.").font(theme.body(13, weight: .medium)).foregroundStyle(theme.accentText)
                 ForEach(["Everything in Free", "The Classic and Glacier color schemes", "A Supporter Badge (you can hide it)",
-                         "The support link hidden"], id: \.self) {
+                         "The support link and donation reminder hidden"], id: \.self) {
                     Label($0, systemImage: "checkmark").foregroundStyle(theme.text)
                 }
             }
@@ -333,7 +342,6 @@ private struct SupporterSettings: View {
 }
 
 private struct FeedbackSettings: View {
-    @EnvironmentObject var model: AppModel
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -349,11 +357,12 @@ private struct FeedbackSettings: View {
             HStack(spacing: 8) {
                 ForEach([("feedback", "Send Feedback"), ("bug", "Report a Bug"), ("idea", "Request a Feature"), ("security", "Security")],
                         id: \.0) { kind, title in
-                    Button(title) { model.sheet = .feedback(kind) }.kcButton(.accent)
+                    Button(title) { openLink(Feedback.link(kind: kind)) }.kcButton(.accent)
                 }
             }
+            Caption("Each button opens the contact form on the Kodiak Cleaner website in your browser, with the topic and version already filled in. Nothing is sent until you send it there.")
         }
-        Card(title: "Details for Your Report", subtitle: "Only bug reports include these, and you can edit them before sending. They never include files, folders, user names or what was found.") {
+        Card(title: "Details for Your Report", subtitle: "Copy these into a bug report if they help. They never include files, folders, user names or what was found.") {
             Text(Feedback.details()).font(.system(size: 12, design: .monospaced)).foregroundStyle(theme.text).textSelection(.enabled)
                 .padding(10).frame(maxWidth: .infinity, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.surfaceAlt))
@@ -390,8 +399,9 @@ private struct DeveloperSettings: View {
             row("Signing Key", Supporter.publicKey.isTest ? "Test key" : "Ted's key")
             row("Supporter Code", model.plan.license.map { "Valid (\($0.id))" } ?? "None")
             row("Preview", model.settings.preview.capitalized)
-            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, badge, support link hidden" : "None")
+            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, badge, support link and donation reminder hidden" : "None")
             row("Full Disk Access", model.hasFullDiskAccess ? "Allowed" : "Not allowed")
+            row("Starts Counted", "\(model.settings.launchCount)")
             Button("Reset Supporter Testing") {
                 model.settings.preview = "free"
                 model.settings.previewName = ""

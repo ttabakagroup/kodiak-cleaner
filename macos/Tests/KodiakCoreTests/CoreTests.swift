@@ -144,6 +144,38 @@ final class CleanerTests: TempHomeTestCase {
         }
     }
 
+    func testCleaningChecksOpenProgramsAgain() {
+        // Analyze found Chrome closed; it was opened before Clean was clicked.
+        write("~/Library/Application Support/Google/Chrome/Default/Cookies")
+        let finding = Cleaner.find(target("googlechrome.cookies"), running: [])
+        XCTAssertEqual(finding.count, 1)
+        let results = Cleaner.clean([finding], running: ["com.google.chrome"])
+        XCTAssertEqual(results["googlechrome.cookies"]?.message, "Close Google Chrome first")
+        XCTAssertEqual(results["googlechrome.cookies"]?.freed, 0)
+        XCTAssertTrue(FS.exists(home + "/Library/Application Support/Google/Chrome/Default/Cookies"))
+    }
+
+    func testCleaningChecksFileAgeAgain() {
+        write(temp + "reused.tmp", age: 3 * Cleaner.day)
+        let finding = Cleaner.find(target("macos.temp"), keepRecent: true)
+        XCTAssertEqual(finding.count, 1)
+        // A program writes the same file again between Analyze and Clean: it is new now, so it stays.
+        write(temp + "reused.tmp", "fresh")
+        _ = Cleaner.clean([finding])
+        XCTAssertTrue(FS.exists(temp + "reused.tmp"))
+    }
+
+    func testLinkedPatternFolderStays() throws {
+        write("~/BrewCache/bottle.tar.gz")
+        try FileManager.default.createDirectory(atPath: home + "/Library/Caches", withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: home + "/Library/Caches/Homebrew", withDestinationPath: home + "/BrewCache")
+        let finding = Cleaner.find(target("homebrew.cache"), running: [])
+        XCTAssertEqual(finding.count, 0)
+        _ = Cleaner.clean([finding])
+        XCTAssertEqual(FS.info(home + "/Library/Caches/Homebrew")?.kind, .link, "The link the pattern names stays")
+        XCTAssertTrue(FS.exists(home + "/BrewCache/bottle.tar.gz"))
+    }
+
     func testMissingProgramsAreHidden() {
         XCTAssertFalse(Cleaner.available().contains { $0.group == "Google Chrome" })
         write("~/Library/Application Support/Google/Chrome/Local State")
@@ -209,6 +241,30 @@ final class TriggerTests: TempHomeTestCase {
         XCTAssertEqual(jobs[1].enabled, false)
         XCTAssertEqual(jobs[1].schedule, "At startup")
         XCTAssertTrue(jobs[1].notes.contains { $0.id == "oddplace" })
+    }
+
+    func testTabSeparatedCronLines() {
+        let jobs = Triggers.cronJobs("0\t3\t*\t*\t*\t/usr/local/bin/nightly\t--all\n")
+        XCTAssertEqual(jobs.count, 1)
+        XCTAssertEqual(jobs.first?.name, "nightly")
+        XCTAssertEqual(jobs.first?.schedule, "0 3 * * *")
+    }
+
+    func testRestoringARemovedCronJobTwiceAddsItOnce() throws {
+        let fake = home + "/crontab"
+        let saved = Triggers.crontab
+        Triggers.crontab = fake
+        defer { Triggers.crontab = saved }
+        let script = "#!/bin/sh\nF=\"$(dirname \"$0\")/crontab.txt\"\nif [ \"$1\" = \"-l\" ]; then cat \"$F\"; else cat > \"$F\"; fi\n"
+        FileManager.default.createFile(atPath: fake, contents: Data(script.utf8), attributes: [.posixPermissions: 0o755])
+        FileManager.default.createFile(atPath: home + "/crontab.txt", contents: Data("*/5 * * * * /usr/local/bin/backup\n".utf8))
+        let job = Triggers.cronJobs().first!
+        XCTAssertEqual(Triggers.change([job], to: .removed), [:])
+        XCTAssertEqual(Triggers.cronJobs().count, 0)
+        let entry = Triggers.history().first!
+        XCTAssertNil(Triggers.restore(entry))
+        XCTAssertNil(Triggers.restore(entry), "A second click on Restore changes nothing")
+        XCTAssertEqual(Triggers.cronJobs().count, 1)
     }
 
     func testProtectedAndSystemRules() {
@@ -315,11 +371,31 @@ final class SettingsAndTextTests: TempHomeTestCase {
     }
 
     func testFeedbackLinkHasNoHiddenData() {
-        let url = Feedback.link(kind: "idea", subject: "Hi & bye", body: "A=1\nB")!.absoluteString
-        XCTAssertTrue(url.hasPrefix("mailto:www.kodiakcleaner.app/contact?subject=Hi%20%26%20bye&body=A%3D1%0AB"))
-        XCTAssertFalse(Feedback.defaultBody("feedback").contains("Details"))
-        XCTAssertTrue(Feedback.defaultBody("bug").contains("Details for Your Report"))
+        let version = Feedback.encode(Feedback.versionText)
+        XCTAssertEqual(Feedback.link(kind: "bug")!.absoluteString,
+                       "https://www.kodiakcleaner.app/contact/?topic=Bug%20Report&version=\(version)")
+        XCTAssertEqual(Feedback.link(kind: "feedback")!.absoluteString,
+                       "https://www.kodiakcleaner.app/contact/?topic=General%20Feedback&version=\(version)")
+        XCTAssertTrue(Feedback.link(kind: "idea")!.absoluteString.contains("?topic=Feature%20Request&version="))
+        XCTAssertTrue(Feedback.link(kind: "security")!.absoluteString.contains("?topic=Security&version="))
+        XCTAssertTrue(Feedback.versionText.hasSuffix(" (Mac)"))
         XCTAssertFalse(Feedback.details().contains(NSUserName()))
+    }
+
+    /// Ted's email address is never shown or used anywhere; contact goes through the website's contact form.
+    func testNoEmailAddressInLinks() {
+        let oldAddress = ("removed" + "@" + "example.com").lowercased()
+        XCTAssertEqual(Feedback.kinds.count, Feedback.topics.count)
+        for kind in Feedback.kinds {
+            let url = Feedback.link(kind: kind)!.absoluteString.lowercased()
+            XCTAssertTrue(url.hasPrefix(AppInfo.contactURL.absoluteString), kind)
+            XCTAssertFalse(url.hasPrefix("mailto:"), kind)
+            XCTAssertFalse(url.contains(oldAddress), kind)
+            XCTAssertFalse(url.contains("%40gmail"), kind)
+        }
+        for name in ["PRIVACY.md", "terms-of-use.md", "CHANGELOG.md"] {
+            XCTAssertFalse(Resources.text(name).lowercased().contains(oldAddress), name)
+        }
     }
 }
 
@@ -367,3 +443,20 @@ final class SupporterTests: XCTestCase {
     }
 }
 #endif
+
+final class RunTests: XCTestCase {
+    func testLargeErrorOutputDoesNotBlock() {
+        // More than a pipe holds on standard error while standard output is still open.
+        let result = Run.program("/bin/sh", ["-c", "head -c 300000 /dev/zero | tr '\\0' x >&2; echo done"], timeout: 20)
+        XCTAssertEqual(result.code, 0)
+        XCTAssertEqual(result.output, "done\n")
+        XCTAssertEqual(result.error.count, 300000)
+    }
+
+    func testTimeoutStopsAProgram() {
+        let start = Date()
+        let result = Run.program("/bin/sleep", ["30"], timeout: 0.5)
+        XCTAssertLessThan(Date().timeIntervalSince(start), 10)
+        XCTAssertNotEqual(result.code, 0)
+    }
+}

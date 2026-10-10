@@ -35,9 +35,14 @@ struct MainLayout: View {
         HStack(spacing: 0) {
             Sidebar()
             Rectangle().fill(theme.line).frame(width: 1)
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(theme.bg)
+            VStack(spacing: 0) {
+                if model.showDonationBanner && !model.plan.isSupporter {
+                    DonationBanner().padding(.horizontal, 28).padding(.top, 16)
+                }
+                content.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(theme.bg)
         }
         .background(theme.bg)
         .sheet(item: $model.dialog) { request in Themed { DialogView(request: request) }.environmentObject(model) }
@@ -47,8 +52,8 @@ struct MainLayout: View {
                 case .beta: BetaNoticeView()
                 case .whatsNew(let previous): ChangesView(previous: previous)
                 case .changelog: ChangesView(previous: nil)
-                case .feedback(let kind): FeedbackForm(kind: kind)
                 case .triggersHistory: TriggersHistoryView()
+                case .donation: DonationView()
                 }
             }
             .environmentObject(model)

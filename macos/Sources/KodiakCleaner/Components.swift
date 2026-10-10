@@ -143,11 +143,13 @@ struct SwitchRow: View {
     var help: String? = nil
     @Binding var isOn: Bool
     @Environment(\.theme) private var theme
+    @Environment(\.isEnabled) private var enabled
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
+                // A switch that can't be changed yet is greyed out, its name included.
+                Text(title).font(theme.body(13, weight: .semibold)).foregroundStyle(enabled ? theme.text : theme.muted)
                 if let help { Text(help).font(theme.body(12)).foregroundStyle(theme.muted).fixedSize(horizontal: false, vertical: true) }
             }
             Spacer(minLength: 12)
@@ -359,7 +361,7 @@ struct MarkdownView: View {
     }
 }
 
-/// Opens a web page or email in the person's own browser or email app.
+/// Opens a web page in the person's own browser.
 @MainActor
 func openLink(_ url: URL?) {
     if let url { NSWorkspace.shared.open(url) }

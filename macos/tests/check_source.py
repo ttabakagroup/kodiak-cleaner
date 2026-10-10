@@ -129,6 +129,21 @@ def check_docs(errors):
                     errors.append(f"{name} has an en or em dash; use a plain hyphen")
 
 
+def check_no_email(errors):
+    """Ted's email address is never in the app or its docs; contact goes through the website's contact form."""
+    address = ("ttabakagroup" + "@").encode()
+    for path in sorted(ROOT.rglob("*")):
+        parts = set(path.relative_to(ROOT).parts)
+        if not path.is_file() or parts & {".git", ".build", "dist"}:
+            continue
+        try:
+            data = path.read_bytes().lower()
+        except OSError:
+            continue
+        if address in data:
+            errors.append(f"Email address in {path.relative_to(ROOT)}; use the contact form link instead")
+
+
 def main():
     errors = []
     labels = check_title_case(errors)
@@ -136,6 +151,7 @@ def main():
     check_no_network(errors)
     check_features_sorted(errors)
     check_docs(errors)
+    check_no_email(errors)
     if errors:
         print("\n".join(errors))
         print(f"{len(errors)} problem(s)")

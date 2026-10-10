@@ -1,6 +1,6 @@
 # Security
 
-Please report security problems privately by email to **www.kodiakcleaner.app/contact** with the subject `[Security] Kodiak Cleaner for Mac`. Don't open a public issue for them.
+Please report security problems privately through the contact form with the Security topic: https://www.kodiakcleaner.app/contact/?topic=Security (or Settings > Contact & Feedback > Security in the app). Don't open a public issue for them.
 
 Include the version (from About), your macOS version, and the steps to repeat the problem. Please leave out personal data.
 

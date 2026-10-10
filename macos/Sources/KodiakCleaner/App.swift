@@ -67,10 +67,12 @@ enum SelfTest {
         print("\(AppInfo.name) \(AppInfo.versionName) on \(AppInfo.osDescription) (\(AppInfo.processorDescription))")
         check("Version from the app's Info.plist", AppInfo.build.packaged || CommandLine.arguments.contains("--source"),
               AppInfo.versionName)
-        for name in ["logo.png", "CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "Fonts/Fredoka-SemiBold.ttf",
-                     "keys/supporter-test-public.pem"] {
+        for name in ["logo.png", "CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "Fonts/Fredoka-SemiBold.ttf"] {
             check("Bundled \(name)", Resources.path(name) != nil)
         }
+        // build.sh ships Ted's key in place of the test key once it exists, so either one counts.
+        let key = Resources.path("keys/supporter-public.pem") != nil ? "keys/supporter-public.pem" : "keys/supporter-test-public.pem"
+        check("Bundled \(key)", Resources.path(key) != nil)
         check("Changelog has this version", Changelog.parse().first?.version == AppInfo.version, Changelog.parse().first?.heading ?? "none")
         let available = Cleaner.available()
         check("Cleaner catalog", !available.isEmpty, "\(available.count) of \(Cleaner.catalog().count) items on this Mac")
