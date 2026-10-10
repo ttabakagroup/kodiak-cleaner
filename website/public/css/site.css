@@ -194,7 +194,8 @@ section.tight { padding: clamp(36px, 5vw, 56px) 0; }
 .prose ul { padding-left: 1.3em; }
 .prose li { margin: .35em 0; }
 .prose li::marker { color: var(--accent); }
-.prose.story p { font-size: 1.15rem; line-height: 1.75; }
+.prose.story p { font-size: 1.15rem; line-height: 1.75; margin: 0 0 2em; }
+.prose.story p:last-child { margin-bottom: 0; }
 .prose.story p:first-of-type::first-letter { font-family: var(--font-display); float: left; font-size: 3.6em; line-height: .9; padding: 6px 10px 0 0; color: var(--accent-text); }
 
 /* Tables */
