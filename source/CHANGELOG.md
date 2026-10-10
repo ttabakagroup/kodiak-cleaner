@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.58 Dev] - 2026-10-10
+
+### Why It Was Made
+- More space between paragraphs, so the story is easier to read.
+
 ## [0.8.57 Dev] - 2026-10-10
 
 ### Why It Was Made

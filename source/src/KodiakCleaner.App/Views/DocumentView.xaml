@@ -9,7 +9,8 @@
                     <DockPanel>
                         <TextBlock x:Name="Bullet" DockPanel.Dock="Left" Text="•" Width="18"
                                    FontSize="{Binding DataContext.BodySize, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Margin="4,6,0,0" Foreground="{DynamicResource Muted}" Visibility="Collapsed" />
-                        <TextBlock x:Name="Text" Text="{Binding Text}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{DynamicResource Text}"
+                        <TextBlock x:Name="Text" Text="{Binding Text}" TextWrapping="Wrap" Foreground="{DynamicResource Text}"
+                                   Margin="{Binding DataContext.ParagraphMargin, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                    FontSize="{Binding DataContext.BodySize, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                    LineHeight="{Binding DataContext.LineHeight, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
                     </DockPanel>

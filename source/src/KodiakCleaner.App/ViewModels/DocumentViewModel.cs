@@ -1,3 +1,4 @@
+using System.Windows;
 using KodiakCleaner.Core.Util;
 
 namespace KodiakCleaner.App.ViewModels;
@@ -17,4 +18,6 @@ public sealed class DocumentViewModel
     public double TitleSize => BodySize >= 16 ? 28 : 22;
     public double HeadingSize => BodySize >= 16 ? 20 : 16;
     public double LineHeight => Math.Round(BodySize * 1.5);
+    /// <summary>Space above each paragraph. The story's is more than doubled (Ted, 0.8.58: a lot of text, spaced out more).</summary>
+    public Thickness ParagraphMargin => new(0, BodySize >= 16 ? 18 : 8, 0, 0);
 }
