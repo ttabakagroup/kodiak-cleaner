@@ -11,7 +11,7 @@ namespace KodiakCleaner.App;
 
 /// <summary>
 /// The Windows tasks under Advanced Cleaning. Each uses Windows' own tool for the job (DISM, powercfg, compact, vssadmin,
-/// wevtutil, netsh) from System32, so nothing is done in a way Windows doesn't support.
+/// wevtutil, netsh, cleanmgr) from System32, so nothing is done in a way Windows doesn't support.
 /// </summary>
 public static class SystemTasks
 {
@@ -36,6 +36,9 @@ public static class SystemTasks
         "task.runmru" => new Plan(0, RunMruCount() is var c and > 0 ? TargetRun.Plural(c, "command") : "Nothing typed yet"),
         "task.components" => new Plan(0, "Windows measures this when it runs"),
         "task.compactos" => new Plan(0, "Windows measures this when it runs"),
+        _ when DiskCleanup.Handlers.ContainsKey(id) => DiskCleanup.Find(id) is null
+            ? new Plan(0, "Not on this version of Windows")
+            : new Plan(0, "Windows measures this when it runs"),
         _ => new Plan(0, "Ready"),
     };
 
@@ -66,6 +69,8 @@ public static class SystemTasks
                 return Measured(() => DeleteOlderShadows(ct), "Older shadow copies deleted", "vssadmin reported a problem (code {0})");
             case "task.eventlogs":
                 return ClearEventLogs(ct);
+            case var dc when DiskCleanup.Handlers.ContainsKey(dc):
+                return DiskCleanup.Run(dc, ct);
             default:
                 return (0, "Unknown task");
         }
@@ -204,6 +209,110 @@ public static class SystemTasks
         {
             return "Couldn't be backed up, so nothing was changed";
         }
+    }
+
+    /// <summary>
+    /// Runs one Disk Cleanup item through Windows' own Disk Cleanup (cleanmgr /sagerun) with only that item ticked,
+    /// for files that only Windows knows about or may delete (Defender, language packs, setup leftovers, File History).
+    /// The tick is a temporary StateFlags value, removed again afterwards; nothing else in Disk Cleanup's settings changes.
+    /// </summary>
+    private static class DiskCleanup
+    {
+        private const string Root = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches";
+        private const string Flag = "StateFlags0617";
+
+        /// <summary>The item as Disk Cleanup shows it, and the handler key names it has on Windows 10 and 11.</summary>
+        public sealed record Handler(string Display, string[] Keys);
+
+        public static readonly Dictionary<string, Handler> Handlers = new()
+        {
+            ["task.dc.defender"] = new("Microsoft Defender Antivirus", new[] { "Windows Defender" }),
+            ["task.dc.diagviewer"] = new("Diagnostic data viewer database files", new[] { "Diagnostic Data Viewer database files" }),
+            ["task.dc.feedbackhub"] = new("Feedback Hub Archive log files", new[] { "Feedback Hub Archive log files" }),
+            ["task.dc.filehistory"] = new("User file history", new[] { "User file versions" }),
+            ["task.dc.language"] = new("Language Resource Files", new[] { "Language Pack" }),
+            ["task.dc.retaildemo"] = new("RetailDemo Offline Content", new[] { "RetailDemo Offline Content" }),
+            ["task.dc.setup"] = new("Temporary Setup Files", new[] { "Temporary Setup Files" }),
+            // Found by the name Disk Cleanup shows, since its key name differs between Windows versions.
+            ["task.dc.wininstall"] = new("Temporary Windows installation files", Array.Empty<string>()),
+        };
+
+        private static RegistryKey OpenRoot(bool writable) =>
+            RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(Root, writable)
+            ?? throw new IOException("Disk Cleanup isn't installed");
+
+        /// <summary>The handler key for this item: the one whose shown name matches, else a known key name. Null when there is none.</summary>
+        public static string? Find(string id)
+        {
+            var handler = Handlers[id];
+            try
+            {
+                using var root = OpenRoot(writable: false);
+                var names = root.GetSubKeyNames();
+                foreach (var name in names)
+                {
+                    using var key = root.OpenSubKey(name);
+                    if (key?.GetValue("Display") is string display &&
+                        string.Equals(ShownName(display), handler.Display, StringComparison.OrdinalIgnoreCase))
+                        return name;
+                }
+                return handler.Keys.FirstOrDefault(k => names.Contains(k, StringComparer.OrdinalIgnoreCase));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return null; }
+        }
+
+        public static (long, string) Run(string id, CancellationToken ct)
+        {
+            if (!File.Exists(Sys("cleanmgr.exe"))) return (0, "Disk Cleanup isn't installed on this PC");
+            if (Find(id) is not { } name) return (0, "Not on this version of Windows");
+            try
+            {
+                ClearFlags();
+                using (var root = OpenRoot(writable: true))
+                using (var key = root.OpenSubKey(name, writable: true))
+                    key?.SetValue(Flag, 2, RegistryValueKind.DWord);
+                // Disk Cleanup's exit code doesn't say whether it cleaned anything, so only a run that didn't finish counts as a problem.
+                var before = FreeSpace();
+                var code = Tool(Sys("cleanmgr.exe"), "/sagerun:617", TimeSpan.FromHours(1), ct);
+                var gained = Math.Max(0, FreeSpace() - before);
+                return code == -1 ? (gained, "Disk Cleanup didn't finish") : (gained, "Cleaned by Windows' Disk Cleanup");
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+            {
+                return (0, "Windows didn't allow Disk Cleanup to be set up");
+            }
+            finally
+            {
+                ClearFlags();
+            }
+        }
+
+        /// <summary>Removes the temporary tick from every item, so a later Disk Cleanup run is exactly as before.</summary>
+        private static void ClearFlags()
+        {
+            try
+            {
+                using var root = OpenRoot(writable: true);
+                foreach (var name in root.GetSubKeyNames())
+                {
+                    using var key = root.OpenSubKey(name, writable: true);
+                    key?.DeleteValue(Flag, throwOnMissingValue: false);
+                }
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
+        }
+
+        /// <summary>Disk Cleanup's names are often "@file.dll,-123" pointers to text inside Windows; this reads the text.</summary>
+        private static string ShownName(string display)
+        {
+            if (!display.StartsWith('@')) return display;
+            var text = new System.Text.StringBuilder(512);
+            return SHLoadIndirectString(Environment.ExpandEnvironmentVariables(display), text, text.Capacity, IntPtr.Zero) == 0
+                ? text.ToString() : display;
+        }
+
+        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHLoadIndirectString(string source, System.Text.StringBuilder output, int size, IntPtr reserved);
     }
 
     [DllImport("dnsapi.dll", EntryPoint = "DnsFlushResolverCache")]

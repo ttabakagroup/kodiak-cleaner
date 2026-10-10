@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.61 Dev] - 2026-10-10
+
+### Cleaner
+- Advanced Cleaning has the Windows Disk Cleanup items it was missing: Microsoft Defender Antivirus, Diagnostic Data Viewer Database Files, Feedback Hub Archive Log Files, Language Resource Files, Old Chkdsk Files, RetailDemo Offline Content, Temporary Setup Files, Temporary Windows Installation Files and User File History. Old Chkdsk Files is cleaned by Kodiak Cleaner; the others run Windows' own Disk Cleanup with only that item ticked, because only Windows knows which of those files are safe to remove.
+- Language Resource Files, Temporary Windows Installation Files and User File History ask before they are ticked, like the other risky items.
+- Windows Log Files now also covers Disk Cleanup's Setup Log Files and Windows Upgrade Log Files; Windows Internet Cache says it is Disk Cleanup's Temporary Internet Files.
+
 ## [0.8.60 Dev] - 2026-10-10
 
 ### Settings

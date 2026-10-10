@@ -28,12 +28,30 @@ public class CleanCatalogTests
         Assert.Contains("task.compactos", risky);
         Assert.Contains("task.components", risky);
         Assert.Contains("task.eventlogs", risky);
+        Assert.Contains("task.dc.language", risky);
+        Assert.Contains("task.dc.wininstall", risky);
+        Assert.Contains("task.dc.filehistory", risky);
         Assert.All(catalog.Where(t => t.Warning.Length > 0), t => Assert.True(t.Advanced && !t.EnabledByDefault));
         Assert.All(catalog.Where(t => t.Kind == CleanTargetKind.Task), t =>
         {
             Assert.Equal(t.Id, t.TaskId);
             Assert.Empty(t.Rules);
         });
+    }
+
+    [Fact]
+    public void DiskCleanupItemsAreAdvancedAdminTasks()
+    {
+        var ids = new[] { "task.dc.defender", "task.dc.diagviewer", "task.dc.feedbackhub", "task.dc.filehistory",
+            "task.dc.language", "task.dc.retaildemo", "task.dc.setup", "task.dc.wininstall" };
+        var catalog = CleanCatalog.Build().ToDictionary(t => t.Id);
+        Assert.All(ids, id =>
+        {
+            var t = catalog[id];
+            Assert.True(t.Advanced && t.RequiresAdmin && !t.EnabledByDefault);
+            Assert.Equal(CleanTargetKind.Task, t.Kind);
+        });
+        Assert.True(catalog.ContainsKey("adv.chkdsk"));
     }
 
     [Fact]

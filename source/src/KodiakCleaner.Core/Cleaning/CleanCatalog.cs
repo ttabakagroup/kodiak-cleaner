@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 
 namespace KodiakCleaner.Core.Cleaning;
 
@@ -373,14 +374,14 @@ public static class CleanCatalog
         {
             Id = "adv.inetcache", Group = g, Advanced = true,
             Name = "Windows Internet Cache",
-            Description = "Web files cached by Windows itself and by older programs that use its web engine. Files in use are skipped.",
+            Description = "Web files cached by Windows itself and by older programs that use its web engine (Disk Cleanup's Temporary Internet Files). Files in use are skipped.",
             Rules = new[] { new CleanRule(Local(@"Microsoft\Windows\INetCache"), MinAge: tempMinAge) },
         };
         yield return new CleanTarget
         {
             Id = "adv.logs", Group = g, Advanced = true, RequiresAdmin = true,
             Name = "Windows Log Files",
-            Description = "Setup, upgrade, servicing and update logs more than 7 days old. Only needed when troubleshooting an old problem.",
+            Description = "Setup, Windows upgrade, servicing and update logs more than 7 days old (Disk Cleanup's Setup Log Files and Windows Upgrade Log Files). Only needed when troubleshooting an old problem.",
             Rules = new[]
             {
                 new CleanRule(WinDir(@"Logs\CBS"), "*.log", MinAge: OneWeek),
@@ -390,6 +391,10 @@ public static class CleanCatalog
                 new CleanRule(WinDir(@"Logs\MoSetup"), "*.log", MinAge: OneWeek),
                 new CleanRule(WinDir(@"Panther"), "*.log", MinAge: OneWeek),
                 new CleanRule(Path.Combine(SystemDrive, @"$Windows.~BT\Sources\Panther"), "*.log", MinAge: OneWeek),
+                new CleanRule(WinDir(""), "setupact.log", Recursive: false, MinAge: OneWeek),
+                new CleanRule(WinDir(""), "setuperr.log", Recursive: false, MinAge: OneWeek),
+                new CleanRule(WinDir(@"Logs\SIH"), "*.etl", MinAge: OneWeek),
+                new CleanRule(WinDir(@"Logs\WaaSMedic"), "*.etl", MinAge: OneWeek),
             },
         };
         yield return new CleanTarget
@@ -470,6 +475,15 @@ public static class CleanCatalog
         };
         yield return new CleanTarget
         {
+            Id = "adv.chkdsk", Group = g, Advanced = true, RequiresAdmin = true,
+            Name = "Old Chkdsk Files",
+            Description = @"Pieces of damaged files that Check Disk saved as FILE0000.CHK in FOUND.000 folders on the Windows drive. They can rarely be read.",
+            Rules = SafeDirectories(SystemDrive)
+                .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^found\.\d{3}$", RegexOptions.IgnoreCase))
+                .Select(d => new CleanRule(d, "*.chk", Recursive: false)).ToArray(),
+        };
+        yield return new CleanTarget
+        {
             Id = "adv.prefetch", Group = g, Advanced = true, RequiresAdmin = true,
             Name = "Prefetch Data",
             Description = "Notes Windows keeps to start programs faster.",
@@ -506,6 +520,26 @@ public static class CleanCatalog
             @"Turns hibernation off (powercfg), which deletes C:\hiberfil.sys. Turn it back on with 'powercfg /hibernate on'.",
             admin: true,
             warning: "Hibernate and Fast Startup stop working, and a laptop can no longer save your work to disk when its battery runs out while asleep.");
+        // Disk Cleanup items whose files only Windows knows or may touch: these run Windows' own Disk Cleanup with just that one item ticked.
+        yield return Task("task.dc.defender", "Microsoft Defender Antivirus",
+            "Files Microsoft Defender no longer needs, such as old scan results. Defender itself decides what goes.", admin: true);
+        yield return Task("task.dc.diagviewer", "Diagnostic Data Viewer Database Files",
+            "The local copy of diagnostic data shown in Diagnostic Data Viewer. Nothing is sent to Microsoft.", admin: true);
+        yield return Task("task.dc.feedbackhub", "Feedback Hub Archive Log Files",
+            "Logs saved with feedback you sent through Feedback Hub.", admin: true);
+        yield return Task("task.dc.language", "Language Resource Files",
+            "Language and keyboard files Windows says aren't in use.", admin: true,
+            warning: "If you add a language or keyboard later, Windows may need to download these files again.");
+        yield return Task("task.dc.retaildemo", "RetailDemo Offline Content",
+            "Store demo-mode videos and apps some PCs come with from the shop.", admin: true);
+        yield return Task("task.dc.setup", "Temporary Setup Files",
+            "Files that setup programs left behind and no longer need.", admin: true);
+        yield return Task("task.dc.wininstall", "Temporary Windows Installation Files",
+            "Files left over from installing a Windows update or upgrade.", admin: true,
+            warning: "Don't run this while Windows is installing an update or upgrade; it may have to download the files again.");
+        yield return Task("task.dc.filehistory", "User File History",
+            "Older File History copies of your files. Windows keeps the newest copy of each file.", admin: true,
+            warning: "You won't be able to bring back the older versions of your files that File History saved.");
         yield return Task("task.compactos", "Compress System Installation",
             "Compresses Windows' own files (compact /compactos) to save several GB. Undo it with 'compact /compactos:never'. This can take a long time.",
             admin: true,

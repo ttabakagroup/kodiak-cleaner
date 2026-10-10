@@ -84,9 +84,13 @@ privacy first, local first, security paramount, convenient, practical and useful
   Every new removal on the Programs page must be recorded there. Back Up Settings copies it.
 - Advanced Cleaning shows a warning (Yes/No) every time it is opened (Ted, 0.8.17).
 - Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
-  vssadmin, wevtutil, netsh, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
+  vssadmin, wevtutil, netsh, cleanmgr, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
   shadow copies keep the newest. `CleanTarget.Warning` items: caution text, confirm on tick, skipped by Select All and by AutoClean.
-  Never add Windows Installer cache, Defender data, Downloads, File History data or the Security event log.
+  Never add Windows Installer cache, Downloads or the Security event log, and never delete Defender or File History files directly.
+- Disk Cleanup items (Ted, 0.8.61, `task.dc.*`): items whose files only Windows may judge (Defender, Diagnostic Data Viewer, Feedback Hub,
+  Language Resource Files, RetailDemo, Temporary Setup Files, Temporary Windows Installation Files, User File History) run
+  `cleanmgr /sagerun:617` with a temporary StateFlags0617 tick on that one VolumeCaches handler (found by its shown name, then key
+  name), removed again afterwards. Disk Cleanup items Kodiak Cleaner already had are merged into the existing items, not duplicated.
 - A to Z rule (Ted, 0.8.21): anything added to any list (Cleaner items, tools, menus, options, browsers) goes in A to Z order, unless a
   list has a stated priority (Windows first in the Cleaner; Advanced Cleaning last).
 - Cleaner order (Ted, 0.8.20): `CleanCatalog.Order` sorts Windows first, then programs A to Z, Advanced Cleaning last, items A to Z
