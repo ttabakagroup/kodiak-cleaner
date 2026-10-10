@@ -131,6 +131,8 @@ final class AppModel: ObservableObject {
         if AppInfo.channel != "stable" && settings.showBetaNotice {
             sheet = .beta
             pendingWhatsNew = previous
+            // The donation pop-up waits until the Beta Software notice closes, as on Windows (never stacked).
+            pendingDonation = counted && Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: isSupporter)
         } else if !showWhatsNewIfUpdated(previous) && counted
                     && Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: isSupporter) {
             sheet = .donation
@@ -139,6 +141,7 @@ final class AppModel: ObservableObject {
 
     private var startedUp = false
     private var pendingWhatsNew: String?
+    private var pendingDonation = false
 
     var canOptOutOfDonation: Bool {
         Donation.canOptOut(launchCount: settings.launchCount, isSupporter: plan.isSupporter)
@@ -153,9 +156,13 @@ final class AppModel: ObservableObject {
 
     func betaNoticeClosed() {
         sheet = nil
-        if let previous = pendingWhatsNew {
-            pendingWhatsNew = nil
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { _ = self.showWhatsNewIfUpdated(previous) }
+        let previous = pendingWhatsNew ?? ""
+        let donation = pendingDonation
+        pendingWhatsNew = nil
+        pendingDonation = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            // What's New first; the donation pop-up only when nothing else shows.
+            if !self.showWhatsNewIfUpdated(previous) && donation { self.sheet = .donation }
         }
     }
 

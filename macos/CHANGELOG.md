@@ -1,5 +1,11 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.2 Dev] - 2026-10-10
+
+### Changed
+- **Donation reminder:** Reset All Settings now starts its count again, so the reminder is back on and can be turned off after 10 more starts. Supporters keep their code and still never see it.
+- **Donation reminder:** on a start with the Beta Software notice, the pop-up now shows after the notice is closed instead of being skipped.
+
 ## [0.8.1 Dev] - 2026-10-10
 
 ### Added
