@@ -149,12 +149,23 @@ if (existsSync(at("src", "assets", "video"))) cpSync(at("src", "assets", "video"
 cpSync(at("src", "assets", "favicon.ico"), join(out, "favicon.ico"));
 cpSync(at("src", "static"), out, { recursive: true });
 
+// Links to other websites open in a new tab (Ted, 2026-10-10). Applied to every finished page,
+// so links written later, including ones in the synced Markdown documents, get it too.
+const OWN_HOST = /^https?:\/\/(www\.)?kodiakcleaner\.app(\/|$)/i;
+function externalLinks(html) {
+  return html.replace(/<a\b([^>]*?)\bhref="(https?:\/\/[^"]+)"([^>]*)>/gi, (tag, before, href, after) => {
+    if (OWN_HOST.test(href)) return tag;
+    const attrs = (before + after).replace(/\s+target="[^"]*"/gi, "").replace(/\s+rel="[^"]*"/gi, "");
+    return `<a${attrs.replace(/\s+$/, "")} href="${href}" target="_blank" rel="noopener noreferrer">`;
+  });
+}
+
 // Pages
 const pages = [home, features, featureList, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, notFound].map((p) => p(ctx));
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, layout(page, ctx));
+  writeFileSync(file, externalLinks(layout(page, ctx)));
 }
 
 // Sitemap and robots

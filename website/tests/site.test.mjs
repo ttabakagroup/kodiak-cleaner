@@ -211,7 +211,7 @@ test("download thank-you pop-up is on every page, and Ko-fi links open in a new 
     assert.ok(d, `${p.file} has the thank-you pop-up`);
     assert.match(d[0], /aria-label="Close"/);
     assert.match(d[0], /Maybe Later/);
-    for (const a of p.html.match(/<a [^>]*href="https:\/\/ko-fi\.com[^"]*"[^>]*>/g) || []) assert.match(a, /target="_blank" rel="noopener"/, `${p.file}: ${a}`);
+    for (const a of p.html.match(/<a [^>]*href="https:\/\/ko-fi\.com[^"]*"[^>]*>/g) || []) assert.match(a, /target="_blank" rel="noopener noreferrer"/, `${p.file}: ${a}`);
   }
   const js = readFileSync(join(root, "js", "site.js"), "utf8");
   assert.match(js, /download-thanks/);
@@ -223,5 +223,19 @@ test("Ted's email address appears nowhere on the site (people use Contact Us)", 
     if (!/\.(html|js|css|json|txt|xml|md)$/.test(f)) continue;
     assert.ok(!/ttabakagroup@/i.test(readFileSync(f, "utf8")), `${f.slice(root.length)} shows the email address`);
   }
-  for (const p of pages) assert.ok(!/href="mailto:/i.test(p.html), `${p.file} has a mailto link`);
+  for (const p of pages) {
+    assert.ok(!/href="mailto:/i.test(p.html), `${p.file} has a mailto link`);
+    const text = p.html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ");
+    assert.deepEqual(text.match(/[\w.+-]+@[\w-]+\.[\w.]{2,}/g) || [], [], `${p.file} shows an email address`);
+  }
+});
+
+test("links to other websites open in a new tab", () => {
+  for (const p of pages) {
+    for (const tag of p.html.match(/<a\b[^>]*href="https?:\/\/[^"]+"[^>]*>/gi) || []) {
+      if (/href="https?:\/\/(www\.)?kodiakcleaner\.app(\/|")/i.test(tag)) continue;
+      assert.match(tag, /target="_blank"/, `${p.file}: ${tag}`);
+      assert.match(tag, /rel="noopener noreferrer"/, `${p.file}: ${tag}`);
+    }
+  }
 });

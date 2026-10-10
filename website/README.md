@@ -127,6 +127,8 @@ The homepage opens with the launch video over the page when `src/assets/video/` 
 
 ## Download Thank-You Pop-Up
 
+Links to other websites open in a new tab: `build.mjs` adds `target="_blank" rel="noopener noreferrer"` to every outside link on every page, and a test checks it.
+
 Every page carries a small pop-up (`#download-thanks` in `src/layout.mjs`, script at the end of `js/site.js`). Clicking any download button (Installer, Portable, DMG, Mac ZIP, AppImage, DEB, or an Archive release file) starts the download as normal and then shows a thank-you asking for a tip on Ko-fi. X, Esc, Maybe Later and a click outside close it. Ko-fi links open in a new tab.
 
 ## Each New Kodiak Cleaner Release
