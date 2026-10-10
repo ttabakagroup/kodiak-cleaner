@@ -42,8 +42,8 @@ public sealed class RegistryViewModel : ObservableObject
             Categories.Add(item);
         }
         ScanCommand = new RelayCommand(ScanAsync, () => !IsBusy && ChosenCategories().Count > 0);
-        FixCommand = new RelayCommand(() => FixAsync(Issues.Where(i => i.IsChecked).ToList()), () => !IsBusy && Issues.Any(i => i.IsChecked));
-        FixRowCommand = new RelayCommand(() => FixAsync(Selected is { } s ? new List<IssueItem> { s } : new()), () => !IsBusy && Selected is not null);
+        FixCommand = new RelayCommand(() => FixAsync(Picked()), () => !IsBusy && (Issues.Any(i => i.IsChecked) || Highlighted.Count > 0));
+        FixRowCommand = new RelayCommand(() => FixAsync(Highlighted.ToList()), () => !IsBusy && Highlighted.Count > 0);
         OpenBackupsCommand = new RelayCommand(() => Elevation.OpenFolder(RegistryBackup.BackupFolder));
         BackUpNowCommand = new RelayCommand(BackUpNowAsync, () => !IsBusy);
     }
@@ -72,13 +72,30 @@ public sealed class RegistryViewModel : ObservableObject
     public ObservableCollection<IssueItem> Issues { get; } = new();
     public ICommand ScanCommand { get; }
     public ICommand FixCommand { get; }
-    /// <summary>Right-click › Fix This Issue: fixes just the highlighted row.</summary>
+    /// <summary>Right-click › Fix: fixes every highlighted row (Ctrl-click and Shift-click highlight several).</summary>
     public ICommand FixRowCommand { get; }
     public ICommand OpenBackupsCommand { get; }
     public ICommand BackUpNowCommand { get; }
 
     private IssueItem? _selected;
     public IssueItem? Selected { get => _selected; set => Set(ref _selected, value); }
+
+    private IReadOnlyList<IssueItem> _highlighted = Array.Empty<IssueItem>();
+    /// <summary>The rows highlighted with click, Ctrl-click or Shift-click.</summary>
+    public IReadOnlyList<IssueItem> Highlighted
+    {
+        get => _highlighted;
+        set { _highlighted = value; OnPropertyChanged(); OnPropertyChanged(nameof(FixRowLabel)); }
+    }
+
+    public string FixRowLabel => Highlighted.Count > 1 ? $"Fix These {Highlighted.Count} Issues" : "Fix This Issue";
+
+    /// <summary>Fix Selected uses the ticked rows; with none ticked it uses the highlighted ones.</summary>
+    private List<IssueItem> Picked()
+    {
+        var ticked = Issues.Where(i => i.IsChecked).ToList();
+        return ticked.Count > 0 ? ticked : Highlighted.ToList();
+    }
 
     /// <summary>The header checkbox: true when every issue is ticked, null when some are.</summary>
     public bool? AllChecked

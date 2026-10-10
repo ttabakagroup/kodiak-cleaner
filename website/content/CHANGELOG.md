@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.52 Dev] - 2026-10-10
+
+### Registry
+- Ctrl-click picks several issues and Shift-click picks a range, as in Startup and Programs. Right-click Fix acts on every highlighted issue, and Fix Selected uses them when nothing is ticked.
+
 ## [0.8.51 Dev] - 2026-10-09
 
 ### Updates

@@ -60,10 +60,10 @@
         </Border>
 
         <Border Style="{StaticResource Card}" Padding="8">
-            <DataGrid ItemsSource="{Binding Issues}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+            <DataGrid ItemsSource="{Binding Issues}" SelectedItem="{Binding Selected}" SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                 <DataGrid.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Fix This Issue" Command="{Binding FixRowCommand}">
+                        <MenuItem Header="{Binding FixRowLabel}" Command="{Binding FixRowCommand}">
                             <MenuItem.Icon><TextBlock Text="&#xE90F;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
                         </MenuItem>
                     </ContextMenu>
