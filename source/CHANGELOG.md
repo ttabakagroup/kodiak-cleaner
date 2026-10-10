@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.54 Dev] - 2026-10-10
+
+### Programs
+- Kodiak Cleaner no longer uninstalls itself or deletes its own entry. Picking it in Programs (the Uninstall button, right-click, a batch or Delete Entry) or with the command line's /uninstall shows a message asking you to uninstall it from Control Panel, with a button that opens Programs and Features. In a batch, the other programs still go ahead.
+
 ## [0.8.53 Dev] - 2026-10-10
 
 ### Command Line

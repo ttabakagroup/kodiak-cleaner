@@ -160,6 +160,8 @@ When a program adds itself to startup, Kodiak Cleaner tells you the next time it
 1. Open **Programs** and tick one or more programs, or Ctrl-click or Shift-click to highlight several and right-click them.
 2. Click **Uninstall**. Kodiak Cleaner backs up the program's registry entries, runs its own uninstaller, then offers to remove the folders, shortcuts and registry keys it left behind.
 
+Kodiak Cleaner never uninstalls itself or deletes its own entry. Remove it from **Control Panel > Programs and Features** (or **Settings > Apps**), as described under [Uninstall](#uninstall).
+
 The **Product Code** column shows each Windows Installer program's GUID. Right-click a program and choose **Copy Product Code**, or **Copy Uninstall Command** for a ready-to-run `msiexec /x {GUID} /qn`.
 
 ### Schedule Cleanings
@@ -182,7 +184,7 @@ Scripts and system administrators can run Kodiak Cleaner without a window:
 | `KodiakCleaner.exe /list-programs` | Lists installed programs with their version and product code. |
 | `KodiakCleaner.exe /help` | Shows these switches. |
 
-Exit codes: `0` done, `1` done with some failures, `2` wrong switch or nothing found, `3` the uninstall didn't finish. Items with a caution never run from the command line, and leftovers after an uninstall are only removed from the Programs page. Run it as administrator for anything shared by all users. Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it: use `start /wait KodiakCleaner.exe /clean` and then `%ERRORLEVEL%`, or in PowerShell `Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru`. Everything is also written to the activity log.
+Exit codes: `0` done, `1` done with some failures, `2` wrong switch, nothing found or Kodiak Cleaner itself, `3` the uninstall didn't finish. Items with a caution never run from the command line, and leftovers after an uninstall are only removed from the Programs page. Run it as administrator for anything shared by all users. Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it: use `start /wait KodiakCleaner.exe /clean` and then `%ERRORLEVEL%`, or in PowerShell `Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru`. Everything is also written to the activity log.
 
 ## Features
 

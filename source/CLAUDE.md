@@ -128,6 +128,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   opens a window. Same rules as the GUI: caution items never run, registry fixes always back up, uninstall backs up first, leftovers only from
   Programs. Output attaches to the parent console; exit codes 0 done, 1 some failures, 2 bad switch/not found, 3 uninstall didn't finish.
   Document any new switch in `Cli.Help` and the README's Command Line section.
+- Kodiak Cleaner never uninstalls itself (Ted, 0.8.54, `SelfGuard`): its own entry (upgrade code's product codes, or "Kodiak Cleaner" by Ted Tabaka,
+  or this copy's folder) is left out of Uninstall, batches, Delete Entry and `/uninstall`, with a message pointing to Control Panel.
 - Programs: Product Code column (`ProgramItem.ProductCode`, the uninstall key's GUID) with right-click Copy Product Code and Copy Uninstall
   Command (`msiexec /x {GUID} /qn`, Windows Installer programs only) (Ted, 0.8.53).
 - New startup programs (Ted, 0.8.53, `NewStartupWatch`): at start (after `Integration.SyncAll`) and every 10 minutes while running, entries not in

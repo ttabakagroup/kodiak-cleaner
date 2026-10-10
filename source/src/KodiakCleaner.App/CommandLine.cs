@@ -47,11 +47,12 @@ public static class Cli
               Backs up the program's registry entries, then runs its uninstaller and waits for it.
               /quiet asks it not to show anything (msiexec /x {GUID} /qn, or the program's own quiet uninstall).
               Leftover files aren't removed from here; use Programs > Uninstall for that.
+              Kodiak Cleaner never uninstalls itself; remove it from Control Panel.
           KodiakCleaner.exe /list-programs
               Lists installed programs with their version and product code.
           KodiakCleaner.exe /help
 
-        Exit codes: 0 done, 1 done with some failures, 2 wrong switch or nothing found, 3 the uninstall didn't finish.
+        Exit codes: 0 done, 1 done with some failures, 2 wrong switch, nothing found or Kodiak Cleaner itself, 3 the uninstall didn't finish.
         Run it as administrator to clean, fix or uninstall anything shared by all users.
         In Command Prompt use "start /wait KodiakCleaner.exe /clean" and then %ERRORLEVEL%; in PowerShell use
         "Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru" and read ExitCode.
@@ -202,6 +203,7 @@ public static class Cli
             return Fail(BadArgs, $"{matches.Count} programs are called '{which}'. Use the product code instead:\n" +
                                  string.Join("\n", matches.Select(m => $"  {m.Name} {m.Version}  {m.KeyName}")));
         var program = matches[0];
+        if (SelfGuard.IsKodiakCleaner(program)) return Fail(BadArgs, SelfGuard.Explanation);
         if (!program.CanUninstall) return Fail(BadArgs, $"'{program.Name}' has no uninstaller.");
         if (quiet && !ProgramInventory.CanUninstallQuietly(program))
             return Fail(BadArgs, $"'{program.Name}' doesn't offer a quiet uninstall. Run it without /quiet.");

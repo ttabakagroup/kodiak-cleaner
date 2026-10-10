@@ -177,6 +177,12 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
     {
         var items = Highlighted.ToList();
         if (items.Count == 0) return;
+        if (items.FirstOrDefault(i => SelfGuard.IsKodiakCleaner(i.Program)) is { } self)
+        {
+            items = items.Where(i => i != self).ToList();
+            SelfGuard.Explain($"Kodiak Cleaner's own entry can't be deleted here{(items.Count > 0 ? "; the others are next" : "")}.");
+            if (items.Count == 0) return;
+        }
         var question = items.Count == 1 ? $"Delete '{items[0].Name}' from the programs list?\n\n"
             : $"Delete these {items.Count} entries from the programs list?\n\n" +
               string.Join("\n", items.Take(15).Select(i => "• " + i.Name)) + (items.Count > 15 ? "\n…" : "") + "\n\n";
@@ -228,6 +234,13 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task UninstallManyAsync(List<ProgramItem> items)
     {
         if (items.Count == 0 || IsBusy) return;
+        // Kodiak Cleaner never uninstalls itself (Ted, 0.8.54): it's left out, and Control Panel is suggested.
+        if (items.FirstOrDefault(i => SelfGuard.IsKodiakCleaner(i.Program)) is { } self)
+        {
+            items = items.Where(i => i != self).ToList();
+            SelfGuard.Explain(items.Count > 0 ? $"'{self.Name}' was left out; the other {(items.Count == 1 ? "program is" : $"{items.Count} programs are")} next." : null);
+            if (items.Count == 0) return;
+        }
         var intro = $"{AppInfo.Name} backs up each program's registry entries first, runs its own uninstaller, " +
                     "then looks for anything it left behind so you can choose what to remove.";
         if (items.Count == 1
