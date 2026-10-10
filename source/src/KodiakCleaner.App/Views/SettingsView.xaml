@@ -282,6 +282,20 @@
                     </DockPanel>
                 </StackPanel>
             </Border>
+            <!-- Reset to Default (Ted, 0.8.59): moved here from the Developer page, which goes away at public beta. Always the last card. -->
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Reset to Default" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0" TextWrapping="Wrap"
+                               Text="Puts every setting back to how it was when Kodiak Cleaner was first installed, after you confirm. Kept: the launch count, your Supporter code, update bookkeeping, scheduled cleanings, Cleaner history, and every backup, report and log." />
+                    <Button Command="{Binding ResetCommand}" HorizontalAlignment="Left" Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Reset to Default" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
             </StackPanel>
         </DataTemplate>
 
@@ -491,14 +505,6 @@
                             <TextBlock Text="Keep an Activity Log" Style="{StaticResource SettingTitle}" />
                             <TextBlock Text="Notes what Kodiak Cleaner does (cleanings, registry fixes, backups, startup and program changes, errors) in a monthly file in Logs. It stays on this PC and is never sent anywhere. The last 12 months are kept."
                                        Style="{StaticResource Caption}" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </DockPanel>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <DockPanel Style="{StaticResource SettingRow}">
-                        <Button DockPanel.Dock="Right" Content="Reset" Command="{Binding ResetCommand}" Margin="0" VerticalAlignment="Center" />
-                        <StackPanel Margin="0,0,24,0">
-                            <TextBlock Text="Reset Settings" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="Put every option back to its default. Registry backups and your supporter code are kept." Style="{StaticResource Caption}" />
                         </StackPanel>
                     </DockPanel>
                 </StackPanel>

@@ -17,3 +17,5 @@ Making Kodiak Cleaner open source is an invitation to help shape its future. I w
 This project began with an unwelcome change and became an opportunity to build something I had long wanted: a simple, private, practical cleaning app that I hope others will find useful.
 
 If you find Kodiak Cleaner helpful, please consider making a donation to support its continued development and maintenance. Although I originally built it for my own use, preparing it for others has required considerable time, care, and effort. I am committed to improving its reliability, addressing bugs, and learning along the way, and I welcome anyone who wants to help make it better.
+
+Thanks, Ted

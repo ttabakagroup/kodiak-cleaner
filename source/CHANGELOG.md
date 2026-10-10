@@ -5,6 +5,14 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.59 Dev] - 2026-10-10
+
+### Why It Was Made
+- The story now ends with Ted's sign-off.
+
+### Settings
+- Reset to Default is now the last card in Settings > Advanced, so it stays when the Developer page is removed for the public beta. It replaces the smaller Reset Settings row under Application, asks Yes/No first and keeps the same things (start count, supporter code, scheduled cleanings, history, backups, reports and logs).
+
 ## [0.8.58 Dev] - 2026-10-10
 
 ### Why It Was Made

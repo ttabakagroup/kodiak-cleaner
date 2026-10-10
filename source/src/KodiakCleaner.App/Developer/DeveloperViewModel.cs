@@ -10,9 +10,8 @@ namespace KodiakCleaner.App.Developer;
 /// </summary>
 public sealed class DeveloperViewModel : ObservableObject
 {
-    public DeveloperViewModel(ICommand resetSettings)
+    public DeveloperViewModel()
     {
-        ResetSettingsCommand = resetSettings;
         // Just Free and Supporter (Ted, 0.8.10): no preview behaves like Free, so it shows as Free.
         var current = Settings.Current.DevPreview == PlanPreview.Supporter ? PlanPreview.Supporter : PlanPreview.Free;
         foreach (var (label, value) in new[] { ("Free", PlanPreview.Free), ("Supporter", PlanPreview.Supporter) })
@@ -45,8 +44,6 @@ public sealed class DeveloperViewModel : ObservableObject
         : "None";
 
     public ICommand ResetCommand { get; }
-    /// <summary>Reset to Default: the same reset as Settings > Application (Ted, 0.8.55).</summary>
-    public ICommand ResetSettingsCommand { get; }
 
     private void SetPreview(PlanPreview preview)
     {

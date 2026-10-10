@@ -130,7 +130,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   Document any new switch in `Cli.Help` and the README's Command Line section.
 - Kodiak Cleaner never uninstalls itself (Ted, 0.8.54, `SelfGuard`): its own entry (upgrade code's product codes, or "Kodiak Cleaner" by Ted Tabaka,
   or this copy's folder) is left out of Uninstall, batches, Delete Entry and `/uninstall`, with a message pointing to Control Panel.
-- Developer page: Reset to Default card below Status (Ted, 0.8.55) runs Settings' Reset; `Settings.Reset` keeps LaunchCount and the supporter code.
+- Reset to Default for all settings is the last card in Settings > Advanced (Ted, 0.8.59; was on the Developer page in 0.8.55, which goes
+  away at public beta, and replaces the old Reset Settings row in Application). `Settings.Reset` keeps LaunchCount and the supporter code.
 - Programs: Product Code column (`ProgramItem.ProductCode`, the uninstall key's GUID) with right-click Copy Product Code and Copy Uninstall
   Command (`msiexec /x {GUID} /qn`, Windows Installer programs only) (Ted, 0.8.53).
 - New startup programs (Ted, 0.8.53, `NewStartupWatch`): at start (after `Integration.SyncAll`) and every 10 minutes while running, entries not in

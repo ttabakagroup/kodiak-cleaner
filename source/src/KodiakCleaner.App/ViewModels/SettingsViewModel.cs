@@ -91,7 +91,7 @@ public sealed class SettingsViewModel : ObservableObject
         Add("general", "General", "\uE713", "", "How Kodiak Cleaner fits into Windows.", this);
         Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
         Add("updates", "Updates", "\uE895", "", "Get new versions of Kodiak Cleaner.", this);
-        Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need.", this);
+        Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need, and Reset to Default.", this);
         Add("appearance", "Appearance", "\uE790", "Personalize", "Color scheme, accent color and light or dark mode.", this);
         Add("supporter", "Supporter", "\uEB51", "Personalize", "Say thanks and unlock a few extras.", SupporterPage);
         Add("backups", "Registry", "\uE8F1", "Protect", "Registry backups: made before every fix, or whenever you choose.", this);
@@ -103,7 +103,7 @@ public sealed class SettingsViewModel : ObservableObject
 #if DEVTOOLS
         // Development builds only; release builds leave this page (and its code) out.
         Add("developer", "Developer", "\uEC7A", "Developer", "Test plans and check how this build is set up.",
-            new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel(ResetCommand) });
+            new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel() });
 #endif
         Sections[0].IsSelected = true;
 
