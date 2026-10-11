@@ -100,4 +100,22 @@ final class DonationTests: TempHomeTestCase {
                        "Thank you for being a Supporter! The reminder is off for you.")
         XCTAssertEqual(AppInfo.kofiURL.absoluteString, "https://ko-fi.com/ttabaka")
     }
+
+    /// Ted, 0.8.4: each start counts once, starting at 1, and the first start already asks.
+    func testFirstStartCountsOneAndAsks() throws {
+        var settings = AppSettings()
+        settings.countLaunch()
+        XCTAssertEqual(settings.launchCount, 1)
+        XCTAssertTrue(Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: false))
+        XCTAssertEqual(Donation.launchesLeft(settings.launchCount), 9)
+        // Starts are counted in exactly one place in the app.
+        let app = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/KodiakCleaner")
+        var calls = 0
+        for name in try FileManager.default.contentsOfDirectory(atPath: app.path) where name.hasSuffix(".swift") {
+            let text = try String(contentsOf: app.appendingPathComponent(name), encoding: .utf8)
+            calls += text.components(separatedBy: ".countLaunch()").count - 1
+        }
+        XCTAssertEqual(calls, 1)
+    }
 }

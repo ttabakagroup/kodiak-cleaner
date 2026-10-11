@@ -113,8 +113,8 @@ final class AppModel: ObservableObject {
         CommandLine.arguments.contains("--screenshots") || CommandLine.arguments.contains("--self-test")
     }
 
-    /// The Beta Software notice (Dev and Beta builds), then What's New after an update. On a start with neither, the
-    /// donation reminder (never stacked on another pop-up). Every 10th start also shows the donation banner.
+    /// The Beta Software notice (Dev and Beta builds), then What's New after an update, then the donation reminder
+    /// (never stacked on another pop-up, and shown from the first start). Every 10th start also shows the donation banner.
     func startup() {
         applyAppearance()
         guard !startedUp else { return }
@@ -128,13 +128,16 @@ final class AppModel: ObservableObject {
             settings.applyDonationRules(isSupporter: isSupporter)
             showDonationBanner = Donation.shouldShowBanner(launchCount: settings.launchCount, isSupporter: isSupporter)
         }
+        let ask = counted && Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: isSupporter)
         if AppInfo.channel != "stable" && settings.showBetaNotice {
             sheet = .beta
             pendingWhatsNew = previous
             // The donation pop-up waits until the Beta Software notice closes, as on Windows (never stacked).
-            pendingDonation = counted && Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: isSupporter)
-        } else if !showWhatsNewIfUpdated(previous) && counted
-                    && Donation.shouldPrompt(showDonationPrompt: settings.showDonationPrompt, isSupporter: isSupporter) {
+            pendingDonation = ask
+        } else if showWhatsNewIfUpdated(previous) {
+            // ...and until What's New closes (0.8.4; it used to be skipped on that start).
+            pendingDonation = ask
+        } else if ask {
             sheet = .donation
         }
     }
@@ -161,8 +164,16 @@ final class AppModel: ObservableObject {
         pendingWhatsNew = nil
         pendingDonation = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            // What's New first; the donation pop-up only when nothing else shows.
-            if !self.showWhatsNewIfUpdated(previous) && donation { self.sheet = .donation }
+            // What's New first; the donation pop-up after it closes.
+            if self.showWhatsNewIfUpdated(previous) { self.pendingDonation = donation } else if donation { self.sheet = .donation }
+        }
+    }
+
+    func whatsNewClosed() {
+        guard pendingDonation else { return }
+        pendingDonation = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if self.sheet == nil { self.sheet = .donation }
         }
     }
 
