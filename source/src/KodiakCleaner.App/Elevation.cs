@@ -26,7 +26,7 @@ public static class Elevation
     }
 
     /// <summary>Tells the new copy to wait for this one to close before it takes over the window.</summary>
-    public const string RestartedArg = "--restarted";
+    public const string RestartedArg = KodiakCleaner.Core.Util.LaunchCounter.RestartedArg;
 
     /// <summary>Added to the elevated copy's arguments so a declined or failed elevation never loops.</summary>
     public const string ElevatedArg = "--elevated";

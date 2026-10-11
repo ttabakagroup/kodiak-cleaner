@@ -41,7 +41,12 @@ public partial class WelcomeWindow : Window
         new("Your Look", ": Honey, Classic or Glacier, light or dark, any accent"),
     };
 
-    public static void ShowFor(Window? owner) => new WelcomeWindow { Owner = owner }.Show();
+    public static Window ShowFor(Window? owner)
+    {
+        var w = new WelcomeWindow { Owner = owner };
+        w.Show();
+        return w;
+    }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 

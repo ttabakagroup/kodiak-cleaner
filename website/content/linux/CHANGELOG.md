@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.8 Dev] - 2026-10-11
+
+### Donation Reminder
+- The reminder now also shows after What's New closes, instead of being skipped on the first start after an update. Each start still counts once, starting at 1 on the very first start (new tests check this).
+
 ## [0.8.7 Dev] - 2026-10-10
 
 ### Settings

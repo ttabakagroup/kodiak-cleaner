@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.64 Dev] - 2026-10-11
+
+### Donation Reminder
+- The donation reminder now counts each start exactly once, starting at 1 on the very first start. Copies Kodiak Cleaner reopens by itself (after an update installs, or Restart as Administrator) no longer count as extra starts, which made the countdown jump by two or more.
+- The reminder now shows from the first start, right after Getting Started or What's New closes, instead of being skipped on those starts, so the countdown is visible from start 1.
+
 ## [0.8.63 Dev] - 2026-10-10
 
 ### Settings

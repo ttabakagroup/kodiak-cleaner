@@ -21,7 +21,7 @@ public static class UpdateService
     // a redirect leads (a sign-in page, another host).
     private static readonly HttpClient Http = CreateClient();
     /// <summary>Given to the copy that reopens after an update, so it comes to the front (Windows keeps a program started in the background behind other windows).</summary>
-    public const string UpdatedArg = "--updated";
+    public const string UpdatedArg = KodiakCleaner.Core.Util.LaunchCounter.UpdatedArg;
     private static string? _pendingMsi;
     private static string? _pendingSha;
 

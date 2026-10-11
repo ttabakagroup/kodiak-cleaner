@@ -420,3 +420,29 @@ public class SettingsOrderTests
         Assert.Equal("Name: App\nCommand: app.exe", KodiakCleaner.Core.Util.DetailText.Lines(("Name", "App"), ("Publisher", ""), ("Command", "app.exe")));
     }
 }
+
+public class LaunchCounterTests
+{
+    /// <summary>Ted (0.8.64): the first start counts as 1, each start a person makes counts once, and copies Kodiak Cleaner reopens itself don't count.</summary>
+    [Fact]
+    public void Each_real_start_counts_once_from_one()
+    {
+        int count = 0;
+        foreach (var args in new[] { Array.Empty<string>(), new[] { "--page=startup" }, new[] { "/elevated" } })
+            if (KodiakCleaner.Core.Util.LaunchCounter.CountsAsStart(args)) count = KodiakCleaner.Core.Util.LaunchCounter.Next(count);
+        Assert.Equal(3, count);
+        Assert.False(KodiakCleaner.Core.Util.LaunchCounter.CountsAsStart(new[] { "--restarted" }));
+        Assert.False(KodiakCleaner.Core.Util.LaunchCounter.CountsAsStart(new[] { "--updated", "/elevated" }));
+        Assert.Equal(1, KodiakCleaner.Core.Util.LaunchCounter.Next(0));
+        Assert.Equal(int.MaxValue, KodiakCleaner.Core.Util.LaunchCounter.Next(int.MaxValue));
+    }
+
+    [Fact]
+    public void Starts_are_counted_in_one_place_only()
+    {
+        var src = Directory.GetFiles(Repo.File("src", "KodiakCleaner.App"), "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
+            .Sum(f => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(f), @"Donation\.CountLaunch\(|LaunchCount\s*(\+\+|\+=|=\s*LaunchCounter)").Count);
+        Assert.Equal(2, src); // App's single Donation.CountLaunch call, and the one assignment inside it.
+    }
+}

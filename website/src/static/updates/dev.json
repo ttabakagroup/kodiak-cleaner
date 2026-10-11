@@ -1,8 +1,8 @@
 {
   "channel": "dev",
-  "version": "0.8.63",
+  "version": "0.8.64",
   "msi": {
     "url": "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi",
-    "sha256": "65caad1aaf2c85b14ecde5272b3f19d1d69d21677eb0305c1849481a139cec36"
+    "sha256": "9e04f2a18c66e0bf9bae14285a1a737c6f3c28303512a4fbd33e6e6e92da7299"
   }
 }

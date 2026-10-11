@@ -1,3 +1,5 @@
+using KodiakCleaner.Core.Util;
+
 namespace KodiakCleaner.App;
 
 /// <summary>
@@ -8,11 +10,15 @@ public static class Donation
 {
     public const int LaunchesBeforeOptOut = 10;
 
-    /// <summary>Counts this launch of the window (called once per start, before anything is shown).</summary>
-    public static void CountLaunch()
+    /// <summary>True when this start was counted; the reminder and banner only show on counted starts, never on a copy reopened by an update or Restart as Administrator.</summary>
+    public static bool CountedThisStart { get; private set; }
+
+    /// <summary>Counts this start of the window, once, before anything is shown (see LaunchCounter for which starts count).</summary>
+    public static void CountLaunch(bool countStart)
     {
         var s = Settings.Current;
-        if (s.LaunchCount < int.MaxValue) s.LaunchCount++;
+        if (countStart) s.LaunchCount = LaunchCounter.Next(s.LaunchCount);
+        CountedThisStart = countStart;
         SupporterTurnsPromptOff();
         s.Save();
     }
@@ -22,11 +28,11 @@ public static class Donation
 
     public static int LaunchesLeft => Math.Max(0, LaunchesBeforeOptOut - Settings.Current.LaunchCount);
 
-    public static bool ShouldPrompt => Settings.Current.ShowDonationPrompt && !Supporter.IsSupporter;
+    public static bool ShouldPrompt => CountedThisStart && Settings.Current.ShowDonationPrompt && !Supporter.IsSupporter;
 
     /// <summary>The banner shows on launches 10, 20, 30… for everyone who isn't a Supporter.</summary>
     public static bool ShouldShowBanner =>
-        !Supporter.IsSupporter && Settings.Current.LaunchCount > 0 && Settings.Current.LaunchCount % LaunchesBeforeOptOut == 0;
+        CountedThisStart && !Supporter.IsSupporter && Settings.Current.LaunchCount > 0 && Settings.Current.LaunchCount % LaunchesBeforeOptOut == 0;
 
     /// <summary>A Supporter never needs asking again: the switch goes off for good.</summary>
     public static void SupporterTurnsPromptOff()

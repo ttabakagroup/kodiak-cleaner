@@ -91,6 +91,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   Language Resource Files, RetailDemo, Temporary Setup Files, Temporary Windows Installation Files, User File History) run
   `cleanmgr /sagerun:617` with a temporary StateFlags0617 tick on that one VolumeCaches handler (found by its shown name, then key
   name), removed again afterwards. Disk Cleanup items Kodiak Cleaner already had are merged into the existing items, not duplicated.
+- Launch count (0.8.64): Donation.CountLaunch is called once in App startup; LaunchCounter.CountsAsStart skips self-reopened
+  copies (--restarted, --updated). The donation pop-up shows after Getting Started/What's New, from start 1 (a test checks).
 - Settings cards A to Z (Ted, 0.8.63): every Settings card, and every setting inside a card, is A to Z (a test checks); Reset to
   Default stays the last card in Advanced. Row hover details (0.8.63): Registry, Startup and Programs rows use the DetailsRow style,
   whose tooltip is the item's Details (DetailText.Lines).

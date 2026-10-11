@@ -18,10 +18,11 @@ public partial class WhatsNewWindow : Window
         SourceInitialized += (_, _) => ThemeManager.ApplyTitleBar(this);
     }
 
-    public static void ShowFor(IReadOnlyList<ChangelogRelease> releases, Version? previous)
+    public static Window ShowFor(IReadOnlyList<ChangelogRelease> releases, Version? previous)
     {
         var w = new WhatsNewWindow(releases, previous) { Owner = Application.Current.MainWindow };
         w.Show();
+        return w;
     }
 
     protected override void OnClosed(EventArgs e)

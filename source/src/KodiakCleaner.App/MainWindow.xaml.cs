@@ -29,8 +29,12 @@ public partial class MainWindow : Window
             LogSlowStart();
             if (BringToFront) ComeForward();
             if (BetaNoticeWindow.ShouldShow) BetaNoticeWindow.ShowFor(this);
-            // The donation pop-up never stacks on Getting Started or What's New; it waits for the next start (Ted, 0.8.55).
-            if (!ShowWhatsNewIfUpdated() && Donation.ShouldPrompt) DonationWindow.ShowFor(this);
+            // The donation pop-up comes after Getting Started or What's New is closed, never on top of it, so it shows from the
+            // very first start with the right count (Ted, 0.8.64; it used to wait for the next start).
+            // Getting Started and What's New are not modal, so the donation pop-up waits for their Closed event.
+            var shownFirst = ShowWhatsNewIfUpdated();
+            if (shownFirst is null) ShowDonationPrompt();
+            else shownFirst.Closed += (_, _) => ShowDonationPrompt();
             // New startup programs are looked for once the start-up pop-ups are out of the way (0.8.53).
             NewStartupWatch.Start();
             await UpdateService.AutoCheckAsync(msg => _vm.Notice = msg, atStartup: true);
@@ -131,30 +135,34 @@ public partial class MainWindow : Window
         Activate();
     }
 
+    // Skipped when Kodiak Cleaner is closing or sitting in the tray.
+    private void ShowDonationPrompt()
+    {
+        if (Donation.ShouldPrompt && IsLoaded && IsVisible) DonationWindow.ShowFor(this);
+    }
+
     /// <summary>
     /// First launch: Getting Started. First launch after an update: What's New, listing every change since
     /// the version the person had before.
     /// </summary>
-    /// <returns>True when Getting Started or What's New was shown.</returns>
-    private bool ShowWhatsNewIfUpdated()
+    /// <returns>The Getting Started or What's New window that was shown, or null.</returns>
+    private Window? ShowWhatsNewIfUpdated()
     {
-        var shown = false;
+        Window? shown = null;
         var s = Settings.Current;
         var current = AppInfo.Version;
         Version? previous = Version.TryParse(s.LastSeenVersion, out var v) ? Changelog.Normalize(v) : null;
 
         if (previous is null)
         {
-            WelcomeWindow.ShowFor(this);
-            shown = true;
+            shown = WelcomeWindow.ShowFor(this);
         }
         else if (previous < current && s.ShowWhatsNewAfterUpdate)
         {
             var releases = Changelog.Since(AppInfo.Releases, previous, current);
             if (releases.Count > 0)
             {
-                WhatsNewWindow.ShowFor(releases, previous);
-                shown = true;
+                shown = WhatsNewWindow.ShowFor(releases, previous);
             }
         }
 

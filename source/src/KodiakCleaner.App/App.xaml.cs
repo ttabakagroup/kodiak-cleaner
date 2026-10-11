@@ -86,6 +86,8 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        // Counted before the restart and update flags are taken off: a copy Kodiak Cleaner reopens itself isn't a new start.
+        bool countStart = LaunchCounter.CountsAsStart(args);
         bool restarted = args.Contains(Elevation.RestartedArg);
         bool updated = args.Contains(UpdateService.UpdatedArg);
         args = args.Where(a => a != Elevation.ElevatedArg && a != Elevation.RestartedArg && a != UpdateService.UpdatedArg).ToArray();
@@ -100,7 +102,7 @@ public partial class App : Application
         ActivityLog.Write("Start", $"{AppInfo.Name} {AppInfo.VersionName} started" +
             $" ({(Elevation.IsAdministrator ? "as administrator" : "as a standard user")}, {(Integration.IsInstalled ? "installed" : "portable")})");
         ThemeManager.Apply();
-        Donation.CountLaunch();
+        Donation.CountLaunch(countStart);
         var window = new MainWindow { BringToFront = updated };
         MainWindow = window;
         _tray = new TrayIcon(window);
