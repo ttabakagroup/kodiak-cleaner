@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.4 Dev] - 2026-10-11
+
+### Changed
+- **Donation reminder:** it now also shows after What's New closes, instead of being skipped on the first start after an update. Each start still counts once, starting at 1 on the very first start (a new test checks this).
+
 ## [0.8.3 Dev] - 2026-10-10
 
 ### Added

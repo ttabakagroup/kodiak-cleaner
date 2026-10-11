@@ -50,7 +50,7 @@ struct MainLayout: View {
             Themed {
                 switch sheet {
                 case .beta: BetaNoticeView()
-                case .whatsNew(let previous): ChangesView(previous: previous)
+                case .whatsNew(let previous): ChangesView(previous: previous).onDisappear { model.whatsNewClosed() }
                 case .changelog: ChangesView(previous: nil)
                 case .triggersHistory: TriggersHistoryView()
                 case .donation: DonationView()
