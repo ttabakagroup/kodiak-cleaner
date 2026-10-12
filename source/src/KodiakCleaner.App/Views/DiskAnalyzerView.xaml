@@ -1,104 +1,223 @@
 <UserControl x:Class="KodiakCleaner.App.Views.DiskAnalyzerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
-            <TextBlock Text="Disk Analyzer" Style="{StaticResource PageTitle}" />
-            <TextBlock Style="{StaticResource PageSubtitle}"
-                       Text="See which folders and files take up the most space. Nothing is changed unless you choose to." />
-        </StackPanel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:KodiakCleaner.App.Views"
+             Focusable="True" PreviewMouseUp="View_PreviewMouseUp" PreviewKeyDown="View_PreviewKeyDown">
+    <UserControl.Resources>
+        <!-- The same right-click menu on the map and both lists; it acts on the selected box or row. -->
+        <ContextMenu x:Key="EntryMenu">
+            <MenuItem Header="Copy Path" Command="{Binding CopyPathCommand}">
+                <MenuItem.Icon><TextBlock Text="&#xE8C8;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Look Inside" Command="{Binding LookInsideCommand}">
+                <MenuItem.Icon><TextBlock Text="&#xE8B7;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Move to Recycle Bin" Command="{Binding RecycleCommand}">
+                <MenuItem.Icon><TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Show in File Explorer" Command="{Binding ShowInExplorerCommand}">
+                <MenuItem.Icon><TextBlock Text="&#xEC50;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+        <!-- Name with the kind-of-file color dot and a folder or file icon. -->
+        <DataTemplate x:Key="NameCell">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="10" Height="10" Fill="{Binding Fill}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                <TextBlock Text="{Binding Glyph}" Style="{StaticResource Icon}" FontSize="14" Foreground="{DynamicResource Muted}" Margin="0,0,8,0" />
+                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="ShareCell">
+            <DockPanel Margin="0,0,8,0">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding ShareText}" Width="44" TextAlignment="Right" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+                <ProgressBar Value="{Binding Share, Mode=OneWay}" Maximum="100" Height="8" VerticalAlignment="Center" Foreground="{Binding Fill}" />
+            </DockPanel>
+        </DataTemplate>
+    </UserControl.Resources>
 
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
-                <Button Content="Choose Folder…" Command="{Binding BrowseCommand}" />
-                <Button Content="Cancel" Command="{Binding CancelCommand}" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
-                <Button Command="{Binding AnalyzeCommand}" Style="{StaticResource AccentButton}" Margin="0">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                <Button Command="{Binding RescanCommand}" ToolTip="Scans the same drives or folder again."
+                        Visibility="{Binding HasTarget, Converter={StaticResource BoolToVis}}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xEDA2;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                        <TextBlock Text="Analyze" />
+                        <TextBlock Text="&#xE72C;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                        <TextBlock Text="Scan Again" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ChooseCommand}" Style="{StaticResource AccentButton}" Margin="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xEB05;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                        <TextBlock Text="Choose What to Analyze…" />
                     </StackPanel>
                 </Button>
             </StackPanel>
-            <TextBox Text="{Binding Root, UpdateSourceTrigger=PropertyChanged}" Tag="Folder or drive to analyze" />
+            <StackPanel>
+                <TextBlock Text="Disk Analyzer" Style="{StaticResource PageTitle}" />
+                <TextBlock Style="{StaticResource PageSubtitle}"
+                           Text="See what's using the space on your drives, folder by folder. Nothing is changed unless you choose to." />
+            </StackPanel>
         </DockPanel>
 
-        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-            <TextBlock Text="Quick Picks:" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,4,0" />
-            <ItemsControl ItemsSource="{Binding Places}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Content="{Binding}" Style="{StaticResource LinkButton}" FontSize="12" Margin="0" Padding="6,2"
-                                Command="{Binding DataContext.PickPlaceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </WrapPanel>
-
-        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-            <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
-            <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
-        </StackPanel>
-
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="16" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Border Style="{StaticResource Card}" Padding="8">
-                <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Margin="8,4,8,8">
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Content="Up One Level" Command="{Binding UpCommand}" />
-                            <Button Content="Look Inside" Command="{Binding OpenCommand}" Margin="0" />
+            <!-- Before the first scan -->
+            <Border Style="{StaticResource Card}" Padding="40,36" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560"
+                    Visibility="{Binding ShowWelcome, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <Grid Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,16">
+                        <Ellipse Fill="{DynamicResource AccentTint}" />
+                        <TextBlock Text="&#xEB05;" Style="{StaticResource Icon}" FontSize="32" Foreground="{DynamicResource AccentText}" HorizontalAlignment="Center" />
+                    </Grid>
+                    <TextBlock Text="See What's Using Your Space" Style="{StaticResource SectionTitle}" FontSize="20" HorizontalAlignment="Center" />
+                    <TextBlock Style="{StaticResource Caption}" FontSize="14" TextAlignment="Center" Margin="0,8,0,22"
+                               Text="Pick one drive, every drive or a folder. You get a map of everything inside, colored by kind of file, that you can click through folder by folder." />
+                    <Button Command="{Binding ChooseCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" Margin="0" Padding="22,9">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xEB05;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Choose What to Analyze…" />
                         </StackPanel>
-                        <TextBlock Text="Folders" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <DataGrid ItemsSource="{Binding Folders}" SelectedItem="{Binding SelectedFolder}" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="3*" />
-                            <DataGridTemplateColumn Header="Share" Width="2*" SortMemberPath="Bytes">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <DockPanel Margin="0,0,8,0">
-                                            <TextBlock DockPanel.Dock="Right" Text="{Binding ShareText}" Width="48" TextAlignment="Right" Style="{StaticResource Caption}" VerticalAlignment="Center" />
-                                            <ProgressBar Value="{Binding Share, Mode=OneWay}" Maximum="100" Height="8" VerticalAlignment="Center" />
-                                        </DockPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="Bytes" Width="100" />
-                            <DataGridTextColumn Header="Files" Binding="{Binding Files}" SortMemberPath="Item.Files" Width="90" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </DockPanel>
+                    </Button>
+                </StackPanel>
             </Border>
-            <Border Grid.Row="2" Style="{StaticResource Card}" Padding="8">
-                <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Margin="8,4,8,8">
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Content="Show in Folder" Command="{Binding ShowFileCommand}" />
-                            <Button Command="{Binding RecycleFileCommand}" Margin="0">
+
+            <!-- Scanning -->
+            <Border Style="{StaticResource Card}" Padding="36,30" HorizontalAlignment="Center" VerticalAlignment="Center" Width="560"
+                    Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding ScanStatus}" Style="{StaticResource SectionTitle}" TextTrimming="CharacterEllipsis" />
+                    <ProgressBar IsIndeterminate="True" Margin="0,14,0,12" Height="8" />
+                    <TextBlock Text="{Binding ScanCounts}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding ScanFolder}" Style="{StaticResource Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,4,0,18" />
+                    <Button Content="Cancel" Command="{Binding CancelCommand}" HorizontalAlignment="Right" Margin="0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Results -->
+            <DockPanel Visibility="{Binding ShowResults, Converter={StaticResource BoolToVis}}">
+                <!-- Where you are: Up, then each folder on the way down (click one to go back to it). -->
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                    <Button DockPanel.Dock="Left" Command="{Binding UpCommand}" MinWidth="0" Padding="10,6" ToolTip="Up One Level (Backspace)">
+                        <TextBlock Text="&#xE74A;" Style="{StaticResource Icon}" FontSize="14" />
+                    </Button>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
+                        <ItemsControl ItemsSource="{Binding Trail}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock x:Name="Chevron" Text="&#xE76C;" Style="{StaticResource Icon}" FontSize="10" Foreground="{DynamicResource Muted}" Margin="2,0" />
+                                        <Button Content="{Binding Name}" Style="{StaticResource LinkButton}" Padding="6,4"
+                                                Command="{Binding DataContext.GoToCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Parent}" Value="{x:Null}">
+                                            <Setter TargetName="Chevron" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <!-- The open folder: size, how full the drive is, and which kinds of files fill it. -->
+                <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="20,16" Margin="0,0,0,14">
+                    <StackPanel>
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Width="260" Margin="20,0,0,0" VerticalAlignment="Center"
+                                        Visibility="{Binding HasDrive, Converter={StaticResource BoolToVis}}">
+                                <ProgressBar Value="{Binding DriveUsed, Mode=OneWay}" Maximum="100" Height="8" />
+                                <TextBlock Text="{Binding DriveText}" Style="{StaticResource Caption}" Margin="0,5,0,0" HorizontalAlignment="Right" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" Style="{StaticResource SectionTitle}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Stats}" Style="{StaticResource Caption}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </DockPanel>
+                        <views:KindBarView Items="{Binding Kinds}" HighlightKind="{Binding HighlightKind}" Margin="0,14,0,10" />
+                        <ItemsControl ItemsSource="{Binding Kinds}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent" Padding="0,2,18,2" MouseEnter="Legend_MouseEnter" MouseLeave="Legend_MouseLeave" Cursor="Hand"
+                                            ToolTip="Highlights this kind of file in the map.">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Border Width="12" Height="12" CornerRadius="3" Background="{Binding Fill}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" />
+                                            <TextBlock Text="{Binding Size}" Style="{StaticResource Caption}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding ShareText, StringFormat=({0})}" Style="{StaticResource Caption}" Margin="4,0,0,0" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding Notice}" Style="{StaticResource Caption}" Margin="4,10,0,0"
+                           Visibility="{Binding HasNotice, Converter={StaticResource BoolToVis}}" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" MinWidth="300" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="2*" MinWidth="280" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- The map -->
+                    <Border Style="{StaticResource Card}" Padding="10">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Caption}" Margin="4,8,0,0"
+                                       Text="Click a folder to look inside. Right-click for more. Backspace or the mouse's back button goes up." />
+                            <Grid>
+                                <views:TreemapView Items="{Binding Entries}" Selected="{Binding SelectedEntry}" HighlightKind="{Binding HighlightKind}"
+                                                   OpenCommand="{Binding OpenCommand}" ContextMenu="{StaticResource EntryMenu}" />
+                                <TextBlock Text="This folder is empty." Style="{StaticResource Caption}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- The same as a list, or the largest files anywhere in this folder -->
+                    <Border Grid.Column="2" Style="{StaticResource Card}" Padding="8">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Top" Style="{StaticResource SegmentHost}" Margin="6,4,6,8">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                                    <TextBlock Text="Move to Recycle Bin" />
+                                    <RadioButton Style="{StaticResource Segment}" Content="Contents" IsChecked="{Binding ShowLargest, Converter={StaticResource Not}}" />
+                                    <RadioButton Style="{StaticResource Segment}" Content="Largest Files" IsChecked="{Binding ShowLargest}" />
                                 </StackPanel>
-                            </Button>
-                        </StackPanel>
-                        <TextBlock Text="Largest Files" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <DataGrid ItemsSource="{Binding LargestFiles}" SelectedItem="{Binding SelectedFile}" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" />
-                            <DataGridTextColumn Header="Folder" Binding="{Binding Folder}" Width="3*" />
-                            <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="Bytes" Width="100" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </DockPanel>
-            </Border>
+                            </Border>
+                            <Grid>
+                                <DataGrid ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
+                                          ContextMenu="{StaticResource EntryMenu}" MouseDoubleClick="Grid_MouseDoubleClick"
+                                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                                          Visibility="{Binding ShowLargest, Converter={StaticResource NotVis}}">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Name" CellTemplate="{StaticResource NameCell}" SortMemberPath="Name" Width="2*" MinWidth="120" />
+                                        <DataGridTemplateColumn Header="Share" CellTemplate="{StaticResource ShareCell}" SortMemberPath="Bytes" Width="1.3*" />
+                                        <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="Bytes" Width="92" />
+                                        <DataGridTextColumn Header="Files" Binding="{Binding Files}" SortMemberPath="FileCount" Width="60" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <DataGrid ItemsSource="{Binding LargestFiles}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
+                                          ContextMenu="{StaticResource EntryMenu}" MouseDoubleClick="Grid_MouseDoubleClick"
+                                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                                          Visibility="{Binding ShowLargest, Converter={StaticResource BoolToVis}}">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Name" CellTemplate="{StaticResource NameCell}" SortMemberPath="Name" Width="1.6*" />
+                                        <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="Bytes" Width="92" />
+                                        <DataGridTextColumn Header="Folder" Binding="{Binding Location}" Width="1.5*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </DockPanel>
         </Grid>
     </DockPanel>
 </UserControl>

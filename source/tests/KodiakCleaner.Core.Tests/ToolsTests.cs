@@ -107,6 +107,113 @@ public sealed class DuplicateFinderTests : IDisposable
         Assert.Equal(2, groups.Count);
         foreach (var g in groups) Assert.Equal(DuplicateFinder.HashOf(g.Files[0].Path, long.MaxValue), g.Hash);
     }
+
+    [Fact]
+    public void Protected_folders_and_every_users_AppData_are_never_searched()
+    {
+        var data = Encoding.UTF8.GetBytes("same bytes everywhere");
+        Write("Users/bob/Documents/a.txt", data);
+        Write("Users/bob/AppData/Local/a.txt", data);
+        Write("Program Files/Tool/a.txt", data);
+
+        var options = new DuplicateSearchOptions { Folders = new[] { _root }, Protected = new[] { Path.Combine(_root, "Program Files") } };
+        Assert.Empty(DuplicateFinder.Find(options));
+
+        // A chosen folder inside a protected one is left out entirely, and counted so the page can say so.
+        var inside = DuplicateFinder.Search(new DuplicateSearchOptions
+        {
+            Folders = new[] { Path.Combine(_root, "Program Files", "Tool") },
+            Protected = new[] { Path.Combine(_root, "Program Files") },
+        });
+        Assert.Equal(1, inside.SkippedRoots);
+        Assert.Equal(0, inside.FilesScanned);
+    }
+
+    [Fact]
+    public void A_folder_on_a_chosen_drive_is_walked_once()
+    {
+        var data = new byte[50];
+        Write("d/a", data);
+        Write("d/b", data);
+        var result = DuplicateFinder.Search(new DuplicateSearchOptions { Folders = new[] { _root, Path.Combine(_root, "d") } });
+        Assert.Equal(2, result.FilesScanned);
+        Assert.Equal(2, Assert.Single(result.Identical).Files.Count);
+    }
+
+    private static byte[] Text(int lines, int seed, string? insertAt100 = null)
+    {
+        var rng = new Random(seed);
+        var sb = new StringBuilder();
+        for (int i = 0; i < lines; i++)
+        {
+            if (i == 100 && insertAt100 is not null) sb.AppendLine(insertAt100);
+            sb.Append("Line ").Append(i).Append(": ");
+            for (int w = 0; w < 8; w++) sb.Append((char)('a' + rng.Next(26))).Append((char)('a' + rng.Next(26))).Append(' ');
+            sb.AppendLine();
+        }
+        return Encoding.UTF8.GetBytes(sb.ToString());
+    }
+
+    [Fact]
+    public void In_depth_search_finds_an_edited_copy_but_not_an_unrelated_file_with_the_same_name()
+    {
+        Write("docs/Report.txt", Text(600, 1));
+        Write("backup/Report (1).txt", Text(600, 1, insertAt100: "A new paragraph added later."));
+        Write("other/Report.txt", Text(600, 2)); // same name, different contents
+        Write("x/exact.txt", Text(300, 3));
+        Write("y/exact - Copy.txt", Text(300, 3));
+
+        var result = DuplicateFinder.Search(new DuplicateSearchOptions { Folders = new[] { _root }, FindSimilar = true });
+
+        Assert.Single(result.Identical); // the exact pair stays identical, not similar
+        var group = Assert.Single(result.Similar);
+        Assert.Equal(new[] { "Report (1).txt", "Report.txt" }, group.Files.Select(f => Path.GetFileName(f.File.Path)).OrderBy(n => n));
+        Assert.Contains(group.Files, f => f.File.Path.Contains("docs"));
+        Assert.True(group.Score >= 0.8, $"score {group.Score}");
+        Assert.Contains("ontents", group.Files[0].Why);
+    }
+
+    [Fact]
+    public void Pictures_that_look_alike_are_grouped_whatever_their_names()
+    {
+        Write("a/IMG_0001.jpg", new byte[] { 1, 2, 3, 4 });
+        Write("b/holiday.png", new byte[] { 9, 8, 7, 6, 5 });
+        Write("c/IMG_0002.jpg", new byte[] { 5, 5, 5, 5 });
+        var hashes = new Dictionary<string, ulong>
+        {
+            ["IMG_0001.jpg"] = 0x0F0F_F0F0_1234_5678,
+            ["holiday.png"] = 0x0F0F_F0F0_1234_5679, // one bit away
+            ["IMG_0002.jpg"] = 0xF0F0_0F0F_EDCB_A987, // a different picture
+        };
+
+        var result = DuplicateFinder.Search(new DuplicateSearchOptions
+        {
+            Folders = new[] { _root },
+            FindSimilar = true,
+            PictureHash = p => hashes[Path.GetFileName(p)],
+        });
+
+        var group = Assert.Single(result.Similar);
+        Assert.Equal(new[] { "IMG_0001.jpg", "holiday.png" }, group.Files.Select(f => Path.GetFileName(f.File.Path)).OrderBy(n => n, StringComparer.Ordinal));
+        Assert.StartsWith("Pictures look 98% alike", group.Files[0].Why);
+    }
+
+    [Theory]
+    [InlineData("Report (1).docx", "report")]
+    [InlineData("Copy of Report - Copy (2).docx", "report")]
+    [InlineData("Budget_final_v2.xlsx", "budget")]
+    [InlineData("my.holiday-photo.jpg", "my holiday photo")]
+    [InlineData("(1).txt", "1")]
+    public void Name_keys_drop_copy_marks(string name, string key) => Assert.Equal(key, SimilarFinder.NameKey(name));
+
+    [Fact]
+    public void Numbered_series_count_for_little()
+    {
+        Assert.Equal(0.3, SimilarFinder.NameLikeness("img 0041", "img 0042"));
+        Assert.Equal(1, SimilarFinder.NameLikeness("report", "report"));
+        Assert.True(SimilarFinder.NameLikeness("annual report", "anual report") > 0.9);
+    }
+
 }
 
 public sealed class FreeSpaceWiperTests : IDisposable

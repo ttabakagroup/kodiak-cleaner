@@ -19,9 +19,26 @@ public sealed class DuplicateSearchOptions
     public bool IncludeSystem { get; init; }
     /// <summary>When true, files must also have the same name to count as duplicates.</summary>
     public bool MatchName { get; init; }
+    /// <summary>
+    /// Folders never searched, as a starting point or inside one (Windows, program folders). Every user's AppData,
+    /// the Recycle Bin and System Volume Information are always skipped too, so a whole drive can be searched safely.
+    /// </summary>
+    public IReadOnlyList<string> Protected { get; init; } = Array.Empty<string>();
+    /// <summary>In-depth search: also look for files that are alike without being identical (<see cref="SimilarFinder"/>).</summary>
+    public bool FindSimilar { get; init; }
+    /// <summary>Lowest likeness (0 to 1) a pair of files needs to be listed as similar.</summary>
+    public double MinSimilarity { get; init; } = 0.6;
+    /// <summary>
+    /// Reads a picture's 64-bit difference hash (9x8 grayscale, each bit = left pixel brighter than its neighbour), or null
+    /// when it can't be read. Supplied by the app, which has the Windows picture decoders; without it pictures are compared by bytes only.
+    /// </summary>
+    public Func<string, ulong?>? PictureHash { get; init; }
 }
 
 public sealed record DuplicateProgress(string Stage, int FilesScanned, int Done, int Total);
+
+/// <summary>What one search found: identical sets, and (in-depth) sets of files that are alike.</summary>
+public sealed record DuplicateResults(IReadOnlyList<DuplicateGroup> Identical, IReadOnlyList<SimilarGroup> Similar, int FilesScanned, int SkippedRoots);
 
 /// <summary>
 /// Finds identical files: group by size, then by a hash of the first 64 KB, then by a full SHA-256.
@@ -33,44 +50,107 @@ public static class DuplicateFinder
 
     public static List<DuplicateGroup> Find(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress = null, CancellationToken ct = default)
     {
+        var files = Scan(options, progress, ct, out _);
+        return FindIdentical(files, options, progress, ct);
+    }
+
+    /// <summary>Identical files, then (when <see cref="DuplicateSearchOptions.FindSimilar"/> is on) files that are alike.</summary>
+    public static DuplicateResults Search(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress = null, CancellationToken ct = default)
+    {
+        var files = Scan(options, progress, ct, out var skipped);
+        var identical = FindIdentical(files, options, progress, ct);
+        var similar = options.FindSimilar
+            ? SimilarFinder.Find(files, identical, options, progress, ct)
+            : new List<SimilarGroup>();
+        return new DuplicateResults(identical, similar, files.Count, skipped);
+    }
+
+    /// <summary>Every file in the chosen folders and drives, each physical path once, protected folders left out.</summary>
+    internal static List<DuplicateFile> Scan(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress, CancellationToken ct, out int skippedRoots)
+    {
         var skip = FileAttributes.ReparsePoint;
         if (!options.IncludeHidden) skip |= FileAttributes.Hidden;
         if (!options.IncludeSystem) skip |= FileAttributes.System;
-        var enumeration = new EnumerationOptions
-        {
-            RecurseSubdirectories = true,
-            IgnoreInaccessible = true,
-            AttributesToSkip = skip,
-        };
+        var enumeration = new EnumerationOptions { IgnoreInaccessible = true, AttributesToSkip = skip };
+        var guarded = options.Protected.Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => Path.TrimEndingDirectorySeparator(Path.GetFullPath(p))).ToList();
 
-        // 1. Collect candidate files grouped by size (and name when requested).
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var bySize = new Dictionary<(long, string), List<DuplicateFile>>();
-        int scanned = 0;
         // Roots are followed to where they really are, so a folder reached through a link and directly is one folder:
         // otherwise each file there would be listed as its own duplicate and removing "the copy" would remove the only one.
-        foreach (var folder in options.Folders.Where(Directory.Exists).Select(RealFolder))
-        {
-            IEnumerable<string> files;
-            try { files = Directory.EnumerateFiles(folder, "*", enumeration); }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { continue; }
+        // A root inside another chosen root (a folder on a chosen drive) is already covered, so it isn't walked twice.
+        var roots = options.Folders.Where(Directory.Exists).Select(RealFolder).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        roots = roots.Where(r => !roots.Any(o => !string.Equals(o, r, StringComparison.OrdinalIgnoreCase) && IsInside(r, o))).ToList();
+        skippedRoots = roots.Count(r => IsGuarded(r, guarded));
+        roots = roots.Where(r => !IsGuarded(r, guarded)).ToList();
 
-            foreach (var path in Safe(files))
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var found = new List<DuplicateFile>();
+        foreach (var root in roots)
+        {
+            var pending = new Stack<DirectoryInfo>();
+            pending.Push(new DirectoryInfo(root));
+            while (pending.Count > 0)
             {
                 ct.ThrowIfCancellationRequested();
-                FileInfo info;
-                try { info = new FileInfo(path); if (!info.Exists) continue; }
-                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { continue; }
-                if (info.Length < options.MinSize || info.Length > options.MaxSize) continue;
-                if (!seen.Add(info.FullName)) continue;
-                var key = (info.Length, options.MatchName ? info.Name.ToLowerInvariant() : "");
-                if (!bySize.TryGetValue(key, out var list)) bySize[key] = list = new List<DuplicateFile>();
-                list.Add(new DuplicateFile(info.FullName, info.Length, info.LastWriteTimeUtc));
-                if (++scanned % 500 == 0) progress?.Report(new DuplicateProgress("Scanning", scanned, 0, 0));
+                var dir = pending.Pop();
+                IEnumerable<FileSystemInfo> entries;
+                try { entries = dir.EnumerateFileSystemInfos("*", enumeration); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { continue; }
+                foreach (var entry in Safe(entries))
+                {
+                    if (entry is DirectoryInfo sub)
+                    {
+                        if (!IsGuarded(sub.FullName, guarded) && !AlwaysSkipped(sub)) pending.Push(sub);
+                        continue;
+                    }
+                    if (entry is not FileInfo info) continue;
+                    long length;
+                    try { length = info.Length; }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException) { continue; }
+                    if (length < options.MinSize || length > options.MaxSize) continue;
+                    if (!seen.Add(info.FullName)) continue;
+                    found.Add(new DuplicateFile(info.FullName, length, info.LastWriteTimeUtc));
+                    if (found.Count % 500 == 0) progress?.Report(new DuplicateProgress("Scanning", found.Count, 0, 0));
+                }
             }
         }
+        progress?.Report(new DuplicateProgress("Scanning", found.Count, 0, 0));
+        return found;
+    }
 
-        var candidates = bySize.Values.Where(l => l.Count > 1).ToList();
+    /// <summary>Folders Windows keeps for itself or for programs, skipped wherever they turn up (any drive, any user).</summary>
+    internal static bool AlwaysSkipped(DirectoryInfo dir)
+    {
+        var name = dir.Name;
+        if (dir.Parent is { } parent && parent.Parent is null &&
+            (name.Equals("$Recycle.Bin", StringComparison.OrdinalIgnoreCase) ||
+             name.Equals("System Volume Information", StringComparison.OrdinalIgnoreCase) ||
+             name.Equals("Recovery", StringComparison.OrdinalIgnoreCase) ||
+             name.Equals("Config.Msi", StringComparison.OrdinalIgnoreCase) ||
+             name.StartsWith("$WINDOWS.~", StringComparison.OrdinalIgnoreCase) ||
+             name.Equals("$WinREAgent", StringComparison.OrdinalIgnoreCase)))
+            return true;
+        // Programs keep their own copies of files in AppData; removing one can break the program.
+        return name.Equals("AppData", StringComparison.OrdinalIgnoreCase) &&
+               dir.Parent?.Parent?.Name.Equals("Users", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private static bool IsInside(string path, string folder) =>
+        string.Equals(path, folder, StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith(Path.TrimEndingDirectorySeparator(folder) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsGuarded(string path, List<string> guarded)
+    {
+        var full = Path.TrimEndingDirectorySeparator(path);
+        return guarded.Any(g => IsInside(full, g));
+    }
+
+    private static List<DuplicateGroup> FindIdentical(List<DuplicateFile> files, DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress, CancellationToken ct)
+    {
+        // 1. Group candidates by size (and name when requested).
+        var candidates = files
+            .GroupBy(f => (f.Size, options.MatchName ? Path.GetFileName(f.Path).ToLowerInvariant() : ""))
+            .Select(g => g.ToList()).Where(l => l.Count > 1).ToList();
         int total = candidates.Sum(l => l.Count), done = 0;
         var groups = new List<DuplicateGroup>();
 
@@ -87,7 +167,7 @@ public static class DuplicateFinder
                     groups.Add(new DuplicateGroup(hash, g[0].Size, g.OrderBy(f => f.LastWriteUtc).ToList()));
             }
             done += sameSize.Count;
-            progress?.Report(new DuplicateProgress("Comparing", scanned, done, total));
+            progress?.Report(new DuplicateProgress("Comparing", files.Count, done, total));
         }
 
         return groups.OrderByDescending(g => g.WastedBytes).ToList();
@@ -129,6 +209,9 @@ public static class DuplicateFinder
         return real;
     }
 
+    /// <summary>The SHA-256 of the whole file (hex), or null when it can't be read. Used to check results again on request.</summary>
+    public static string? FullHash(string path) => HashOf(path, long.MaxValue);
+
     internal static string? HashOf(string path, long maxBytes)
     {
         try
@@ -147,12 +230,12 @@ public static class DuplicateFinder
         }
     }
 
-    private static IEnumerable<string> Safe(IEnumerable<string> source)
+    private static IEnumerable<T> Safe<T>(IEnumerable<T> source)
     {
         using var e = source.GetEnumerator();
         while (true)
         {
-            string current;
+            T current;
             try
             {
                 if (!e.MoveNext()) yield break;

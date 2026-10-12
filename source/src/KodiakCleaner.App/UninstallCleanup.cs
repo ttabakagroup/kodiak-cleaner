@@ -55,6 +55,7 @@ public static class UninstallCleanup
         if (args[0].Equals(SystemArg, StringComparison.OrdinalIgnoreCase))
         {
             Try(DeleteScheduledTasks);
+            Try(DriverTools.RemoveSafeModeStart); // the Driver Cleaner's one-time Safe Mode start, if it never ran
             return true;
         }
         var (uiLevel, delete) = Read(args);
@@ -86,6 +87,7 @@ public static class UninstallCleanup
     {
         Try(() => Integration.SetCleanOnStartup(false));
         Try(() => Integration.SetRecycleBinMenu(false));
+        Try(() => BootProbe.SetReopen(false)); // a Boot Timer restart that never happened
         Try(() =>
         {
             var updates = Path.Combine(Path.GetTempPath(), AppInfo.Id + "-Update");

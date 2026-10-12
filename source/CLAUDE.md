@@ -12,7 +12,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
 - Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
   `Documents\Kodiak Cleaner` for an installed copy (AppData\Local\Kodiak Cleaner only if Documents can't be written), beside
-  the exe for a portable copy, with `Backups\{Event Logs, Programs History, Registry, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
+  the exe for a portable copy, with `Backups\{Drivers, Event Logs, Programs History, Registry, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
   Nothing else in AppData. Never write user data into Program Files (only KodiakCleaner.ini is writable there).
 - `ActivityLog` writes one plain-text file per month in Logs (12 kept): counts, sizes and item names only, never file
   contents; Settings > Application > Keep an Activity Log turns it off. Log every user-visible change it makes.
@@ -41,6 +41,15 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Tools must stay local and reversible: read-only, or removals go to the Recycle Bin after a confirm. Browser
   Extensions only lists; removal happens in the browser. Empty Folders never searches Windows, program folders or any user's AppData (0.8.48), as a starting point or inside one (`EmptyFolderFinder.Find`/`IsStillEmpty` take the protected list), and never lists Desktop, Documents and the other Windows user folders (the kept list; searched inside). Large Files skips Windows, program folders and hidden/system files.
   Scheduled Tasks only turns tasks on or off, never deletes them, and hides Windows tasks unless asked.
+- Drive Wiper (2026-10-12): `DriveMedia` reads each disk's type from the storage stack (NVMe bus, seek penalty, USB/SD bus; no WMI).
+  Entire Drive works on whole physical disks (`DriveWiper.ListDisks`/`EraseAsync`): a disk is refused when any letter on it is protected
+  (`ProtectedReason`: Windows, Kodiak Cleaner's drive, page file, user folder, programs), when it holds the start-up partition
+  (HKLM\SYSTEM\Setup SystemPartition) or a volume spanning disks. Every volume on it is locked and dismounted, then hard drives and flash
+  drives get `Overwriter` passes (1 Pass (Zeros), DoD 5220.22-M 3, ECE 7; last pass read back) and SSD/NVMe get IOCTL_STORAGE_REINITIALIZE_MEDIA
+  (crypto, then block, then default; random overwrite if refused), then diskpart makes one partition named Wiped. Confirm = Warn + type ERASE.
+  Never test it against a real drive (Wine included). Free space wiping uses the same DoD patterns.
+- Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
+  drives Not Needed. Analyze (/A) only for hard drives. One drive at a time; needs administrator rights.
 - Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several
   choices (color scheme, accent color, light or dark) use tiles, swatches or segmented buttons.
 - Title Case (Ted's rule, stricter than the standard) for page names, card titles, headings, field labels, column
@@ -83,6 +92,16 @@ privacy first, local first, security paramount, convenient, practical and useful
   and removed leftover. Restore uses the .reg backup (reg.exe import), the Recycle Bin, or the Startup history; uninstalls are record only.
   Every new removal on the Programs page must be recorded there. Back Up Settings copies it.
 - Advanced Cleaning shows a warning (Yes/No) every time it is opened (Ted, 0.8.17).
+- Driver Cleaner (Ted, 2026-10-12, `DriverCleaner`/`InfReader` in Core, `DriverTools` in the app): picks a maker (AMD, Intel, NVIDIA,
+  Realtek Audio) and lists its driver store packages (read from C:\Windows\INF\oem*.inf, only the Display, Sound, Software Component,
+  Extension and, for Realtek, Audio Effects classes), leftover folders and registry keys. Display drivers and parts whose device names
+  belong to the driver are ticked; other parts from the same maker (chipset, storage, wireless...) are listed unticked. Removal: restore
+  point (not in Safe Mode), `pnputil /export-driver` to Backups\Drivers (a package whose backup fails is kept), `pnputil /delete-driver
+  /uninstall /force` (done only when its oemNN.inf is gone or pnputil says 3010), keys backed up then deleted, folders to the Recycle Bin,
+  then Later / Shut Down / Restart and Get the Latest Driver (the maker's own page, opened only on click). Restart in Safe Mode uses
+  `bcdedit /set {current} safeboot minimal` plus a `*` RunOnce entry that opens `--page=drivers`; every restart from Safe Mode, and
+  Later, clears safeboot; `--uninstall-system` drops the RunOnce entry. Let Windows Update Install Drivers is the live `DriverSearching\SearchOrderConfig` value, backed up first.
+  Never name or reference any third-party driver removal tool in the app, docs or replies.
 - Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
   vssadmin, wevtutil, netsh, cleanmgr, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
   shadow copies keep the newest. `CleanTarget.Warning` items: caution text, confirm on tick, skipped by Select All and by AutoClean.
@@ -91,6 +110,15 @@ privacy first, local first, security paramount, convenient, practical and useful
   Language Resource Files, RetailDemo, Temporary Setup Files, Temporary Windows Installation Files, User File History) run
   `cleanmgr /sagerun:617` with a temporary StateFlags0617 tick on that one VolumeCaches handler (found by its shown name, then key
   name), removed again afterwards. Disk Cleanup items Kodiak Cleaner already had are merged into the existing items, not duplicated.
+- More cleaning items (Ted, 2026-10-12, from his two screenshot lists): browser Metrics Temp Files (ticked), Session, Bookmarks Backup,
+  Firefox Crash Reports/Site Preferences/Saved Form Information; passwords and Chromium's Web Data (it also holds cards and search engines)
+  only under Advanced Cleaning with a warning. Programs (AMD, AnyDesk, Discord, FileZilla, OneDrive, Node.js, NVIDIA, Steam, Telegram,
+  VLC, WhatsApp, Zoom) are listed only when their folder exists and only offer caches, logs and installer leftovers. Broken Start Menu/
+  Desktop shortcuts use `ShellLink.IsBroken` (fixed, ready drives only). Downloads items (by kind, top level only, `CleanRule.Filter`)
+  and Jump Lists, Folder views (shellbags), Environment Path and Wipe Free Space (cipher /w) ask first. Registry history lists
+  (`SystemTasks.RegistryLists`) are backed up to .reg before clearing. Left out on purpose: databases compaction, last download
+  location, saved credentials, tray icon cache (Explorer rewrites it), network data usage (locked by Windows), Sticky Notes (would
+  delete notes), Notepad++ backups (unsaved work), store-app items (already in Temporary Files (Store Apps)), Custom Files and Folders.
 - Browser extension control (Ted, 0.8.65): Core/Tools/ExtensionControl.cs. Chrome/Edge/Brave use HKCU\Software\Policies\<vendor>
   ExtensionInstallBlocklist (off) and ExtensionSettings installation_mode "removed" (remove); never edit Preferences/Secure
   Preferences (MAC-protected). Settings [Extensions] Removed lists our remove marks; Tidy clears them once the browser uninstalled
@@ -100,6 +128,12 @@ privacy first, local first, security paramount, convenient, practical and useful
   and drive-root Windows folders are skipped. Scheduled Tasks read each task's first action (exec path, COM handler).
 - Launch count (0.8.64): Donation.CountLaunch is called once in App startup; LaunchCounter.CountsAsStart skips self-reopened
   copies (--restarted, --updated). The donation pop-up shows after Getting Started/What's New, from start 1 (a test checks).
+- Boot Timer (Ted, 2026-10-12, `BootTimer` in Core, `BootProbe`, `BootTimerViewModel`): Restart and Time saves the click time in
+  `Reports\Boot Timer\boot-timer.json`, adds a one-time HKCU RunOnce value ("Kodiak Cleaner Boot Timer", `--page=boottimer`; removed again
+  after the report, on Cancel Timing and by `--uninstall-user`) and runs `shutdown /r /t 0`. After sign-in it waits for the processor to stay
+  under 15% for 5 s (at most 4 min after sign-in), then records startup programs' processor time and disk use (Task Manager's impact
+  thresholds) and, as administrator, Windows' Diagnostics-Performance events 100 to 110 via wevtutil. Only Windows' own information, nothing
+  installed; the report table is slowest first (a stated priority, not A to Z). Turn Off at Startup only disables (reversible).
 - Settings cards A to Z (Ted, 0.8.63): every Settings card, and every setting inside a card, is A to Z (a test checks); Reset to
   Default stays the last card in Advanced. Row hover details (0.8.63): Registry, Startup and Programs rows use the DetailsRow style,
   whose tooltip is the item's Details (DetailText.Lines).
@@ -131,7 +165,27 @@ privacy first, local first, security paramount, convenient, practical and useful
   Advanced reports progress per part (`SystemDetails.Collect(progress, ct)`) and logs parts taking 5 s or more. The list area shows a
   progress panel with Cancel while reading and a plain "Reading Stopped" panel after Cancel; the page can be left and returned to.
 - Single instance (0.8.48): the hand-off pipe allows this person's account (`WindowsIdentity.User`), never `PipeOptions.CurrentUserOnly`, which only lets in the token owner (Administrators for an elevated copy) and so dropped every normal launch's hand-off.
+- Disk Analyzer (Ted, 2026-10-12): `DiskAnalyzerPickWindow` picks All Drives (local only), Drives (ticked, network too) or Folder; drives are read
+  in the background with 5 s each. `DiskAnalyzer.Scan` keeps folders only (paths worked out from the parent, per-kind byte totals), reads
+  drives and top folders side by side, and the open folder's files are read again on opening (`FilesIn`). `TreemapView` (squarified,
+  `Treemap.Layout`, up to 3 levels) and `KindBarView` color by `FileKind` with `DiskColors`: one accent swatch's button shade per kind
+  (`AccentColors.FillOf`), so labels on it always read. Removing a file updates every folder above it (`DiskNode.FileRemoved`).
+- System Restore page (Ted, Point-in-Time Restore): System Restore | Point-in-Time Restore segments. Create Restore Point uses
+  `RestorePoints.CreateNow`, which sets SystemRestorePointCreationFrequency to 0 for that one call (backed up, put back) so it never
+  skips quietly. Point-in-Time Restore (`PointInTimeRestore`, Windows 11 24H2/25H2 build x.8737+) reads and writes only the `_UX`
+  values Settings uses under `PITR\Settings` (Active, SnapshotInterval, MaxTimespan in minutes, MaxGlobalSize in MB), backed up
+  first; `_GPO` values win and lock the controls. Snapshots come from `PITR\Snapshots` (shadow copy IDs) with times from
+  Win32_ShadowCopy. Snapshot Now starts Windows' own `\Microsoft\Windows\Setup\PITRTask` with TASK_RUN_IGNORE_CONSTRAINTS
+  (undocumented by Microsoft; the task isn't changed). Restoring only happens in WinRE (Restart to Recovery = `shutdown /r /o`).
+  Never delete Point-in-Time snapshots directly; Windows manages them.
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
+- Duplicate Finder (Ted, 2026-10-12): searches folders and whole drives (Fixed and Removable, each given 5 s to answer). It never searches Windows,
+  program folders, ProgramData, AppData (any user's), Temp\.net, its own folder, or a drive's Recycle Bin/System Volume Information/Recovery,
+  as a starting point or inside one (`DuplicateSearchOptions.Protected` + `DuplicateFinder.AlwaysSkipped`). In-Depth (`SimilarFinder`) lists
+  similar files with a likeness score (capped at 99%; identical files stay in Identical): content-defined chunks of the first 8 MB, names
+  without copy marks, sizes, and pictures by a 64-bit difference hash (`PictureHasher`, Windows' decoders). Similar files are never ticked
+  for the person (Keep Newest/Oldest act on identical sets only) and removing them asks with a caution. Verify Hashes re-reads the shown
+  files in full and compares SHA-256; changed copies are unticked and marked.
 - Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
   description or labels). Labels are read from the page templates themselves on the first search, so new settings are found automatically.
   The Check for Updates interval is a dropdown (Ted, 0.8.45) so more choices fit.

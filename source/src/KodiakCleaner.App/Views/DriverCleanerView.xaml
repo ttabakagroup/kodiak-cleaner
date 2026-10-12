@@ -1,0 +1,159 @@
+<UserControl x:Class="KodiakCleaner.App.Views.DriverCleanerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <TextBlock Text="Driver Cleaner" Style="{StaticResource PageTitle}" />
+            <TextBlock Style="{StaticResource PageSubtitle}"
+                       Text="Remove an old graphics or Realtek audio driver completely, with its leftovers, so a fresh driver installs cleanly." />
+        </StackPanel>
+
+        <!-- Next step after a clean: install the newest driver from the maker. -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16" Background="{DynamicResource AccentTint}"
+                Visibility="{Binding JustCleaned, Converter={StaticResource BoolToVis}}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Command="{Binding GetDriverCommand}" Style="{StaticResource AccentButton}" Margin="0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding GetDriverText}" />
+                    </StackPanel>
+                </Button>
+                <StackPanel Margin="0,0,16,0">
+                    <TextBlock Text="Next: Install the New Driver" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="Restart Windows first, then download and run the newest driver from the maker's own page."
+                               TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Graphics adapters found, each with its maker's driver page. -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Your Graphics" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="No graphics driver from AMD, Intel or NVIDIA is installed." Style="{StaticResource Caption}" Margin="0,8,0,0"
+                               Visibility="{Binding HasAdapters, Converter={StaticResource NotVis}}" />
+                    <ItemsControl ItemsSource="{Binding Adapters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,10,0,0">
+                                    <Button DockPanel.Dock="Right" Content="Get Latest Driver" Command="{Binding GetDriverCommand}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Safe Mode: restart into it, or back out of it. -->
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="{Binding SafeModeTitle}" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="{Binding SafeModeText}" TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,8,0,12" />
+                    <Button Command="{Binding SafeModeCommand}" HorizontalAlignment="Left" Margin="0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding SafeModeButton}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Maker, options and the main action. -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16">
+            <StackPanel>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Command="{Binding RefreshCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE72C;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                <TextBlock Text="Refresh" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding CleanCommand}" Style="{StaticResource AccentButton}" Margin="0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                <TextBlock Text="Clean Selected" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Driver Maker" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Border Style="{StaticResource SegmentHost}">
+                            <ItemsControl ItemsSource="{Binding Vendors}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton GroupName="DriverVendor" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                </DockPanel>
+
+                <WrapPanel Margin="0,14,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,28,6">
+                        <TextBlock Text="Back Up Driver Packages" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding BackUpPackages}" AutomationProperties.Name="Back Up Driver Packages"
+                                  ToolTip="Copies each package to Backups\Drivers first. pnputil /add-driver puts one back." />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,28,6">
+                        <TextBlock Text="Create a Restore Point" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding CreateRestorePoint}" AutomationProperties.Name="Create a Restore Point"
+                                  ToolTip="Made before cleaning, or before restarting in Safe Mode (Windows can't make one in Safe Mode)." />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="Let Windows Update Install Drivers" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding WindowsUpdateDrivers}" AutomationProperties.Name="Let Windows Update Install Drivers"
+                                  ToolTip="Turn this off before cleaning so Windows doesn't put an old driver back while you install the new one. Turn it on again afterward." />
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Padding="8">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="8,4,8,8">
+                    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+                    <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+                <DataGrid ItemsSource="{Binding Items}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
+                            <DataGridTemplateColumn.Header>
+                                <CheckBox IsThreeState="False" ToolTip="Select All" HorizontalAlignment="Center"
+                                          IsChecked="{Binding DataContext.AllChecked, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="120" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Class" Binding="{Binding DriverClass}" Width="160" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="120" IsReadOnly="True" />
+                        <DataGridTextColumn Header="In Use" Binding="{Binding InUse}" Width="70" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="2*" IsReadOnly="True" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</UserControl>

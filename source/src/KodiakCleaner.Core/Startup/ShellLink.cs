@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Versioning;
 using System.Text;
+using KodiakCleaner.Core.Util;
 
 namespace KodiakCleaner.Core.Startup;
 
@@ -42,6 +43,28 @@ public static class ShellLink
         catch (Exception e) when (e is COMException or InvalidCastException or IOException or UnauthorizedAccessException or ArgumentException) { return ("", 0); }
         finally { if (link is not null) Marshal.FinalReleaseComObject(link); }
     }
+
+    /// <summary>The file or folder a shortcut opens, with variables expanded. "" for shortcuts to shell items (Control Panel, Store apps) or when it can't be read.</summary>
+    public static string TargetOf(string shortcut)
+    {
+        IShellLinkW? link = null;
+        try
+        {
+            link = (IShellLinkW)new ShellLinkObject();
+            ((IPersistFile)link).Load(shortcut, 0);
+            var text = new StringBuilder(1024);
+            link.GetPath(text, text.Capacity, IntPtr.Zero, 0);
+            return Environment.ExpandEnvironmentVariables(text.ToString());
+        }
+        catch (Exception e) when (e is COMException or InvalidCastException or IOException or UnauthorizedAccessException or ArgumentException) { return ""; }
+        finally { if (link is not null) Marshal.FinalReleaseComObject(link); }
+    }
+
+    /// <summary>
+    /// True only when a shortcut clearly points nowhere: its target is a full path on a fixed drive that is ready, and neither a file
+    /// nor a folder is there. Shortcuts to shell items, network or removable drives, or drives that aren't ready are never broken.
+    /// </summary>
+    public static bool IsBroken(string shortcut) => PathSafety.IsMissingOnFixedDrive(TargetOf(shortcut));
 
     [ComImport, Guid("00021401-0000-0000-C000-000000000046")]
     private class ShellLinkObject { }

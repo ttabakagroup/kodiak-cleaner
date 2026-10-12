@@ -26,7 +26,7 @@ public static class FileCleaner
         foreach (var rule in rules)
         {
             ct.ThrowIfCancellationRequested();
-            if (!PathSafety.IsSafeCleanRoot(rule.Directory, rule.Recursive, rule.Pattern)) continue;
+            if (!PathSafety.IsSafeCleanRoot(rule.Directory, rule.Recursive, rule.Pattern, rule.Filter is not null)) continue;
             if (!Directory.Exists(rule.Directory)) continue;
 
             var options = new EnumerationOptions
@@ -44,6 +44,7 @@ public static class FileCleaner
             foreach (var path in SafeEnumerate(files))
             {
                 ct.ThrowIfCancellationRequested();
+                if (rule.Filter is { } filter && !Picked(filter, path)) continue;
                 try
                 {
                     var info = new FileInfo(path);
@@ -118,6 +119,14 @@ public static class FileCleaner
         }
 
         return new CleanResult(deleted, freed, failed, dirsRemoved);
+    }
+
+    /// <summary>A filter that fails (an unreadable shortcut, say) leaves the file alone.</summary>
+    private static bool Picked(Func<string, bool> filter, string path)
+    {
+        try { return filter(path); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException
+                                      or System.Runtime.InteropServices.COMException or InvalidCastException) { return false; }
     }
 
     private static DateTime SafeCreationTime(string dir)

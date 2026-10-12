@@ -17,6 +17,7 @@
         <DataTemplate DataType="{x:Type vm:ProgramsViewModel}"><views:ProgramsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:DuplicatesViewModel}"><views:DuplicatesView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:DiskAnalyzerViewModel}"><views:DiskAnalyzerView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DriverCleanerViewModel}"><views:DriverCleanerView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptyFoldersViewModel}"><views:EmptyFoldersView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ExtensionsViewModel}"><views:ExtensionsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:LargeFilesViewModel}"><views:LargeFilesView /></DataTemplate>
@@ -24,6 +25,8 @@
         <DataTemplate DataType="{x:Type vm:SystemInfoViewModel}"><views:SystemInfoView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:RestoreViewModel}"><views:RestoreView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:WiperViewModel}"><views:WiperView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BootTimerViewModel}"><views:BootTimerView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OptimizeViewModel}"><views:OptimizeView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:AboutViewModel}"><views:AboutView /></DataTemplate>
 

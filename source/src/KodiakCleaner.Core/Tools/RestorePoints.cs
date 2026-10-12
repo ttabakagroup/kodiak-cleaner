@@ -1,6 +1,8 @@
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using KodiakCleaner.Core.RegistryTools;
+using Microsoft.Win32;
 
 namespace KodiakCleaner.Core.Tools;
 
@@ -38,6 +40,31 @@ public static partial class RestorePoints
         // 12 = MODIFY_SETTINGS, 100 = BEGIN_SYSTEM_CHANGE
         var result = cls.InvokeMethod("CreateRestorePoint", new object[] { description, 12, 100 });
         return Convert.ToUInt32(result);
+    }
+
+    private const string FrequencyKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore";
+    private const string FrequencyValue = "SystemRestorePointCreationFrequency";
+
+    /// <summary>
+    /// Creates a restore point even when Windows made one in the last 24 hours (it normally skips those quietly), so a
+    /// point can be made right before a big install. Windows' SystemRestorePointCreationFrequency is set to 0 for this one
+    /// call, after a .reg backup, and put back as it was afterwards.
+    /// </summary>
+    public static uint CreateNow(string description)
+    {
+        using var root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+        using var key = root.CreateSubKey(FrequencyKey, writable: true);
+        var before = key.GetValue(FrequencyValue);
+        if (before is not null)
+            RegistryBackup.Save(new[] { new RegistryLocation(RegistryHive.LocalMachine, RegistryView.Registry64, FrequencyKey, FrequencyValue) },
+                "System_Restore_Frequency");
+        key.SetValue(FrequencyValue, 0, RegistryValueKind.DWord);
+        try { return Create(description); }
+        finally
+        {
+            if (before is null) key.DeleteValue(FrequencyValue, throwOnMissingValue: false);
+            else key.SetValue(FrequencyValue, before, RegistryValueKind.DWord);
+        }
     }
 
     /// <summary>Removes one restore point. Returns 0 on success, otherwise a Win32 error code.</summary>

@@ -13,6 +13,7 @@ public sealed class MainViewModel : ObservableObject
         Programs = new ProgramsViewModel();
         Duplicates = new DuplicatesViewModel();
         DiskAnalyzer = new DiskAnalyzerViewModel();
+        DriverCleaner = new DriverCleanerViewModel();
         EmptyFolders = new EmptyFoldersViewModel();
         LargeFiles = new LargeFilesViewModel();
         ScheduledTasks = new ScheduledTasksViewModel();
@@ -20,6 +21,8 @@ public sealed class MainViewModel : ObservableObject
         Extensions = new ExtensionsViewModel();
         Restore = new RestoreViewModel();
         Wiper = new WiperViewModel();
+        BootTimer = new BootTimerViewModel(Startup, Navigate);
+        Optimize = new OptimizeViewModel();
         SettingsPage = new SettingsViewModel(Cleaner.ReloadTargets);
         // Entering a Supporter code turns the donation reminder off and hides the banner.
         Supporter.Changed += () =>
@@ -35,9 +38,12 @@ public sealed class MainViewModel : ObservableObject
         MainPages.Add(new NavPage("Startup", "", Startup, OnNavigated));
         MainPages.Add(new NavPage("Programs", "", Programs, OnNavigated));
         // Tools in alphabetical order (Ted's choice).
+        ToolPages.Add(new NavPage("Boot Timer", "\uE916", BootTimer, OnNavigated));
         ToolPages.Add(new NavPage("Browser Extensions", "\uEA86", Extensions, OnNavigated));
+        ToolPages.Add(new NavPage("Defrag and TRIM", "\uEC4A", Optimize, OnNavigated));
         ToolPages.Add(new NavPage("Disk Analyzer", "\uEB05", DiskAnalyzer, OnNavigated));
         ToolPages.Add(new NavPage("Drive Wiper", "\uEDA2", Wiper, OnNavigated, badge: "\uE74D"));
+        ToolPages.Add(new NavPage("Driver Cleaner", "\uE950", DriverCleaner, OnNavigated));
         ToolPages.Add(new NavPage("Duplicate Finder", "", Duplicates, OnNavigated));
         ToolPages.Add(new NavPage("Empty Folders", "\uE8B7", EmptyFolders, OnNavigated));
         ToolPages.Add(new NavPage("Large Files", "\uE8A5", LargeFiles, OnNavigated));
@@ -76,6 +82,7 @@ public sealed class MainViewModel : ObservableObject
     public ProgramsViewModel Programs { get; }
     public DuplicatesViewModel Duplicates { get; }
     public DiskAnalyzerViewModel DiskAnalyzer { get; }
+    public DriverCleanerViewModel DriverCleaner { get; }
     public EmptyFoldersViewModel EmptyFolders { get; }
     public LargeFilesViewModel LargeFiles { get; }
     public ScheduledTasksViewModel ScheduledTasks { get; }
@@ -83,6 +90,8 @@ public sealed class MainViewModel : ObservableObject
     public ExtensionsViewModel Extensions { get; }
     public RestoreViewModel Restore { get; }
     public WiperViewModel Wiper { get; }
+    public BootTimerViewModel BootTimer { get; }
+    public OptimizeViewModel Optimize { get; }
     public SettingsViewModel SettingsPage { get; }
 
     public ObservableCollection<NavPage> MainPages { get; } = new();
@@ -192,6 +201,7 @@ public sealed class MainViewModel : ObservableObject
             "programs" => Programs,
             "duplicates" => Duplicates,
             "disk" => DiskAnalyzer,
+            "drivers" => DriverCleaner,
             "emptyfolders" => EmptyFolders,
             "largefiles" => LargeFiles,
             "tasks" => ScheduledTasks,
@@ -199,6 +209,8 @@ public sealed class MainViewModel : ObservableObject
             "extensions" => Extensions,
             "restore" => Restore,
             "wiper" => Wiper,
+            "boottimer" => BootTimer,
+            "optimize" => Optimize,
             "settings" => SettingsPage,
             "about" => SettingsPage.About,
             _ => null,

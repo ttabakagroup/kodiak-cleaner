@@ -6,7 +6,7 @@ public sealed record WipeProgress(int Pass, int Passes, long BytesWritten, long 
 
 /// <summary>
 /// Overwrites a drive's free space so deleted files cannot be recovered: fills it with filler files
-/// (zeros on the first pass, random data on later passes), flushes them to disk, then deletes them.
+/// (the DoD 5220.22-M pattern for 3 or 7 passes: zeros, ones, random; one pass is zeros), flushes them to disk, then deletes them.
 /// Existing files are never touched.
 /// </summary>
 public static class FreeSpaceWiper
@@ -65,6 +65,7 @@ public static class FreeSpaceWiper
         if (Directory.Exists(work) && new DirectoryInfo(work).Attributes.HasFlag(FileAttributes.ReparsePoint))
             throw new IOException($"{work} is a link, so free space wasn't wiped.");
         DeleteWorkFolder(work);
+        var patterns = WipeMethods.ForCount(passes);
         try
         {
             for (int pass = 1; pass <= passes; pass++)
@@ -73,6 +74,8 @@ public static class FreeSpaceWiper
                 long target = limitBytes ?? Math.Max(freeBytes(), 1);
                 long written = 0;
                 var buffer = new byte[ChunkSize];
+                var pattern = patterns[pass - 1];
+                if (!pattern.IsRandom) Array.Fill(buffer, pattern.Fill!.Value);
                 int fileIndex = 0;
                 bool full = false;
 
@@ -87,7 +90,7 @@ public static class FreeSpaceWiper
                         while (inFile < FillerFileSize && written < target)
                         {
                             ct.ThrowIfCancellationRequested();
-                            if (pass > 1) RandomNumberGenerator.Fill(buffer);
+                            if (pattern.IsRandom) RandomNumberGenerator.Fill(buffer);
                             int count = (int)Math.Min(buffer.Length, Math.Min(FillerFileSize - inFile, target - written));
                             fs.Write(buffer, 0, count);
                             inFile += count;

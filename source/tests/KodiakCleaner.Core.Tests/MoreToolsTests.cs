@@ -28,20 +28,71 @@ public sealed class MoreToolsTests : IDisposable
     [Fact]
     public void Disk_analyzer_sizes_folders_and_lists_largest_files()
     {
-        Write(@"big/a.bin", 5000);
-        Write(@"big/deeper/b.bin", 3000);
+        Write(@"big/a.mp4", 5000);
+        Write(@"big/deeper/b.zip", 3000);
         Write(@"small/c.bin", 100);
-        Write("loose.bin", 50);
+        Write("loose.jpg", 50);
 
-        var report = DiskAnalyzer.Analyze(_root, largestCount: 2);
+        var scan = DiskAnalyzer.Scan(new[] { (_root, "") }, largestCount: 2);
+        var root = scan.Root;
 
-        Assert.Equal(8150, report.TotalBytes);
-        Assert.Equal(4, report.Files);
-        Assert.Equal("big", report.Children[0].Name);
-        Assert.Equal(8000, report.Children[0].Bytes);
-        Assert.Equal(2, report.Children[0].Files);
-        Assert.Contains(report.Children, c => !c.IsFolder && c.Bytes == 50);
-        Assert.Equal(new[] { "a.bin", "b.bin" }, report.LargestFiles.Select(f => f.Name));
+        Assert.Equal(8150, root.Bytes);
+        Assert.Equal(4, root.Files);
+        Assert.Equal(3, root.Folders);
+        Assert.Equal(50, root.OwnBytes);
+        Assert.Equal("big", root.Children[0].Name); // biggest first
+        Assert.Equal(8000, root.Children[0].Bytes);
+        Assert.Equal(2, root.Children[0].Files);
+        Assert.Equal(3000, root.Children[0].Children[0].Bytes);
+        Assert.Equal(5000, root.KindBytes[(int)FileKind.Videos]);
+        Assert.Equal(3000, root.KindBytes[(int)FileKind.Archives]);
+        Assert.Equal(50, root.KindBytes[(int)FileKind.Pictures]);
+        Assert.Equal(FileKind.Videos, root.MainKind);
+        Assert.Equal(FileKind.Pictures, root.OwnMainKind);
+        Assert.Equal(new[] { "a.mp4", "b.zip" }, scan.LargestFiles.Select(f => f.Name));
+        Assert.Equal(new[] { "loose.jpg" }, DiskAnalyzer.FilesIn(root).Select(f => f.Name));
+        Assert.Equal(new[] { root, root.Children[0], root.Children[0].Children[0] }, root.Children[0].Children[0].Trail());
+
+        // Moving a file to the Recycle Bin takes it off every folder above it.
+        var deeper = root.Children[0].Children[0];
+        deeper.FileRemoved(new DiskFile(Path.Combine(deeper.Path, "b.zip"), "b.zip", 3000, DateTime.Now));
+        Assert.Equal(5150, root.Bytes);
+        Assert.Equal(0, root.KindBytes[(int)FileKind.Archives]);
+    }
+
+    [Fact]
+    public void Disk_analyzer_groups_several_roots_under_all_drives()
+    {
+        Write(@"one/a.bin", 10);
+        Write(@"two/b.bin", 30);
+
+        var scan = DiskAnalyzer.Scan(new[] { (Path.Combine(_root, "one"), "One"), (Path.Combine(_root, "two"), "Two") });
+
+        Assert.True(scan.Root.IsGroup);
+        Assert.Equal(DiskAnalyzer.AllDrivesName, scan.Root.Name);
+        Assert.Equal(40, scan.Root.Bytes);
+        Assert.Equal(new[] { "Two", "One" }, scan.Root.Children.Select(c => c.Name));
+        Assert.True(DiskAnalyzer.IsUnder(Path.Combine(_root, "two", "b.bin"), scan.Root.Children[0]));
+        Assert.False(DiskAnalyzer.IsUnder(Path.Combine(_root, "one", "a.bin"), scan.Root.Children[0]));
+    }
+
+    [Fact]
+    public void Treemap_tiles_fill_the_box_in_proportion()
+    {
+        var sizes = new double[] { 6, 6, 4, 3, 2, 2, 1, 0 };
+        var tiles = Treemap.Layout(sizes, 0, 0, 600, 400);
+
+        Assert.Equal(7, tiles.Count); // the zero gets no tile
+        Assert.Equal(600 * 400, tiles.Sum(t => t.Width * t.Height), 3);
+        foreach (var t in tiles)
+        {
+            Assert.Equal(600 * 400 * sizes[t.Index] / 24, t.Width * t.Height, 3);
+            Assert.InRange(t.X, -0.001, 600);
+            Assert.InRange(t.X + t.Width, 0, 600.001);
+            Assert.InRange(t.Y + t.Height, 0, 400.001);
+        }
+        Assert.Equal(FileKind.Videos, FileKinds.Of("Movie.MKV"));
+        Assert.Equal(FileKind.Other, FileKinds.Of("README"));
     }
 
     [Fact]

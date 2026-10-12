@@ -5,6 +5,54 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.66 Dev] - 2026-10-12
+
+### Boot Timer (New Tool)
+- Restart the PC from Kodiak Cleaner and see how long shutting down, Windows starting and the desktop settling took, plus which startup programs, drivers and services slowed it, slowest first, with Show in Startup and Turn Off at Startup.
+
+### Cleaner
+- New Windows items: Start Menu Shortcuts and Desktop Shortcuts (broken ones only), Windows Widgets Cache, Windows Notifications and Game Explorer Cache.
+- Every Chromium browser (Chrome, Edge, Brave, Vivaldi, Helium) gets Metrics Temp Files, Session and Bookmarks Backup; every Firefox-based browser gets Session, Bookmarks Backup, Crash Reports, Site Preferences and Saved Form Information. Saved passwords and form data are Advanced Cleaning items with a warning.
+- New program groups, shown only when installed: AMD Software, AnyDesk, Discord, FileZilla, Microsoft OneDrive, Node.js, NVIDIA, Steam, Telegram Desktop, VLC Media Player, WhatsApp and Zoom.
+- New Advanced Cleaning items: Windows Event Trace Logs, Driver Installation Log Files, IIS Log Files, Windows Internet Cookies, Taskbar Jump Lists, your Downloads folder by kind (Programs, Compressed Files, Pictures, Audio and Video, Documents, Other Files), Other Explorer Lists, Recently Typed URLs, User Assist History, Menu Order Cache, Window Size and Location Cache, Registry Editor Last Key, 7-Zip History, Environment Path (missing folders only) and Wipe Free Space. Registry items are backed up first, and the risky ones ask before they are ticked.
+
+### Defrag and TRIM (New Tool)
+- Lists your drives with their type, file system, size and use. Hard drives get Defragment, SSD and NVMe drives get TRIM, and flash drives are left alone. Everything that needs it is ticked by default, so one click optimizes every drive the right way.
+- Analyze shows how fragmented hard drives are. Optimize Selected runs one drive at a time with progress, and Stop ends it. Uses Windows' own optimizer and needs administrator rights.
+
+### Disk Analyzer
+- New Choose What to Analyze window: pick All Drives (every local drive at once), Drives (tick one or more, network drives too) or Folder. Each drive shows its name, file system, a fill bar and how much is free; Folder has a Browse button and quick picks for Desktop, Documents, Downloads, Music, Pictures, Videos and your user folder.
+- A map of what's using the space: every folder and file in the open folder is a box sized by the space it takes and colored by the kind of file it holds most (Archives, Documents, Music, Pictures, Programs, Videos, Other). Big folders show the folders inside them too, up to three levels. Hover a box for its size, share, file count and path; click a folder to look inside.
+- A bar and legend show which kinds of files fill the open folder; hover one to highlight it in the map. A drive also shows how full it is.
+- Go back up with the Up button, the path above the map (click any folder in it), Backspace or the mouse's back button. Right-click any box or row to Copy Path, Look Inside, Move to Recycle Bin (files) or Show in File Explorer.
+- Contents and Largest Files lists beside the map; Largest Files lists the biggest files anywhere inside the open folder.
+- Scanning is much faster: drives, and the folders at the top of each one, are read side by side, with a live count of files and the folder being read, and Cancel. Scan Again repeats the last scan.
+
+### Drive Wiper
+- Erase Entire Drive works on whole physical disks, and several at once.
+- Each drive's type is detected (Hard Drive, SSD, NVMe SSD, Flash Drive) and the right method is used: hard drives and flash drives are overwritten with 1 Pass (Zeros), DoD 3 Passes (DoD 5220.22-M: zeros, ones, random) or DoD 7 Passes (DoD 5220.22-M ECE); SSDs and NVMe drives get their own firmware erase, with a random overwrite when the drive doesn't offer one.
+- Verify the Last Pass (on by default) reads every byte back afterwards, and the drive then gets one empty partition named Wiped.
+- Disks holding Windows, its start-up partition, the page file, Kodiak Cleaner, your user folder or programs can't be ticked. You confirm with a warning listing every drive and method, then by typing ERASE.
+- Free space wiping uses the same DoD patterns; SSDs get a note that it mostly adds wear.
+
+### Driver Cleaner (New Tool)
+- Removes an old AMD, Intel or NVIDIA graphics driver, or a Realtek audio driver, completely before a fresh install: its driver store packages, leftover folders and registry keys. The parts that belong to the driver are ticked; other parts from the same maker are left for you to decide.
+- Cleaning makes a restore point and backs up each driver package first, removes packages with Windows' own tools, backs up registry keys before deleting them and moves folders to the Recycle Bin.
+- Restart in Safe Mode opens Kodiak Cleaner on the Driver Cleaner there for the cleanest removal. A switch stops Windows Update from putting an old driver back.
+- When it's done: Later, Shut Down (to swap the card) or Restart, and Get the Latest Driver opens the maker's own download page.
+
+### Duplicate Finder
+- Search whole drives: one, several or All Drives, with free space shown. Windows, program folders and every account's AppData are always skipped.
+- In-Depth mode finds files that are alike (edited copies, re-saved or resized pictures, older drafts) and ranks them by how alike they are, with the reason shown.
+- Verify Hashes reads the listed files again and confirms each set by SHA-256; a copy that changed since the search is marked and unticked.
+- Similar files are never ticked for you, and removing one asks first.
+
+### System Restore
+- Two tabs: System Restore and Point-in-Time Restore (Windows 11 24H2 and later with the June 2026 update).
+- Point-in-Time Restore: turn it on or off, choose how often Windows takes a snapshot (4 to 24 hours), how long it keeps them (4 to 72 hours) and the most space they may use (2 to 50 GB); see the snapshots and when each expires; Snapshot Now; and Restart to Recovery to restore. Settings are backed up before each change.
+- Create Restore Point now always makes a new point, even when Windows already made one that day, so you can make one right before a big install and keep it much longer than 72 hours.
+- The Windows Shadow Copies cleaning item now says it also removes Point-in-Time Restore snapshots.
+
 ## [0.8.65 Dev] - 2026-10-12
 
 ### Browser Extensions
