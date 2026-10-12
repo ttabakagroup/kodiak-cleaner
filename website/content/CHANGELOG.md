@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.69 Dev] - 2026-10-12
+
+### Disk Analyzer
+- The map, the kind-of-file bar and the list dots now match your color scheme and accent color: every kind of file takes a shade of your accent, turned a little round the color wheel so each kind still stands apart, in the scheme's own button shades for light or dark. Changing the scheme, mode or accent recolors an open map at once.
+
 ## [0.8.68 Dev] - 2026-10-12
 
 ### Drive Wiper

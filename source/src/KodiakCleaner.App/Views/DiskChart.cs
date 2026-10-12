@@ -7,19 +7,22 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using KodiakCleaner.App.ViewModels;
+using KodiakCleaner.Core.Appearance;
 using KodiakCleaner.Core.Tools;
 using KodiakCleaner.Core.Util;
 
 namespace KodiakCleaner.App.Views;
 
 /// <summary>
-/// Disk Analyzer colors: one accent swatch per kind of file, in its button shade for the current theme and mode, so the
-/// labels on it always read (WCAG AA) and nothing outside the theme and accent tables holds a color.
+/// Disk Analyzer colors follow the chosen scheme and accent (Ted, 2026-10-12): every kind of file gets the current accent's hue,
+/// turned a little further round the color wheel per kind, in the scheme's button shade, so the map looks like part of Honey,
+/// Classic or Glacier in light or dark, and the button label color always reads on it (WCAG AA). Other is the accent, nearly grey.
 /// </summary>
 public static class DiskColors
 {
-    // By FileKind: Archives, Documents, Music, Other, Pictures, Programs, Videos.
-    private static readonly string[] Swatches = { "Orange", "Blue", "Pink", "Slate", "Green", "Purple", "Teal" };
+    // Degrees turned from the accent, by FileKind: Archives, Documents, Music, Other, Pictures, Programs, Videos.
+    // The kinds that are usually biggest (Videos, Pictures, Music) sit closest to the accent itself.
+    private static readonly double[] Turns = { -48, 48, -24, 0, 24, 80, 0 };
     private static (Brush Fill, Brush Label)[]? _cache;
 
     static DiskColors() => ThemeManager.Applied += () =>
@@ -28,7 +31,7 @@ public static class DiskColors
         Changed?.Invoke();
     };
 
-    /// <summary>Raised after the theme changes, so charts redraw.</summary>
+    /// <summary>Raised after the scheme, mode or accent changes, so charts redraw.</summary>
     public static event Action? Changed;
 
     public static Brush Fill(FileKind kind) => Get()[(int)kind].Fill;
@@ -38,11 +41,21 @@ public static class DiskColors
     {
         if (_cache is not null) return _cache;
         var res = Application.Current.Resources;
-        var scheme = ThemeManager.SchemeColors;
         Brush primary = res["Primary"] as Brush ?? Brushes.Transparent, onPrimary = res["OnPrimary"] as Brush ?? Brushes.Transparent;
-        return _cache = Swatches.Select(name =>
-            scheme is not null && AccentColors.FillOf(name, scheme, ThemeManager.IsDark) is { } set ? ((Brush)set.Fill, (Brush)set.Label) : (primary, onPrimary)).ToArray();
+        if (res["Accent"] is not SolidColorBrush accent || onPrimary is not SolidColorBrush label)
+            return _cache = FileKinds.All.Select(_ => (primary, onPrimary)).ToArray();
+        var accentHex = Hex(accent.Color);
+        var labelHex = Hex(label.Color);
+        return _cache = FileKinds.All.Select(k =>
+        {
+            var shade = AccentShades.ChartShade(accentHex, Turns[(int)k], k == FileKind.Other ? 0.2 : 1, labelHex);
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(shade));
+            brush.Freeze();
+            return ((Brush)brush, (Brush)label);
+        }).ToArray();
     }
+
+    private static string Hex(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
 }
 
 /// <summary>

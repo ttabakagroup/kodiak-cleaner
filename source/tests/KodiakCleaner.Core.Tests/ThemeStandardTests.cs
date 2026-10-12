@@ -146,4 +146,16 @@ public class ThemeStandardTests
             Assert.True(AccentShades.Contrast(set.OnPrimary, set.Primary) >= 4.5, $"{theme} {windows}: button label");
         }
     }
+
+    [Theory]
+    [InlineData("#D9A441", "#FFFFFF")] // Honey light: white labels
+    [InlineData("#8FB6C7", "#1E2528")] // Glacier dark: dark labels
+    [InlineData("#525F73", "#FFFFFF")] // Slate, a muted accent
+    public void Disk_analyzer_chart_shades_follow_the_accent_and_keep_labels_readable(string accent, string label)
+    {
+        var turns = new[] { -48.0, -24, 0, 24, 48, 80 };
+        var shades = turns.Select(t => AccentShades.ChartShade(accent, t, 1, label)).ToList();
+        Assert.All(shades, c => Assert.True(AccentShades.Contrast(c, label) >= 4.5, $"{c} on {label}"));
+        Assert.Equal(shades.Count, shades.Distinct().Count()); // every kind gets its own color
+    }
 }

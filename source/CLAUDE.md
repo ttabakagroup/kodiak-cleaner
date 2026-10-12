@@ -180,8 +180,8 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Disk Analyzer (Ted, 2026-10-12): `DiskAnalyzerPickWindow` picks All Drives (local only), Drives (ticked, network too) or Folder; drives are read
   in the background with 5 s each. `DiskAnalyzer.Scan` keeps folders only (paths worked out from the parent, per-kind byte totals), reads
   drives and top folders side by side, and the open folder's files are read again on opening (`FilesIn`). `TreemapView` (squarified,
-  `Treemap.Layout`, up to 3 levels) and `KindBarView` color by `FileKind` with `DiskColors`: one accent swatch's button shade per kind
-  (`AccentColors.FillOf`), so labels on it always read. Removing a file updates every folder above it (`DiskNode.FileRemoved`).
+  `Treemap.Layout`, up to 3 levels) and `KindBarView` color by `FileKind` with `DiskColors`, which follow the scheme and accent (Ted, 2026-10-12):
+  the current Accent's hue turned per kind (`AccentShades.ChartShade`), lightness fitted so OnPrimary reads on it (4.5:1). Removing a file updates every folder above it (`DiskNode.FileRemoved`).
 - System Restore page (Ted, Point-in-Time Restore): System Restore | Point-in-Time Restore segments. Create Restore Point uses
   `RestorePoints.CreateNow`, which sets SystemRestorePointCreationFrequency to 0 for that one call (backed up, put back) so it never
   skips quietly. Point-in-Time Restore (`PointInTimeRestore`, Windows 11 24H2/25H2 build x.8737+) reads and writes only the `_UX`

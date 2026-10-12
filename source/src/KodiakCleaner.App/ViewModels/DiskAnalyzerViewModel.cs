@@ -133,6 +133,8 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
     public DiskAnalyzerViewModel()
     {
         _ticker.Tick += (_, _) => ShowProgress();
+        // A new scheme or accent recolors the map at once; the rows and legend are rebuilt so their color dots follow too.
+        DiskColors.Changed += () => { if (Current is { } open && !IsScanning) _ = OpenAsync(open); };
         ChooseCommand = new RelayCommand(ChooseAsync, () => !IsScanning);
         RescanCommand = new RelayCommand(() => ScanAsync(_target!), () => !IsScanning && _target is not null);
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsScanning);

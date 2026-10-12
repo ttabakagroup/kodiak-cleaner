@@ -33,10 +33,6 @@ public static class AccentColors
     public static SolidColorBrush? BrushOf(string name, ResourceDictionary theme, bool dark) =>
         ShadesFor(name, theme, dark) is { } set ? Freeze(Parse(set.Accent)) : null;
 
-    /// <summary>The swatch's button-fill shade in the current theme and mode, with the label color that reads on it (charts).</summary>
-    public static (SolidColorBrush Fill, SolidColorBrush Label)? FillOf(string name, ResourceDictionary theme, bool dark) =>
-        ShadesFor(name, theme, dark) is { } set ? (Freeze(Parse(set.Primary)), Freeze(Parse(set.OnPrimary))) : null;
-
     /// <summary>Overrides the accent keys in a freshly loaded theme dictionary. Unknown names (or Windows with no accent) keep the scheme's own.</summary>
     public static void ApplyTo(ResourceDictionary theme, string name, bool dark)
     {

@@ -41,6 +41,19 @@ public static class AccentShades
         return new AccentShadeSet(accent, accentText, primary, onPrimary, tint);
     }
 
+    /// <summary>
+    /// A chart color that belongs with the current scheme and accent (Disk Analyzer, Ted 2026-10-12): the accent's hue turned by
+    /// <paramref name="turn"/> degrees, its saturation (between <paramref name="minSaturation"/> and <paramref name="maxSaturation"/>, so muted schemes still tell
+    /// kinds apart and bright accents stay soft beside the scheme) times <paramref name="saturationScale"/>, and the lightness moved until <paramref name="label"/> reads on it at 4.5:1.
+    /// </summary>
+    public static string ChartShade(string accentHex, double turn, double saturationScale, string label, double minSaturation = 0.35, double maxSaturation = 0.55)
+    {
+        var (h, s, l) = ToHsl(accentHex);
+        var turned = FromHsl((((h + turn / 360) % 1) + 1) % 1, Math.Clamp(Math.Clamp(s, minSaturation, maxSaturation) * saturationScale, 0, 1), l);
+        bool lightLabel = Luminance(ToRgb(label)) > 0.5;
+        return Fit(turned, new[] { label }, 4.5, lightLabel);
+    }
+
     public static double Contrast(string a, string b)
     {
         double x = Luminance(ToRgb(a)), y = Luminance(ToRgb(b));
