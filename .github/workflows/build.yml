@@ -54,10 +54,14 @@ jobs:
         run: |
           if ("${{ github.ref_type }}" -eq "tag") { ./build.ps1 -Release } else { ./build.ps1 }
 
+      # Every build is also kept in releases/ and the download bucket, so this copy is short-lived, and a full artifact
+      # store never fails the build.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: KodiakCleaner-${{ steps.version.outputs.tag }}-run${{ github.run_number }}
           path: source/dist/*
+          retention-days: 2
 
       - name: Attach the MSI and Portable ZIP to the GitHub release
         if: github.ref_type == 'tag'
