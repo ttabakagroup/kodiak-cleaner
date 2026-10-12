@@ -207,6 +207,79 @@ public sealed class DuplicateFinderTests : IDisposable
     public void Name_keys_drop_copy_marks(string name, string key) => Assert.Equal(key, SimilarFinder.NameKey(name));
 
     [Fact]
+    public void Match_similar_names_finds_files_by_name_even_when_contents_differ()
+    {
+        Write("a/Quarterly Report 2024-03-31.txt", Text(300, 11));
+        Write("b/quarterly_reprot.txt", Text(300, 12));
+        Write("c/Shopping List.txt", Text(300, 13));
+
+        var plain = DuplicateFinder.Search(new DuplicateSearchOptions { Folders = new[] { _root }, FindSimilar = true });
+        Assert.Empty(plain.Similar); // contents differ, so names alone don't count unless asked
+
+        var byName = DuplicateFinder.Search(new DuplicateSearchOptions
+        {
+            Folders = new[] { _root },
+            FindSimilar = true,
+            MatchNames = true,
+            Names = new NameRules { IgnoreDates = true },
+        });
+        var group = Assert.Single(byName.Similar);
+        Assert.Equal(new[] { "Quarterly Report 2024-03-31.txt", "quarterly_reprot.txt" },
+            group.Files.Select(f => Path.GetFileName(f.File.Path)).OrderBy(n => n, StringComparer.Ordinal));
+        Assert.Contains("ames", group.Files[0].Why);
+    }
+
+    [Fact]
+    public void Names_are_only_compared_across_file_types_when_asked()
+    {
+        Write("a/Resume John Smith.docx", Text(200, 21));
+        Write("b/John Smith Resume.pdf", Text(200, 22));
+        DuplicateSearchOptions Options(bool any) => new()
+        {
+            Folders = new[] { _root }, FindSimilar = true, MatchNames = true, Names = new NameRules { AnyFileType = any },
+        };
+        Assert.Empty(DuplicateFinder.Search(Options(false)).Similar);
+        Assert.Equal(2, Assert.Single(DuplicateFinder.Search(Options(true)).Similar).Files.Count); // words in another order
+    }
+
+    [Fact]
+    public void Name_patterns_gather_matching_files_into_a_set()
+    {
+        Write("x/Invoice 1001.pdf", Text(50, 31));
+        Write("y/invoice 1002.PDF", Text(50, 32));
+        Write("z/Invoice draft.pdf", Text(50, 33));
+        Write("z/Receipt 1003.pdf", Text(50, 34));
+
+        var result = DuplicateFinder.Search(new DuplicateSearchOptions
+        {
+            Folders = new[] { _root }, FindSimilar = true, Names = new NameRules { Patterns = new[] { "Invoice #.pdf", "Nothing*" } },
+        });
+
+        var group = Assert.Single(result.Similar);
+        Assert.Equal("Invoice #.pdf", group.Pattern);
+        Assert.Equal(new[] { "Invoice 1001.pdf", "invoice 1002.PDF" }, group.Files.Select(f => Path.GetFileName(f.File.Path)));
+        Assert.Matches(SimilarFinder.PatternRegex("IMG_????"), "img_0041");
+        Assert.DoesNotMatch(SimilarFinder.PatternRegex("IMG_????"), "IMG_00412");
+    }
+
+    [Theory]
+    [InlineData("Scan 2024-05-01 14-30-05.pdf", "scan")]
+    [InlineData("Scan_20240501.pdf", "scan")]
+    [InlineData("Photo 01.05.2024.jpg", "photo")]
+    public void Dates_can_be_left_out_of_names(string name, string key) =>
+        Assert.Equal(key, SimilarFinder.NameKey(name, new NameRules { IgnoreDates = true }));
+
+    [Fact]
+    public void Numbers_and_own_words_can_be_left_out_of_names()
+    {
+        Assert.Equal("img", SimilarFinder.NameKey("IMG_0041.jpg", new NameRules { IgnoreNumbers = true }));
+        Assert.Equal("budget", SimilarFinder.NameKey("Budget DRAFT scan.xlsx", new NameRules { ExtraWords = new[] { "draft", " Scan " } }));
+        Assert.Equal("report final", SimilarFinder.NameKey("Report final.docx", new NameRules { IgnoreVersionWords = false }));
+        Assert.Equal("report copy", SimilarFinder.NameKey("Report - Copy.docx", new NameRules { IgnoreCopyMarks = false, IgnoreVersionWords = false }));
+        Assert.Equal("1", SimilarFinder.NameKey("1.txt", new NameRules { IgnoreNumbers = true })); // nothing left: plain name
+    }
+
+    [Fact]
     public void Numbered_series_count_for_little()
     {
         Assert.Equal(0.3, SimilarFinder.NameLikeness("img 0041", "img 0042"));

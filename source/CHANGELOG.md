@@ -5,6 +5,14 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.67 Dev] - 2026-10-12
+
+### Duplicate Finder
+- In-Depth can now match files by similar names alone, even when their contents differ, with a Name Similarity setting.
+- Leave copy marks, version words, dates and times, numbers or your own words out when names are compared, and compare names across file types if you like.
+- Name Patterns: type a pattern such as "Invoice #.pdf" to list every matching file together. # stands for a number, ? for one character and a star for any text.
+- The "MB" label next to the size setting is no longer cut off.
+
 ## [0.8.66 Dev] - 2026-10-12
 
 ### Boot Timer (New Tool)

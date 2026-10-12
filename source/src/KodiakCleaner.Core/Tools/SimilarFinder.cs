@@ -6,11 +6,36 @@ namespace KodiakCleaner.Core.Tools;
 /// <summary>A file in a similar set, with how alike it is to its closest match in the set and why.</summary>
 public sealed record SimilarFile(DuplicateFile File, double Score, string Why);
 
-/// <summary>Files that are alike without being identical. <see cref="Score"/> is the closest pair's likeness (0 to 1).</summary>
-public sealed record SimilarGroup(double Score, IReadOnlyList<SimilarFile> Files);
+/// <summary>
+/// Files that are alike without being identical. <see cref="Score"/> is the closest pair's likeness (0 to 1).
+/// <see cref="Pattern"/> is set for a set made by a name pattern the person typed (then Score is 1 and the files' scores 0).
+/// </summary>
+public sealed record SimilarGroup(double Score, IReadOnlyList<SimilarFile> Files, string? Pattern = null);
+
+/// <summary>What to leave out when comparing file names, and name patterns that gather files into a set.</summary>
+public sealed class NameRules
+{
+    /// <summary>"Copy of", "(1)", "- Copy".</summary>
+    public bool IgnoreCopyMarks { get; init; } = true;
+    /// <summary>final, old, backup, edited, new, v2 and the like at the end of a name.</summary>
+    public bool IgnoreVersionWords { get; init; } = true;
+    /// <summary>Dates such as 2024-05-01, 20240501, 01.05.2024 and times such as 14-30-05.</summary>
+    public bool IgnoreDates { get; init; }
+    /// <summary>Every number, so "IMG_0041" and "IMG_0042" count as the same name.</summary>
+    public bool IgnoreNumbers { get; init; }
+    /// <summary>The person's own words to leave out, anywhere in a name ("draft", "scan").</summary>
+    public IReadOnlyList<string> ExtraWords { get; init; } = Array.Empty<string>();
+    /// <summary>Name patterns: * any text, ? one character, # a number. Files matching the same pattern form a set.</summary>
+    public IReadOnlyList<string> Patterns { get; init; } = Array.Empty<string>();
+    /// <summary>Compare names across file types ("Report.docx" and "Report.pdf"), not only within one type.</summary>
+    public bool AnyFileType { get; init; }
+
+    public static NameRules Default { get; } = new();
+}
 
 /// <summary>How alike two files are, part by part (each 0 to 1; Picture is null when either isn't a readable picture).</summary>
-public sealed record Likeness(double Name, double Size, double Content, double? Picture)
+/// <param name="ByName">The pair was matched by name alone (Match Similar Names), so the name decides the score.</param>
+public sealed record Likeness(double Name, double Size, double Content, double? Picture, bool ByName = false)
 {
     /// <summary>
     /// One number for the pair. Contents count most; names and sizes only lift a pair whose contents are partly the same,
@@ -25,8 +50,10 @@ public sealed record Likeness(double Name, double Size, double Content, double? 
             var byName = content * 0.60 + Name * 0.30 + Size * 0.10;
             // A re-saved or resized picture differs in every byte and size; how alike it looks is the measure.
             var byPicture = Picture ?? 0;
+            // Matching by name was asked for, so a close name counts by itself; shared contents and size still lift it a little.
+            var byNameAlone = ByName ? Name * 0.9 + Math.Max(content, Size) * 0.1 : 0;
             // Identical files are listed as identical, so a similar pair tops out at 99% rather than rounding up to 100%.
-            return Math.Clamp(Math.Max(Math.Max(byContent, byName), byPicture), 0, 0.99);
+            return Math.Clamp(Math.Max(Math.Max(byContent, byName), Math.Max(byPicture, byNameAlone)), 0, 0.99);
         }
     }
 
@@ -65,6 +92,7 @@ public static class SimilarFinder
     private const int ContentBytes = 8 * 1024 * 1024;
     private const int MaxPairs = 200_000;
     private const int MaxGroups = 2_000;
+    private const int MaxPatternFiles = 1_000;
 
     private static readonly HashSet<string> PictureTypes = new(StringComparer.OrdinalIgnoreCase)
         { ".bmp", ".gif", ".heic", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp" };
@@ -83,11 +111,14 @@ public static class SimilarFinder
             pairs.Add(a < b ? (a, b) : (b, a));
         }
 
-        var keys = pool.Select(f => NameKey(Path.GetFileName(f.Path))).ToArray();
+        var rules = options.Names;
+        var keys = pool.Select(f => NameKey(Path.GetFileName(f.Path), rules)).ToArray();
         var kinds = pool.Select(f => Kind(Path.GetExtension(f.Path))).ToArray();
+        // Which files' names may be compared: the same kind of file, or any two files when the person asked for that.
+        var nameKinds = rules.AnyFileType ? pool.Select(_ => "").ToArray() : kinds;
 
         // 1. Same kind of file and the same name once copy marks are taken off ("Report (1)" and "Copy of Report").
-        foreach (var bucket in Enumerable.Range(0, pool.Count).Where(i => keys[i].Length >= 3).GroupBy(i => (kinds[i], keys[i])))
+        foreach (var bucket in Enumerable.Range(0, pool.Count).Where(i => keys[i].Length >= 3).GroupBy(i => (nameKinds[i], keys[i])))
         {
             var members = bucket.OrderBy(i => pool[i].Size).ToList();
             for (int a = 0; a < members.Count; a++)
@@ -106,6 +137,32 @@ public static class SimilarFinder
                 for (int b = a + 1; b < bySize.Count && b <= a + 8 && pool[bySize[b]].Size <= size + size / 7 + 1; b++)
                     if (pool[bySize[b]].Size == size || NameLikeness(keys[bySize[a]], keys[bySize[b]]) >= 0.6)
                         AddPair(bySize[a], bySize[b]);
+            }
+        }
+
+        // 5. Match Similar Names: names that share a word (or their first letters) are compared, whatever their sizes.
+        if (options.MatchNames)
+        {
+            var blocks = new Dictionary<(string, string), List<int>>();
+            for (int i = 0; i < pool.Count; i++)
+            {
+                if (keys[i].Length < 3) continue;
+                var tokens = keys[i].Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(t => t.Length >= 3)
+                    .Append("^" + keys[i][..Math.Min(4, keys[i].Length)]).Distinct();
+                foreach (var t in tokens)
+                {
+                    if (!blocks.TryGetValue((nameKinds[i], t), out var list)) blocks[(nameKinds[i], t)] = list = new List<int>();
+                    list.Add(i);
+                }
+            }
+            // A word every other file shares ("img", "scan") would pair everything with everything; such blocks are skipped.
+            foreach (var block in blocks.Values.Where(b => b.Count is > 1 and <= 150))
+            {
+                ct.ThrowIfCancellationRequested();
+                for (int a = 0; a < block.Count; a++)
+                    for (int b = a + 1; b < block.Count; b++)
+                        if (keys[block[a]] == keys[block[b]] || NameLikeness(keys[block[a]], keys[block[b]]) >= options.MinNameSimilarity)
+                            AddPair(block[a], block[b]);
             }
         }
 
@@ -157,13 +214,45 @@ public static class SimilarFinder
                 if (Print(a, bits) is { } pa && Print(b, bits) is { } pb) content = Jaccard(pa, pb);
             }
             var likeness = new Likeness(name, size, content, picture);
-            // A pair needs some real overlap (shared contents or a look-alike picture); a shared name alone isn't enough.
+            // A pair needs some real overlap (shared contents or a look-alike picture); a shared name alone isn't enough,
+            // unless the person asked to match similar names.
             if (likeness.Score >= options.MinSimilarity && (content >= 0.15 || picture >= PictureAlike))
                 accepted.Add((a, b, likeness));
+            else if (options.MatchNames && name >= options.MinNameSimilarity && (rules.AnyFileType || kinds[a] == kinds[b]))
+                accepted.Add((a, b, likeness with { ByName = true }));
         }
         progress?.Report(new DuplicateProgress("Similar", files.Count, pairs.Count, pairs.Count));
 
-        return Group(pool, accepted);
+        return ByPattern(files, rules, ct).Concat(Group(pool, accepted)).ToList();
+    }
+
+    /// <summary>One set per name pattern the person typed, with every file whose name matches it (in pattern order).</summary>
+    private static IEnumerable<SimilarGroup> ByPattern(IReadOnlyList<DuplicateFile> files, NameRules rules, CancellationToken ct)
+    {
+        foreach (var pattern in rules.Patterns.Select(p => p.Trim()).Where(p => p.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            ct.ThrowIfCancellationRequested();
+            var regex = PatternRegex(pattern);
+            var matches = files.Where(f => regex.IsMatch(Path.GetFileName(f.Path)) || regex.IsMatch(Path.GetFileNameWithoutExtension(f.Path)))
+                .OrderBy(f => Path.GetFileName(f.Path), StringComparer.OrdinalIgnoreCase).ThenBy(f => f.Path, StringComparer.OrdinalIgnoreCase)
+                .Take(MaxPatternFiles).ToList();
+            if (matches.Count < 2) continue;
+            var why = $"Matches \"{pattern}\"";
+            yield return new SimilarGroup(1, matches.Select(f => new SimilarFile(f, 0, why)).ToList(), pattern);
+        }
+    }
+
+    /// <summary>A name pattern as a whole-name match, case ignored: * any text, ? one character, # a number.</summary>
+    public static Regex PatternRegex(string pattern)
+    {
+        var body = string.Concat(pattern.Select(c => c switch
+        {
+            '*' => ".*",
+            '?' => ".",
+            '#' => @"\d+",
+            _ => Regex.Escape(c.ToString()),
+        }));
+        return new Regex("^" + body + "$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
     }
 
     /// <summary>Joins accepted pairs into sets; each file shows its closest match in its set. Most alike sets first.</summary>
@@ -199,23 +288,43 @@ public static class SimilarFinder
         new(@"^copy( \(\d+\))? of\s+", RegexOptions.CultureInvariant),
         new(@"\s*-\s*copy(\s*\(\d+\))?$", RegexOptions.CultureInvariant),
         new(@"\s*[\(\[]\d{1,3}[\)\]]$", RegexOptions.CultureInvariant),
-        new(@"[\s_.-]+(copy|final|old|backup|bak|new|edited|edit|orig|original|v\d+(\.\d+)*)$", RegexOptions.CultureInvariant),
+        new(@"[\s_.-]+copy$", RegexOptions.CultureInvariant),
     };
 
+    private static readonly Regex VersionWords =
+        new(@"[\s_.-]+(final|old|backup|bak|new|edited|edit|orig|original|latest|updated|revised|rev\d*|v\d+(\.\d+)*)$", RegexOptions.CultureInvariant);
+
+    private static readonly Regex Dates = new(
+        @"(?<!\d)(\d{4}[-_. ]?\d{2}[-_. ]?\d{2}|\d{1,2}[-_. ]\d{1,2}[-_. ]\d{2,4})([-_. t]?\d{2}[-_.: ]?\d{2}([-_.: ]?\d{2})?)?(?!\d)",
+        RegexOptions.CultureInvariant);
+
     /// <summary>A file name without its extension, case or copy marks, punctuation turned into single spaces.</summary>
-    public static string NameKey(string fileName)
+    public static string NameKey(string fileName) => NameKey(fileName, NameRules.Default);
+
+    /// <summary>
+    /// A file name ready to compare: no extension or case, the parts <paramref name="rules"/> say to leave out taken off,
+    /// punctuation turned into single spaces. When nothing would be left, the plain name is kept.
+    /// </summary>
+    public static string NameKey(string fileName, NameRules rules)
     {
-        var stem = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant().Trim();
+        var original = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant().Trim();
+        var stem = original;
         for (bool changed = true; changed;)
         {
             changed = false;
-            foreach (var mark in CopyMarks)
+            var marks = (rules.IgnoreCopyMarks ? CopyMarks : Array.Empty<Regex>()).Concat(rules.IgnoreVersionWords ? new[] { VersionWords } : Array.Empty<Regex>());
+            foreach (var mark in marks)
             {
                 var next = mark.Replace(stem, "").Trim();
                 if (next.Length > 0 && next != stem) { stem = next; changed = true; }
             }
         }
-        return Regex.Replace(stem, @"[^\p{L}\p{N}]+", " ").Trim();
+        if (rules.IgnoreDates) stem = Dates.Replace(stem, " ");
+        foreach (var word in rules.ExtraWords.Select(w => w.Trim().ToLowerInvariant()).Where(w => w.Length > 0))
+            stem = Regex.Replace(stem, @"(?<![\p{L}\p{N}])" + Regex.Escape(word) + @"(?![\p{L}\p{N}])", " ", RegexOptions.CultureInvariant);
+        if (rules.IgnoreNumbers) stem = Regex.Replace(stem, @"\d+", " ");
+        var key = Regex.Replace(stem, @"[^\p{L}\p{N}]+", " ").Trim();
+        return key.Length > 0 ? key : Regex.Replace(original, @"[^\p{L}\p{N}]+", " ").Trim();
     }
 
     /// <summary>
@@ -227,6 +336,14 @@ public static class SimilarFinder
         if (a.Length == 0 || b.Length == 0) return 0;
         if (a == b) return 1;
         if (Regex.Replace(a, @"\d", "") == Regex.Replace(b, @"\d", "")) return 0.3;
+        // Words in another order ("smith john resume", "john smith resume") are the same name.
+        static string Sorted(string s) => string.Join(' ', s.Split(' ', StringSplitOptions.RemoveEmptyEntries).Order(StringComparer.Ordinal));
+        return Math.Max(EditLikeness(a, b), EditLikeness(Sorted(a), Sorted(b)));
+    }
+
+    private static double EditLikeness(string a, string b)
+    {
+        if (a == b) return 1;
         a = a.Length > 120 ? a[..120] : a;
         b = b.Length > 120 ? b[..120] : b;
         var prev = new int[b.Length + 1];

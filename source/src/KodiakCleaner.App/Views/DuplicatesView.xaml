@@ -100,18 +100,52 @@
 
                     <TextBlock Text="Options" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
                     <DockPanel Margin="0,10,0,0">
-                        <TextBlock DockPanel.Dock="Right" Text="MB" VerticalAlignment="Center" Margin="8,0,0,0" Width="16" />
+                        <TextBlock DockPanel.Dock="Right" Text="MB" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
                         <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinSizeMb, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock Text="Minimum File Size" VerticalAlignment="Center" />
                     </DockPanel>
                     <DockPanel Margin="0,8,0,0" Visibility="{Binding InDepth, Converter={StaticResource BoolToVis}}"
                                ToolTip="How alike two files must be to be listed as similar, from 30% to 99%.">
-                        <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="16" />
+                        <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
                         <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinLikeness, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock Text="Minimum Similarity" VerticalAlignment="Center" />
                     </DockPanel>
                     <CheckBox Content="Include Hidden Files" IsChecked="{Binding IncludeHidden}" Margin="0,10,0,0" />
                     <CheckBox Content="Names Must Match Too" IsChecked="{Binding MatchName}" Margin="0,6,0,0" />
+
+                    <!-- In-Depth only: how names are compared, and patterns that gather files the person expects to belong together. -->
+                    <StackPanel Visibility="{Binding InDepth, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Name Matching" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
+                        <CheckBox Content="Any File Type" IsChecked="{Binding AnyFileType}" Margin="0,10,0,0"
+                                  ToolTip="Compare names across file types too, so Report.docx and Report.pdf can be listed together" />
+                        <CheckBox Content="Match Similar Names" IsChecked="{Binding MatchNames}" Margin="0,6,0,0"
+                                  ToolTip="List files whose names are alike even when their contents differ" />
+                        <DockPanel Margin="26,8,0,0" Visibility="{Binding MatchNames, Converter={StaticResource BoolToVis}}"
+                                   ToolTip="How alike two names must be, from 50% to 100%. 100% means the same name once the parts below are left out.">
+                            <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
+                            <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinNameLikeness, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Name Similarity" VerticalAlignment="Center" />
+                        </DockPanel>
+
+                        <TextBlock Text="Leave Out of Names" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                        <CheckBox Content="Copy Marks" IsChecked="{Binding IgnoreCopyMarks}" Margin="0,8,0,0"
+                                  ToolTip="Copy of …, … (1), … - Copy" />
+                        <CheckBox Content="Dates and Times" IsChecked="{Binding IgnoreDates}" Margin="0,6,0,0"
+                                  ToolTip="2024-05-01, 20240501, 01.05.2024, 14-30-05" />
+                        <CheckBox Content="Numbers" IsChecked="{Binding IgnoreNumbers}" Margin="0,6,0,0"
+                                  ToolTip="Every number, so IMG_0041 and IMG_0042 count as the same name" />
+                        <CheckBox Content="Version Words" IsChecked="{Binding IgnoreVersionWords}" Margin="0,6,0,0"
+                                  ToolTip="final, old, backup, edited, latest, v2 and similar at the end of a name" />
+                        <TextBlock Text="Your Own Words" Style="{StaticResource SettingTitle}" Margin="0,12,0,0" />
+                        <TextBox Text="{Binding ExtraWords, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Tag="draft, scan, signed" />
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0" Text="Separate words with commas. They're left out wherever they appear in a name." />
+
+                        <TextBlock Text="Name Patterns" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                        <TextBox Text="{Binding NamePatterns, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Tag="Invoice #.pdf"
+                                 AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" VerticalContentAlignment="Top" />
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0"
+                                   Text="One per line. * means any text, ? one character and # a number. Files that match the same pattern are listed together, for example IMG_#.jpg or *holiday*." />
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </Border>
@@ -185,7 +219,7 @@
                                             <TextBlock Text="{Binding Badge}" />
                                         </Border>
                                         <ProgressBar DockPanel.Dock="Right" Style="{StaticResource Meter}" Width="90" Value="{Binding Likeness, Mode=OneWay}"
-                                                     Visibility="{Binding IsSimilar, Converter={StaticResource BoolToVis}}" ToolTip="{Binding BadgeTip}" />
+                                                     Visibility="{Binding ShowMeter, Converter={StaticResource BoolToVis}}" ToolTip="{Binding BadgeTip}" />
                                         <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                     </DockPanel>
                                     <ItemsControl ItemsSource="{Binding Files}">

@@ -28,6 +28,12 @@ public sealed class DuplicateSearchOptions
     public bool FindSimilar { get; init; }
     /// <summary>Lowest likeness (0 to 1) a pair of files needs to be listed as similar.</summary>
     public double MinSimilarity { get; init; } = 0.6;
+    /// <summary>In-depth: files whose names are alike count as similar on their names alone (contents may differ).</summary>
+    public bool MatchNames { get; init; }
+    /// <summary>Lowest name likeness (0 to 1) for <see cref="MatchNames"/>.</summary>
+    public double MinNameSimilarity { get; init; } = 0.8;
+    /// <summary>What to leave out when comparing names, and name patterns that gather files into sets.</summary>
+    public NameRules Names { get; init; } = NameRules.Default;
     /// <summary>
     /// Reads a picture's 64-bit difference hash (9x8 grayscale, each bit = left pixel brighter than its neighbour), or null
     /// when it can't be read. Supplied by the app, which has the Windows picture decoders; without it pictures are compared by bytes only.

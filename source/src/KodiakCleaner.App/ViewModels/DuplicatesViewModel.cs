@@ -15,7 +15,7 @@ public sealed class DuplicateFileItem : ObservableObject
         if (similar is not null)
         {
             Likeness = similar.Score * 100;
-            LikenessText = KodiakCleaner.Core.Tools.Likeness.Pct(similar.Score);
+            LikenessText = group.Pattern is null ? KodiakCleaner.Core.Tools.Likeness.Pct(similar.Score) : "";
             Why = similar.Why;
         }
     }
@@ -78,11 +78,18 @@ public sealed class DuplicateGroupItem : ObservableObject
     {
         Owner = owner;
         IsSimilar = true;
+        Pattern = group.Pattern; // before the files, which leave out the percent for pattern sets
         Likeness = group.Score * 100;
         Header = $"{group.Files.Count} similar files · {ByteSize.Format(group.Files.Sum(f => f.File.Size))} in all";
         Files = group.Files.Select(f => new DuplicateFileItem(f.File, this, f)).ToList();
         _badge = $"Up to {KodiakCleaner.Core.Tools.Likeness.Pct(group.Score)} Alike";
         BadgeTip = "How alike the closest two files in this set are. Similar files aren't exact copies, so check them before removing any.";
+        if (group.Pattern is { } pattern)
+        {
+            Header = $"{group.Files.Count} files matching \"{pattern}\" · {ByteSize.Format(group.Files.Sum(f => f.File.Size))} in all";
+            _badge = "Name Pattern";
+            BadgeTip = "Every file here matches a name pattern you typed. Their contents weren't compared, so check them before removing any.";
+        }
     }
 
     public DuplicatesViewModel Owner { get; }
@@ -90,6 +97,10 @@ public sealed class DuplicateGroupItem : ObservableObject
     /// <summary>Identical sets: the SHA-256 every copy had when searched.</summary>
     public string? Hash { get; }
     public double Likeness { get; }
+    /// <summary>The name pattern that made this set, for a set made by a pattern.</summary>
+    public string? Pattern { get; }
+    /// <summary>The likeness meter is shown for similar sets made by comparing files, not for pattern sets.</summary>
+    public bool ShowMeter => IsSimilar && Pattern is null;
     public string Header { get; }
     public List<DuplicateFileItem> Files { get; }
 
@@ -200,6 +211,37 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     }
     /// <summary>The other segment of the mode switch.</summary>
     public bool Identical { get => !InDepth; set => InDepth = !value; }
+
+    private bool _matchNames;
+    /// <summary>In-depth: files with alike names count as similar even when their contents differ.</summary>
+    public bool MatchNames { get => _matchNames; set => Set(ref _matchNames, value); }
+
+    private string _minNameLikeness = "80";
+    /// <summary>Lowest name likeness, in percent, for Match Similar Names.</summary>
+    public string MinNameLikeness { get => _minNameLikeness; set => Set(ref _minNameLikeness, value); }
+
+    private bool _anyFileType;
+    public bool AnyFileType { get => _anyFileType; set => Set(ref _anyFileType, value); }
+
+    private bool _ignoreCopyMarks = true;
+    public bool IgnoreCopyMarks { get => _ignoreCopyMarks; set => Set(ref _ignoreCopyMarks, value); }
+
+    private bool _ignoreDates;
+    public bool IgnoreDates { get => _ignoreDates; set => Set(ref _ignoreDates, value); }
+
+    private bool _ignoreNumbers;
+    public bool IgnoreNumbers { get => _ignoreNumbers; set => Set(ref _ignoreNumbers, value); }
+
+    private bool _ignoreVersionWords = true;
+    public bool IgnoreVersionWords { get => _ignoreVersionWords; set => Set(ref _ignoreVersionWords, value); }
+
+    private string _extraWords = "";
+    /// <summary>The person's own words to leave out of names, separated by commas.</summary>
+    public string ExtraWords { get => _extraWords; set => Set(ref _extraWords, value); }
+
+    private string _namePatterns = "";
+    /// <summary>Name patterns, one per line (or separated by semicolons).</summary>
+    public string NamePatterns { get => _namePatterns; set => Set(ref _namePatterns, value); }
 
     private string _minLikeness = "60";
     /// <summary>Lowest likeness, in percent, for a pair of files to be listed as similar.</summary>
@@ -356,6 +398,18 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             Protected = ProtectedFolders().ToList(),
             FindSimilar = inDepth,
             MinSimilarity = double.TryParse(MinLikeness, out var pct) ? Math.Clamp(pct, 30, 99) / 100 : 0.6,
+            MatchNames = MatchNames,
+            MinNameSimilarity = double.TryParse(MinNameLikeness, out var namePct) ? Math.Clamp(namePct, 50, 100) / 100 : 0.8,
+            Names = new NameRules
+            {
+                AnyFileType = AnyFileType,
+                IgnoreCopyMarks = IgnoreCopyMarks,
+                IgnoreDates = IgnoreDates,
+                IgnoreNumbers = IgnoreNumbers,
+                IgnoreVersionWords = IgnoreVersionWords,
+                ExtraWords = ExtraWords.Split(',', ';').Select(w => w.Trim()).Where(w => w.Length > 0).ToList(),
+                Patterns = NamePatterns.Split('\n', '\r', ';').Select(p => p.Trim()).Where(p => p.Length > 0).ToList(),
+            },
             PictureHash = PictureHasher.Hash,
         };
         var progress = new Progress<DuplicateProgress>(p => Summary = p.Stage switch

@@ -186,6 +186,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   without copy marks, sizes, and pictures by a 64-bit difference hash (`PictureHasher`, Windows' decoders). Similar files are never ticked
   for the person (Keep Newest/Oldest act on identical sets only) and removing them asks with a caution. Verify Hashes re-reads the shown
   files in full and compares SHA-256; changed copies are unticked and marked.
+  Name Matching (Ted, 2026-10-12, In-Depth only, `NameRules`): Match Similar Names lists files whose names are alike (edit distance,
+  words in any order; Name Similarity %, default 80) even when contents differ; Leave Out of Names (Copy Marks and Version Words on,
+  Dates and Times and Numbers off) plus the person's own words; Any File Type compares names across types. Name Patterns (* any text,
+  ? one character, # a number) make one set per pattern, shown first with a Name Pattern badge and no percent. Options aren't saved yet.
 - Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
   description or labels). Labels are read from the page templates themselves on the first search, so new settings are found automatically.
   The Check for Updates interval is a dropdown (Ted, 0.8.45) so more choices fit.
