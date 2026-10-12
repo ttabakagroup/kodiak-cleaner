@@ -14,6 +14,11 @@ public enum WipeMethod
     Dod3,
     /// <summary>DoD 5220.22-M ECE: the 3-pass pattern, a random pass, then the 3-pass pattern again (7 passes).</summary>
     Dod7,
+    /// <summary>
+    /// 30 passes: the DoD 3-pass pattern (zeros, ones, random) ten times over. Not a published standard; for people who
+    /// want the most passes. No modern drive needs more than one.
+    /// </summary>
+    Pass30,
     /// <summary>The drive's own firmware erase (NVMe crypto or block erase), the only way to reach every flash cell.</summary>
     Firmware,
 }
@@ -25,13 +30,73 @@ public sealed record WipePass(byte? Fill)
     public string Name => Fill switch { null => "Random Data", 0x00 => "Zeros", 0xFF => "Ones", var b => $"0x{b:X2}" };
 }
 
+/// <summary>How far an Entire Drive wipe goes.</summary>
+public enum WipeLevel
+{
+    /// <summary>Removes the partition tables (MBR or GPT) and boot sectors only: the drive looks empty, but the data is still on it.</summary>
+    Quick,
+    /// <summary>Every sector once with zeros (NIST SP 800-88 Clear); SSD and NVMe use their firmware erase.</summary>
+    Thorough,
+    /// <summary>The chosen security method (DoD 3, DoD 7 or 30 passes) with the read-back check; SSD and NVMe use their firmware erase.</summary>
+    Secure,
+}
+
+/// <summary>How the drive is set up after wiping; null everywhere means "leave it uninitialized, like new from the factory".</summary>
+public sealed record DiskFormat(string FileSystem, bool Gpt, string Label)
+{
+    public static readonly string[] FileSystems = ["exFAT", "FAT32", "NTFS"];
+    public string PartitionStyle => Gpt ? "GPT" : "MBR";
+
+    /// <summary>Only letters, digits, spaces, hyphens and underscores, and no longer than the file system allows.</summary>
+    public string SafeLabel => new string(Label.Where(c => char.IsLetterOrDigit(c) || c is ' ' or '-' or '_')
+        .Take(FileSystem.Equals("NTFS", StringComparison.OrdinalIgnoreCase) ? 32 : 11).ToArray()).Trim();
+}
+
 public static class WipeMethods
 {
+    public static string LevelName(WipeLevel l) => l switch { WipeLevel.Quick => "Quick", WipeLevel.Thorough => "Thorough", _ => "Secure" };
+
+    /// <summary>What actually happens to one drive for a wipe level (null = no overwrite, only the partition data is removed).</summary>
+    public static WipeMethod? ForLevel(WipeLevel level, MediaKind kind, WipeMethod secure) => level switch
+    {
+        WipeLevel.Quick => null,
+        WipeLevel.Thorough => Recommended(kind, WipeMethod.Zeros),
+        _ => Recommended(kind, secure),
+    };
+
+    /// <summary>Why a format can't be used on a drive of this size (null = it can).</summary>
+    public static string? FormatProblem(long size, DiskFormat? format)
+    {
+        const long GB = 1024L * 1024 * 1024;
+        if (format is null) return null;
+        if (!format.Gpt && size > 2048 * GB) return "MBR can only use the first 2 TB of a drive this size. Choose GPT.";
+        if (format.FileSystem.Equals("FAT32", StringComparison.OrdinalIgnoreCase) && size > 32 * GB)
+            return "Windows only formats drives up to 32 GB as FAT32. Choose exFAT or NTFS.";
+        return null;
+    }
+
+    /// <summary>
+    /// The diskpart script run after wiping: clean always removes the partition tables (MBR, GPT and its backup at the end of the
+    /// drive) and boot sectors, leaving the drive uninitialized; a format then sets the partition style, makes one partition and formats it.
+    /// </summary>
+    public static List<string> DiskpartScript(int disk, DiskFormat? format)
+    {
+        var lines = new List<string> { $"select disk {disk}", "clean" };
+        if (format is null) return lines;
+        lines.Add(format.Gpt ? "convert gpt" : "convert mbr");
+        lines.Add("create partition primary");
+        var label = format.SafeLabel;
+        lines.Add($"format fs={format.FileSystem.ToLowerInvariant()} quick" + (label.Length > 0 ? $" label=\"{label}\"" : ""));
+        lines.Add("assign");
+        return lines;
+    }
+
     public static string Name(WipeMethod m) => m switch
     {
         WipeMethod.Zeros => "1 Pass (Zeros)",
         WipeMethod.Dod3 => "DoD 3 Passes",
         WipeMethod.Dod7 => "DoD 7 Passes",
+        WipeMethod.Pass30 => "30 Passes",
         _ => "Firmware Secure Erase",
     };
 
@@ -40,6 +105,7 @@ public static class WipeMethods
         WipeMethod.Zeros => "NIST SP 800-88 Clear",
         WipeMethod.Dod3 => "DoD 5220.22-M",
         WipeMethod.Dod7 => "DoD 5220.22-M ECE",
+        WipeMethod.Pass30 => "DoD 5220.22-M pattern, 10 times (not a standard)",
         _ => "NIST SP 800-88 Purge",
     };
 
@@ -51,6 +117,7 @@ public static class WipeMethods
         WipeMethod.Zeros => [Zero],
         WipeMethod.Dod3 => [Zero, One, Random],
         WipeMethod.Dod7 => [Zero, One, Random, Random, Zero, One, Random],
+        WipeMethod.Pass30 => Enumerable.Repeat(new[] { Zero, One, Random }, 10).SelectMany(p => p).ToList(),
         _ => [],
     };
 
@@ -62,6 +129,7 @@ public static class WipeMethods
         1 => Passes(WipeMethod.Zeros),
         3 => Passes(WipeMethod.Dod3),
         7 => Passes(WipeMethod.Dod7),
+        30 => Passes(WipeMethod.Pass30),
         _ => Enumerable.Range(0, passes).Select(i => i == 0 ? Zero : Random).ToList(),
     };
 

@@ -383,8 +383,14 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
         foreach (var (label, value) in new[] { ("Free Space Only", false), ("Entire Drive", true) })
             Modes.Add(new Choice<bool>(label, value, !value, v => { EntireDrive = v; }));
-        foreach (var m in new[] { WipeMethod.Zeros, WipeMethod.Dod3, WipeMethod.Dod7 })
+        foreach (var m in new[] { WipeMethod.Zeros, WipeMethod.Dod3, WipeMethod.Dod7, WipeMethod.Pass30 })
             MethodChoices.Add(new Choice<WipeMethod>(WipeMethods.Name(m), m, m == Method, v => Method = v));
+        foreach (var l in new[] { WipeLevel.Quick, WipeLevel.Thorough, WipeLevel.Secure })
+            LevelChoices.Add(new Choice<WipeLevel>(WipeMethods.LevelName(l), l, l == Level, v => Level = v));
+        foreach (var fs in DiskFormat.FileSystems)
+            FileSystemChoices.Add(new Choice<string>(fs, fs, fs == FileSystem, v => FileSystem = v));
+        foreach (var (label, gpt) in new[] { ("GPT", true), ("MBR", false) })
+            StyleChoices.Add(new Choice<bool>(label, gpt, gpt == Gpt, v => Gpt = v));
     }
 
     private bool _loaded;
@@ -400,6 +406,53 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public ObservableCollection<WipeDiskRow> Disks { get; } = new();
     public List<Choice<bool>> Modes { get; } = new();
     public List<Choice<WipeMethod>> MethodChoices { get; } = new();
+    public List<Choice<WipeLevel>> LevelChoices { get; } = new();
+    public List<Choice<string>> FileSystemChoices { get; } = new();
+    public List<Choice<bool>> StyleChoices { get; } = new();
+
+    private WipeLevel _level = WipeLevel.Secure;
+    /// <summary>Quick (partition data only), Thorough (one pass or firmware erase) or Secure (the chosen passes or firmware erase).</summary>
+    public WipeLevel Level
+    {
+        get => _level;
+        private set
+        {
+            Set(ref _level, value);
+            OnPropertyChanged(nameof(ShowSecurity));
+            OnPropertyChanged(nameof(ShowVerify));
+            OnPropertyChanged(nameof(MethodHint));
+            foreach (var d in Disks) d.Method = MethodFor(d.Disk);
+        }
+    }
+
+    /// <summary>The pass choice applies to free space, and to Secure entire-drive wipes.</summary>
+    public bool ShowSecurity => !EntireDrive || Level == WipeLevel.Secure;
+    public bool ShowVerify => EntireDrive && Level != WipeLevel.Quick;
+
+    private bool _leaveUninitialized;
+    /// <summary>On: no partition table at all afterwards, so the drive must be initialized like a new one. Off: it's formatted.</summary>
+    public bool LeaveUninitialized
+    {
+        get => _leaveUninitialized;
+        set
+        {
+            Set(ref _leaveUninitialized, value);
+            OnPropertyChanged(nameof(ShowFormat));
+        }
+    }
+
+    public bool ShowFormat => !LeaveUninitialized;
+
+    private string _fileSystem = "NTFS";
+    public string FileSystem { get => _fileSystem; private set => Set(ref _fileSystem, value); }
+
+    private bool _gpt = true;
+    public bool Gpt { get => _gpt; private set => Set(ref _gpt, value); }
+
+    private string _label = "Wiped";
+    public string Label { get => _label; set => Set(ref _label, value); }
+
+    private DiskFormat? Format => LeaveUninitialized ? null : new DiskFormat(FileSystem, Gpt, Label);
     public ICommand RefreshCommand { get; }
     public ICommand WipeCommand { get; }
     public ICommand CancelCommand { get; }
@@ -416,6 +469,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             Set(ref _entireDrive, value);
             OnPropertyChanged(nameof(DriveNote));
             OnPropertyChanged(nameof(MethodHint));
+            OnPropertyChanged(nameof(ShowSecurity));
+            OnPropertyChanged(nameof(ShowVerify));
         }
     }
 
@@ -458,12 +513,17 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         }
     }
 
-    public string MethodHint => Method switch
-    {
-        WipeMethod.Zeros => "One pass of zeros (NIST SP 800-88 Clear) is enough for any modern hard drive and is the quickest.",
-        WipeMethod.Dod3 => "DoD 5220.22-M: zeros, then ones, then random data, and the last pass is read back to check it.",
-        _ => "DoD 5220.22-M ECE: the three DoD passes, a random pass, then the three DoD passes again. Takes about seven times as long.",
-    };
+    public string MethodHint => EntireDrive && Level == WipeLevel.Quick
+        ? "Quick removes the partition tables (MBR or GPT) and boot sectors in seconds. The drive looks empty, but recovery tools could still find the old files. Use it to reuse a drive you keep."
+        : EntireDrive && Level == WipeLevel.Thorough
+        ? "Thorough writes zeros over every sector of hard drives and flash drives (NIST SP 800-88 Clear), enough for any modern drive. SSD and NVMe drives get their firmware erase."
+        : Method switch
+        {
+            WipeMethod.Zeros => "One pass of zeros (NIST SP 800-88 Clear) is enough for any modern hard drive and is the quickest.",
+            WipeMethod.Dod3 => "DoD 5220.22-M: zeros, then ones, then random data, and the last pass is read back to check it.",
+            WipeMethod.Dod7 => "DoD 5220.22-M ECE: the three DoD passes, a random pass, then the three DoD passes again. Takes about seven times as long.",
+            _ => "30 passes: the DoD pattern (zeros, ones, random) ten times over. It isn't a published standard and no modern drive needs it; it takes about 30 times as long as one pass.",
+        } + (EntireDrive ? " SSD and NVMe drives always get their firmware erase instead." : "");
 
     public string DriveNote => EntireDrive
         ? "Everything on the ticked drives is destroyed and can't be recovered. Drives that hold Windows, Kodiak Cleaner, your user folder or programs can't be ticked."
@@ -473,11 +533,16 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
               ? " This is an SSD: Windows already clears deleted data on it in the background, so overwriting free space mostly adds wear."
               : "");
 
-    private string MethodFor(WipeDisk d)
+    private string MethodFor(WipeDisk d) => WipeMethods.ForLevel(Level, d.Kind, Method) switch
     {
-        var m = WipeMethods.Recommended(d.Kind, Method);
-        return m == WipeMethod.Firmware ? "Firmware Erase" : WipeMethods.Name(m);
-    }
+        null => "Partition Data Only",
+        WipeMethod.Firmware => "Firmware Erase",
+        WipeMethod m => WipeMethods.Name(m),
+    };
+
+    private string AfterText => Format is { } f
+        ? $"Afterwards: one {f.PartitionStyle} partition, formatted {f.FileSystem}" + (f.SafeLabel.Length > 0 ? $" and named {f.SafeLabel}." : ".")
+        : "Afterwards: no partitions and no MBR or GPT at all. Windows will ask to initialize it, like a new drive.";
 
     private async Task RefreshAsync()
     {
@@ -527,11 +592,27 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         var chosen = Disks.Where(d => d.IsChecked && d.CanWipe).ToList();
         if (chosen.Count == 0) return;
         if (!Elevation.IsAdministrator) { Dialogs.Error("Erasing a whole drive needs administrator rights. Use Restart as Administrator, then try again."); return; }
+        foreach (var row in chosen)
+            if (WipeMethods.FormatProblem(row.Disk.Size, Format) is { } problem) { Dialogs.Error($"{row.Disk.Name} ({row.Size}): {problem}"); return; }
+
+        // Three checks (Ted): the summary, then each drive by its number, then the word ERASE.
+        var level = WipeMethods.LevelName(Level);
         var list = string.Join("\n", chosen.Select(d => $"•  {d.Disk.Name} ({d.Size}, {d.Disk.KindName}, {d.Disk.Drives}): {d.Method}"));
-        if (!Dialogs.Warn($"Erase {(chosen.Count == 1 ? "this drive" : $"these {chosen.Count} drives")}?\n\n{list}", "Erase Entire Drive",
-                "Everything on them is destroyed for good, including every partition. Each one gets a single empty drive named Wiped afterwards."))
+        if (!Dialogs.Warn($"{level} wipe of {(chosen.Count == 1 ? "this drive" : $"these {chosen.Count} drives")}?\n\n{list}\n\n{AfterText}",
+                "Check 1 of 3: Erase Entire Drive",
+                "Every file and every partition on them is deleted, and nothing can be recovered afterwards." +
+                (Level == WipeLevel.Quick ? " Quick only removes the partition data, so recovery tools might still find old files." : "")))
             return;
-        var typed = TextPrompt.Ask("Erase Entire Drive", "Type ERASE to confirm:");
+        foreach (var row in chosen)
+        {
+            var d = row.Disk;
+            var typedNumber = TextPrompt.Ask("Check 2 of 3: Confirm the Drive",
+                $"Check 2 of 3 ({chosen.IndexOf(row) + 1} of {chosen.Count} drives)\n\n{d.Name}\n{row.Size}, {d.KindName}, {d.Drives}\n{level} wipe: {row.Method}\n\n" +
+                $"All data on this drive will be deleted and can't be recovered. Type its disk number ({d.Number}) to confirm this is the right drive:");
+            if (typedNumber?.Trim() != d.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)) return;
+        }
+        var typed = TextPrompt.Ask("Check 3 of 3: Start the Wipe",
+            $"Check 3 of 3. {chosen.Count} {(chosen.Count == 1 ? "drive" : "drives")} will be wiped ({level}) and the data can never be recovered.\n\nType ERASE to start:");
         if (!string.Equals(typed?.Trim(), "ERASE", StringComparison.OrdinalIgnoreCase)) return;
 
         IsBusy = true;
@@ -558,13 +639,18 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                 });
                 try
                 {
-                    var r = await DriveWiper.EraseAsync(d, Method, Verify, status, progress, _cts.Token);
+                    var r = await DriveWiper.EraseAsync(d, Level, Method, Verify, Format, status, progress, _cts.Token);
                     Percent = 100;
                     row.Status = r.Verified == false ? $"Erased, {r.Mismatches:N0} Bytes Didn't Verify" : "Erased";
-                    var how = r.FirmwareFellBack ? "overwritten with random data (it offers no firmware erase)"
+                    var how = r.Level == WipeLevel.Quick ? "cleared of its partition data (Quick)"
+                        : r.FirmwareFellBack ? "overwritten with random data (it offers no firmware erase)"
                         : r.Method == WipeMethod.Firmware ? "erased by its firmware" : $"erased with {WipeMethods.Name(r.Method)}";
-                    done.Add($"{d.Name} was {how}" + (r.Verified == true ? " and verified" : r.Verified == false ? $", but {r.Mismatches:N0} bytes didn't verify (the drive may be failing)" : "") +
-                             (r.Reformatted ? $". It's now an empty drive named Wiped{(r.NewLetter is { } l ? $" ({l})" : "")}." : ". Windows couldn't make a new partition on it; use Disk Management to set it up."));
+                    var after = !r.Reformatted
+                        ? ". Windows couldn't finish setting it up afterwards; open Disk Management to initialize and format it."
+                        : r.Format is { } f
+                            ? $". It's now an empty {f.PartitionStyle} drive formatted {f.FileSystem}{(r.NewLetter is { } l ? $" ({l})" : "")}."
+                            : ". It has no partitions or MBR/GPT left; Windows will ask to initialize it, like a new drive.";
+                    done.Add($"{d.Name} was {how}" + (r.Verified == true ? " and verified" : r.Verified == false ? $", but {r.Mismatches:N0} bytes didn't verify (the drive may be failing)" : "") + after);
                 }
                 catch (OperationCanceledException)
                 {

@@ -21,12 +21,14 @@
         <DataTemplate DataType="{x:Type vm:EmptyFoldersViewModel}"><views:EmptyFoldersView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ExtensionsViewModel}"><views:ExtensionsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:LargeFilesViewModel}"><views:LargeFilesView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MassRenameViewModel}"><views:MassRenameView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ScheduledTasksViewModel}"><views:ScheduledTasksView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SystemInfoViewModel}"><views:SystemInfoView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:RestoreViewModel}"><views:RestoreView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:WiperViewModel}"><views:WiperView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:BootTimerViewModel}"><views:BootTimerView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:OptimizeViewModel}"><views:OptimizeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:IntegrityCheckViewModel}"><views:IntegrityCheckView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:AboutViewModel}"><views:AboutView /></DataTemplate>
 

@@ -12,7 +12,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
 - Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
   `Documents\Kodiak Cleaner` for an installed copy (AppData\Local\Kodiak Cleaner only if Documents can't be written), beside
-  the exe for a portable copy, with `Backups\{Drivers, Event Logs, Programs History, Registry, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
+  the exe for a portable copy, with `Backups\{Drivers, Event Logs, Mass Rename, Programs History, Registry, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
   Nothing else in AppData. Never write user data into Program Files (only KodiakCleaner.ini is writable there).
 - `ActivityLog` writes one plain-text file per month in Logs (12 kept): counts, sizes and item names only, never file
   contents; Settings > Application > Keep an Activity Log turns it off. Log every user-visible change it makes.
@@ -46,7 +46,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   (`ProtectedReason`: Windows, Kodiak Cleaner's drive, page file, user folder, programs), when it holds the start-up partition
   (HKLM\SYSTEM\Setup SystemPartition) or a volume spanning disks. Every volume on it is locked and dismounted, then hard drives and flash
   drives get `Overwriter` passes (1 Pass (Zeros), DoD 5220.22-M 3, ECE 7; last pass read back) and SSD/NVMe get IOCTL_STORAGE_REINITIALIZE_MEDIA
-  (crypto, then block, then default; random overwrite if refused), then diskpart makes one partition named Wiped. Confirm = Warn + type ERASE.
+  (crypto, then block, then default; random overwrite if refused). Wipe Type (Ted, 2026-10-12): Quick = partition data only, Thorough =
+  zeros (firmware erase on SSD/NVMe), Secure = the Security choice incl. 30 Passes (DoD pattern x10, labelled "not a standard").
+  diskpart clean always removes MBR/GPT and boot sectors; Leave It Uninitialized Like a New Drive stops there, otherwise
+  `DiskFormat` (GPT/MBR, NTFS/exFAT/FAT32, label; `FormatProblem` refuses MBR over 2 TB and FAT32 over 32 GB). Three checks:
+  summary Warn, type each drive's disk number, type ERASE.
   Never test it against a real drive (Wine included). Free space wiping uses the same DoD patterns.
 - Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
   drives Not Needed. Analyze (/A) only for hard drives. One drive at a time; needs administrator rights.
@@ -128,6 +132,14 @@ privacy first, local first, security paramount, convenient, practical and useful
   and drive-root Windows folders are skipped. Scheduled Tasks read each task's first action (exec path, COM handler).
 - Launch count (0.8.64): Donation.CountLaunch is called once in App startup; LaunchCounter.CountsAsStart skips self-reopened
   copies (--restarted, --updated). The donation pop-up shows after Getting Started/What's New, from start 1 (a test checks).
+- Integrity Check (Ted, 2026-10-12, `IntegrityCheck` in Core, `IntegrityCheckViewModel`): cards A to Z, each with Check (read-only)
+  and, where Windows can fix it, Repair. Only Windows' own tools from System32: sfc /verifyonly and /scannow (UTF-16 output, English
+  messages only, else "Finished, see Details"), DISM /Online /Cleanup-Image /ScanHealth and /RestoreHealth with /English, chkdsk (NTFS /scan
+  to check, FAT/exFAT read-only; repair /f or /r, plus /x except on the Windows drive, which is scheduled: answered Y on stdin and
+  confirmed from Session Manager BootExecute), mdsched.exe, wevtutil for the System log (drive providers, Level 1-3, 30 days; memory
+  results 1201/1202) and WMI MSFT_PhysicalDisk/MSFT_StorageReliabilityCounter for drive health. Repairs ask first and can't be stopped
+  (Stop only during checks). Each run's output goes to Reports\Integrity Check and the activity log. DISM repair may use Windows Update
+  (stated in PRIVACY.md); nothing else goes online.
 - Boot Timer (Ted, 2026-10-12, `BootTimer` in Core, `BootProbe`, `BootTimerViewModel`): Restart and Time saves the click time in
   `Reports\Boot Timer\boot-timer.json`, adds a one-time HKCU RunOnce value ("Kodiak Cleaner Boot Timer", `--page=boottimer`; removed again
   after the report, on Cancel Timing and by `--uninstall-user`) and runs `shutdown /r /t 0`. After sign-in it waits for the processor to stay
@@ -190,6 +202,15 @@ privacy first, local first, security paramount, convenient, practical and useful
   words in any order; Name Similarity %, default 80) even when contents differ; Leave Out of Names (Copy Marks and Version Words on,
   Dates and Times and Numbers off) plus the person's own words; Any File Type compares names across types. Name Patterns (* any text,
   ? one character, # a number) make one set per pattern, shown first with a Name Pattern badge and no percent. Options aren't saved yet.
+- Mass Rename (Ted, 2026-10-12, `MassRenamer` in Core, `MassRenameViewModel`): renames files in one folder (subfolders optional,
+  `--page=rename`). Rules apply in order: pattern tokens ({created} {ext} {folder} {modified} {name} {num} {taken}, with :format,
+  :1-5 slices and :3 padding), Find and Replace (plain or regular expression, 1 s timeout), Letter Case (Title Case follows Ted's rule:
+  short joining words stay lower inside a name), Tidy Spaces, Extension. The preview flags names Windows won't take, two files
+  getting one name and names already in the folder (from a listing read at load, nothing read per keystroke); those keep their
+  names. Only ticked files are numbered. Renames go through a temporary name so swaps and case-only changes work; a file that
+  fails keeps its name. The journal (`Backups\Mass Rename\last-rename.json`) is written before renaming and Undo Last Rename
+  reverses it, skipping files changed since. Never offers Windows, program folders, ProgramData, AppData, Kodiak Cleaner's own
+  folders, a drive root, hidden/system files or linked folders. Rules are remembered in `[Mass Rename]` (values quoted, so spaces survive).
 - Settings search (Ted, 0.8.45): a `SearchBox` above General filters the Settings sidebar (`SettingsSearch`: every word must appear in the page's title,
   description or labels). Labels are read from the page templates themselves on the first search, so new settings are found automatically.
   The Check for Updates interval is a dropdown (Ted, 0.8.45) so more choices fit.

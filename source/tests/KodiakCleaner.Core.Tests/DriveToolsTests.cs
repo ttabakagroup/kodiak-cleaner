@@ -152,3 +152,54 @@ public sealed class DriveOptimizerTests
         Assert.Null(DriveOptimizer.FragmentedOf("\tFree space\t= 120 GB (60%)"));
     }
 }
+
+public sealed class WipeLevelAndFormatTests
+{
+    private const long GB = 1024L * 1024 * 1024;
+
+    [Fact]
+    public void Thirty_passes_repeat_the_dod_pattern_ten_times()
+    {
+        var passes = WipeMethods.Passes(WipeMethod.Pass30);
+        Assert.Equal(30, passes.Count);
+        Assert.All(passes.Chunk(3), c => Assert.Equal(new byte?[] { 0x00, 0xFF, null }, c.Select(p => p.Fill)));
+        Assert.Equal(30, WipeMethods.ForCount(30).Count);
+        Assert.Contains("not a standard", WipeMethods.Standard(WipeMethod.Pass30));
+    }
+
+    [Theory]
+    [InlineData(WipeLevel.Quick, MediaKind.HardDrive, null)]
+    [InlineData(WipeLevel.Quick, MediaKind.NvmeSsd, null)]
+    [InlineData(WipeLevel.Thorough, MediaKind.HardDrive, WipeMethod.Zeros)]
+    [InlineData(WipeLevel.Thorough, MediaKind.Ssd, WipeMethod.Firmware)]
+    [InlineData(WipeLevel.Secure, MediaKind.FlashDrive, WipeMethod.Pass30)]
+    [InlineData(WipeLevel.Secure, MediaKind.NvmeSsd, WipeMethod.Firmware)]
+    public void Each_level_picks_the_method_for_the_drive(WipeLevel level, MediaKind kind, WipeMethod? expected) =>
+        Assert.Equal(expected, WipeMethods.ForLevel(level, kind, WipeMethod.Pass30));
+
+    [Fact]
+    public void Leaving_it_uninitialized_only_cleans()
+    {
+        Assert.Equal(new[] { "select disk 3", "clean" }, WipeMethods.DiskpartScript(3, null));
+    }
+
+    [Fact]
+    public void A_format_sets_style_file_system_and_a_safe_label()
+    {
+        Assert.Equal(new[] { "select disk 2", "clean", "convert gpt", "create partition primary", "format fs=ntfs quick label=\"My Drive\"", "assign" },
+            WipeMethods.DiskpartScript(2, new DiskFormat("NTFS", true, "My \"Drive\"")));
+        Assert.Equal(new[] { "select disk 1", "clean", "convert mbr", "create partition primary", "format fs=fat32 quick label=\"BACKUPS2026\"", "assign" },
+            WipeMethods.DiskpartScript(1, new DiskFormat("FAT32", false, "BACKUPS2026-OLD")));
+        Assert.Equal("format fs=exfat quick", WipeMethods.DiskpartScript(1, new DiskFormat("exFAT", true, ""))[4]);
+    }
+
+    [Fact]
+    public void Formats_that_cannot_fit_the_drive_are_refused()
+    {
+        Assert.Null(WipeMethods.FormatProblem(4000 * GB, null));
+        Assert.Null(WipeMethods.FormatProblem(4000 * GB, new DiskFormat("NTFS", true, "")));
+        Assert.Contains("GPT", WipeMethods.FormatProblem(4000 * GB, new DiskFormat("NTFS", false, "")));
+        Assert.Contains("32 GB", WipeMethods.FormatProblem(64 * GB, new DiskFormat("FAT32", false, "")));
+        Assert.Null(WipeMethods.FormatProblem(16 * GB, new DiskFormat("FAT32", false, "")));
+    }
+}

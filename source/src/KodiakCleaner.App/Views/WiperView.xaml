@@ -105,8 +105,26 @@
                             <TextBlock Text="{Binding ListNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
                         </StackPanel>
 
-                        <TextBlock Text="Security" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
-                        <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
+                        <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Wipe Type" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
+                            <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
+                                <ItemsControl ItemsSource="{Binding LevelChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <RadioButton GroupName="WipeLevel" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Security" Style="{StaticResource SettingTitle}" Margin="0,18,0,6"
+                                   Visibility="{Binding ShowSecurity, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left"
+                                Visibility="{Binding ShowSecurity, Converter={StaticResource BoolToVis}}">
                             <ItemsControl ItemsSource="{Binding MethodChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
@@ -121,7 +139,7 @@
                         </Border>
                         <TextBlock Text="{Binding MethodHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
 
-                        <DockPanel Margin="0,16,0,0" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                        <DockPanel Margin="0,16,0,0" Visibility="{Binding ShowVerify, Converter={StaticResource BoolToVis}}">
                             <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Verify}"
                                       IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Verify the Last Pass" />
                             <StackPanel Margin="0,0,24,0">
@@ -130,6 +148,60 @@
                                            Style="{StaticResource Caption}" TextWrapping="Wrap" />
                             </StackPanel>
                         </DockPanel>
+
+                        <!-- After wiping: leave it uninitialized like a new drive, or format it. -->
+                        <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                            <DockPanel Margin="0,16,0,0">
+                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding LeaveUninitialized}"
+                                          IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Leave It Uninitialized Like a New Drive" />
+                                <StackPanel Margin="0,0,24,0">
+                                    <TextBlock Text="Leave It Uninitialized Like a New Drive" Style="{StaticResource SettingTitle}" />
+                                    <TextBlock Text="Every wipe removes all partitions, the MBR or GPT and the boot sectors. On: nothing is put back, so Windows asks to initialize the drive, just like one fresh from the factory. Off: it's set up with the format below."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DockPanel>
+                            <WrapPanel Margin="0,14,0,0" Visibility="{Binding ShowFormat, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Margin="0,0,28,8">
+                                    <TextBlock Text="Partition Style" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
+                                    <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
+                                <ItemsControl ItemsSource="{Binding StyleChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <RadioButton GroupName="PartitionStyle" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,28,8">
+                                    <TextBlock Text="File System" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
+                                    <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
+                                <ItemsControl ItemsSource="{Binding FileSystemChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <RadioButton GroupName="FileSystem" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,0,8">
+                                    <TextBlock Text="Drive Name" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
+                                    <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="200" MaxLength="32"
+                                             IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                                </StackPanel>
+                            </WrapPanel>
+                            <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
+                                       Style="{StaticResource Caption}" TextWrapping="Wrap" Visibility="{Binding ShowFormat, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
 
                         <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"
                                 CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,18,0,0">

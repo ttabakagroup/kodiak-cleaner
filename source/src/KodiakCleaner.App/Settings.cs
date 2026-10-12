@@ -146,6 +146,10 @@ public sealed class Settings
     /// <summary>The format Export Report saves in (Ted, 0.8.46): Text, HTML or CSV, remembered between runs.</summary>
     public KodiakCleaner.Core.Tools.ReportFormat ReportFormat { get; set; } = KodiakCleaner.Core.Tools.ReportFormat.Html;
 
+    // [Mass Rename]
+    /// <summary>The rules from the last rename, so a pattern used before is ready again (Ted, 2026-10-12).</summary>
+    public KodiakCleaner.Core.Tools.RenameRules MassRename { get; set; } = new();
+
     // [Advanced]
     public bool TempOlderThan24h { get; set; } = true;
     public bool RecycleBinOlderThan24h { get; set; }
@@ -251,6 +255,7 @@ public sealed class Settings
             System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var d) ? d : null;
 
         ReportFormat = Enum.TryParse<KodiakCleaner.Core.Tools.ReportFormat>(ini.Get("System Information", "ReportFormat"), ignoreCase: true, out var format) ? format : ReportFormat;
+        MassRename = ReadMassRename(ini);
 
         TempOlderThan24h = ini.GetBool("Advanced", "TempOlderThan24h", TempOlderThan24h);
         RecycleBinOlderThan24h = ini.GetBool("Advanced", "RecycleBinOlderThan24h", RecycleBinOlderThan24h);
@@ -306,6 +311,7 @@ public sealed class Settings
         ini.Set("Updates", "LastCheckUtc", LastUpdateCheckUtc?.ToString("o") ?? "");
 
         ini.Set("System Information", "ReportFormat", ReportFormat.ToString());
+        WriteMassRename(ini, MassRename);
 
         ini.Set("Advanced", "TempOlderThan24h", TempOlderThan24h);
         ini.Set("Advanced", "RecycleBinOlderThan24h", RecycleBinOlderThan24h);
@@ -330,4 +336,47 @@ public sealed class Settings
         }
         return ini;
     }
+
+    private static KodiakCleaner.Core.Tools.RenameRules ReadMassRename(IniFile ini)
+    {
+        const string S = "Mass Rename";
+        var r = new KodiakCleaner.Core.Tools.RenameRules();
+        r.Pattern = Unquote(ini.Get(S, "Pattern")) ?? r.Pattern;
+        r.Find = Unquote(ini.Get(S, "Find")) ?? r.Find;
+        r.Replace = Unquote(ini.Get(S, "Replace")) ?? r.Replace;
+        r.MatchCase = ini.GetBool(S, "MatchCase", r.MatchCase);
+        r.UseRegex = ini.GetBool(S, "RegularExpression", r.UseRegex);
+        r.Case = Enum.TryParse<KodiakCleaner.Core.Tools.RenameCase>(ini.Get(S, "Case"), true, out var c) ? c : r.Case;
+        r.Extension = Enum.TryParse<KodiakCleaner.Core.Tools.RenameExtension>(ini.Get(S, "Extension"), true, out var e) ? e : r.Extension;
+        r.NewExtension = Unquote(ini.Get(S, "NewExtension")) ?? r.NewExtension;
+        r.TidySpaces = ini.GetBool(S, "TidySpaces", r.TidySpaces);
+        r.Start = ini.GetInt(S, "Start", r.Start);
+        r.Step = ini.GetInt(S, "Step", r.Step);
+        r.Digits = Math.Clamp(ini.GetInt(S, "Digits", r.Digits), 1, 12);
+        r.Order = Enum.TryParse<KodiakCleaner.Core.Tools.RenameOrder>(ini.Get(S, "Order"), true, out var o) ? o : r.Order;
+        return r;
+    }
+
+    private static void WriteMassRename(IniFile ini, KodiakCleaner.Core.Tools.RenameRules r)
+    {
+        const string S = "Mass Rename";
+        ini.Set(S, "Pattern", Quote(r.Pattern));
+        ini.Set(S, "Find", Quote(r.Find));
+        ini.Set(S, "Replace", Quote(r.Replace));
+        ini.Set(S, "MatchCase", r.MatchCase);
+        ini.Set(S, "RegularExpression", r.UseRegex);
+        ini.Set(S, "Case", r.Case.ToString());
+        ini.Set(S, "Extension", r.Extension.ToString());
+        ini.Set(S, "NewExtension", Quote(r.NewExtension));
+        ini.Set(S, "TidySpaces", r.TidySpaces);
+        ini.Set(S, "Start", r.Start);
+        ini.Set(S, "Step", r.Step);
+        ini.Set(S, "Digits", r.Digits);
+        ini.Set(S, "Order", r.Order.ToString());
+    }
+
+    // Quoted so a Find or Replace of spaces survives (the ini trims values).
+    private static string Quote(string value) => "\"" + value + "\"";
+    private static string? Unquote(string? value) =>
+        value is { Length: >= 2 } && value[0] == '"' && value[^1] == '"' ? value[1..^1] : value;
 }

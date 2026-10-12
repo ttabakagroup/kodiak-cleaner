@@ -441,7 +441,7 @@ public static partial class SystemDetails
             or PlatformNotSupportedException or TypeInitializationException;
 
     /// <summary>The rows a query returns, or none when the class is missing, blocked or needs administrator rights.</summary>
-    private static List<Dictionary<string, object?>> Query(string wql, string scope = @"root\cimv2")
+    internal static List<Dictionary<string, object?>> Query(string wql, string scope = @"root\cimv2")
     {
         try { return RawQuery(wql, scope); }
         catch (Exception e) when (Expected(e)) { return new(); }
@@ -462,10 +462,10 @@ public static partial class SystemDetails
         return rows;
     }
 
-    private static string? Text(Dictionary<string, object?> row, string name) =>
+    internal static string? Text(Dictionary<string, object?> row, string name) =>
         row.GetValueOrDefault(name) is { } v && v.ToString() is { Length: > 0 } s && !string.IsNullOrWhiteSpace(s) ? s.Trim() : null;
 
-    private static long? Number(Dictionary<string, object?> row, string name)
+    internal static long? Number(Dictionary<string, object?> row, string name)
     {
         try { return row.GetValueOrDefault(name) is { } v ? Convert.ToInt64(v, CultureInfo.InvariantCulture) : null; }
         catch (Exception e) when (e is FormatException or InvalidCastException or OverflowException) { return null; }

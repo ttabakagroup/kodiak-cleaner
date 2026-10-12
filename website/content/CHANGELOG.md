@@ -5,6 +5,27 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.68 Dev] - 2026-10-12
+
+### Drive Wiper
+- New 30 Passes option: the DoD 5220.22-M pattern ten times over (not a published standard).
+- Wipe Type for whole drives: Quick removes only the partitions, the MBR or GPT and the start-up sectors; Thorough writes zeros over every sector; Secure uses DoD 3, DoD 7 or 30 passes with the read-back check. SSDs and NVMe drives use their own firmware erase on Thorough and Secure.
+- Every whole-drive wipe removes all partitions and the MBR or GPT. Leave It Uninitialized Like a New Drive leaves nothing at all, so Windows asks to initialize it like a factory-new drive. Otherwise choose GPT or MBR, NTFS, exFAT or FAT32, and a drive name. MBR over 2 TB and FAT32 over 32 GB are refused before anything starts.
+- Three checks before a wipe: a summary of every drive, the wipe type and what happens afterwards; typing each drive's disk number; then typing ERASE.
+
+### Integrity Check (New Tool)
+- Check and repair Windows and your drives with Windows' own tools. Check Everything runs every check without changing anything; each check also has its own Check button, and Repair where Windows can fix it.
+- Windows System Files checks every protected Windows file, and Repair puts back clean copies of damaged or changed ones. When Windows can't fix something, Kodiak Cleaner offers to repair the Windows Component Store (where the clean copies come from, which may download them from Windows Update) and try again.
+- Drive File System checks the ticked drives for file system errors while you keep working. Repair fixes them right away, or at the next restart for the Windows drive, with an optional Look for Bad Sectors for a deeper (slower) repair.
+- Drive Health shows each drive's own report: whether it expects to fail, its temperature, wear and errors it couldn't correct. Drive Error History lists the drive problems Windows logged in the last 30 days, in plain words.
+- Memory Test opens Windows' Memory Diagnostic, which tests memory during a restart, and shows the last result afterwards.
+- Windows' own messages show under Details and are saved in Reports\Integrity Check. A Restart Now banner appears when a repair waits for the next start.
+
+### Mass Rename (New Tool)
+- Rename many files in a folder at once by a pattern: the old name or part of it, a counting number, the folder name, and the date created, modified or taken, plus Find and Replace (with regular expressions), letter case, extension and tidy spaces.
+- Every new name is shown beside the old one before anything changes. Names Windows wouldn't accept, or that two files would share, are flagged and keep their old names.
+- Undo Last Rename puts the names back, even after Kodiak Cleaner is closed and opened again.
+
 ## [0.8.67 Dev] - 2026-10-12
 
 ### Duplicate Finder
