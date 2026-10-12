@@ -1,4 +1,6 @@
 using System.Runtime.Versioning;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.Win32;
 using KodiakCleaner.Core.Util;
 
@@ -57,8 +59,10 @@ public static class RegistryScanner
             ct.ThrowIfCancellationRequested();
             if (categories.Contains(category)) Guard(() => run(issues));
         }
-        // The same physical key can surface through two views on some systems.
-        return issues.GroupBy(i => i.Location.ToString(), StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
+        // The same physical key can surface through two views on some systems. Keys Windows protects are its own
+        // components, and not even an administrator may change them, so they are never listed (Ted, 0.8.65).
+        return issues.GroupBy(i => i.Location.ToString(), StringComparer.OrdinalIgnoreCase).Select(g => g.First())
+            .Where(i => !ProtectedByWindows(i.Location)).ToList();
     }
 
     /// <summary>Backs up every affected key/value to one .reg file (unless told not to), then deletes them.</summary>
@@ -80,6 +84,11 @@ public static class RegistryScanner
         foreach (var issue in issues)
         {
             var loc = issue.Location;
+            if (ProtectedByWindows(loc))
+            {
+                errors.Add($"{loc}: {ProtectedMessage}");
+                continue;
+            }
             try
             {
                 using var root = RegistryKey.OpenBaseKey(loc.Hive, loc.View);
@@ -94,12 +103,42 @@ public static class RegistryScanner
                 }
                 fixedCount++;
             }
-            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException)
+            {
+                errors.Add($"{loc}: Windows didn't allow this change, even as administrator. The entry, or a key inside it, is protected, so it was left as it is.");
+            }
+            catch (IOException e)
             {
                 errors.Add($"{loc}: {e.Message}");
             }
         }
         return (backupPath, fixedCount, errors);
+    }
+
+    /// <summary>NT SERVICE\TrustedInstaller, the owner of Windows' own registry keys and files.</summary>
+    public const string TrustedInstallerSid = "S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464";
+
+    public const string ProtectedMessage =
+        "Windows protects this entry (it belongs to Windows itself, through TrustedInstaller), so not even an administrator " +
+        "may remove it. It was left as it is; Windows repairs or replaces its own entries with updates.";
+
+    /// <summary>
+    /// True when the key (or, for a value, the key holding it) is owned by TrustedInstaller. Kodiak Cleaner never takes
+    /// ownership of Windows' own keys: removing a Windows component's registration can break Windows features.
+    /// </summary>
+    public static bool ProtectedByWindows(RegistryLocation loc)
+    {
+        try
+        {
+            using var root = RegistryKey.OpenBaseKey(loc.Hive, loc.View);
+            using var key = root.OpenSubKey(loc.SubKey, RegistryKeyPermissionCheck.Default, RegistryRights.ReadPermissions);
+            var owner = key?.GetAccessControl(AccessControlSections.Owner).GetOwner(typeof(SecurityIdentifier));
+            return string.Equals(owner?.Value, TrustedInstallerSid, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or IOException or InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     private static void Guard(Action a)

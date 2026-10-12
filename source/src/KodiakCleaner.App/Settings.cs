@@ -123,6 +123,8 @@ public sealed class Settings
 
     // [Cleaner]
     public List<string>? CheckedTargets { get; set; }
+    /// <summary>Extensions Kodiak Cleaner asked a browser to remove ("Browser|id"), until the browser has done it (0.8.65).</summary>
+    public List<string> RemovedExtensions { get; set; } = new();
     public bool ConfirmBeforeCleaning { get; set; } = true;
     /// <summary>How the Cleaner list is ordered (0.8.21).</summary>
     public CleanSort CleanerSort { get; set; } = CleanSort.Default;
@@ -233,6 +235,7 @@ public sealed class Settings
         Accent = AccentColors.Migrate(ini.Get("Appearance", "Accent") ?? Accent);
         Animations = ini.GetBool("Appearance", "Animations", Animations);
 
+        RemovedExtensions = (ini.Get("Extensions", "Removed") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         var targets = ini.Get("Cleaner", "CheckedTargets");
         CheckedTargets = targets is null ? null : targets.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         ConfirmBeforeCleaning = ini.GetBool("Cleaner", "ConfirmBeforeCleaning", ConfirmBeforeCleaning);
@@ -293,6 +296,7 @@ public sealed class Settings
         ini.Set("Appearance", "Animations", Animations);
 
         if (CheckedTargets is not null) ini.Set("Cleaner", "CheckedTargets", string.Join(",", CheckedTargets));
+        if (RemovedExtensions.Count > 0) ini.Set("Extensions", "Removed", string.Join(",", RemovedExtensions));
         ini.Set("Cleaner", "ConfirmBeforeCleaning", ConfirmBeforeCleaning);
         ini.Set("Cleaner", "SortBy", CleanerSort.ToString()); // "Sort" (0.8.21) meant A to Z for everyone, so it isn't read
 

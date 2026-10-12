@@ -28,6 +28,17 @@ public class CommandLineTests
 public class PathSafetyTests
 {
     [Fact]
+    public void Is_inside_means_below_the_folder_only()
+    {
+        var root = Path.GetPathRoot(Path.GetTempPath())!;
+        var a = Path.Combine(root, "data");
+        Assert.True(PathSafety.IsInside(Path.Combine(a, "x"), a));
+        Assert.True(PathSafety.IsInside(a, root));
+        Assert.False(PathSafety.IsInside(a, a));
+        Assert.False(PathSafety.IsInside(a + "2", a));
+    }
+
+    [Fact]
     public void Rejects_root_relative_and_unexpanded_paths()
     {
         var root = Path.GetPathRoot(Path.GetTempPath())!;

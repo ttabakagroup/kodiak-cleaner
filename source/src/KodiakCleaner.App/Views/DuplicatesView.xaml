@@ -15,7 +15,7 @@
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="Duplicate Finder" Style="{StaticResource PageTitle}" />
-                <TextBlock Style="{StaticResource PageSubtitle}"
+                <TextBlock Style="{StaticResource PageSubtitle}" Margin="0,4,16,0"
                            Text="Finds files with identical contents. Removed copies go to the Recycle Bin, and one copy of each file is always kept." />
             </StackPanel>
         </DockPanel>
@@ -53,37 +53,39 @@
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Bottom" Text="{Binding Selection}" Style="{StaticResource Caption}" Margin="8,0,8,0" HorizontalAlignment="Right" />
                 <DockPanel DockPanel.Dock="Bottom" Margin="8,8,8,4">
-                    <Button DockPanel.Dock="Right" Command="{Binding DeleteCommand}" Margin="0">
+                    <Button DockPanel.Dock="Right" Command="{Binding DeleteCommand}" Margin="0" VerticalAlignment="Top">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                             <TextBlock Text="Remove Selected" />
                         </StackPanel>
                     </Button>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="Keep Newest" Command="{Binding SelectAllButNewestCommand}" ToolTip="Tick every copy except the newest one in each set" />
-                        <Button Content="Keep Oldest" Command="{Binding SelectAllButOldestCommand}" ToolTip="Tick every copy except the oldest one in each set" />
-                        <Button Content="Clear" Command="{Binding ClearSelectionCommand}" />
-                    </StackPanel>
+                    <!-- Wraps onto a second line when the window is narrow, so no button sits on top of another (Ted, 0.8.65). -->
+                    <WrapPanel Margin="0,0,8,0">
+                        <Button Content="Keep Newest" Command="{Binding SelectAllButNewestCommand}" ToolTip="Tick every copy except the newest one in each set" Margin="0,0,8,6" />
+                        <Button Content="Keep Oldest" Command="{Binding SelectAllButOldestCommand}" ToolTip="Tick every copy except the oldest one in each set" Margin="0,0,8,6" />
+                        <Button Content="Clear" Command="{Binding ClearSelectionCommand}" Margin="0,0,8,6" />
+                    </WrapPanel>
                 </DockPanel>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,0">
                     <ItemsControl ItemsSource="{Binding Groups}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="0,0,0,14">
-                                    <TextBlock Text="{Binding Header}" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                    <TextBlock Text="{Binding Header}" FontWeight="SemiBold" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" ToolTip="{Binding Header}" />
                                     <ItemsControl ItemsSource="{Binding Files}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <DockPanel Margin="0,2">
-                                                    <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Show"
+                                                <DockPanel Margin="0,3">
+                                                    <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Show" VerticalAlignment="Center"
                                                             Command="{Binding Group.Owner.OpenFolderCommand}" CommandParameter="{Binding}" />
                                                     <TextBlock DockPanel.Dock="Right" Text="{Binding Modified}" Style="{StaticResource Caption}"
                                                                VerticalAlignment="Center" Margin="12,0" />
+                                                    <!-- Name, then its folder underneath, so neither runs into the date and Show (Ted, 0.8.65). -->
                                                     <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" ToolTip="{Binding File.Path}">
-                                                        <TextBlock TextTrimming="CharacterEllipsis">
-                                                            <Run Text="{Binding Name, Mode=OneWay}" />
-                                                            <Run Text="{Binding Folder, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
-                                                        </TextBlock>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Text="{Binding Folder, Mode=OneWay}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" />
+                                                        </StackPanel>
                                                     </CheckBox>
                                                 </DockPanel>
                                             </DataTemplate>

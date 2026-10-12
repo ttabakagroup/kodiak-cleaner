@@ -91,6 +91,13 @@ privacy first, local first, security paramount, convenient, practical and useful
   Language Resource Files, RetailDemo, Temporary Setup Files, Temporary Windows Installation Files, User File History) run
   `cleanmgr /sagerun:617` with a temporary StateFlags0617 tick on that one VolumeCaches handler (found by its shown name, then key
   name), removed again afterwards. Disk Cleanup items Kodiak Cleaner already had are merged into the existing items, not duplicated.
+- Browser extension control (Ted, 0.8.65): Core/Tools/ExtensionControl.cs. Chrome/Edge/Brave use HKCU\Software\Policies\<vendor>
+  ExtensionInstallBlocklist (off) and ExtensionSettings installation_mode "removed" (remove); never edit Preferences/Secure
+  Preferences (MAC-protected). Settings [Extensions] Removed lists our remove marks; Tidy clears them once the browser uninstalled
+  the extension and deletes empty policy keys. Firefox family: delete profile\extensions\id.xpi with the browser closed.
+- Registry keys owned by TrustedInstaller are filtered from scans and never deleted (RegistryScanner.ProtectedByWindows); we never
+  take ownership. Empty Folders searches drives via SearchPlaces/PlacesPicker (reusable drive + folder picker); hidden folders
+  and drive-root Windows folders are skipped. Scheduled Tasks read each task's first action (exec path, COM handler).
 - Launch count (0.8.64): Donation.CountLaunch is called once in App startup; LaunchCounter.CountsAsStart skips self-reopened
   copies (--restarted, --updated). The donation pop-up shows after Getting Started/What's New, from start 1 (a test checks).
 - Settings cards A to Z (Ted, 0.8.63): every Settings card, and every setting inside a card, is A to Z (a test checks); Reset to

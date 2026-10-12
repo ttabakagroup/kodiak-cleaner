@@ -3,6 +3,15 @@ namespace KodiakCleaner.Core.Util;
 public static class PathSafety
 {
     /// <summary>Number of directory levels below the drive/volume root.</summary>
+    /// <summary>True when <paramref name="path"/> is inside <paramref name="folder"/> (not the folder itself).</summary>
+    public static bool IsInside(string path, string folder)
+    {
+        var p = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        var f = Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder));
+        return p.Length > f.Length && p.StartsWith(f, StringComparison.OrdinalIgnoreCase) &&
+               (p[f.Length] == Path.DirectorySeparatorChar || f.EndsWith(Path.DirectorySeparatorChar) || f.EndsWith(Path.VolumeSeparatorChar));
+    }
+
     public static int Depth(string fullPath)
     {
         var root = Path.GetPathRoot(fullPath) ?? "";

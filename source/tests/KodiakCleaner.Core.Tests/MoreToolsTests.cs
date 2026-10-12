@@ -161,4 +161,51 @@ public sealed class MoreToolsTests : IDisposable
         Assert.False(only.Enabled);
         Assert.Equal("about:addons", BrowserExtensions.ManagePage(only.Browser));
     }
+
+    [Fact]
+    public void Empty_folder_finder_searches_whole_drives_but_skips_hidden_and_windows_folders()
+    {
+        // A whole drive is allowed only when asked for; a folder is always allowed.
+        var drive = Path.GetPathRoot(_root)!;
+        Assert.NotNull(EmptyFolderFinder.WhyNotAllowed(drive, Array.Empty<string>()));
+        Assert.Null(EmptyFolderFinder.WhyNotAllowed(drive, Array.Empty<string>(), allowDrive: true));
+        // Hidden folders (a .git folder's empty refs, say) are never entered or listed.
+        var hidden = Dir(".git/refs/tags");
+        File.SetAttributes(Path.Combine(_root, ".git"), File.GetAttributes(Path.Combine(_root, ".git")) | FileAttributes.Hidden);
+        Dir("plain/empty");
+        var found = EmptyFolderFinder.Find(_root).Select(p => Path.GetRelativePath(_root, p).Replace('\\', '/')).ToList();
+        Assert.Equal(new[] { "plain" }, found);
+        Assert.True(Directory.Exists(hidden));
+        Assert.True(EmptyFolderFinder.IsDriveSystemFolder("$Recycle.Bin"));
+        Assert.True(EmptyFolderFinder.IsDriveSystemFolder("Recovery"));
+        Assert.False(EmptyFolderFinder.IsDriveSystemFolder("Games"));
+    }
+
+    [Fact]
+    public void Extension_policies_keep_other_settings_and_tidy_up()
+    {
+        Assert.Equal(new[] { "a", "c", "b" }, ExtensionControl.WithBlocked(new[] { "a", "b", "c" }, "b", blocked: true));
+        Assert.Equal(new[] { "a", "c" }, ExtensionControl.WithBlocked(new[] { "a", "b", "c", "b" }, "b", blocked: false));
+
+        var company = """{"*":{"installation_mode":"allowed"}}""";
+        var removed = ExtensionControl.WithRemoved(company, "abc", removed: true)!;
+        Assert.True(ExtensionControl.IsMarkedRemoved(removed, "abc"));
+        Assert.Contains("\"*\"", removed);
+        // Taking the mark out leaves what a company set exactly as it was, and nothing at all when only ours was there.
+        Assert.False(ExtensionControl.IsMarkedRemoved(ExtensionControl.WithRemoved(removed, "abc", removed: false), "abc"));
+        Assert.Contains("allowed", ExtensionControl.WithRemoved(removed, "abc", removed: false));
+        Assert.Null(ExtensionControl.WithRemoved(ExtensionControl.WithRemoved(null, "abc", removed: true), "abc", removed: false));
+        Assert.True(ExtensionControl.IsMarkedRemoved(ExtensionControl.WithRemoved("not json", "abc", removed: true), "abc"));
+
+        var chrome = new BrowserExtension("Google Chrome", "Default profile", "abc", "Thing", "1", true, _root);
+        var firefox = new BrowserExtension("Mozilla Firefox", "default", "thing@example.org", "Thing", "1", true, Dir("ff/extensions"));
+        var vivaldi = chrome with { Browser = "Vivaldi" };
+        Assert.True(ExtensionControl.CanTurnOff(chrome));
+        Assert.False(ExtensionControl.CanTurnOff(firefox));
+        Assert.False(ExtensionControl.CanRemove(firefox)); // no add-on file yet
+        Write("ff/extensions/thing@example.org.xpi", 10);
+        Assert.True(ExtensionControl.CanRemove(firefox));
+        Assert.False(ExtensionControl.CanRemove(vivaldi));
+        Assert.Contains("about:addons", ExtensionControl.WhyNot(firefox));
+    }
 }

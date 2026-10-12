@@ -1,0 +1,31 @@
+<UserControl x:Class="KodiakCleaner.App.Views.PlacesPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- The drives and folders a tool searches (Ted, 0.8.65): each drive with its free space and a bar, like the drive
+         lists people know from disk tools, then the folders added. DataContext is a SearchPlaces. -->
+    <UserControl.Resources>
+        <DataTemplate x:Key="PlaceRow">
+            <CheckBox IsChecked="{Binding IsChecked}" Margin="0,5" HorizontalContentAlignment="Stretch" ToolTip="{Binding Path}">
+                <DockPanel Margin="2,0,0,0">
+                    <TextBlock DockPanel.Dock="Left" Text="{Binding Glyph}" Style="{StaticResource Icon}" FontSize="18"
+                               Foreground="{DynamicResource AccentText}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <StackPanel>
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <ProgressBar Value="{Binding Used, Mode=OneWay}" Maximum="1" Height="6" Width="170" HorizontalAlignment="Left" Margin="0,4,0,3"
+                                     Visibility="{Binding IsDrive, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </DockPanel>
+            </CheckBox>
+        </DataTemplate>
+    </UserControl.Resources>
+    <StackPanel>
+        <CheckBox IsChecked="{Binding AllDrives}" IsThreeState="True" Margin="0,6,0,2">
+            <TextBlock Text="All Drives" FontWeight="SemiBold" />
+        </CheckBox>
+        <ItemsControl ItemsSource="{Binding Drives}" ItemTemplate="{StaticResource PlaceRow}" Margin="18,0,0,0" />
+        <TextBlock Text="Folders" Style="{StaticResource Caption}" Margin="0,12,0,0"
+                   Visibility="{Binding HasFolders, Converter={StaticResource BoolToVis}}" />
+        <ItemsControl ItemsSource="{Binding Folders}" ItemTemplate="{StaticResource PlaceRow}" />
+    </StackPanel>
+</UserControl>

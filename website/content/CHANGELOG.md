@@ -5,6 +5,27 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.65 Dev] - 2026-10-12
+
+### Browser Extensions
+- Right-click an extension to turn it on or off, or remove it, and each row has an On switch. Ctrl-click and Shift-click pick several at once. Hover over a row to see everything about it.
+- Chrome, Edge and Brave are changed through their own extension policies, the supported way to manage a browser, so Kodiak Cleaner never edits the browser's protected settings. While a policy is in use the browser says it is managed by your organization; Kodiak Cleaner removes the policy again once nothing needs it. Changing policies needs Restart as Administrator.
+- Firefox, Ablaze Floorp and Mullvad Browser add-ons can be removed while that browser is closed. Those browsers only let you turn an add-on off on their own Add-ons page.
+
+### Duplicate Finder
+- The buttons at the bottom move onto a second line when the window is narrow, instead of sitting on top of each other.
+- Each file shows its name with its folder underneath, so long names no longer run into the date and Show.
+
+### Empty Folders
+- Search whole drives, one or several, or tick All Drives, as well as folders. Each drive shows its free space and a bar. Windows' own folders at the top of a drive, hidden folders, and Kodiak Cleaner's own folders are always skipped, and every account's Desktop, Documents and other Windows folders are never removed.
+
+### Registry
+- Entries that Windows itself protects are no longer listed. Not even an administrator may remove them, and they belong to Windows components, which Windows repairs with its updates. If one is ever met, the message now says Windows protects it instead of "Attempted to perform an unauthorized operation".
+- 32-bit entries that name Program Files when their file is really in Program Files (x86) are no longer reported as missing.
+
+### Scheduled Tasks
+- A new Program column shows the program each task runs, with its icon. Click its name, or right-click and choose Open File Location, to see the file in File Explorer. Hover over a task to see its command, publisher, author and description.
+
 ## [0.8.64 Dev] - 2026-10-11
 
 ### Donation Reminder

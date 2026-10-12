@@ -23,10 +23,13 @@ public static class PathChecks
             if (!drive.IsReady || drive.DriveType != DriveType.Fixed) return false;
             if (File.Exists(path) || Directory.Exists(path)) return false;
             // 32-bit programs record System32 for files that really live in SysWOW64, and Sysnative only exists for them.
+            // Their %ProgramFiles% and %CommonProgramFiles% mean the (x86) folders, which a 64-bit program expands differently.
             foreach (var alt in new[]
                      {
                          path.Replace(@"\System32\", @"\SysWOW64\", StringComparison.OrdinalIgnoreCase),
                          path.Replace(@"\Sysnative\", @"\System32\", StringComparison.OrdinalIgnoreCase),
+                         path.Replace(@"\Program Files\", @"\Program Files (x86)\", StringComparison.OrdinalIgnoreCase),
+                         path.Replace(@"\Program Files (x86)\", @"\Program Files\", StringComparison.OrdinalIgnoreCase),
                      })
             {
                 if (alt != path && (File.Exists(alt) || Directory.Exists(alt))) return false;

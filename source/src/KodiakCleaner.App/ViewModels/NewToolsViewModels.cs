@@ -539,11 +539,78 @@ public sealed class ScheduledTaskItem : ObservableObject
         _task = task;
         Name = (string)task.Name;
         Folder = folder;
+        ReadAction(task);
         Refresh();
     }
 
     public string Name { get; }
     public string Folder { get; }
+
+    /// <summary>What the task runs, as written in the task ("%windir%\system32\x.exe"), and its arguments.</summary>
+    public string Command { get; private set; } = "";
+    public string Arguments { get; private set; } = "";
+    /// <summary>The program file the task runs, found on disk, or "" (Ted, 0.8.65).</summary>
+    public string ProgramPath { get; private set; } = "";
+    /// <summary>The program's own name (from its file), else its file name; what the Program column shows.</summary>
+    public string Program { get; private set; } = "";
+    public string Publisher { get; private set; } = "";
+    public string Author { get; private set; } = "";
+    public string Description { get; private set; } = "";
+    public bool HasProgram => ProgramPath.Length > 0;
+    public bool NoProgram => !HasProgram;
+
+    private System.Windows.Media.ImageSource? _icon;
+    public System.Windows.Media.ImageSource? Icon { get => _icon; set { if (Set(ref _icon, value)) OnPropertyChanged(nameof(NoIcon)); } }
+    public bool NoIcon => _icon is null;
+
+    /// <summary>Hover details, one "Label: value" line each.</summary>
+    public string Details => DetailText.Lines(("Name", Name), ("Folder", Folder), ("Program", Program), ("Runs", ProgramPath.Length > 0 ? ProgramPath : Command),
+        ("Arguments", Arguments), ("Publisher", Publisher), ("Author", Author), ("Description", Description), ("Status", Status),
+        ("Next run", NextRun), ("Last run", LastRun));
+
+    /// <summary>The task's first action: a program it starts, or a Windows component (COM handler) it calls.</summary>
+    private void ReadAction(dynamic task)
+    {
+        try
+        {
+            dynamic definition = task.Definition;
+            try { Author = (string?)definition.RegistrationInfo.Author ?? ""; } catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+            try { Description = (string?)definition.RegistrationInfo.Description ?? ""; } catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+            foreach (dynamic action in definition.Actions)
+            {
+                int type = action.Type;
+                if (type == 0) // TASK_ACTION_EXEC
+                {
+                    Command = ((string?)action.Path ?? "").Trim();
+                    Arguments = ((string?)action.Arguments ?? "").Trim();
+                    ProgramPath = Command.Length == 0 ? "" : FileIcons.ProgramOf("\"" + Command.Trim('"') + "\"");
+                }
+                else if (type == 5) // TASK_ACTION_COM_HANDLER
+                {
+                    Command = $"Windows component {(string?)action.ClassId}";
+                }
+                break;
+            }
+        }
+        catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+        Program = ProgramPath.Length > 0 ? FileName(ProgramPath) : Command.Length > 0 ? System.IO.Path.GetFileName(Command.Trim('"')) : "";
+        if (Command.StartsWith("Windows component", StringComparison.Ordinal)) Program = "Windows component";
+    }
+
+    /// <summary>The file's own description ("Google Update"), else its name; also reads its publisher.</summary>
+    private string FileName(string path)
+    {
+        try
+        {
+            var info = System.Diagnostics.FileVersionInfo.GetVersionInfo(path);
+            Publisher = info.CompanyName?.Trim() ?? "";
+            var described = info.FileDescription?.Trim();
+            if (!string.IsNullOrEmpty(described)) return described;
+            if (!string.IsNullOrWhiteSpace(info.ProductName)) return info.ProductName.Trim();
+        }
+        catch (Exception e) when (e is System.IO.IOException or UnauthorizedAccessException or ArgumentException) { }
+        return System.IO.Path.GetFileName(path);
+    }
     public bool IsWindowsTask => Folder.StartsWith(@"\Microsoft", StringComparison.OrdinalIgnoreCase);
 
     private bool _enabled;
@@ -617,7 +684,13 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         DisableSelectedCommand = new RelayCommand(() => SetPicked(false), () => Items.Any(i => i.IsChecked && i.Enabled));
         EnableRowCommand = new RelayCommand(() => SetRows(Selected, true), () => Selected is { Enabled: false });
         DisableRowCommand = new RelayCommand(() => SetRows(Selected, false), () => Selected is { Enabled: true });
+        OpenLocationCommand = new RelayCommand(() => Elevation.ShowInExplorer(Selected!.ProgramPath), () => Selected is { HasProgram: true });
+        ShowProgramCommand = new RelayCommand<ScheduledTaskItem>(t => { if (t.HasProgram) Elevation.ShowInExplorer(t.ProgramPath); });
     }
+
+    /// <summary>Shows the program a task runs in File Explorer (Ted, 0.8.65): right-click, or click the program's name.</summary>
+    public ICommand OpenLocationCommand { get; }
+    public ICommand ShowProgramCommand { get; }
 
     public ObservableCollection<ScheduledTaskItem> Items { get; } = new();
     public ICommand RefreshCommand { get; }
@@ -707,6 +780,7 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
             Items.Add(t);
         }
         OnPropertyChanged(nameof(AllChecked));
+        FileIcons.LoadInto(Items.Where(i => i.NoIcon && i.HasProgram).ToList(), i => i.ProgramPath, (i, icon) => i.Icon = icon);
         if (keepSummary) return;
         var hidden = _all.Count - Items.Count;
         Summary = Items.Count == 0 && hidden == 0 ? "No scheduled tasks found." :
