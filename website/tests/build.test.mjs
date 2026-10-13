@@ -20,7 +20,7 @@ test("a Thumbs.db or .DS_Store beside the screenshots doesn't break the build", 
     // Screenshot sizes still come from the PNG headers.
     const png = readFileSync(join(dir, "src", "assets", "images", "screens", "disk-analyzer.png"));
     const html = readFileSync(join(dir, "public", "features", "index.html"), "utf8");
-    assert.ok(html.includes(`src="/images/screens/disk-analyzer.png" alt="Disk Analyzer showing folder sizes and the largest files" width="${png.readUInt32BE(16)}" height="${png.readUInt32BE(20)}"`));
+    assert.ok(html.includes(`src="/images/screens/disk-analyzer.png" alt="Disk Analyzer map of folders and files colored by kind, with the Contents list beside it" width="${png.readUInt32BE(16)}" height="${png.readUInt32BE(20)}"`));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

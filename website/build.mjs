@@ -17,6 +17,7 @@ import linux from "./src/pages/linux.mjs";
 import mac from "./src/pages/mac.mjs";
 import donate from "./src/pages/donate.mjs";
 import featureList from "./src/pages/featurelist.mjs";
+import openSource from "./src/pages/opensource.mjs";
 import { story, privacy, terms, notFound } from "./src/pages/docs.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -90,6 +91,7 @@ const ctx = {
     story: read("content", "why-it-was-made.md"),
     privacy: read("content", "PRIVACY.md"),
     terms: read("content", "terms-of-use.md"),
+    license: read("content", "LICENSE"),
   },
   longDate: (iso) => { if (!iso) return ""; const [y, m, d] = parts(iso); return `${MONTHS[m - 1]} ${d}, ${y}`; },
   shortDate: (iso) => { if (!iso) return ""; const [y, m, d] = parts(iso); return `${MONTHS[m - 1].slice(0, 3)} ${d}, ${y}`; },
@@ -161,7 +163,7 @@ function externalLinks(html) {
 }
 
 // Pages
-const pages = [home, features, featureList, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, notFound].map((p) => p(ctx));
+const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, notFound].map((p) => p(ctx));
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });

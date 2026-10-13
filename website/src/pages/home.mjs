@@ -9,7 +9,7 @@ export default function home(ctx) {
   const highlights = [
     ["backup", "Backups Before Changes", "Every registry fix, startup removal and program entry change is backed up first, and most removals go to the Recycle Bin."],
     ["zap", "Fast and Familiar", "Opens quickly and works the way you expect: analyze, review, clean. No busy interface, no buttons that moved."],
-    ["gift", "Free and Open Source", "Every feature is free, under the MIT License. Read the code, build it yourself, or help improve it."],
+    ["gift", "Free and Open Source", "Every feature is free, and the code is open source under the MIT License. Read it, build it yourself, or help improve it."],
     ["drive", "Installed or Portable", "Use the MSI installer, or run the portable version from any folder, even a USB drive."],
     ["lock", "Local First", "Settings and backups are plain files on your own PC. Nothing is kept in the cloud."],
     ["shield", "No Ads, No Tracking", "No telemetry, analytics, crash reports or upsells. It only goes online to check for updates, and only when you ask."],
@@ -21,12 +21,27 @@ export default function home(ctx) {
   const gallery = [
     ["advanced-cleaning.png", "Advanced Cleaning", "Deeper items with clear cautions, never ticked for you."],
     ["appearance.png", "Appearance", "Honey, Classic or Glacier, with accent colors and light or dark mode."],
-    ["disk-analyzer.png", "Disk Analyzer", "See which folders take the space, plus the 100 largest files."],
+    ["disk-analyzer.png", "Disk Analyzer", "A map of what fills your drives, colored by kind of file."],
     ["large-files.png", "Large Files", "Find the biggest files in any folder, 50 MB and up."],
     ["programs.png", "Programs", "Uninstall several at once, with leftovers cleaned up after."],
     ["registry.png", "Registry", "Fifteen checks for broken entries, with a backup before every fix."],
     ["schedule.png", "Scheduled Cleaning", "Named cleanings on the days you choose, through Windows Task Scheduler."],
     ["startup.png", "Startup", "Turn start-up programs off or on, and restore removed ones from History."],
+  ];
+
+  // New and rebuilt tools from 0.8.65 to 0.8.70, A to Z. The last field is the tool's anchor on the Features page.
+  const recent = [
+    ["boot-timer.png", "Boot Timer", "See how long a restart takes and what slows it.", "boot-timer"],
+    ["browser-extensions.png", "Browser Extensions", "Turn extensions on or off, or remove them.", "browser-extensions"],
+    ["defrag-and-trim.png", "Defrag and TRIM", "The right optimization for every drive in one click.", "defrag-and-trim"],
+    ["disk-analyzer.png", "Disk Analyzer", "A map of every drive or folder, with a fast scan as administrator.", "disk-analyzer"],
+    ["drive-wiper.png", "Drive Wiper", "Wipe whole drives the right way for each type, after three checks.", "drive-wiper"],
+    ["driver-cleaner.png", "Driver Cleaner", "Remove an old graphics or audio driver completely.", "driver-cleaner"],
+    ["duplicate-finder.png", "Duplicate Finder", "Find copies, look-alikes and similar names across whole drives.", "duplicate-finder"],
+    ["empty-folders.png", "Empty Folders", "Search whole drives as well as folders.", "empty-folders"],
+    ["integrity-check.png", "Integrity Check", "Check and repair Windows, your drives and memory.", "integrity-check"],
+    ["mass-rename.png", "Mass Rename", "Rename many files by a pattern, and undo it.", "mass-rename"],
+    ["system-restore.png", "System Restore", "Restore points plus Point-in-Time Restore snapshots.", "system-restore"],
   ];
 
   // Color schemes in the standard order: Honey (free), then the Supporter themes Classic and Glacier.
@@ -45,6 +60,7 @@ export default function home(ctx) {
   <div class="wrap">
     <div class="hero-logo"><span class="halo"></span><img src="/images/logo.svg" alt="Kodiak Cleaner logo: a friendly bear in a computer screen" width="230" height="230" fetchpriority="high"></div>
     <h1>${wordmark}</h1>
+    <p class="center"><a class="os-badge" href="/open-source/">${icons.code}Free and Open Source · MIT License</a></p>
     <p class="slogan">Not a Crap Cleaner. A Cleaner App, Built Around What Matters.</p>
     <p class="lead">A small, honest cleaner for Windows, Mac and Linux. Clear out junk files, fix broken registry entries, tame start-up programs and uninstall software cleanly, with no telemetry, no ads, no upsells and no background services.</p>
     <div class="btn-row">
@@ -54,7 +70,7 @@ export default function home(ctx) {
       <a class="btn lg" href="${cfg.repo}" rel="noopener">${icons.github}<span>View on GitHub<small>Open source, MIT License</small></span></a>
     </div>
     ${ctx.launchVideo ? `<div class="btn-row hero-video"><button class="btn" type="button" data-intro-open>${icons.play}Watch the Video</button></div>` : ""}
-    <p class="hero-meta"><span>Windows 10 and 11 (64-bit)</span><span>macOS 26 or newer</span><span>Linux (DEB or AppImage)</span><span>No account needed</span></p>
+    <p class="hero-meta"><span>Open source (MIT License)</span><span>Windows 10 and 11 (64-bit)</span><span>macOS 26 or newer</span><span>Linux (DEB or AppImage)</span><span>No account needed</span></p>
     <div class="hero-shot">${shot(ctx, "cleaner.png", "Kodiak Cleaner's Cleaner page after Analyze, showing 717.1 MB that can be freed", { eager: true })}</div>
   </div>
 </section>
@@ -91,11 +107,47 @@ export default function home(ctx) {
 
 <section>
   <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Recently Added</span>
+      <h2>New Tools and Upgrades</h2>
+      <p class="lead">Added or rebuilt in versions 0.8.65 to 0.8.70, and free for everyone like everything else. Click any screenshot to see it full size.</p>
+    </div>
+    <div class="gallery">
+      ${recent.map(([f, t, d, id]) => `<figure class="reveal">${shot(ctx, f, t + " in Kodiak Cleaner")}<figcaption><a href="/features/#${id}">${t}</a><span>${d}</span></figcaption></figure>`).join("\n      ")}
+    </div>
+    <p class="center mt-xl"><a class="btn" href="/features/#tools">See Every Tool</a></p>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="showcase reveal">
+      <div class="text">
+        <span class="eyebrow">Open Source</span>
+        <h2>Open Source, Free for Everyone</h2>
+        <p>Kodiak Cleaner is open source under the MIT License. The code for the Windows, Mac and Linux editions is published, and anyone may read it, change it, build it and share it.</p>
+        <ul class="ticks">
+          <li><strong>No paid version.</strong> Every cleaning feature and tool is free, with no trial and no account.</li>
+          <li><strong>Nothing hidden.</strong> No telemetry, ads or tracking code. What the code does is what the app does.</li>
+          <li><strong>Yours to share.</strong> Keep the copyright and license notice, and pass it on.</li>
+        </ul>
+        <div class="btn-row">
+          <a class="btn primary" href="/open-source/">${icons.code}About Open Source</a>
+          <a class="btn" href="${cfg.repo}" rel="noopener">${icons.github}View on GitHub</a>
+        </div>
+      </div>
+      <div class="card pad"><span class="os-badge">${icons.code}MIT License</span><h3>The License in Short</h3><p>Copyright © ${cfg.copyrightYear} Ted Tabaka. Anyone may use, copy, change, merge, publish, share and even sell copies of Kodiak Cleaner, free of charge, as long as the copyright and license notice stay with it. It comes as is, without a warranty.</p><p class="mt"><a href="/open-source/#license">Read the full license →</a></p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="showcase reveal">
       <div class="text">
         <span class="eyebrow">Cleaner</span>
         <h2>Clean Windows and Every Browser You Use</h2>
-        <p>Temporary files, the Recycle Bin, thumbnail and shader caches, error reports and update leftovers, plus cache, history and cookies for eleven browsers, each shown with its own icon.</p>
+        <p>Temporary files, the Recycle Bin, thumbnail and shader caches, broken shortcuts, error reports and update leftovers, plus cache, history and cookies for eleven browsers and caches from programs such as Discord, Steam and Zoom, each shown with its own icon.</p>
         <ul>
           <li>Search any item and sort the list five ways.</li>
           <li>Reset to Default brings back the safe basics in one click.</li>
@@ -122,11 +174,11 @@ export default function home(ctx) {
     <div class="showcase reveal">
       <div class="text">
         <span class="eyebrow">Tools</span>
-        <h2>Eight Handy Tools, Built In</h2>
-        <p>Browser Extensions, Disk Analyzer, Drive Wiper, Duplicate Finder, Empty Folders, Large Files, Scheduled Tasks and System Restore. Anything removed goes to the Recycle Bin first. System Information has its own page, with an Advanced view and reports you can export.</p>
+        <h2>Thirteen Handy Tools, Built In</h2>
+        <p>Boot Timer, Browser Extensions, Defrag and TRIM, Disk Analyzer, Drive Wiper, Driver Cleaner, Duplicate Finder, Empty Folders, Integrity Check, Large Files, Mass Rename, Scheduled Tasks and System Restore. Anything removed goes to the Recycle Bin or a backup first. System Information has its own page, with an Advanced view and reports you can export.</p>
         <a href="/features/#tools">See all the tools →</a>
       </div>
-      ${shot(ctx, "disk-analyzer.png", "Disk Analyzer showing folder sizes and the largest files")}
+      ${shot(ctx, "disk-analyzer.png", "Disk Analyzer map of folders and files colored by kind, with the Contents list beside it")}
     </div>
     <div class="showcase flip reveal">
       <div class="text">
@@ -207,7 +259,7 @@ export default function home(ctx) {
           <li><strong>No telemetry</strong>, analytics, crash reports, accounts or ads. Nothing is sent automatically, ever.</li>
           <li><strong>Settings and backups</strong> are plain files on your own PC.</li>
           <li><strong>Updates are the only network use</strong>, and only when you click Check Now or turn on automatic updates (off by default).</li>
-          <li><strong>Feedback</strong> opens a message in your own email app. Nothing is sent until you press Send.</li>
+          <li><strong>Feedback</strong> buttons open the Contact Us form on this website. Nothing is sent until you press Send.</li>
         </ul>
         <p class="mt"><a href="/privacy/">Read the Privacy Policy →</a></p>
       </div>

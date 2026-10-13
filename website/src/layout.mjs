@@ -93,6 +93,7 @@ ${page.body}
         <li><a href="/features/">Features</a></li>
         <li><a href="/linux/">Kodiak Cleaner for Linux</a></li>
         <li><a href="/mac/">Kodiak Cleaner for Mac</a></li>
+        <li><a href="/open-source/">Open Source</a></li>
         <li><a href="/why-it-was-made/">Why It Was Made</a></li>
       </ul></div>
       <div><h2>Help and Contact</h2><ul>
@@ -109,7 +110,7 @@ ${page.body}
       </ul></div>
     </div>
     <div class="footer-bottom">
-      <span>Free and open source under the <a href="${cfg.repo}/blob/main/LICENSE" rel="noopener">MIT License</a>. Copyright © ${cfg.copyrightYear} Ted Tabaka.</span>
+      <span>Free and <a href="/open-source/">open source</a> under the <a href="/open-source/#license">MIT License</a>. Copyright © ${cfg.copyrightYear} Ted Tabaka.</span>
       <span>No ads and no tracking on this site or in the app.</span>
     </div>
   </div>
