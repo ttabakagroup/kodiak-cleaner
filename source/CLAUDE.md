@@ -182,6 +182,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   drives and top folders side by side, and the open folder's files are read again on opening (`FilesIn`). `TreemapView` (squarified,
   `Treemap.Layout`, up to 3 levels) and `KindBarView` color by `FileKind` with `DiskColors`, which follow the scheme and accent (Ted, 2026-10-12):
   the current Accent's hue turned per kind (`AccentShades.ChartShade`), lightness fitted so OnPrimary reads on it (4.5:1). Removing a file updates every folder above it (`DiskNode.FileRemoved`).
+  Fast scan (Ted, 2026-10-13, `NtfsFileTable`): a whole local NTFS drive, as administrator, is read from its master file table through a
+  read-only `\\.\X:` handle (whole-cluster reads); records 0-15, reparse points and the short 8.3 names are left out, hard links count once.
+  Anything unexpected returns false and `ScanTop` walks the folders instead, so the fast scan must never fail a scan. Tests use the two
+  mkntfs/ntfs-3g images in tests/.../Fixtures.
 - System Restore page (Ted, Point-in-Time Restore): System Restore | Point-in-Time Restore segments. Create Restore Point uses
   `RestorePoints.CreateNow`, which sets SystemRestorePointCreationFrequency to 0 for that one call (backed up, put back) so it never
   skips quietly. Point-in-Time Restore (`PointInTimeRestore`, Windows 11 24H2/25H2 build x.8737+) reads and writes only the `_UX`

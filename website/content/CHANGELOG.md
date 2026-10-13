@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.70 Dev] - 2026-10-13
+
+### Disk Analyzer
+- Fast scan: when Kodiak Cleaner runs as administrator, whole NTFS drives are read straight from the drive's own file table in one go instead of folder by folder, which is many times faster on a full drive. The summary says "with the fast scan" when it was used. Folders, network drives, FAT32 and exFAT drives, and scans without administrator rights use the folder-by-folder scan as before, and so does any drive whose file table can't be read.
+- The fast scan counts a file with several hard links once, and includes folders Windows keeps closed even to administrators, such as System Volume Information.
+- Without administrator rights, the summary suggests running as administrator for the faster scan.
+
 ## [0.8.69 Dev] - 2026-10-12
 
 ### Disk Analyzer

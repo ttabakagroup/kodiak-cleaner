@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\*.img.gz" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

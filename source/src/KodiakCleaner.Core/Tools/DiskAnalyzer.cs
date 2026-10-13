@@ -65,6 +65,8 @@ public sealed class DiskNode
     /// <summary>The All Drives group: not a real folder.</summary>
     public bool IsGroup { get; internal init; }
     public bool IsDrive { get; internal init; }
+    /// <summary>This drive was read through its NTFS file table (the fast scan) rather than folder by folder.</summary>
+    public bool FileTable { get; internal set; }
     /// <summary>Subfolders, biggest first.</summary>
     public List<DiskNode> Children { get; } = new();
 
@@ -201,6 +203,7 @@ public static class DiskAnalyzer
     /// <summary>Reads the files right in the root, then each folder inside it on its own thread.</summary>
     private static void ScanTop(DiskNode top, int largestCount, ConcurrentBag<List<DiskFile>> largest, DiskScanProgress progress, CancellationToken ct)
     {
+        if (NtfsFileTable.TryScanDrive(top, largestCount, largest, progress, ct)) return;
         var tops = new List<DiskNode>();
         var mine = new TopFiles(largestCount);
         ReadFolder(top, tops, mine, progress, ct);
@@ -270,7 +273,7 @@ public static class DiskAnalyzer
     }
 
     /// <summary>Adds up sizes from the bottom of the tree and sorts every folder's subfolders, biggest first.</summary>
-    private static void Total(DiskNode top)
+    internal static void Total(DiskNode top)
     {
         // Post-order without recursion: deep folder trees would otherwise overflow the stack.
         var order = new List<DiskNode>();

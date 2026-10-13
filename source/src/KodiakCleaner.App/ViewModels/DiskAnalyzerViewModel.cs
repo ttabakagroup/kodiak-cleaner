@@ -257,13 +257,17 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
         {
             var token = _cts.Token;
             _scan = await Task.Run(() => DiskAnalyzer.Scan(target.Roots, 1000, progress, token));
-            Notice = _scan.Root.Skipped > 0
-                ? $"{_scan.Root.Skipped:N0} folder(s) couldn't be read{(Elevation.IsAdministrator ? "" : " without administrator rights")}, so they're left out."
-                : "";
+            var notes = new List<string>();
+            if (_scan.Root.Skipped > 0)
+                notes.Add($"{_scan.Root.Skipped:N0} folder(s) couldn't be read{(Elevation.IsAdministrator ? "" : " without administrator rights")}, so they're left out.");
+            // The fast scan (the drive's file table) needs administrator rights; say so once a whole drive was walked instead.
+            if (!Elevation.IsAdministrator && Drives(_scan.Root).Any(d => !d.FileTable))
+                notes.Add("Run Kodiak Cleaner as administrator to scan whole NTFS drives much faster.");
+            Notice = string.Join(" ", notes);
             SelectedEntry = null;
             HighlightKind = null;
             await OpenAsync(_scan.Root);
-            ActivityLog.Write("Disk Analyzer", $"Scanned {target.Description}: {ByteSize.Format(_scan.Root.Bytes)} in {_scan.Root.Files:N0} files ({_scan.Took.TotalSeconds:0.#} s)");
+            ActivityLog.Write("Disk Analyzer", $"Scanned {target.Description}: {ByteSize.Format(_scan.Root.Bytes)} in {_scan.Root.Files:N0} files ({_scan.Took.TotalSeconds:0.#} s{(Drives(_scan.Root).Any(d => d.FileTable) ? ", fast scan" : "")})");
         }
         catch (OperationCanceledException)
         {
@@ -326,10 +330,13 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
 
         Title = node.IsGroup ? DiskAnalyzer.AllDrivesName : node.IsDrive ? node.Name : node.Path;
         Stats = $"{ByteSize.Format(node.Bytes)} in {(node.Files == 1 ? "1 file" : $"{node.Files:N0} files")} and {(node.Folders == 1 ? "1 folder" : $"{node.Folders:N0} folders")}" +
-                (_scan is not null && ReferenceEquals(node, _scan.Root) ? $", scanned in {Took(_scan.Took)}" : "");
+                (_scan is not null && ReferenceEquals(node, _scan.Root) ? $", scanned in {Took(_scan.Took)}{(Drives(node).Any(d => d.FileTable) ? " with the fast scan" : "")}" : "");
         UpdateDrive(node);
         SelectedEntry = null;
     }
+
+    /// <summary>The drives in a scan: the root itself, or each drive under All Drives.</summary>
+    private static IEnumerable<DiskNode> Drives(DiskNode root) => (root.IsGroup ? root.Children : new List<DiskNode> { root }).Where(d => d.IsDrive);
 
     private static string Took(TimeSpan t) => t.TotalSeconds < 60 ? $"{Math.Max(0.1, t.TotalSeconds):0.#} seconds" : $"{(int)t.TotalMinutes} min {t.Seconds} s";
 
