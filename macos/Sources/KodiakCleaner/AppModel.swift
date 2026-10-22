@@ -80,7 +80,7 @@ final class AppModel: ObservableObject {
     }
 
     var plan: Supporter.Plan { Supporter.Plan(settings: settings) }
-    /// The scheme in use: Classic and Glacier fall back to Honey without a supporter code.
+    /// The scheme in use: Classic, Glacier and Lagoon fall back to Honey without a supporter code.
     var scheme: String { plan.scheme(settings.scheme) }
 
     func theme(dark: Bool) -> Theme {

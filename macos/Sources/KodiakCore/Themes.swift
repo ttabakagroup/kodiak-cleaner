@@ -1,6 +1,6 @@
 import Foundation
 
-/// Honey (default), Classic and Glacier color schemes, each light and dark, plus the optional accent colors.
+/// Honey (default), Classic, Glacier and Lagoon color schemes, each light and dark, plus the optional accent colors.
 ///
 /// This is the only file that holds colors (tests/check_source.py enforces it). Only colors, fonts and corner radii
 /// differ between schemes; the pages use the token names and never a color of their own.
@@ -78,13 +78,32 @@ public enum Themes {
                    "danger_bg": "#252D31", "danger_fg": "#B39690", "danger_border": "#333D42", "chip_bg": "#A9BDB4",
                    "chip_text": "#26301F", "brand_1": "#EAEEEE", "brand_2": "#EAEEEE"],
             radius: 6, radiusCard: 6, displayFont: "avenir", bodyFont: "avenir"),
+        "lagoon": Scheme(
+            light: ["bg": "#F2F7FB", "surface": "#FFFFFF", "surface_alt": "#E8F1F8", "row_alt": "#E8F1F8",
+                    "row_hover": "rgba(10,132,214,0.16)", "row_line": "#D3E2EE", "column_divider": "#D3E2EE", "line": "#D3E2EE",
+                    "text": "#0B1630", "muted": "#4A5B70", "link": "#0053FD", "primary": "#0053FD", "on_primary": "#FFFFFF",
+                    "accent": "#0A84D6", "accent_text": "#0053FD", "accent_tint": "rgba(10,132,214,0.16)", "success": "#0B8378",
+                    "on_success": "#FFFFFF", "toggle_on": "#0B8378", "control_border": "#6F87A0", "focus_ring": "#0053FD",
+                    "warn_bg": "#FFF1E0", "warn_text": "#8A4B08", "warn_border": "#E9B97A", "danger": "#C2362B",
+                    "danger_bg": "#C2362B", "danger_fg": "#FFFFFF", "danger_border": "#C2362B", "chip_bg": "#DCEFF8",
+                    "chip_text": "#075A7A", "brand_1": "#0B1630", "brand_2": "#0053FD"],
+            dark: ["bg": "#0A1424", "surface": "#111E33", "surface_alt": "#0D192C", "row_alt": "#0D192C",
+                   "row_hover": "rgba(46,196,232,0.18)", "row_line": "#20324B", "column_divider": "#20324B", "line": "#20324B",
+                   "text": "#E8F1F8", "muted": "#9FB3C8", "link": "#5CC6F2", "primary": "#5CC6F2", "on_primary": "#0A1424",
+                   "accent": "#2EC4E8", "accent_text": "#5CC6F2", "accent_tint": "rgba(46,196,232,0.18)", "success": "#2DD4BF",
+                   "on_success": "#0A1424", "toggle_on": "#2DD4BF", "control_border": "#5F7896", "focus_ring": "#5CC6F2",
+                   "warn_bg": "#3A2A14", "warn_text": "#F6C88A", "warn_border": "#8A6A3A", "danger": "#FF8A80",
+                   "danger_bg": "#C2362B", "danger_fg": "#FFFFFF", "danger_border": "#C2362B", "chip_bg": "#12324A",
+                   "chip_text": "#8EDCF5", "brand_1": "#E8F1F8", "brand_2": "#5CC6F2"],
+            radius: 12, radiusCard: 16, displayFont: "fredoka", bodyFont: "system"),
     ]
 
-    /// Color Scheme tiles, always in this order. Honey is free and the default; Classic and Glacier are Supporter themes.
-    public static let schemeOrder = ["honey", "classic", "glacier"]
-    public static let schemeNames = ["honey": "Honey", "classic": "Classic", "glacier": "Glacier"]
-    public static let schemeBlurbs = ["honey": "Warm cream and gold", "classic": "Crisp white and blue", "glacier": "Calm blue-grey"]
-    public static let supporterSchemes: Set<String> = ["classic", "glacier"]
+    /// Color Scheme tiles, always in this order. Honey is free and the default; Classic, Glacier and Lagoon are Supporter themes.
+    public static let schemeOrder = ["honey", "classic", "glacier", "lagoon"]
+    public static let schemeNames = ["honey": "Honey", "classic": "Classic", "glacier": "Glacier", "lagoon": "Lagoon"]
+    public static let schemeBlurbs = ["honey": "Warm cream and gold", "classic": "Crisp white and blue", "glacier": "Calm blue-grey",
+                                      "lagoon": "Deep blue and clear water"]
+    public static let supporterSchemes: Set<String> = ["classic", "glacier", "lagoon"]
 
     /// Accent colors for everyone, in the standard's fixed order after the scheme's own accent (""). "macOS" follows
     /// the accent color chosen in System Settings, the Mac's equivalent of the standard's Windows swatch.

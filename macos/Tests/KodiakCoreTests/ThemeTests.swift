@@ -43,7 +43,7 @@ final class ThemeTests: XCTestCase {
                 }
             }
         }
-        XCTAssertEqual(checked, 3 * 2 * 9 - 2)  // Classic has no separate Blue swatch
+        XCTAssertEqual(checked, 4 * 2 * 9 - 2)  // Classic has no separate Blue swatch
     }
 
     /// The Swift port gives exactly the shades the Linux edition's themes.py (and the standard's accent.js) give.
@@ -55,6 +55,8 @@ final class ThemeTests: XCTestCase {
                                      "accent_tint": "rgba(219,39,119,0.24)"]),
             ("glacier", false, "Orange", ["accent": "#EA580C", "accent_text": "#AB4009", "primary": "#CD4D0B"]),
             ("glacier", true, "Slate", ["accent": "#66768F", "accent_text": "#9FAABA", "primary": "#525F73"]),
+            ("lagoon", false, "Orange", ["accent": "#EA580C", "accent_text": "#B24309", "primary": "#CD4D0B"]),
+            ("lagoon", true, "Purple", ["accent": "#7F3FED", "accent_text": "#AB80F3", "primary": "#7C3AED"]),
             ("classic", true, "Purple", ["accent": "#8F56F0", "accent_text": "#B590F5", "primary": "#7C3AED", "row_hover": "#363A42"]),
         ]
         for (scheme, dark, accent, values) in expected {
@@ -72,7 +74,8 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(Themes.effectiveAccent("classic", "Blue"), "")
         XCTAssertEqual(Themes.effectiveAccent("honey", "Graphite"), "Slate")
         XCTAssertEqual(Themes.effectiveAccent("honey", "Nope"), "")
-        XCTAssertEqual(Themes.schemeOrder, ["honey", "classic", "glacier"])
+        XCTAssertEqual(Themes.schemeOrder, ["honey", "classic", "glacier", "lagoon"])
+        XCTAssertEqual(Themes.supporterSchemes, ["classic", "glacier", "lagoon"])
     }
 
     func testEveryTokenDefined() {

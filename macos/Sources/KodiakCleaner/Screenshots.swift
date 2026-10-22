@@ -14,7 +14,7 @@ enum Screenshots {
         let saved = model.settings
         model.sheet = nil
         model.dialog = nil
-        model.settings.preview = "supporter"   // Classic and Glacier, through the Developer page's plan preview
+        model.settings.preview = "supporter"   // Classic, Glacier and Lagoon, through the Developer page's plan preview
         model.settings.previewName = "Jane Doe"
         model.settings.selected = nil
         model.resortTicked()
@@ -58,7 +58,7 @@ enum Screenshots {
             model.settings.accent = accent
             await capture(MainLayout(), dark: false, to: "\(folder)/accent-\(accent.lowercased()).png", model: model)
         }
-        // A Free copy: Classic and Glacier locked.
+        // A Free copy: Classic, Glacier and Lagoon locked.
         model.settings.accent = ""
         model.settings.preview = "free"
         await capture(MainLayout(), dark: false, to: "\(folder)/settings-appearance-free.png", model: model)
