@@ -61,7 +61,7 @@ public sealed class Choice<T> : ObservableObject
     }
 }
 
-/// <summary>A color scheme tile on the Appearance page. Classic and Glacier show a lock for non-supporters (visible, not hidden).</summary>
+/// <summary>A color scheme tile on the Appearance page. Classic, Glacier and Lagoon show a lock for non-supporters (visible, not hidden).</summary>
 public sealed class PaletteChoice : ObservableObject
 {
     private readonly Action<PaletteChoice> _onPicked;

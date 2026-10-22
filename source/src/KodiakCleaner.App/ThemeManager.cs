@@ -6,7 +6,7 @@ using Microsoft.Win32;
 namespace KodiakCleaner.App;
 
 /// <summary>
-/// Switches between the Honey (default), Classic and Glacier color schemes, each in light or dark mode.
+/// Switches between the Honey (default), Classic, Glacier and Lagoon color schemes, each in light or dark mode.
 /// Only colors, fonts and corner radii change; layout stays the same. An optional accent color
 /// (<see cref="AccentColors"/>) recolors buttons, links and highlights on top of either scheme.
 /// </summary>
@@ -14,10 +14,11 @@ public static partial class ThemeManager
 {
     public static bool IsDark { get; private set; }
 
-    /// <summary>The scheme actually showing: Classic and Glacier are Supporter themes, so they fall back to Honey otherwise.</summary>
+    /// <summary>The scheme actually showing: Classic, Glacier and Lagoon are Supporter themes, so they fall back to Honey otherwise.</summary>
     public static Palette ActivePalette => Settings.Current.Palette switch
     {
         Palette.Glacier when Supporter.IsSupporter => Palette.Glacier,
+        Palette.Lagoon when Supporter.IsSupporter => Palette.Lagoon,
         Palette.Classic when Supporter.IsSupporter => Palette.Classic,
         _ => Palette.Honey,
     };

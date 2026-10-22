@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.9 Dev] - 2026-10-22
+
+### Appearance
+- New Lagoon color scheme for Supporters: deep blue and clear water, in light and dark, next to Honey, Classic and Glacier in Settings > Appearance.
+
 ## [0.8.8 Dev] - 2026-10-11
 
 ### Donation Reminder

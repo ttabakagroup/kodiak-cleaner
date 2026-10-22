@@ -43,7 +43,7 @@ public partial class WelcomeWindow : Window
         new("Startup", ": add, turn off or remove programs, restore from History"),
         new("System Information", ": your PC at a glance, with details and reports"),
         new("System Restore", ": create and manage restore points and Point-in-Time Restore snapshots"),
-        new("Your Look", ": Honey, Classic or Glacier, light or dark, any accent"),
+        new("Your Look", ": Honey, Classic, Glacier or Lagoon, light or dark, any accent"),
     };
 
     public static Window ShowFor(Window? owner)

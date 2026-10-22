@@ -40,7 +40,7 @@ public sealed class DeveloperViewModel : ObservableObject
     public string CurrentPreview => Supporter.Preview == PlanPreview.None ? "Free" : $"{Supporter.Preview} · Dev";
     public string PlanNow => $"{Supporter.PlanName} ({Supporter.HowUnlocked})";
     public string PerksNow => Supporter.IsSupporter
-        ? $"Classic and Glacier themes, Supporter Badge ({(Settings.Current.ShowSupporterBadge ? "shown" : "hidden")}), support link hidden"
+        ? $"Classic, Glacier and Lagoon themes, Supporter Badge ({(Settings.Current.ShowSupporterBadge ? "shown" : "hidden")}), support link hidden"
         : "None";
 
     public ICommand ResetCommand { get; }

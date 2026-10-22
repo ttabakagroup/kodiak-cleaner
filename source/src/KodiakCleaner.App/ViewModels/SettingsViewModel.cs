@@ -536,6 +536,7 @@ public sealed class SettingsViewModel : ObservableObject
         Palettes.Add(new PaletteChoice(Palette.Honey, "Honey", "Warm cream and gold", locked: false, OnPalettePicked));
         Palettes.Add(new PaletteChoice(Palette.Classic, "Classic", "Crisp white and blue", locked: !Supporter.IsSupporter, OnPalettePicked));
         Palettes.Add(new PaletteChoice(Palette.Glacier, "Glacier", "Calm blue-grey", locked: !Supporter.IsSupporter, OnPalettePicked));
+        Palettes.Add(new PaletteChoice(Palette.Lagoon, "Lagoon", "Deep blue and clear water", locked: !Supporter.IsSupporter, OnPalettePicked));
 
         BuildAccents();
     }

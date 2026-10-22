@@ -334,7 +334,7 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <!-- A tile: Honey always available; Classic and Glacier are Supporter themes, locked for everyone else (shown, not hidden).
+                                    <!-- A tile: Honey always available; Classic, Glacier and Lagoon are Supporter themes, locked for everyone else (shown, not hidden).
                                          Name and description sit at the top of every tile, and the lock chip stays on one line at the bottom
                                          (it shrinks rather than wraps when the window is narrow), so the three tiles line up. -->
                                     <Button Command="{Binding PickCommand}" Margin="0,0,10,10" Padding="0" MinHeight="100" VerticalAlignment="Stretch"
@@ -392,6 +392,9 @@
                         </TextBlock>
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0">
                             <Run Text="Glacier" FontWeight="SemiBold" /><Run Text=" is my thank-you to supporters, with cool, calm blues inspired by the quiet beauty of glacier ice." />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0">
+                            <Run Text="Lagoon" FontWeight="SemiBold" /><Run Text=" is another thank-you to supporters: fresh and clear like shallow water, with ocean blues and aqua, and deep water at night in dark mode." />
                         </TextBlock>
                     </StackPanel>
                 </Border>

@@ -8,7 +8,7 @@ namespace KodiakCleaner.App;
 /// <summary>
 /// Accent colors (Ted's standard, free for everyone): the scheme's own accent, Windows, Blue, Teal, Green, Purple, Pink,
 /// Orange and Slate. An accent recolors buttons, switches, links, highlights and the focus ring; everything else stays with
-/// the Honey, Classic or Glacier scheme. Shades come from <see cref="AccentShades"/>, so every theme and mode passes WCAG 2.2 AA.
+/// the Honey, Classic, Glacier or Lagoon scheme. Shades come from <see cref="AccentShades"/>, so every theme and mode passes WCAG 2.2 AA.
 /// </summary>
 public static class AccentColors
 {
@@ -44,7 +44,7 @@ public static class AccentColors
         theme["Primary"] = Freeze(Parse(set.Primary));
         theme["OnPrimary"] = Freeze(Parse(set.OnPrimary));
         theme["AccentTint"] = tint;
-        // Like the standard's theme.css, the soft focus glow and (in Honey and Glacier) row hover are the accent tint.
+        // Like the standard's theme.css, the soft focus glow and (in Honey, Glacier and Lagoon) row hover are the accent tint.
         if (Hex(theme["FocusGlow"]) == oldTint) theme["FocusGlow"] = tint;
         if (Hex(theme["RowHover"]) == oldTint) theme["RowHover"] = tint;
     }

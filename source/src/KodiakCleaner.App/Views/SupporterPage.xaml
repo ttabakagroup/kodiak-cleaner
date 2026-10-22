@@ -57,7 +57,7 @@
                     </DockPanel>
                     <DockPanel Style="{StaticResource Perk}">
                         <TextBlock DockPanel.Dock="Left" Text="&#xE73E;" Style="{StaticResource Icon}" FontSize="13" Foreground="{DynamicResource Success}" Margin="0,2,10,0" VerticalAlignment="Top" />
-                        <TextBlock Text="Classic and Glacier themes: crisp white and blue, and calm blue-grey, in light and dark." TextWrapping="Wrap" />
+                        <TextBlock Text="Classic, Glacier and Lagoon themes: crisp white and blue, calm blue-grey, and deep blue and clear water, in light and dark." TextWrapping="Wrap" />
                     </DockPanel>
                     <DockPanel Style="{StaticResource Perk}">
                         <TextBlock DockPanel.Dock="Left" Text="&#xE73E;" Style="{StaticResource Icon}" FontSize="13" Foreground="{DynamicResource Success}" Margin="0,2,10,0" VerticalAlignment="Top" />

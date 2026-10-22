@@ -1,6 +1,6 @@
-/* Honey, Classic and Glacier themes, in that order. All pairs meet WCAG 2.2 AA (check with
-   scripts/check_contrast.py). Honey is the free default; Classic via
-   <html data-palette="classic">, Glacier via <html data-palette="glacier">.
+/* Honey, Classic, Glacier and Lagoon themes, in that order. All pairs meet WCAG 2.2 AA (check with
+   scripts/check_contrast.py). Honey is the free default; Classic via <html data-palette="classic">,
+   Glacier via <html data-palette="glacier">, Lagoon via <html data-palette="lagoon">.
    Light/dark follows the system unless <html data-theme="light|dark"> forces it.
    Each dark token list appears twice on purpose: once for the system setting, once for manual Dark. */
 
@@ -134,6 +134,51 @@
   --warn-bg:#252D31; --warn-text:#B39690; --warn-border:#B39690;
   --danger:#B39690; --danger-bg:#252D31; --danger-fg:#B39690; --danger-border:#333D42;
   --chip-bg:#A9BDB4; --chip-text:#26301F; --brand-1:#EAEEEE; --brand-2:#EAEEEE;
+}
+
+/* Lagoon light (Supporter theme) */
+:root[data-palette="lagoon"] {
+  color-scheme: light;
+  --bg:#F2F7FB; --surface:#FFFFFF; --surface-alt:#E8F1F8; --line:#D3E2EE;
+  --row-alt:#E8F1F8; --row-hover:rgba(10,132,214,.16); --row-line:#D3E2EE; --column-divider:#D3E2EE;
+  --text:#0B1630; --muted:#4A5B70; --link:#0053FD;
+  --primary:#0053FD; --on-primary:#FFFFFF;
+  --accent:#0A84D6; --accent-text:#0053FD; --accent-tint:rgba(10,132,214,.16);
+  --success:#0B8378; --on-success:#FFFFFF; --toggle-on:#0B8378; --control-border:#6F87A0; --focus-ring:#0053FD;
+  --warn-bg:#FFF1E0; --warn-text:#8A4B08; --warn-border:#E9B97A;
+  --danger:#C2362B; --danger-bg:#C2362B; --danger-fg:#FFFFFF; --danger-border:#C2362B;
+  --chip-bg:#DCEFF8; --chip-text:#075A7A; --brand-1:#0B1630; --brand-2:#0053FD;
+  --focus-glow:0 0 0 3px var(--accent-tint);
+  --font:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-display:"Fredoka","Nunito","Varela Round",system-ui,sans-serif;
+  --radius:12px; --radius-card:16px;
+}
+/* Lagoon dark: system dark unless Light is forced, or Dark forced */
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="lagoon"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#0A1424; --surface:#111E33; --surface-alt:#0D192C; --line:#20324B;
+    --row-alt:#0D192C; --row-hover:rgba(46,196,232,.18); --row-line:#20324B; --column-divider:#20324B;
+    --text:#E8F1F8; --muted:#9FB3C8; --link:#5CC6F2;
+    --primary:#5CC6F2; --on-primary:#0A1424;
+    --accent:#2EC4E8; --accent-text:#5CC6F2; --accent-tint:rgba(46,196,232,.18);
+    --success:#2DD4BF; --on-success:#0A1424; --toggle-on:#2DD4BF; --control-border:#5F7896; --focus-ring:#5CC6F2;
+    --warn-bg:#3A2A14; --warn-text:#F6C88A; --warn-border:#8A6A3A;
+    --danger:#FF8A80; --danger-bg:#C2362B; --danger-fg:#FFFFFF; --danger-border:#C2362B;
+    --chip-bg:#12324A; --chip-text:#8EDCF5; --brand-1:#E8F1F8; --brand-2:#5CC6F2;
+  }
+}
+:root[data-palette="lagoon"][data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0A1424; --surface:#111E33; --surface-alt:#0D192C; --line:#20324B;
+  --row-alt:#0D192C; --row-hover:rgba(46,196,232,.18); --row-line:#20324B; --column-divider:#20324B;
+  --text:#E8F1F8; --muted:#9FB3C8; --link:#5CC6F2;
+  --primary:#5CC6F2; --on-primary:#0A1424;
+  --accent:#2EC4E8; --accent-text:#5CC6F2; --accent-tint:rgba(46,196,232,.18);
+  --success:#2DD4BF; --on-success:#0A1424; --toggle-on:#2DD4BF; --control-border:#5F7896; --focus-ring:#5CC6F2;
+  --warn-bg:#3A2A14; --warn-text:#F6C88A; --warn-border:#8A6A3A;
+  --danger:#FF8A80; --danger-bg:#C2362B; --danger-fg:#FFFFFF; --danger-border:#C2362B;
+  --chip-bg:#12324A; --chip-text:#8EDCF5; --brand-1:#E8F1F8; --brand-2:#5CC6F2;
 }
 
 /* Shared component wiring */

@@ -34,7 +34,7 @@
                 </DockPanel>
                 <DockPanel Margin="0,12,0,0">
                     <TextBlock DockPanel.Dock="Left" Text="3" Style="{StaticResource SectionTitle}" Foreground="{DynamicResource AccentText}" Width="26" />
-                    <TextBlock TextWrapping="Wrap"><Run Text="Settings" FontWeight="SemiBold" /><Run Text=": choose Honey, Classic or Glacier, an accent color, light or dark, and how Kodiak Cleaner fits into Windows." /></TextBlock>
+                    <TextBlock TextWrapping="Wrap"><Run Text="Settings" FontWeight="SemiBold" /><Run Text=": choose Honey, Classic, Glacier or Lagoon, an accent color, light or dark, and how Kodiak Cleaner fits into Windows." /></TextBlock>
                 </DockPanel>
             </StackPanel>
         </Border>

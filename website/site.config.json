@@ -11,6 +11,10 @@
     "portableSize": "63.5 MB"
   },
   "releases": {
+    "0.8.74": {
+      "installerSize": "71.1 MB",
+      "portableSize": "63.8 MB"
+    },
     "0.8.73": {
       "installerSize": "71.1 MB",
       "portableSize": "63.8 MB"
@@ -146,9 +150,9 @@
   },
   "linux": {
     "appimage": "KodiakCleanerLinux-AppImage.zip",
-    "appimageSize": "634 KB",
+    "appimageSize": "635 KB",
     "deb": "KodiakCleanerLinux-DEB.zip",
-    "debSize": "185 KB"
+    "debSize": "186 KB"
   },
   "mac": {
     "dmg": "KodiakCleanerMac.dmg",

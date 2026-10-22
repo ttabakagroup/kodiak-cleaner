@@ -1,4 +1,4 @@
-/* Accent colors for Honey, Classic and Glacier. Free for everyone, never locked.
+/* Accent colors for Honey, Classic, Glacier and Lagoon. Free for everyone, never locked.
    An accent recolors buttons, switches, links, highlights and the focus ring.
    Every shade is computed against the current theme so it always meets WCAG 2.2 AA:
    text 4.5:1, controls and focus rings 3:1. Copy this file into the project unchanged.

@@ -1,10 +1,5 @@
 # Kodiak Cleaner for Mac Changelog
 
-## [0.8.5 Dev] - 2026-10-22
-
-### Added
-- **Lagoon color scheme (Supporters):** deep blue and clear water, in light and dark, next to Honey, Classic and Glacier in Settings > Appearance.
-
 ## [0.8.4 Dev] - 2026-10-11
 
 ### Changed

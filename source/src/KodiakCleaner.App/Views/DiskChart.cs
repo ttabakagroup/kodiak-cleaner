@@ -16,7 +16,7 @@ namespace KodiakCleaner.App.Views;
 /// <summary>
 /// Disk Analyzer colors follow the chosen scheme and accent (Ted, 2026-10-12): every kind of file gets the current accent's hue,
 /// turned a little further round the color wheel per kind, in the scheme's button shade, so the map looks like part of Honey,
-/// Classic or Glacier in light or dark, and the button label color always reads on it (WCAG AA). Other is the accent, nearly grey.
+/// Classic, Glacier or Lagoon in light or dark, and the button label color always reads on it (WCAG AA). Other is the accent, nearly grey.
 /// </summary>
 public static class DiskColors
 {

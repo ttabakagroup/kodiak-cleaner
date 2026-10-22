@@ -1,0 +1,44 @@
+<!-- Lagoon: pale sky-blue paper, deep navy text, ocean-blue buttons and aqua highlights (light mode). Colors come only from the
+     theme tables in Ted's app standard; every control uses these keys, so nothing else holds a color. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Bg" Color="#F2F7FB" />
+    <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SurfaceAlt" Color="#E8F1F8" />
+    <!-- Tables: every other row, row hover, row separators and the column dividers you drag. -->
+    <SolidColorBrush x:Key="RowAlt" Color="#E8F1F8" />
+    <SolidColorBrush x:Key="RowHover" Color="#290A84D6" />
+    <SolidColorBrush x:Key="RowLine" Color="#D3E2EE" />
+    <SolidColorBrush x:Key="ColumnDivider" Color="#D3E2EE" />
+    <SolidColorBrush x:Key="Line" Color="#D3E2EE" />
+    <SolidColorBrush x:Key="Text" Color="#0B1630" />
+    <SolidColorBrush x:Key="Muted" Color="#4A5B70" />
+    <SolidColorBrush x:Key="Link" Color="#0053FD" />
+    <SolidColorBrush x:Key="Primary" Color="#0053FD" />
+    <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Accent" Color="#0A84D6" />
+    <SolidColorBrush x:Key="AccentText" Color="#0053FD" />
+    <SolidColorBrush x:Key="AccentTint" Color="#290A84D6" />
+    <SolidColorBrush x:Key="Success" Color="#0B8378" />
+    <SolidColorBrush x:Key="OnSuccess" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ToggleOn" Color="#0B8378" />
+    <SolidColorBrush x:Key="ControlBorder" Color="#6F87A0" />
+    <SolidColorBrush x:Key="WarnBg" Color="#FFF1E0" />
+    <SolidColorBrush x:Key="WarnText" Color="#8A4B08" />
+    <SolidColorBrush x:Key="WarnBorder" Color="#E9B97A" />
+    <SolidColorBrush x:Key="Danger" Color="#C2362B" />
+    <SolidColorBrush x:Key="DangerBg" Color="#C2362B" />
+    <SolidColorBrush x:Key="DangerFg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="DangerBorder" Color="#C2362B" />
+    <SolidColorBrush x:Key="ChipBg" Color="#DCEFF8" />
+    <SolidColorBrush x:Key="ChipText" Color="#075A7A" />
+    <SolidColorBrush x:Key="Brand1" Color="#0B1630" />
+    <SolidColorBrush x:Key="Brand2" Color="#0053FD" />
+    <SolidColorBrush x:Key="FocusRing" Color="#0053FD" />
+    <CornerRadius x:Key="Radius">12</CornerRadius>
+    <CornerRadius x:Key="RadiusCard">16</CornerRadius>
+    <!-- Soft ring around a focused text box (Honey, Classic and Lagoon). -->
+    <SolidColorBrush x:Key="FocusGlow" Color="#290A84D6" />
+    <FontFamily x:Key="FontDisplay">pack://application:,,,/Assets/Fonts/#Fredoka SemiBold</FontFamily>
+    <FontFamily x:Key="FontBody">Segoe UI Variable Text, Segoe UI</FontFamily>
+</ResourceDictionary>

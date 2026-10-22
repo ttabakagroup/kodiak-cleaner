@@ -24,11 +24,11 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Every registry change is backed up to a `.reg` file first. Removed files go to the Recycle Bin where possible.
 
 ## Interface
-- Colors only from the Honey (default), Classic and Glacier theme dictionaries in `Themes/` and the accent shades
+- Colors only from the Honey (default), Classic, Glacier and Lagoon theme dictionaries in `Themes/` and the accent shades
   (`Core/Appearance/AccentShades.cs`, used by `AccentColors.cs`); no colors anywhere else (a test enforces this). Only colors, fonts and corner
   radii differ between themes. The theme colors match the standard's `tools/design/theme.css` exactly (a test checks; run
-  `python3 tools/design/check_contrast.py tools/design/theme.css` after any color change: WCAG 2.2 AA). Honey is free; Classic and Glacier
-  are Supporter themes (standard, 0.8.31) and fall back to Honey without a code. Accent colors (theme's own, Windows, Blue, Teal, Green,
+  `python3 tools/design/check_contrast.py tools/design/theme.css` after any color change: WCAG 2.2 AA). Honey is free; Classic, Glacier and
+  Lagoon are Supporter themes (standard, 0.8.31; Lagoon 0.8.74) and fall back to Honey without a code. Accent colors (theme's own, Windows, Blue, Teal, Green,
   Purple, Pink, Orange, Slate) are free and adjusted per theme and mode; swatches are 28px with a ring and a checkmark when chosen.
   The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
   Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.

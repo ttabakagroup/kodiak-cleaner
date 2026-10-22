@@ -12,13 +12,14 @@ public enum AppTheme
     Dark,
 }
 
-/// <summary>Color scheme. Honey is the default and free; Classic and Glacier are Supporter themes.</summary>
+/// <summary>Color scheme. Honey is the default and free; Classic, Glacier and Lagoon are Supporter themes.</summary>
 public enum Palette
 {
     Honey,
     /// <summary>Neutral greys and blue, close to the first versions. Free.</summary>
     Classic,
     Glacier,
+    Lagoon,
 }
 
 /// <summary>Developer page only: preview the app as a Free or Supporter user without a code.</summary>

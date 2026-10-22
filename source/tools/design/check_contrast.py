@@ -17,7 +17,9 @@ def parse_css(path):
     cd=grab(r':root\[data-palette="classic"\]\[data-theme="dark"\]')
     gl=grab(r':root\[data-palette="glacier"\]')
     gd=grab(r':root\[data-palette="glacier"\]\[data-theme="dark"\]')
-    T={'honey-light':dict(base),'honey-dark':{**base,**hd},'classic-light':{**base,**cl},'classic-dark':{**base,**cl,**cd},'glacier-light':{**base,**gl},'glacier-dark':{**base,**gl,**gd}}
+    ll=grab(r':root\[data-palette="lagoon"\]')
+    ld=grab(r':root\[data-palette="lagoon"\]\[data-theme="dark"\]')
+    T={'honey-light':dict(base),'honey-dark':{**base,**hd},'classic-light':{**base,**cl},'classic-dark':{**base,**cl,**cd},'glacier-light':{**base,**gl},'glacier-dark':{**base,**gl,**gd},'lagoon-light':{**base,**ll},'lagoon-dark':{**base,**ll,**ld}}
     for k,t in T.items():
         for _ in range(3):
             for n,v in list(t.items()):
@@ -80,7 +82,7 @@ def run(path):
     acc=accent_sets(path,T)
     for name,(k,tokens) in acc.items():
         t=dict(T[k]); t.update({n.lstrip('-'):v for n,v in tokens.items()})
-        if not k.startswith('classic'): t['row-hover']=t['accent-tint']  # Honey/Glacier row hover follows the accent tint
+        if not k.startswith('classic'): t['row-hover']=t['accent-tint']  # Honey/Lagoon/Glacier row hover follows the accent tint
         bad+=check(name,t)
     if acc: print(f'{len(acc)} accent combinations checked')
     print('All themes pass WCAG 2.2 AA' if not bad else f'{bad} failing pair(s)')

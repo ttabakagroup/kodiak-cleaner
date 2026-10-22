@@ -64,7 +64,7 @@ It is private first, local first, and built with security as a top priority. Rea
 - **Installed or portable.** Use the MSI installer or run the portable version from any folder, even a USB drive.
 - **Local first.** Settings live in a plain `KodiakCleaner.ini` file next to the program; backups, the activity log and exported reports go in `Documents\Kodiak Cleaner`. Nothing goes in AppData.
 - **No ads, no tracking.** No telemetry, analytics, crash reports or upsells. The only time it goes online is to check for updates, and only when you ask.
-- **Your look.** Three color schemes (Honey free, Classic and Glacier for supporters), seven accent colors or your Windows accent (free for everyone, adjusted so text stays readable), light or dark mode.
+- **Your look.** Four color schemes (Honey free, Classic, Glacier and Lagoon for supporters), seven accent colors or your Windows accent (free for everyone, adjusted so text stays readable), light or dark mode.
 
 ## Download
 
@@ -257,7 +257,7 @@ Every setting is a switch and is saved straight away. Type in the search box abo
 | Area | What's there |
 |------|--------------|
 | **Advanced** | Always start as administrator, and skip the User Account Control prompt (installed copies only). |
-| **Appearance** | Honey, Classic or Glacier color scheme, an optional accent color, Match Device, Light or Dark, and an Animations switch. |
+| **Appearance** | Honey, Classic, Glacier or Lagoon color scheme, an optional accent color, Match Device, Light or Dark, and an Animations switch. |
 | **Cleaning** | Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours. |
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on the website in your browser with the topic picked. |
 | **General** | What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
@@ -266,7 +266,7 @@ Every setting is a switch and is saved straight away. Type in the search box abo
 
 The sidebar can be widened, locked with the paperclip, or collapsed to icons only.
 
-<p align="center"><img src="website/github/images/appearance.png" alt="Appearance settings with Honey, Classic and Glacier color schemes" width="760"></p>
+<p align="center"><img src="website/github/images/appearance.png" alt="Appearance settings with Honey, Classic, Glacier and Lagoon color schemes" width="760"></p>
 
 ## Screenshots
 
@@ -337,7 +337,7 @@ It's designed to be careful (see [Built-In Safety](#built-in-safety)), but it's 
 No. There's no service and nothing running unless you open it. Scheduled cleanings are started by Windows Task Scheduler and close when they're done.
 
 **Is it really free?**
-Yes, with every feature. If it helps you, an optional one-time thank-you on [Ko-fi](https://ko-fi.com/ttabaka) gets a supporter code that unlocks the Classic and Glacier color schemes and a Supporter badge. Kodiak Cleaner asks for a donation in a pop-up when it starts and in a small banner on every 10th start. The pop-up can be turned off after 10 starts (in the pop-up or in **Settings > General**), and supporters never see either.
+Yes, with every feature. If it helps you, an optional one-time thank-you on [Ko-fi](https://ko-fi.com/ttabaka) gets a supporter code that unlocks the Classic, Glacier and Lagoon color schemes and a Supporter badge. Kodiak Cleaner asks for a donation in a pop-up when it starts and in a small banner on every 10th start. The pop-up can be turned off after 10 starts (in the pop-up or in **Settings > General**), and supporters never see either.
 
 **Why does Windows show a SmartScreen warning?**
 The installer isn't code-signed yet. Click **More info**, then **Run anyway**. You can check the source in this repository and build it yourself.
@@ -391,7 +391,7 @@ Inside `source/`:
 dist-files/             ReadMe.md, the source of the packages' Docs\ReadMe.txt
 installer/              WiX v5 MSI project (build-msi-wine.sh and package-linux.sh build on Linux)
 keys/                   supporter public keys and withdrawn code list
-src/KodiakCleaner.App/  WPF app: views, view models and the Honey, Classic and Glacier themes
+src/KodiakCleaner.App/  WPF app: views, view models and the Honey, Classic, Glacier and Lagoon themes
 src/KodiakCleaner.Core/ cleaning, registry, startup, tools, updates and supporter logic (no UI)
 store-assets/           privacy-policy.html (ready to host) and store screenshots
 tests/                  unit tests and project checks

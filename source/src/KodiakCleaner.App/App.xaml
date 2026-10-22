@@ -4,7 +4,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- Slot 0 is swapped by ThemeManager between the Honey, Classic and Glacier light and dark dictionaries. -->
+                <!-- Slot 0 is swapped by ThemeManager between the Honey, Classic, Glacier and Lagoon light and dark dictionaries. -->
                 <ResourceDictionary Source="Themes/HoneyLight.xaml" />
                 <ResourceDictionary Source="Themes/Controls.xaml" />
             </ResourceDictionary.MergedDictionaries>
