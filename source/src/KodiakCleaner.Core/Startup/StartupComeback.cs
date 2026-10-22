@@ -10,9 +10,11 @@ public sealed record RunningProgram(string Name, string? Path, DateTime? Started
 /// </summary>
 public static class StartupComeback
 {
-    private const string TurnOffTip =
-        "Turn it off here instead of removing it: programs put their own entry back, but leave Windows' on/off switch alone, so off stays off. " +
-        "Or turn off the program's own \"start with Windows\" setting.";
+    /// <summary>What to do about it (Ted, 0.8.72): the program's own setting first, since that's what keeps putting it back.</summary>
+    public const string TurnOffTip =
+        "To stop it coming back, open the program and turn off its own startup setting (often called \"Start with Windows\", " +
+        "\"Launch at startup\", \"Open at login\" or \"Run when my computer starts\"; look in its Settings, Preferences or Options). " +
+        "Or turn the entry off here instead of removing it: programs put their own entry back, but leave Windows' on/off switch alone, so off stays off.";
 
     /// <param name="program">The program the entry starts (its full path), or "" when it isn't known.</param>
     /// <param name="writtenAt">When the entry was written back, if Windows says.</param>

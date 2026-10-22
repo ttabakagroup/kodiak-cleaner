@@ -13,7 +13,7 @@
                 <TextBlock x:Name="Heading" Style="{StaticResource PageTitle}" FontSize="22" />
             </StackPanel>
             <TextBlock Style="{StaticResource PageSubtitle}" TextWrapping="Wrap"
-                       Text="These now start when you sign in to Windows. Choose what to do with each one. Disable can be undone on the Startup page; Delete is backed up first and can be restored from Startup &gt; History." />
+                       Text="These now start when you sign in to Windows. Choose what to do with each one. Disable can be undone on the Startup page; Delete is backed up first and can be restored from Startup &gt; History. If a program has its own &quot;Start with Windows&quot; setting, turn that off in the program, or it may add itself back." />
         </StackPanel>
 
         <DockPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">

@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.72 Dev] - 2026-10-22
+
+### Startup
+- Clearer advice on keeping a program out of startup: removing an entry now reminds you to turn off the program's own "Start with Windows" setting too, or it may put the entry back the next time it starts or updates. The new startup programs pop-up says the same.
+- An entry that came back explains how to stop it for good: open the program and turn off its startup setting (often called "Start with Windows", "Launch at startup" or "Open at login"), or turn the entry off here instead of removing it.
+
 ## [0.8.71 Dev] - 2026-10-22
 
 ### Startup

@@ -206,7 +206,9 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
             var names = string.Join("\n", returning.Select(r => $"• {r.Name} (came back {Times(r.Returned!.TimesReturned)})"));
             var choice = Dialogs.Choose(MessageKind.Question, "This Came Back Before",
                 $"These came back after they were removed:\n\n{names}\n\nThe program most likely puts its entry back when it starts or updates, " +
-                "so removing it again probably won't last. Turning it off keeps the entry but stops it starting, and programs leave that switch alone.",
+                "so removing it again probably won't last.\n\nTo stop it for good, open the program and turn off its own startup setting " +
+                "(often called \"Start with Windows\", \"Launch at startup\" or \"Open at login\"). " +
+                "Or turn the entry off here: that keeps the entry but stops it starting, and programs leave that switch alone.",
                 null, new[] { "Cancel", "Remove Anyway", "Turn Off Instead" }, 2, 0);
             if (choice == 0) return;
             if (choice == 2)
@@ -219,7 +221,8 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         }
         if (!Dialogs.Confirm($"Remove {what} from startup?\n\nTip: turning an entry off is reversible; removing deletes it. " +
                              "Kodiak Cleaner backs it up first (registry entries to a .reg file, shortcuts to the Recycle Bin), " +
-                             "and you can put it back from History.")) return;
+                             "and you can put it back from History.\n\nIf the program has its own \"Start with Windows\" setting, turn that off " +
+                             "in the program too, or it may put the entry back the next time it starts or updates.")) return;
         int failed = 0, failedOther = 0;
         foreach (var s in picked)
         {

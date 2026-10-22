@@ -119,7 +119,8 @@ public sealed class StartupHistoryTests : IDisposable
         };
         var why = StartupComeback.Explain(program, Day2, running);
         Assert.StartsWith("chat.exe was running when it came back", why);
-        Assert.Contains("Turn it off here instead of removing it", why);
+        Assert.EndsWith(StartupComeback.TurnOffTip, why);
+        Assert.Contains("turn off its own startup setting", why);
 
         // Started only after the entry was written back, so it can't be what wrote it.
         var later = new[] { new RunningProgram("chat.exe", program, Day3) };
