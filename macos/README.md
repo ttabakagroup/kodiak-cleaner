@@ -4,7 +4,7 @@ Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
 Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a small, honest cleaner for caches, logs, temporary files and browser data, plus Triggers, one list of everything that starts by itself on your Mac. No telemetry, no ads, no upsells, no background services. Free and open source under the MIT License.
 
-**Status:** 0.8.3 Dev, beta software. Use at your own risk and keep your own backups.
+**Status:** 0.8.4 Dev, beta software. Use at your own risk and keep your own backups.
 
 ## Contents
 
@@ -49,11 +49,11 @@ The Dev build isn't signed with an Apple Developer ID or notarized yet, so the f
 
 ## Look and Feel
 
-Honey (default, free), Classic and Glacier (Supporter themes), each in light and dark or matching the Mac. Accent colors for everyone: the scheme's own, macOS (follows the Mac's accent color), Blue, Teal, Green, Purple, Pink, Orange and Slate. Every combination meets WCAG 2.2 AA contrast, which the tests check.
+Honey (default, free), Classic, Glacier and Lagoon (Supporter themes), each in light and dark or matching the Mac. Accent colors for everyone: the scheme's own, macOS (follows the Mac's accent color), Blue, Teal, Green, Purple, Pink, Orange and Slate. Every combination meets WCAG 2.2 AA contrast, which the tests check.
 
 ## Supporter
 
-Supporting on [Ko-fi](https://ko-fi.com/ttabaka) is optional. A supporter code (the same one works in the Windows and Linux editions) unlocks Classic, Glacier and a badge, checked offline on the Mac.
+Supporting on [Ko-fi](https://ko-fi.com/ttabaka) is optional. A supporter code (the same one works in the Windows and Linux editions) unlocks Classic, Glacier, Lagoon and a badge, checked offline on the Mac.
 
 Kodiak Cleaner asks for a donation in a short pop-up at startup, and shows a small banner on every 10th start. The pop-up can be turned off (in the pop-up itself or in Settings > General) once Kodiak Cleaner has started 10 times. Supporters see neither.
 

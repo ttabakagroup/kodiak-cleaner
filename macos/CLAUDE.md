@@ -63,7 +63,7 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
 - Accents in the standard's order: scheme's own, macOS (follows the Mac's accent color; the Mac's equivalent of the Windows
   swatch), Blue, Teal, Green, Purple, Pink, Orange, Slate, shaded by `accentTokens` (port of accent.js, checked against the
   Linux values). Classic hides its duplicate Blue. `ThemeTests` checks WCAG 2.2 AA for every scheme, mode and accent.
-- Classic and Glacier are Supporter themes (fall back to Honey without a code); Honey and all accents are free.
+- Classic, Glacier and Lagoon are Supporter themes (fall back to Honey without a code); Honey and all accents are free.
 - Settings order (Ted, 0.8.3; same as Windows 0.8.63): on every Settings page the cards are A to Z by title and the switches
   inside each card are A to Z; a Reset card stays last. Supporter's Free and Supporter cards stay side by side as one comparison.
   Add new cards and switches in their A to Z place; `tests/check_source.py` checks it. Captions never point "above" or "below".

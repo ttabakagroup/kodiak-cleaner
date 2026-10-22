@@ -95,7 +95,7 @@ public enum Supporter {
             return license?.name.isEmpty == false ? license?.name : nil
         }
         public var badgeText: String { previewSupporter ? "Supporter · Dev" : "Supporter" }
-        /// Classic and Glacier fall back to Honey without a code.
+        /// Classic, Glacier and Lagoon fall back to Honey without a code.
         public func scheme(_ chosen: String) -> String {
             Themes.supporterSchemes.contains(chosen) && !isSupporter ? "honey" : chosen
         }

@@ -303,7 +303,7 @@ private struct SupporterSettings: View {
             }
             Card(title: "Supporter") {
                 Text("One-time thank-you. Yours to keep.").font(theme.body(13, weight: .medium)).foregroundStyle(theme.accentText)
-                ForEach(["Everything in Free", "The Classic and Glacier color schemes", "A Supporter Badge (you can hide it)",
+                ForEach(["Everything in Free", "The Classic, Glacier and Lagoon color schemes", "A Supporter Badge (you can hide it)",
                          "The support link and donation reminder hidden"], id: \.self) {
                     Label($0, systemImage: "checkmark").foregroundStyle(theme.text)
                 }
@@ -398,7 +398,7 @@ private struct DeveloperSettings: View {
         Card(title: "Status") {
             row("Full Disk Access", model.hasFullDiskAccess ? "Allowed" : "Not allowed")
             row("Installed As", AppInfo.build.packaged ? "App" : "Source folder")
-            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, badge, support link and donation reminder hidden" : "None")
+            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, Lagoon, badge, support link and donation reminder hidden" : "None")
             row("Preview", model.settings.preview.capitalized)
             row("Signing Key", Supporter.publicKey.isTest ? "Test key" : "Ted's key")
             row("Starts Counted", "\(model.settings.launchCount)")

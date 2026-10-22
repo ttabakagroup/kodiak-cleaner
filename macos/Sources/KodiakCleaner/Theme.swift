@@ -63,7 +63,7 @@ struct Theme {
     var brand1: Color { self["brand_1"] }
     var brand2: Color { self["brand_2"] }
 
-    /// Headings: Fredoka in Honey (bundled), Avenir Next in Glacier, the system font in Classic.
+    /// Headings: Fredoka in Honey and Lagoon (bundled), Avenir Next in Glacier, the system font in Classic.
     func display(_ size: CGFloat) -> Font {
         switch displayFont {
         case "fredoka": return .custom("Fredoka-SemiBold", size: size)
