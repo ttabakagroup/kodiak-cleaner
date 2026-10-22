@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.73 Dev] - 2026-10-22
+
+### Disk Analyzer
+- Choose What to Analyze now has a dropdown: All Drives, Folder or Individual Drives, and what's below changes with the choice. The old Drives choice is now called Individual Drives.
+- The window keeps a fixed size, so a long list of drives scrolls inside it instead of running off the screen. Individual Drives has Select All and Clear buttons.
+
 ## [0.8.72 Dev] - 2026-10-22
 
 ### Startup

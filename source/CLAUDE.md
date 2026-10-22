@@ -177,8 +177,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   Advanced reports progress per part (`SystemDetails.Collect(progress, ct)`) and logs parts taking 5 s or more. The list area shows a
   progress panel with Cancel while reading and a plain "Reading Stopped" panel after Cancel; the page can be left and returned to.
 - Single instance (0.8.48): the hand-off pipe allows this person's account (`WindowsIdentity.User`), never `PipeOptions.CurrentUserOnly`, which only lets in the token owner (Administrators for an elevated copy) and so dropped every normal launch's hand-off.
-- Disk Analyzer (Ted, 2026-10-12): `DiskAnalyzerPickWindow` picks All Drives (local only), Drives (ticked, network too) or Folder; drives are read
-  in the background with 5 s each. `DiskAnalyzer.Scan` keeps folders only (paths worked out from the parent, per-kind byte totals), reads
+- Disk Analyzer (Ted, 2026-10-12): `DiskAnalyzerPickWindow` picks All Drives (local only), Individual Drives (ticked, network too) or Folder from a
+  dropdown (Ted, 2026-10-22; fixed 760x660 window, the drive cards scroll, Select All/Clear); drives are read in the background with 5 s each. `DiskAnalyzer.Scan` keeps folders only (paths worked out from the parent, per-kind byte totals), reads
   drives and top folders side by side, and the open folder's files are read again on opening (`FilesIn`). `TreemapView` (squarified,
   `Treemap.Layout`, up to 3 levels) and `KindBarView` color by `FileKind` with `DiskColors`, which follow the scheme and accent (Ted, 2026-10-12):
   the current Accent's hue turned per kind (`AccentShades.ChartShade`), lightness fitted so OnPrimary reads on it (4.5:1). Removing a file updates every folder above it (`DiskNode.FileRemoved`).
