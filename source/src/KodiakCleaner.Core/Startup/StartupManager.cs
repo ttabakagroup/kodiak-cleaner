@@ -71,6 +71,38 @@ public static class StartupManager
         return backup;
     }
 
+    /// <summary>
+    /// When the entry was last written, as near as Windows says: the Run key's last change (any value in it), or when the
+    /// shortcut was made or changed. Null when it can't be read.
+    /// </summary>
+    public static DateTime? WrittenAt(StartupItem item)
+    {
+        try
+        {
+            if (item.FilePath is { } file)
+            {
+                if (!File.Exists(file)) return null;
+                var created = File.GetCreationTime(file);
+                var written = File.GetLastWriteTime(file);
+                return created > written ? created : written;
+            }
+            var (hive, view) = RunLocation(item.Source);
+            using var root = RegistryKey.OpenBaseKey(hive, view);
+            using var key = root.OpenSubKey(RunKey);
+            if (key is null) return null;
+            return RegQueryInfoKeyW(key.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero,
+                       IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, out var time) == 0
+                ? DateTime.FromFileTime(time)
+                : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException or ArgumentException) { return null; }
+    }
+
+    [System.Runtime.InteropServices.DllImport("advapi32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int RegQueryInfoKeyW(Microsoft.Win32.SafeHandles.SafeRegistryHandle key, IntPtr className, IntPtr classLength,
+        IntPtr reserved, IntPtr subKeys, IntPtr maxSubKeyLength, IntPtr maxClassLength, IntPtr values, IntPtr maxValueNameLength,
+        IntPtr maxValueLength, IntPtr securityDescriptorLength, out long lastWriteTime);
+
     /// <summary>The Startup folder for you, or for everyone on the PC (needs administrator).</summary>
     public static string StartupFolder(bool allUsers) =>
         Environment.GetFolderPath(allUsers ? Environment.SpecialFolder.CommonStartup : Environment.SpecialFolder.Startup);

@@ -10,10 +10,19 @@ namespace KodiakCleaner.App;
 public sealed class NewStartupChoice : ObservableObject
 {
     public const string Keep = "Keep", Disable = "Disable", Delete = "Delete";
-    public NewStartupChoice(StartupItem item) => Item = item;
+    public NewStartupChoice(StartupItem item)
+    {
+        Item = item;
+        // One that came back after it was removed starts on Disable: removing it again rarely lasts (0.8.71).
+        WhyBack = StartupHistoryRow.ReturnedText(StartupHistoryStore.Find(item));
+        if (WhyBack is not null) _action = Disable;
+    }
     public StartupItem Item { get; }
     public string Name => Item.Name;
     public string Detail => $"{Item.Location} · {Item.Command}";
+    /// <summary>When and why it came back after Kodiak Cleaner removed it; null for a new entry.</summary>
+    public string? WhyBack { get; }
+    public bool CameBack => WhyBack is not null;
     public string[] Actions { get; } = { Keep, Disable, Delete };
     private string _action = Keep;
     public string Action { get => _action; set => Set(ref _action, value); }

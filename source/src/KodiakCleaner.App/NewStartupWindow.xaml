@@ -40,6 +40,8 @@
                                 <StackPanel>
                                     <TextBlock Text="{Binding Name}" Style="{StaticResource SettingTitle}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}" />
+                                    <TextBlock Text="{Binding WhyBack}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                               Visibility="{Binding CameBack, Converter={StaticResource BoolToVis}}" />
                                 </StackPanel>
                             </DockPanel>
                         </DataTemplate>

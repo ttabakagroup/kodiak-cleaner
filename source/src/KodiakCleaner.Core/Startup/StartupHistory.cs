@@ -22,6 +22,12 @@ public sealed class StartupRecord
     public string? ShortcutCopy { get; set; }
     /// <summary>The .reg backup made when Kodiak Cleaner removed it.</summary>
     public string? RegistryBackup { get; set; }
+    /// <summary>How many times it came back after Kodiak Cleaner removed it (0.8.71).</summary>
+    public int TimesReturned { get; set; }
+    /// <summary>When it last came back after Kodiak Cleaner removed it: when it was written back, if Windows says.</summary>
+    public DateTime? LastReturned { get; set; }
+    /// <summary>Kodiak Cleaner's best guess at what put it back, noted when it came back.</summary>
+    public string? ReturnedBy { get; set; }
 
     [JsonIgnore] public bool IsRemoved => RemovedOn is not null;
     [JsonIgnore] public string Key => KeyOf(Source, FileName ?? Name);
@@ -70,9 +76,11 @@ public sealed class StartupHistory
     /// <summary>
     /// Records what is in startup now. New entries are added, ones seen before are updated, and ones no longer there are
     /// marked removed. <paramref name="copyShortcut"/> keeps a copy of a Startup-folder shortcut and returns its file name.
+    /// Returns the entries that came back after Kodiak Cleaner removed them, so the caller can find out why.
     /// </summary>
-    public void Observe(IEnumerable<StartupItem> current, DateTime now, Func<StartupItem, string?> copyShortcut)
+    public List<(StartupItem Item, StartupRecord Record)> Observe(IEnumerable<StartupItem> current, DateTime now, Func<StartupItem, string?> copyShortcut)
     {
+        var returned = new List<(StartupItem, StartupRecord)>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var item in current)
         {
@@ -84,6 +92,14 @@ public sealed class StartupHistory
             {
                 r = new StartupRecord { FirstSeen = now };
                 Records.Add(r);
+            }
+            else if (r.IsRemoved && r.RemovedByKodiakCleaner)
+            {
+                // Removed by Kodiak Cleaner and back again: the program (or its updater) put it back.
+                r.TimesReturned++;
+                r.LastReturned = now;
+                r.ReturnedBy = null;
+                returned.Add((item, r));
             }
             r.Name = item.Name;
             r.Command = item.Command;
@@ -97,6 +113,14 @@ public sealed class StartupHistory
         }
         foreach (var r in Records.Where(r => !r.IsRemoved && !seen.Contains(r.Key)))
             r.RemovedOn = now;
+        return returned;
+    }
+
+    /// <summary>The record of an entry in startup now, or null when the history hasn't seen it.</summary>
+    public StartupRecord? Find(StartupItem item)
+    {
+        var key = StartupRecord.KeyOf(item);
+        return Records.FirstOrDefault(r => r.Key == key && !r.IsRemoved);
     }
 
     /// <summary>

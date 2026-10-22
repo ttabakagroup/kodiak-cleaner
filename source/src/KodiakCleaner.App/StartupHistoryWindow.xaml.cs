@@ -17,8 +17,20 @@ public sealed class StartupHistoryRow : ObservableObject
     public DateTime FirstSeen => Record.FirstSeen;
     public DateTime? RemovedOn => Record.RemovedOn;
     public string Location => new StartupItem { Name = "", Command = "", Source = Record.Source }.Location;
-    public string Status => !Record.IsRemoved ? (Record.Enabled ? "In Startup" : "In Startup (Off)")
+    public string Status => !Record.IsRemoved
+        ? (Record.TimesReturned > 0 ? "Came Back" : "In Startup") + (Record.Enabled ? "" : " (Off)")
         : Record.RemovedByKodiakCleaner ? "Removed by Kodiak Cleaner" : "Removed Elsewhere";
+    /// <summary>When and why it came back after Kodiak Cleaner removed it; shown when the Status is hovered.</summary>
+    public string? WhyBack => ReturnedText(Record);
+
+    /// <summary>"Came back twice after being removed, last on ... " and the likely reason; null when it never came back.</summary>
+    public static string? ReturnedText(StartupRecord? r)
+    {
+        if (r is null || r.TimesReturned == 0) return null;
+        var times = r.TimesReturned == 1 ? "once" : r.TimesReturned == 2 ? "twice" : $"{r.TimesReturned} times";
+        var when = r.LastReturned is { } t ? $", last on {t:g}" : "";
+        return $"Came back {times} after being removed{when}. {r.ReturnedBy}".TrimEnd();
+    }
 
     public bool Matches(string search) =>
         string.IsNullOrWhiteSpace(search) ||

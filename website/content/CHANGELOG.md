@@ -5,6 +5,15 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.71 Dev] - 2026-10-22
+
+### Startup
+- Entries that come back after you remove them are now spotted. Kodiak Cleaner counts each return, notes when the entry was written back, and works out what most likely put it back: the program itself (it was running just before), a helper or updater from the same program folder, or, when nothing from it was running, an updater, service or scheduled task.
+- The Startup list marks these "Came back after removal", and hovering the row shows when and why. Startup > History shows them as "Came Back", with the reason when you hover the status.
+- The new startup programs pop-up says when an entry came back after being removed, explains why, and picks Disable for it instead of Keep.
+- Removing an entry that came back before offers "Turn Off Instead": programs put their own entry back but leave Windows' on/off switch alone, so off stays off.
+- A Startup folder shortcut that can't go to the Recycle Bin (in use, or the deletion was cancelled) now shows a message instead of an error.
+
 ## [0.8.70 Dev] - 2026-10-13
 
 ### Disk Analyzer

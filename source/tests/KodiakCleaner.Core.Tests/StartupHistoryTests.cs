@@ -75,6 +75,88 @@ public sealed class StartupHistoryTests : IDisposable
     }
 
     [Fact]
+    public void AnEntryThatComesBackAfterKodiakCleanerRemovedItIsCountedEachTime()
+    {
+        var h = new StartupHistory();
+        var chat = Run("Chat", "chat.exe");
+        Assert.Empty(h.Observe(new[] { chat }, Day1, _ => null));
+
+        h.MarkRemoved(chat, null, Day1);
+        Assert.Empty(h.Observe(Array.Empty<StartupItem>(), Day1, _ => null));
+        var back = Assert.Single(h.Observe(new[] { chat }, Day2, _ => null));
+        Assert.Equal("Chat", back.Item.Name);
+        Assert.Same(h.Records[0], back.Record);
+        Assert.Equal(1, back.Record.TimesReturned);
+        Assert.Equal(Day2, back.Record.LastReturned);
+        Assert.Same(back.Record, h.Find(chat));
+
+        Assert.Empty(h.Observe(new[] { chat }, Day2, _ => null)); // still there: not a second return
+        h.MarkRemoved(chat, null, Day2);
+        h.Observe(Array.Empty<StartupItem>(), Day2, _ => null);
+        Assert.Single(h.Observe(new[] { chat }, Day3, _ => null));
+        Assert.Equal(2, h.Records[0].TimesReturned);
+        Assert.Equal(Day3, h.Records[0].LastReturned);
+    }
+
+    [Fact]
+    public void AnEntryRemovedElsewhereThatComesBackIsNotCounted()
+    {
+        var h = new StartupHistory();
+        h.Observe(new[] { Run("Chat", "chat.exe") }, Day1, _ => null);
+        h.Observe(Array.Empty<StartupItem>(), Day2, _ => null); // an uninstall took it out
+        Assert.Empty(h.Observe(new[] { Run("Chat", "chat.exe") }, Day3, _ => null));
+        Assert.Equal(0, h.Records[0].TimesReturned);
+    }
+
+    [Fact]
+    public void ComebackPointsAtTheProgramItselfWhenItWasRunningFirst()
+    {
+        var program = @"C:\Users\Ted\AppData\Local\Chat\chat.exe";
+        var running = new[]
+        {
+            new RunningProgram("explorer.exe", @"C:\Windows\explorer.exe", Day1),
+            new RunningProgram("Chat.exe", program, Day2.AddMinutes(-1)),
+        };
+        var why = StartupComeback.Explain(program, Day2, running);
+        Assert.StartsWith("chat.exe was running when it came back", why);
+        Assert.Contains("Turn it off here instead of removing it", why);
+
+        // Started only after the entry was written back, so it can't be what wrote it.
+        var later = new[] { new RunningProgram("chat.exe", program, Day3) };
+        Assert.StartsWith("chat.exe wasn't running", StartupComeback.Explain(program, Day2, later));
+    }
+
+    [Fact]
+    public void ComebackPointsAtAHelperFromTheSameProgramFolder()
+    {
+        var program = @"C:\Users\Ted\AppData\Local\Chat\Update.exe";
+        var running = new[] { new RunningProgram("Chat.exe", @"C:\Users\Ted\AppData\Local\Chat\app-1.2\Chat.exe", Day1) };
+        Assert.StartsWith("Chat.exe, from the same program folder as Update.exe", StartupComeback.Explain(program, Day2, running));
+
+        var updater = new[] { new RunningProgram("ChatUpdater.exe", @"C:\Program Files\Chat\ChatUpdater.exe", null) };
+        Assert.StartsWith("ChatUpdater.exe, from the same program folder", StartupComeback.Explain(@"C:\Program Files\Chat\bin\chat.exe", null, updater));
+
+        var stranger = new[] { new RunningProgram("other.exe", @"C:\Program Files\Other\other.exe", Day1) };
+        Assert.StartsWith("chat.exe wasn't running", StartupComeback.Explain(@"C:\Program Files\Chat\chat.exe", Day2, stranger));
+        Assert.StartsWith("Kodiak Cleaner couldn't tell", StartupComeback.Explain("", Day2, stranger));
+    }
+
+    [Fact]
+    public void ComebackFieldsSaveAndLoad()
+    {
+        var h = new StartupHistory();
+        var chat = Run("Chat", "chat.exe");
+        h.Observe(new[] { chat }, Day1, _ => null);
+        h.MarkRemoved(chat, null, Day1);
+        h.Observe(new[] { chat }, Day2, _ => null)[0].Record.ReturnedBy = "chat.exe was running";
+        h.Save(_root);
+        var r = Assert.Single(StartupHistory.Load(_root).Records);
+        Assert.Equal(1, r.TimesReturned);
+        Assert.Equal(Day2, r.LastReturned);
+        Assert.Equal("chat.exe was running", r.ReturnedBy);
+    }
+
+    [Fact]
     public void ShortcutsAreCopiedOnceAndOnlyRestorableWithACopy()
     {
         var h = new StartupHistory();

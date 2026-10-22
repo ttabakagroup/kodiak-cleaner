@@ -11,18 +11,25 @@ namespace KodiakCleaner.App.ViewModels;
 
 public sealed class StartupItemViewModel : ObservableObject
 {
-    public StartupItemViewModel(StartupItem item) => Item = item;
+    public StartupItemViewModel(StartupItem item)
+    {
+        Item = item;
+        Returned = StartupHistoryStore.Find(item) is { TimesReturned: > 0 } r ? r : null;
+    }
     public StartupItem Item { get; }
     public string Name => Item.Name;
     public string Command => Item.Command;
     public string Location => Item.Location;
-    public string Note => Item.FileMissing ? "Program not found" : "";
+    public string Note => Item.FileMissing ? "Program not found" : Returned is not null ? "Came back after removal" : "";
+
+    /// <summary>The history record when this entry came back after Kodiak Cleaner removed it (0.8.71), else null.</summary>
+    public StartupRecord? Returned { get; }
 
     private string? _details;
     /// <summary>Everything about the entry, shown when the row is hovered (Ted, 0.8.63). The publisher is read from the program file once.</summary>
     public string Details => _details ??= DetailText.Lines(
         ("Name", Name), ("Command", Command), ("Starts", FileIcons.ProgramOf(Command)), ("Publisher", Publisher()),
-        ("Location", Item.FullLocation), ("Note", Note));
+        ("Location", Item.FullLocation), ("Note", Note), ("Came Back", StartupHistoryRow.ReturnedText(Returned)));
 
     private string Publisher()
     {
@@ -192,10 +199,28 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (picked.Count == 0) return;
         var what = picked.Count == 1 ? $"'{picked[0].Name}'" : $"{picked.Count} entries";
+        var returning = picked.Where(p => p.Returned is not null).ToList();
+        if (returning.Count > 0)
+        {
+            // Removing these didn't stick before; turning them off does, because programs put their entry back but leave the switch alone.
+            var names = string.Join("\n", returning.Select(r => $"• {r.Name} (came back {Times(r.Returned!.TimesReturned)})"));
+            var choice = Dialogs.Choose(MessageKind.Question, "This Came Back Before",
+                $"These came back after they were removed:\n\n{names}\n\nThe program most likely puts its entry back when it starts or updates, " +
+                "so removing it again probably won't last. Turning it off keeps the entry but stops it starting, and programs leave that switch alone.",
+                null, new[] { "Cancel", "Remove Anyway", "Turn Off Instead" }, 2, 0);
+            if (choice == 0) return;
+            if (choice == 2)
+            {
+                SetAll(returning, false);
+                picked = picked.Except(returning).ToList();
+                if (picked.Count == 0) return;
+                what = picked.Count == 1 ? $"'{picked[0].Name}'" : $"{picked.Count} entries";
+            }
+        }
         if (!Dialogs.Confirm($"Remove {what} from startup?\n\nTip: turning an entry off is reversible; removing deletes it. " +
                              "Kodiak Cleaner backs it up first (registry entries to a .reg file, shortcuts to the Recycle Bin), " +
                              "and you can put it back from History.")) return;
-        var failed = 0;
+        int failed = 0, failedOther = 0;
         foreach (var s in picked)
         {
             try
@@ -209,9 +234,19 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
             {
                 failed++;
             }
+            // A shortcut the Recycle Bin wouldn't take (in use, or the deletion was cancelled) stays where it is.
+            catch (Exception e) when (e is IOException or OperationCanceledException)
+            {
+                ActivityLog.Write("Startup", $"Couldn't remove '{s.Name}': {e.Message}");
+                failedOther++;
+            }
         }
         OnPropertyChanged(nameof(AllChecked));
         if (failed > 0)
             Dialogs.Error($"{failed} entr{(failed == 1 ? "y needs" : "ies need")} administrator rights to remove. Use Restart as Administrator at the top.");
+        if (failedOther > 0)
+            Dialogs.Error($"{failedOther} entr{(failedOther == 1 ? "y" : "ies")} couldn't be removed. The shortcut may be in use; try again in a moment.");
     }
+
+    private static string Times(int n) => n == 1 ? "once" : n == 2 ? "twice" : $"{n} times";
 }
