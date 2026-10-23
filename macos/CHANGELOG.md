@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.9 Dev] - 2026-10-23
+
+### Changed
+- **Supporter:** the Support on Ko-fi buttons now open the Kodiak Cleaner supporter item in Ted's Ko-fi Shop.
+
 ## [0.8.8 Dev] - 2026-10-23
 
 ### Changed
