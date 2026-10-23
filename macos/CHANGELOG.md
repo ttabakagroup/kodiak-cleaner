@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.10 Dev] - 2026-10-23
+
+### Changed
+- **Supporter:** Remove Code now asks first ("Remove Supporter Code?"), like the Windows edition, and says when the code was removed.
+
 ## [0.8.9 Dev] - 2026-10-23
 
 ### Changed

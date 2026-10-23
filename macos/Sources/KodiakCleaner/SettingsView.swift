@@ -333,7 +333,15 @@ private struct SupporterSettings: View {
                 }
                 .kcButton(.primary)
                 if model.plan.license != nil {
-                    Button("Remove Code") { model.settings.supporterCode = ""; status = "" }.kcButton(.secondary)
+                    Button("Remove Code") {
+                        model.ask(DialogRequest(title: "Remove Supporter Code?",
+                                                message: "Remove your supporter code from this Mac? You can enter it again at any time.",
+                                                confirm: "Remove", danger: true) {
+                            model.settings.supporterCode = ""
+                            status = "Your supporter code was removed from this Mac."
+                        })
+                    }
+                    .kcButton(.secondary)
                 }
             }
             if !status.isEmpty { Text(status).font(theme.body(13)).foregroundStyle(theme.text) }
