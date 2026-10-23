@@ -474,9 +474,18 @@ public static class ListSelect
     private static CheckBox? RowBoxAt(ItemsControl list, Point at) =>
         TickBoxes(list).FirstOrDefault(b => b.IsVisible && RowRect(list, b).Contains(at));
 
-    /// <summary>A tick-box row across the full width of its list, in the list's coordinates.</summary>
-    private static Rect RowRect(ItemsControl list, CheckBox box) =>
-        BoundsIn(RowOf(list, box), list) is { IsEmpty: false } r ? new Rect(0, r.Top, list.ActualWidth, r.Height) : Rect.Empty;
+    /// <summary>
+    /// A tick-box row across the full width of its list, in the list's coordinates. Lists laid out in columns (Registry's
+    /// Look For) keep each entry's own width, a little wider than the entry so the highlight reaches past the tick box.
+    /// </summary>
+    private static Rect RowRect(ItemsControl list, CheckBox box)
+    {
+        var row = RowOf(list, box);
+        if (BoundsIn(row, list) is not { IsEmpty: false } r) return Rect.Empty;
+        return VisualTreeHelper.GetParent(row) is StackPanel { Orientation: Orientation.Vertical } or VirtualizingStackPanel { Orientation: Orientation.Vertical }
+            ? new Rect(0, r.Top, list.ActualWidth, r.Height)
+            : new Rect(r.Left - 4, r.Top, Math.Max(0, r.Width - 4), r.Height);   // and a gap before the next column
+    }
 
     private static readonly MethodInfo ClickMethod =
         typeof(ButtonBase).GetMethod("OnClick", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -597,6 +606,8 @@ public static class ListSelect
             list.ClearValue(RowsProperty);
         }
 
+        private const double Gap = 4;
+
         private void Changed(object? sender, EventArgs e) => InvalidateVisual();
 
         private void VisibleChanged(object sender, DependencyPropertyChangedEventArgs e) => InvalidateVisual();
@@ -615,8 +626,10 @@ public static class ListSelect
                 var row = RowRect(_list, box);
                 if (row.IsEmpty) continue;
                 var over = _list.IsMouseOver && row.Contains(mouse);
-                if (box.IsChecked == true) dc.DrawRoundedRectangle(ticked, null, row, 6, 6);
-                if (over) dc.DrawRoundedRectangle(hover, null, row, 6, 6);
+                // A gap between rows; the list's own Padding gives the band room past the tick box (Ted, 0.8.97).
+                var band = new Rect(row.Left, row.Top + Gap / 2, row.Width, Math.Max(0, row.Height - Gap));
+                if (box.IsChecked == true) dc.DrawRoundedRectangle(ticked, null, band, 6, 6);
+                if (over) dc.DrawRoundedRectangle(hover, null, band, 6, 6);
             }
             if (_scroller is not null) dc.Pop();
         }

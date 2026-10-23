@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.97 Dev] - 2026-10-23
+
+### All Lists
+- In tick-box lists (Empty Folders, Duplicate Finder, program leftovers, New Startup Programs, the drive pickers and cleaning schedule items), each row's highlight now has a small gap from the next row and starts a little before the tick box, so ticked rows no longer run into each other. Registry's Look For list highlights each entry on its own.
+
 ## [0.8.96 Dev] - 2026-10-23
 
 ### Sidebar

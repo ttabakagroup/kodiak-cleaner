@@ -81,14 +81,14 @@
                         </WrapPanel>
                     </StackPanel>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="Groups">
+                        <ItemsControl x:Name="Groups" Padding="8,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,0,0,10">
                                         <CheckBox IsThreeState="False" IsChecked="{Binding AllChecked}" Margin="0,4,0,4">
                                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}" />
                                         </CheckBox>
-                                        <ItemsControl ItemsSource="{Binding Items}" Margin="26,0,0,0">
+                                        <ItemsControl ItemsSource="{Binding Items}" Margin="18,0,0,0" Padding="8,0">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <CheckBox IsChecked="{Binding IsChecked}" Margin="0,3" ToolTip="{Binding Description}">

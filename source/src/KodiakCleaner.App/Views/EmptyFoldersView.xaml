@@ -52,11 +52,11 @@
                         <Button Content="Clear" Command="{Binding ClearCommand}" Margin="0,0,8,6" />
                     </WrapPanel>
                 </DockPanel>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,0">
-                    <ItemsControl ItemsSource="{Binding Found}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Found}" Padding="8,0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <DockPanel Margin="0,2">
+                                <DockPanel Margin="0,5">
                                     <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Open"
                                             Command="{Binding DataContext.ShowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
                                     <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" ToolTip="{Binding Path}">

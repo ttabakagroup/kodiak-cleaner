@@ -58,11 +58,11 @@
                         <CheckBox DockPanel.Dock="Right" Content="All Drives" IsChecked="{Binding AllDrives}" VerticalAlignment="Center" />
                         <TextBlock Text="Drives" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
                     </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Drives}" Margin="0,8,0,0">
+                    <ItemsControl ItemsSource="{Binding Drives}" Margin="0,8,0,0" Padding="8,0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Root}" HorizontalContentAlignment="Stretch">
-                                    <Grid Margin="2,0,0,0" Width="222">
+                                    <Grid Margin="2,0,0,0" Width="214">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
@@ -88,7 +88,7 @@
                     <TextBlock Text="{Binding DrivesNote}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
 
                     <TextBlock Text="Folders" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
-                    <ItemsControl ItemsSource="{Binding Folders}" Margin="0,8,0,0">
+                    <ItemsControl ItemsSource="{Binding Folders}" Margin="0,8,0,0" Padding="8,0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Name}">
@@ -272,10 +272,10 @@
                                                          Visibility="{Binding ShowMeter, Converter={StaticResource BoolToVis}}" ToolTip="{Binding BadgeTip}" />
                                             <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                         </DockPanel>
-                                        <ItemsControl ItemsSource="{Binding Files}">
+                                        <ItemsControl ItemsSource="{Binding Files}" Padding="8,0">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <DockPanel Margin="0,3">
+                                                    <DockPanel Margin="0,4">
                                                         <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Show" VerticalAlignment="Top" Margin="12,0,0,0"
                                                                 Command="{Binding Group.Owner.OpenFolderCommand}" CommandParameter="{Binding}" />
                                                         <TextBlock DockPanel.Dock="Right" Text="{Binding LikenessText}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"

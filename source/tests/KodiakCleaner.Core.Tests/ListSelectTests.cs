@@ -68,6 +68,30 @@ public class ListSelectTests
     }
 
     [Fact]
+    public void Tick_box_lists_leave_room_for_the_row_highlight()
+    {
+        // The whole-row highlight spans the list's width, so a list of tick-box rows needs its own side Padding: then the
+        // highlight starts a little before the tick box instead of right at it (Ted, 0.8.97).
+        var x = XNamespace.Get("http://schemas.microsoft.com/winfx/2006/xaml");
+        var problems = new List<string>();
+        foreach (var (file, list) in Elements("ItemsControl"))
+        {
+            var template = list.Element(Ns + "ItemsControl.ItemTemplate");
+            if (template is null && (string?)list.Attribute("ItemTemplate") is { } reference && reference.StartsWith("{StaticResource "))
+            {
+                var key = reference["{StaticResource ".Length..^1];
+                template = list.Document!.Descendants().FirstOrDefault(e => (string?)e.Attribute(x + "Key") == key);
+            }
+            var ownBoxes = template?.Descendants(Ns + "CheckBox")
+                .Any(b => !b.Ancestors(Ns + "ItemsControl").TakeWhile(a => a != list).Any()) ?? false;
+            var columns = list.Element(Ns + "ItemsControl.ItemsPanel") is not null;   // entries side by side keep their own width
+            if (ownBoxes && !columns && list.Attribute("Padding") is null)
+                problems.Add($"{file}: a tick-box list needs Padding (e.g. \"8,0\") so its row highlight reaches past the tick box.");
+        }
+        Assert.True(problems.Count == 0, string.Join(Environment.NewLine, problems));
+    }
+
+    [Fact]
     public void Right_click_menus_see_every_highlighted_row()
     {
         // A table with a right-click menu passes its highlighted rows to the page (SelectionChanged), so the menu acts on all of them.
