@@ -338,7 +338,7 @@ It's designed to be careful (see [Built-In Safety](#built-in-safety)), but it's 
 No. There's no service and nothing running unless you open it. Scheduled cleanings are started by Windows Task Scheduler and close when they're done.
 
 **Is it really free?**
-Yes, with every feature. If it helps you, an optional one-time thank-you on [Ko-fi](https://ko-fi.com/ttabaka) gets a supporter code that unlocks the Classic, Glacier and Lagoon color schemes and a Supporter badge. Kodiak Cleaner asks for a donation in a pop-up when it starts and in a small banner on every 10th start. The pop-up can be turned off after 10 starts (in the pop-up or in **Settings > General**), and supporters never see either.
+Yes, with every feature. If it helps you, an optional one-time thank-you of $10 or more on [Ko-fi](https://ko-fi.com/ttabaka) gets a supporter code that unlocks the Classic, Glacier and Lagoon color schemes and a Supporter badge. Kodiak Cleaner asks for a donation in a pop-up when it starts and in a small banner on every 10th start. The pop-up can be turned off after 10 starts (in the pop-up or in **Settings > General**), and supporters never see either.
 
 **Why does Windows show a SmartScreen warning?**
 The installer isn't code-signed yet. Click **More info**, then **Run anyway**. You can check the source in this repository and build it yourself.

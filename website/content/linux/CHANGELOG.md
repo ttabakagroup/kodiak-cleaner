@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.11 Dev] - 2026-10-23
+
+### Supporter
+- The Support Kodiak Cleaner card now says that a one-time $10 or more unlocks the Supporter color schemes.
+
 ## [0.8.10 Dev] - 2026-10-23
 
 ### Supporter

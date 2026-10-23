@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.82 Dev] - 2026-10-23
+
+### Supporter
+- The Supporter page and the FAQ now say that supporting with $10 or more on Ko-fi unlocks the Supporter color schemes.
+
 ## [0.8.81 Dev] - 2026-10-23
 
 ### Supporter

@@ -120,7 +120,7 @@ ${page.body}
   <span class="icon">${icons.heart}</span>
   <h2 id="thanks-title">Thanks for Downloading!</h2>
   <p>Your download is on its way. Kodiak Cleaner is free and open source, with no ads, no tracking and no upsells, and it's built by one person, Ted Tabaka, in his spare time.</p>
-  <p>If it saves you time or space, a small tip on Ko-fi keeps it free and keeps new features coming. As a thank-you, supporters get a code that unlocks the Classic and Glacier color schemes.</p>
+  <p>If it saves you time or space, a small tip on Ko-fi keeps it free and keeps new features coming. As a thank-you, supporting with $10 or more gets you a code that unlocks the Classic, Glacier and Lagoon color schemes.</p>
   <div class="btn-row centered">
     <a class="btn primary" href="${cfg.kofi}" target="_blank" rel="noopener" data-thanks-close>${icons.heart}Donate on Ko-fi</a>
     <button class="btn" type="button" data-thanks-close>Maybe Later</button>
