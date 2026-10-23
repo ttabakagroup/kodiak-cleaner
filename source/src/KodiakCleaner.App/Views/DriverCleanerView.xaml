@@ -26,6 +26,49 @@
             </DockPanel>
         </Border>
 
+        <!-- BitLocker on the Windows drive: save the recovery key and suspend protection before Safe Mode. Shown only when it's on. -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16"
+                Visibility="{Binding HasBitLocker, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE72E;" Style="{StaticResource Icon}" FontSize="16" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding BitLockerTitle}" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="{Binding BitLockerText}" TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,8,0,12" />
+                <WrapPanel>
+                    <Button Command="{Binding BitLockerPageCommand}" Margin="0,0,10,0"
+                            ToolTip="Windows' own BitLocker page: back up the key to a USB drive, a file, a printout or your Microsoft account, or turn BitLocker off.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8A7;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Open BitLocker Settings" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ResumeBitLockerCommand}" Margin="0,0,10,0"
+                            Visibility="{Binding IsBitLockerSuspended, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Resume BitLocker" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ShowRecoveryKeyCommand}" Margin="0,0,10,0"
+                            ToolTip="Shows the 48-digit recovery key to write down, copy or save to a USB drive. Kodiak Cleaner never keeps it.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8D7;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Show Recovery Key" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SuspendBitLockerCommand}" Margin="0"
+                            Visibility="{Binding IsBitLockerOn, Converter={StaticResource BoolToVis}}"
+                            ToolTip="Keeps the drive encrypted and skips the recovery key for the next two restarts, then turns itself back on.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE769;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Suspend BitLocker" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
         <Grid DockPanel.Dock="Top" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

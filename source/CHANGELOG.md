@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.86 Dev] - 2026-10-23
+
+### Driver Cleaner
+- New BitLocker card: when the Windows drive is encrypted with BitLocker, the Driver Cleaner shows it and offers Show Recovery Key (write it down, copy it or save it to a USB drive; Kodiak Cleaner never keeps it), Open BitLocker Settings (Windows' own page to back up the key or turn BitLocker off) and Suspend BitLocker or Resume BitLocker.
+- Restart in Safe Mode now checks for BitLocker first and offers Suspend and Restart, which keeps the drive encrypted but skips the recovery key for the next two restarts (into Safe Mode and back), then turns protection back on by itself.
+
 ## [0.8.85 Dev] - 2026-10-23
 
 ### Supporter

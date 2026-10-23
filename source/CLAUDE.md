@@ -114,6 +114,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   `bcdedit /set {current} safeboot minimal` plus a `*` RunOnce entry that opens `--page=drivers`; every restart from Safe Mode, and
   Later, clears safeboot (and safebootalternateshell) from {current} and {default} and reads it back with `bcdedit /enum`; if it's still set or
   can't be read (no admin), it doesn't restart and shows the msconfig steps with an Open System Configuration button (Ted, 2026-10-23); `--uninstall-system` drops the RunOnce entry. Let Windows Update Install Drivers is the live `DriverSearching\SearchOrderConfig` value, backed up first.
+  BitLocker (Ted, 2026-10-23, `BitLockerTools`): state of the Windows drive from WMI Win32_EncryptableVolume (admin only; Unknown
+  hides the card). Restart in Safe Mode with BitLocker on asks Cancel / Restart Without Suspending / Suspend and Restart; suspend is
+  DisableKeyProtectors with DisableCount 2 (into Safe Mode and back), never full decryption: turning it off is left to Windows' own page
+  (control /name Microsoft.BitLockerDriveEncryption, or ms-settings:deviceencryption on Home). Show Recovery Key reads the numerical
+  passwords and only shows, copies or saves them (warns when saving to the Windows drive); never log or store a key.
   Never name or reference any third-party driver removal tool in the app, docs or replies.
 - Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
   vssadmin, wevtutil, netsh, cleanmgr, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
