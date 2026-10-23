@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.88 Dev] - 2026-10-23
+
+### System Restore
+- Cleaner restore point list: Date, Time, Description and Type columns, with a tick box on each point and Select All at the top.
+- Ctrl-click and Shift-click highlight several points; right-click Delete or the Delete button removes the ticked points, or the highlighted ones when none are ticked, after one Yes/No question.
+- Your newest restore point is greyed out and can't be ticked or deleted, because Windows always keeps it.
+
 ## [0.8.87 Dev] - 2026-10-23
 
 ### Driver Cleaner

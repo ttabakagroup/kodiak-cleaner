@@ -42,10 +42,11 @@
                             <TextBlock Text="Refresh" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding RemoveCommand}">
+                    <Button Command="{Binding RemoveCommand}"
+                            ToolTip="Deletes every ticked restore point, or the highlighted ones when none are ticked. Ctrl-click or Shift-click to highlight several.">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                            <TextBlock Text="Remove" />
+                            <TextBlock Text="Delete" />
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding CreateCommand}" Style="{StaticResource AccentButton}" Margin="0">
@@ -72,9 +73,41 @@
                 </Border>
 
                 <Border Style="{StaticResource Card}" Padding="8">
-                    <DataGrid ItemsSource="{Binding Points}" SelectedItem="{Binding Selected}" IsReadOnly="True">
+                    <!-- Tick boxes, Ctrl-click and Shift-click, and right-click Delete, as on Startup and Programs (Ted, 0.8.88). The newest
+                         point is greyed out and can't be ticked or deleted: Windows always keeps it. -->
+                    <DataGrid ItemsSource="{Binding Points}" IsReadOnly="True" IsSynchronizedWithCurrentItem="False" SelectionMode="Extended"
+                              SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow" BasedOn="{StaticResource DetailsRow}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsNewest}" Value="True">
+                                        <Setter Property="Opacity" Value="0.5" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Delete" Command="{Binding RemoveRowCommand}">
+                                    <MenuItem.Icon><TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Created" Binding="{Binding Created, StringFormat=g}" Width="180" />
+                            <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
+                                <DataGridTemplateColumn.Header>
+                                    <CheckBox IsThreeState="False" ToolTip="Select All" HorizontalAlignment="Center"
+                                              IsChecked="{Binding DataContext.AllChecked, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanCheck}"
+                                                  HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Created, StringFormat=d}" SortMemberPath="Created" Width="120" />
+                            <DataGridTextColumn Header="Time" Binding="{Binding Created, StringFormat=t}" SortMemberPath="Created" Width="100" />
                             <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="3*" />
                             <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="*" />
                         </DataGrid.Columns>

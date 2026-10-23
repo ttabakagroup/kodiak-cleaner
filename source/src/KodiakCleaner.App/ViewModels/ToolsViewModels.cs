@@ -13,7 +13,8 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
     {
         RefreshCommand = new RelayCommand(RefreshAsync, () => !IsBusy);
         CreateCommand = new RelayCommand(CreateAsync, () => !IsBusy);
-        RemoveCommand = new RelayCommand(RemoveAsync, () => !IsBusy && Selected is not null && Selected != Points.FirstOrDefault());
+        RemoveCommand = new RelayCommand(() => RemoveAsync(Picked()), () => !IsBusy && Picked().Count > 0);
+        RemoveRowCommand = new RelayCommand(() => RemoveAsync(Highlighted.Where(r => !r.IsNewest).ToList()), () => !IsBusy && Highlighted.Any(r => !r.IsNewest));
         OpenSystemRestoreCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo("rstrui.exe") { UseShellExecute = true }));
         OpenProtectionCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo("SystemPropertiesProtection.exe") { UseShellExecute = true }));
     }
@@ -35,15 +36,38 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
     }
     public bool ShowSystemRestore { get => !_showPitr; set => ShowPitr = !value; }
 
-    public ObservableCollection<RestorePoint> Points { get; } = new();
+    public ObservableCollection<RestorePointRow> Points { get; } = new();
     public ICommand RefreshCommand { get; }
     public ICommand CreateCommand { get; }
     public ICommand RemoveCommand { get; }
+    public ICommand RemoveRowCommand { get; }
     public ICommand OpenSystemRestoreCommand { get; }
     public ICommand OpenProtectionCommand { get; }
 
-    private RestorePoint? _selected;
-    public RestorePoint? Selected { get => _selected; set => Set(ref _selected, value); }
+    /// <summary>The highlighted rows (Ctrl-click and Shift-click pick several, as on Startup and Programs). Set by the view.</summary>
+    public IReadOnlyList<RestorePointRow> Highlighted { get; set; } = Array.Empty<RestorePointRow>();
+
+    /// <summary>The header checkbox: true when every point that can be deleted is ticked, false when none, null when some.</summary>
+    public bool? AllChecked
+    {
+        get
+        {
+            var rows = Points.Where(r => !r.IsNewest).ToList();
+            return rows.Count > 0 && rows.All(r => r.IsChecked) ? true : rows.Any(r => r.IsChecked) ? null : false;
+        }
+        set
+        {
+            var on = value != false;
+            foreach (var r in Points.Where(r => !r.IsNewest)) r.IsChecked = on;
+        }
+    }
+
+    /// <summary>Ticked points, or the highlighted rows when nothing is ticked. Never the newest point, which Windows keeps.</summary>
+    private List<RestorePointRow> Picked()
+    {
+        var ticked = Points.Where(r => r.IsChecked && !r.IsNewest).ToList();
+        return ticked.Count > 0 ? ticked : Highlighted.Where(r => !r.IsNewest).ToList();
+    }
 
     private bool _isBusy;
     public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
@@ -67,10 +91,17 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
         {
             var list = await Task.Run(RestorePoints.List);
             Points.Clear();
-            foreach (var p in list) Points.Add(p);
+            for (int i = 0; i < list.Count; i++)
+            {
+                // The list is newest first; Windows always keeps the newest point, so it is shown greyed out and can't be ticked.
+                var row = new RestorePointRow(list[i], isNewest: i == 0);
+                row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(RestorePointRow.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
+                Points.Add(row);
+            }
+            OnPropertyChanged(nameof(AllChecked));
             Summary = list.Count == 0
                 ? "No restore points found. System Protection may be turned off for your drives (Configure… turns it on)."
-                : $"{list.Count} restore point(s). The newest one can't be removed, so you always have a way back.";
+                : $"{list.Count} restore point(s). The newest one is greyed out: Windows keeps it, so you always have a way back.";
         }
         catch (Exception e)
         {
@@ -113,24 +144,59 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
         finally { IsBusy = false; }
     }
 
-    private async Task RemoveAsync()
+    private async Task RemoveAsync(List<RestorePointRow> rows)
     {
-        if (Selected is not { } p) return;
-        if (!Dialogs.Confirm($"Remove the restore point \"{p.Description}\" from {p.Created:g}? This can't be undone.")) return;
+        if (rows.Count == 0) return;
+        var question = rows.Count == 1
+            ? $"Delete the restore point \"{rows[0].Description}\" from {rows[0].Created:g}? This can't be undone."
+            : $"Delete {rows.Count} restore points? This can't be undone.";
+        if (!Dialogs.Confirm(question)) return;
         IsBusy = true;
-        using var task = BackgroundTasks.Start(this, "Removing a Restore Point");
-        try
+        using var task = BackgroundTasks.Start(this, rows.Count == 1 ? "Deleting a Restore Point" : "Deleting Restore Points");
+        var failed = new List<string>();
+        foreach (var row in rows)
         {
-            var code = await Task.Run(() => RestorePoints.Remove(p.Sequence));
-            if (code != 0) Dialogs.Error($"Windows could not remove it (error {code}). Removing restore points needs administrator rights.");
+            try
+            {
+                var code = await Task.Run(() => RestorePoints.Remove(row.Sequence));
+                if (code != 0) failed.Add($"{row.Description} (error {code})");
+                else ActivityLog.Write("Restore", $"System Restore point deleted: {row.Description} ({row.Created:g})");
+            }
+            catch (Exception e)
+            {
+                failed.Add($"{row.Description} ({e.Message})");
+            }
         }
-        catch (Exception e)
-        {
-            Dialogs.Error("Windows could not remove it: " + e.Message);
-        }
-        finally { IsBusy = false; }
+        IsBusy = false;
+        if (failed.Count > 0)
+            Dialogs.Error("Windows could not delete " + (failed.Count == 1 ? "this restore point" : "these restore points") + ":\n\n" +
+                          string.Join("\n", failed) + "\n\nDeleting restore points needs administrator rights.");
         await RefreshAsync();
     }
+}
+
+/// <summary>One row of the System Restore list: the point, its tick box, and whether it is the newest (which Windows keeps).</summary>
+public sealed class RestorePointRow : ObservableObject
+{
+    public RestorePointRow(RestorePoint point, bool isNewest)
+    {
+        Point = point;
+        IsNewest = isNewest;
+    }
+
+    public RestorePoint Point { get; }
+    public int Sequence => Point.Sequence;
+    public DateTime Created => Point.Created;
+    public string Description => Point.Description;
+    public string Kind => Point.Kind;
+
+    /// <summary>Windows always keeps the newest restore point, so its row is greyed out and can't be ticked or deleted.</summary>
+    public bool IsNewest { get; }
+    public bool CanCheck => !IsNewest;
+    public string? Details => IsNewest ? "This is your newest restore point. Windows keeps it, so it can't be deleted." : null;
+
+    private bool _isChecked;
+    public bool IsChecked { get => _isChecked; set => Set(ref _isChecked, value && !IsNewest); }
 }
 
 /// <summary>
