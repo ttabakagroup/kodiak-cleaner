@@ -414,6 +414,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         };
         var progress = new Progress<DuplicateProgress>(p => Summary = p.Stage switch
         {
+            "FileTable" => $"Listing files in {p.Folder}… {p.FilesScanned:N0} files so far",
             "Scanning" => $"Scanning… {p.FilesScanned:N0} files so far",
             "Comparing" => $"Comparing contents… {p.Done:N0} of {p.Total:N0} candidate files",
             "Pictures" => $"Looking at pictures… {p.Done:N0} of {p.Total:N0}",
@@ -430,7 +431,9 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
                 ? ", and no similar files."
                 : $", and {found.Similar.Count:N0} {(found.Similar.Count == 1 ? "set" : "sets")} of similar files.";
             var skipped = found.SkippedRoots > 0 ? $" {found.SkippedRoots} chosen folder(s) were skipped because Windows or a program keeps its own files there." : "";
-            Summary = $"{identical}{(inDepth ? similar : ".")} Searched {found.FilesScanned:N0} files. Tick the files to remove.{skipped}";
+            var fast = found.FastDrives > 0 ? $" {found.FastDrives} {(found.FastDrives == 1 ? "drive was" : "drives were")} read straight from the drive's file table." : "";
+            var slow = found.SlowDrives > 0 && !Elevation.IsAdministrator ? " Restart as Administrator to read whole drives straight from their file table, which is much faster." : "";
+            Summary = $"{identical}{(inDepth ? similar : ".")} Searched {found.FilesScanned:N0} files.{fast} Tick the files to remove.{skipped}{slow}";
         }
         catch (OperationCanceledException)
         {

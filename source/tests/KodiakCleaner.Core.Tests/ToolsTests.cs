@@ -22,6 +22,54 @@ public sealed class DuplicateFinderTests : IDisposable
     }
 
     [Fact]
+    public void Uses_the_file_table_list_when_there_is_one_and_hashes_only_matching_sizes()
+    {
+        var a = Encoding.UTF8.GetBytes("hello world");
+        var one = Write("one/a.txt", a);
+        var two = Write("two/a.txt", a);
+        Write("walk-only/a.txt", a); // not in the list, so it must not turn up
+        var hidden = Write("one/hidden.txt", a);
+        var protectedTried = false;
+
+        var results = DuplicateFinder.Search(new DuplicateSearchOptions
+        {
+            Folders = new[] { _root },
+            Protected = new[] { Path.Combine(_root, "guarded") },
+            FileTable = (root, keep, _) =>
+            {
+                protectedTried = !keep(Path.Combine(root, "guarded"), FileAttributes.Directory);
+                return new List<NtfsFileTable.TableFile>
+                {
+                    new(one, a.Length, DateTime.UtcNow, FileAttributes.Normal),
+                    new(two, a.Length, DateTime.UtcNow, FileAttributes.Archive),
+                    new(hidden, a.Length, DateTime.UtcNow, FileAttributes.Hidden),
+                    new(one, a.Length, DateTime.UtcNow, FileAttributes.Normal),
+                };
+            },
+        });
+
+        Assert.True(protectedTried);
+        Assert.Equal(1, results.FastDrives);
+        Assert.Equal(0, results.SlowDrives);
+        Assert.Equal(2, results.FilesScanned);
+        var group = Assert.Single(results.Identical);
+        Assert.Equal(new[] { one, two }, group.Files.Select(f => f.Path).OrderBy(p => p, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Walks_the_folders_when_there_is_no_file_table()
+    {
+        var a = Encoding.UTF8.GetBytes("hello world");
+        Write("one/a.txt", a);
+        Write("two/a.txt", a);
+        var results = DuplicateFinder.Search(new DuplicateSearchOptions { Folders = new[] { _root }, FileTable = (_, _, _) => null });
+        Assert.Equal(0, results.FastDrives);
+        Assert.Equal(0, results.SlowDrives); // a folder, not a whole drive
+        Assert.Equal(2, results.FilesScanned);
+        Assert.Single(results.Identical);
+    }
+
+    [Fact]
     public void Finds_identical_files_and_ignores_same_size_different_content()
     {
         var a = Encoding.UTF8.GetBytes("hello world");

@@ -35,16 +35,28 @@ public sealed class DuplicateSearchOptions
     /// <summary>What to leave out when comparing names, and name patterns that gather files into sets.</summary>
     public NameRules Names { get; init; } = NameRules.Default;
     /// <summary>
+    /// Lists a chosen root straight from its drive's file table, or returns null to have the folders walked. The default reads
+    /// whole NTFS drives as an administrator (<see cref="NtfsFileTable.TryListDrive"/>); tests point it at a drive image.
+    /// </summary>
+    internal Func<string, Func<string, FileAttributes, bool>, CancellationToken, List<NtfsFileTable.TableFile>?> FileTable { get; init; } = NtfsFileTable.TryListDrive;
+    /// <summary>
     /// Reads a picture's 64-bit difference hash (9x8 grayscale, each bit = left pixel brighter than its neighbour), or null
     /// when it can't be read. Supplied by the app, which has the Windows picture decoders; without it pictures are compared by bytes only.
     /// </summary>
     public Func<string, ulong?>? PictureHash { get; init; }
 }
 
-public sealed record DuplicateProgress(string Stage, int FilesScanned, int Done, int Total);
+public sealed record DuplicateProgress(string Stage, int FilesScanned, int Done, int Total)
+{
+    /// <summary>The drive or folder being read, for the FileTable stage.</summary>
+    public string Folder { get; init; } = "";
+}
 
 /// <summary>What one search found: identical sets, and (in-depth) sets of files that are alike.</summary>
-public sealed record DuplicateResults(IReadOnlyList<DuplicateGroup> Identical, IReadOnlyList<SimilarGroup> Similar, int FilesScanned, int SkippedRoots);
+/// <param name="FastDrives">Whole drives read straight from their file table.</param>
+/// <param name="SlowDrives">Whole drives whose file table couldn't be read (no administrator rights, not NTFS), so their folders were walked.</param>
+public sealed record DuplicateResults(IReadOnlyList<DuplicateGroup> Identical, IReadOnlyList<SimilarGroup> Similar, int FilesScanned, int SkippedRoots,
+    int FastDrives = 0, int SlowDrives = 0);
 
 /// <summary>
 /// Finds identical files: group by size, then by a hash of the first 64 KB, then by a full SHA-256.
@@ -56,24 +68,26 @@ public static class DuplicateFinder
 
     public static List<DuplicateGroup> Find(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress = null, CancellationToken ct = default)
     {
-        var files = Scan(options, progress, ct, out _);
+        var files = Scan(options, progress, ct, out _, out _, out _);
         return FindIdentical(files, options, progress, ct);
     }
 
     /// <summary>Identical files, then (when <see cref="DuplicateSearchOptions.FindSimilar"/> is on) files that are alike.</summary>
     public static DuplicateResults Search(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress = null, CancellationToken ct = default)
     {
-        var files = Scan(options, progress, ct, out var skipped);
+        var files = Scan(options, progress, ct, out var skipped, out var fast, out var slow);
         var identical = FindIdentical(files, options, progress, ct);
         var similar = options.FindSimilar
             ? SimilarFinder.Find(files, identical, options, progress, ct)
             : new List<SimilarGroup>();
-        return new DuplicateResults(identical, similar, files.Count, skipped);
+        return new DuplicateResults(identical, similar, files.Count, skipped, fast, slow);
     }
 
     /// <summary>Every file in the chosen folders and drives, each physical path once, protected folders left out.</summary>
-    internal static List<DuplicateFile> Scan(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress, CancellationToken ct, out int skippedRoots)
+    internal static List<DuplicateFile> Scan(DuplicateSearchOptions options, IProgress<DuplicateProgress>? progress, CancellationToken ct,
+        out int skippedRoots, out int fastDrives, out int slowDrives)
     {
+        fastDrives = slowDrives = 0;
         var skip = FileAttributes.ReparsePoint;
         if (!options.IncludeHidden) skip |= FileAttributes.Hidden;
         if (!options.IncludeSystem) skip |= FileAttributes.System;
@@ -93,6 +107,25 @@ public static class DuplicateFinder
         var found = new List<DuplicateFile>();
         foreach (var root in roots)
         {
+            // A whole drive is listed from its file table when it can be (Ted, 2026-10-23): one long read instead of opening every folder.
+            // The same folders are left out as in the walk below: links, hidden and system folders as asked, protected and Windows' own.
+            progress?.Report(new DuplicateProgress("FileTable", found.Count, 0, 0) { Folder = root });
+            var listed = options.FileTable(root, (path, attributes) =>
+                (attributes & skip) == 0 && !IsGuarded(path, guarded) && !AlwaysSkipped(new DirectoryInfo(path)), ct);
+            if (listed is not null)
+            {
+                fastDrives++;
+                foreach (var f in listed)
+                {
+                    if ((f.Attributes & skip) != 0 || f.Size < options.MinSize || f.Size > options.MaxSize) continue;
+                    if (!seen.Add(f.Path)) continue;
+                    found.Add(new DuplicateFile(f.Path, f.Size, f.LastWriteUtc));
+                }
+                progress?.Report(new DuplicateProgress("Scanning", found.Count, 0, 0));
+                continue;
+            }
+            if (IsDriveRoot(root)) slowDrives++;
+
             var pending = new Stack<DirectoryInfo>();
             pending.Push(new DirectoryInfo(root));
             while (pending.Count > 0)
@@ -140,6 +173,8 @@ public static class DuplicateFinder
         return name.Equals("AppData", StringComparison.OrdinalIgnoreCase) &&
                dir.Parent?.Parent?.Name.Equals("Users", StringComparison.OrdinalIgnoreCase) == true;
     }
+
+    private static bool IsDriveRoot(string path) => path.Length == 3 && path[1] == ':' && path[2] == '\\' && char.IsAsciiLetter(path[0]);
 
     private static bool IsInside(string path, string folder) =>
         string.Equals(path, folder, StringComparison.OrdinalIgnoreCase) ||

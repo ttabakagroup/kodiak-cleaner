@@ -55,11 +55,88 @@ internal static class NtfsFileTable
         return true;
     }
 
+    /// <summary>
+    /// Duplicate Finder's fast scan (Ted, 2026-10-23): every file on a whole NTFS drive ("C:\") from its file table, with the folders
+    /// <paramref name="keepFolder"/> turns down left out together with everything inside them, as the folder walk stops there too.
+    /// Null when the table can't be read (not an administrator, not NTFS, a network drive); the caller then walks the folders.
+    /// </summary>
+    public static List<TableFile>? TryListDrive(string root, Func<string, FileAttributes, bool> keepFolder, CancellationToken ct)
+    {
+        if (!OperatingSystem.IsWindows() || root.Length != 3 || root[1] != ':' || root[2] != '\\' || !char.IsAsciiLetter(root[0])) return null;
+        try
+        {
+            if (new DriveInfo(root).DriveType is not (DriveType.Fixed or DriveType.Removable)) return null;
+        }
+        catch (Exception e) when (e is IOException or ArgumentException or UnauthorizedAccessException) { return null; }
+        return TryList(@"\\.\" + root[..2], root, keepFolder, ct);
+    }
+
+    /// <summary>Lists the NTFS volume at <paramref name="volume"/> (a drive like \\.\C: or, in tests, an image file) as if it were <paramref name="root"/>.</summary>
+    internal static List<TableFile>? TryList(string volume, string root, Func<string, FileAttributes, bool> keepFolder, CancellationToken ct)
+    {
+        Table? table;
+        try
+        {
+            using var handle = File.OpenHandle(volume, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            table = Read(handle, 0, new DiskScanProgress(), ct, keepFiles: true);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException or NotSupportedException)
+        {
+            table = null;
+        }
+        if (table?.Files is null || !table.Dirs.TryGetValue(RootRecord, out var top) || !top.Seen) return null;
+
+        // Each folder's full path, worked out from the root down; a folder left out takes everything below it along.
+        var children = new Dictionary<long, List<long>>();
+        foreach (var (record, d) in table.Dirs)
+        {
+            if (!d.Seen || d.Reparse || record == RootRecord || record < FirstUserRecord || d.Parent < 0) continue;
+            if (!children.TryGetValue(d.Parent, out var list)) children[d.Parent] = list = new List<long>();
+            list.Add(record);
+        }
+        var paths = new Dictionary<long, string> { [RootRecord] = root };
+        var queue = new Queue<long>();
+        queue.Enqueue(RootRecord);
+        while (queue.Count > 0)
+        {
+            ct.ThrowIfCancellationRequested();
+            long at = queue.Dequeue();
+            if (!children.TryGetValue(at, out var list)) continue;
+            foreach (var record in list)
+            {
+                if (paths.ContainsKey(record)) continue;
+                var d = table.Dirs[record];
+                var path = Path.Combine(paths[at], d.Name);
+                if (!keepFolder(path, (FileAttributes)d.Attributes)) continue;
+                paths[record] = path;
+                queue.Enqueue(record);
+            }
+        }
+
+        var files = new List<TableFile>(table.Files.Count);
+        foreach (var f in table.Files)
+        {
+            if (!paths.TryGetValue(f.Parent, out var folder)) continue;
+            DateTime modified;
+            try { modified = DateTime.FromFileTimeUtc(f.Modified); }
+            catch (ArgumentOutOfRangeException) { modified = DateTime.MinValue; }
+            files.Add(new TableFile(Path.Combine(folder, f.Name), f.Size, modified, (FileAttributes)f.Attributes));
+        }
+        return files;
+    }
+
+    /// <summary>A file listed from the table: where it is, its size, when it last changed (UTC) and its attributes.</summary>
+    internal readonly record struct TableFile(string Path, long Size, DateTime LastWriteUtc, FileAttributes Attributes);
+
+    private readonly record struct FileRecord(string Name, long Parent, long Size, long Modified, uint Attributes);
+
     /// <summary>A folder found in the table: its name and parent, and the files right inside it.</summary>
     private sealed class Dir
     {
         public string Name = "";
         public long Parent = -1;
+        public uint Attributes;
         public bool Seen, Reparse;
         public long OwnBytes;
         public int OwnFiles;
@@ -92,7 +169,14 @@ internal static class NtfsFileTable
         private readonly PriorityQueue<Candidate, long> _largest = new();
         private readonly int _largestCount;
 
-        public Table(int largestCount) => _largestCount = largestCount;
+        /// <summary>Every file, kept only when listing (Duplicate Finder); the Disk Analyzer only needs the totals.</summary>
+        public readonly List<FileRecord>? Files;
+
+        public Table(int largestCount, bool keepFiles = false)
+        {
+            _largestCount = largestCount;
+            if (keepFiles) Files = new List<FileRecord>();
+        }
 
         private Dir DirOf(long record)
         {
@@ -110,10 +194,12 @@ internal static class NtfsFileTable
                 d.Name = e.Name ?? "";
                 d.Parent = record == RootRecord ? -1 : e.Parent;
                 d.Reparse = (e.Attributes & ReparsePoint) != 0;
+                d.Attributes = e.Attributes;
                 return;
             }
             if (e.Name is null || e.Parent < 0 || (e.Attributes & ReparsePoint) != 0) return;
             long size = Math.Max(0, e.Size);
+            Files?.Add(new FileRecord(e.Name, e.Parent, size, e.Modified, e.Attributes));
             var p = DirOf(e.Parent);
             p.OwnBytes += size;
             p.OwnFiles++;
@@ -200,7 +286,7 @@ internal static class NtfsFileTable
         return new Volume(sector, (int)cluster, mft, (int)record);
     }
 
-    private static Table? Read(SafeFileHandle handle, int largestCount, DiskScanProgress progress, CancellationToken ct)
+    private static Table? Read(SafeFileHandle handle, int largestCount, DiskScanProgress progress, CancellationToken ct, bool keepFiles = false)
     {
         if (ReadBoot(handle) is not { } vol) return null;
         int rs = vol.RecordSize;
@@ -217,7 +303,7 @@ internal static class NtfsFileTable
         long records = Math.Min(length / rs, int.MaxValue);
         if (records <= RootRecord || (long)runs.Sum(r => r.Count) * vol.ClusterSize < records * rs) return null;
 
-        var table = new Table(largestCount);
+        var table = new Table(largestCount, keepFiles);
         var partial = new Dictionary<long, Entry>();
         long chunk = Math.Max(ChunkBytes, Math.Max(rs, vol.ClusterSize));
         var buffer = new byte[chunk + vol.ClusterSize];

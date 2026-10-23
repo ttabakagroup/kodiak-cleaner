@@ -206,6 +206,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   without copy marks, sizes, and pictures by a 64-bit difference hash (`PictureHasher`, Windows' decoders). Similar files are never ticked
   for the person (Keep Newest/Oldest act on identical sets only) and removing them asks with a caution. Verify Hashes re-reads the shown
   files in full and compares SHA-256; changed copies are unticked and marked.
+  Fast scan (Ted, 2026-10-23): a whole NTFS drive (Fixed or Removable) is listed from its file table when Kodiak Cleaner runs as
+  administrator (`NtfsFileTable.TryListDrive`, the Disk Analyzer's reader with `keepFiles`), with the same folders left out through
+  `keepFolder`; anything else (folders, FAT32/exFAT, no admin) falls back to the folder walk. Hard-linked files are listed once.
+  Matching stays size first, then a 64 KB SHA-256, then full SHA-256, so only same-size files are ever read.
   Name Matching (Ted, 2026-10-12, In-Depth only, `NameRules`): Match Similar Names lists files whose names are alike (edit distance,
   words in any order; Name Similarity %, default 80) even when contents differ; Leave Out of Names (Copy Marks and Version Words on,
   Dates and Times and Numbers off) plus the person's own words; Any File Type compares names across types. Name Patterns (* any text,

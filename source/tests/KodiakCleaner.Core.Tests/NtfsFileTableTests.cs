@@ -155,4 +155,54 @@ public class NtfsFileTableTests
         Assert.True(NtfsFileTable.DecodeRuns(a, 0, list));
         Assert.Equal(new (long, long, long)[] { (0, 0x100, 0x10), (0x10, 0xF0, 4), (0x14, -1, 8) }, list);
     }
+    [Theory]
+    [InlineData("ntfs-512-byte-clusters.img.gz")]
+    [InlineData("ntfs-4k-clusters.img.gz")]
+    public void Duplicate_finder_list_has_every_file_with_its_full_path(string fixture)
+    {
+        var img = Image(fixture);
+        try
+        {
+            var files = NtfsFileTable.TryList(img, @"F:\", (_, _) => true, CancellationToken.None);
+            Assert.NotNull(files);
+            Assert.Equal(310, files!.Count);
+            Assert.Equal(TotalBytes, files.Sum(f => f.Size));
+            Assert.Equal(files.Count, files.Select(f => f.Path).Distinct().Count());
+            Assert.Contains(files, f => f.Path == Path.Combine(@"F:\", "root-file.txt") && f.Size == 2_222);
+            Assert.Contains(files, f => f.Path == Path.Combine(@"F:\", "Alpha", "Deep", "Deeper", "Deepest", "bottom.zip"));
+            Assert.Equal(300, files.Count(f => f.Path.StartsWith(Path.Combine(@"F:\", "Many"))));
+            Assert.All(files, f => Assert.True(f.LastWriteUtc > new DateTime(2020, 1, 1)));
+        }
+        finally { File.Delete(img); }
+    }
+
+    [Fact]
+    public void Duplicate_finder_list_leaves_out_folders_it_is_told_to()
+    {
+        var img = Image("ntfs-4k-clusters.img.gz");
+        try
+        {
+            var asked = new List<string>();
+            var files = NtfsFileTable.TryList(img, @"F:\", (path, _) =>
+            {
+                asked.Add(path);
+                return Path.GetFileName(path) is not ("Alpha" or "Many");
+            }, CancellationToken.None);
+            Assert.NotNull(files);
+            Assert.DoesNotContain(files!, f => f.Path.StartsWith(Path.Combine(@"F:\", "Alpha")) || f.Path.StartsWith(Path.Combine(@"F:\", "Many")));
+            Assert.Contains(files!, f => f.Path.EndsWith("root-file.txt"));
+            // Nothing below a folder left out is looked at.
+            Assert.DoesNotContain(asked, p => p.Contains("Deep"));
+        }
+        finally { File.Delete(img); }
+    }
+
+    [Fact]
+    public void Duplicate_finder_list_is_null_for_something_that_is_not_ntfs()
+    {
+        var junk = Path.Combine(Path.GetTempPath(), "kc-ntfs-" + Guid.NewGuid().ToString("N") + ".img");
+        File.WriteAllBytes(junk, new byte[64 * 1024]);
+        try { Assert.Null(NtfsFileTable.TryList(junk, @"F:\", (_, _) => true, CancellationToken.None)); }
+        finally { File.Delete(junk); }
+    }
 }

@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.77 Dev] - 2026-10-23
+
+### Duplicate Finder
+- Much faster searches of whole drives: run as administrator, Kodiak Cleaner reads the drive's file table directly instead of opening every folder. Folders, non-NTFS drives and searches without administrator rights use the usual search.
+- Only files of the same size are ever hashed, and each match is confirmed by SHA-256.
+
 ## [0.8.76 Dev] - 2026-10-23
 
 ### Scheduled Tasks
