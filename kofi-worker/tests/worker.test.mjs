@@ -160,3 +160,21 @@ test("nothing is mailed to Ted when NOTIFY_TO isn't set", async () => {
   await post(payment({ amount: "1" }), e);
   assert.equal(mails.length, 0);
 });
+
+test("every product is complete and nothing is shared between products", () => {
+  for (const p of PRODUCTS) {
+    for (const k of ["id", "name", "keySecret", "from", "howTo", "contact"]) assert.ok(typeof p[k] === "string" && p[k].length > 0, `${p.id}.${k}`);
+    assert.match(p.keySecret, /^[A-Z][A-Z0-9_]*_PRIVATE_KEY$/);
+    assert.ok(Array.isArray(p.shopCodes) && Array.isArray(p.tiers));
+    assert.match(p.contact, /^https:\/\//);
+    if (p.min !== undefined) assert.ok(p.min > 0);
+  }
+  const all = (f) => PRODUCTS.flatMap(f);
+  for (const list of [all((p) => [p.id]), all((p) => [p.keySecret]), all((p) => p.shopCodes.map((c) => c.toLowerCase()))])
+    assert.equal(new Set(list).size, list.length);
+});
+
+test("a product's own minimum overrides SUPPORTER_MIN", () => {
+  assert.equal(whyNot(payment({ amount: "4.99" }), 4.99), null);
+  assert.match(whyNot(payment({ amount: "4.99" }), 10), /below/);
+});

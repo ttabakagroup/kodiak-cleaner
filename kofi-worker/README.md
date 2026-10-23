@@ -14,8 +14,9 @@ Address: https://kofi.tedtabaka.com/ (or the Worker's workers.dev address if ted
 2. else the product whose `tiers` lists the membership tier,
 3. else the product marked `default` (plain donations; Kodiak Cleaner).
 
-To add a product: make its key pair (Kodiak Cleaner's `tools/SupporterCodes make-key` works for any app that checks the
-same format), add an entry with its own `keySecret`, add that secret in Cloudflare, and deploy.
+To add a product, follow ADDING-A-PRODUCT.md: `node tools/make-key.mjs <app-id>` makes its key pair, a Ko-fi Shop item
+gives it its own page and link code, and `verifiers/` has offline code checkers to copy into the app (JavaScript, Python,
+Swift, C#). A product can set its own `min`.
 
 ## Settings (Worker > Settings > Variables and Secrets, as secrets)
 
@@ -31,5 +32,5 @@ Each product's `from` address must be on a domain verified in Resend (Kodiak Cle
 
 ## Test
 
-`npm test` (13 tests, no installs needed). Ko-fi's Send Test button sends a fake payment; the note to Ted then carries
+`npm test` (18 tests: the Worker, the key tool, and the JavaScript and Python checkers against Worker-signed codes). Ko-fi's Send Test button sends a fake payment; the note to Ted then carries
 the code because the fake buyer address can't receive mail.

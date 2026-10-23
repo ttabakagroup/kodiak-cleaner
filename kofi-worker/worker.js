@@ -19,7 +19,11 @@
 // Codes are "<payload>.<signature>" in base64url: JSON {"id","name","issued"} signed with ECDSA P-256 /
 // SHA-256 (r||s), the format Kodiak Cleaner's Windows, Linux and Mac apps check offline.
 
-// Add a product here when it starts selling on Ko-fi. Keep the list A to Z.
+// Add a product here when it starts selling on Ko-fi (steps in ADDING-A-PRODUCT.md). Keep the list A to Z.
+// Fields: id, name, keySecret (the Cloudflare secret holding its private key), from (sender on a domain verified
+// in Resend), shopCodes (Ko-fi Shop item link codes), tiers (membership tier names), howTo (how to enter the
+// code), contact (its contact page), optional min (US dollars, overrides SUPPORTER_MIN), and default: true on
+// exactly one product (plain donations).
 export const PRODUCTS = [
   {
     id: "kodiak",
@@ -174,7 +178,7 @@ async function readPayment(request) {
 
 async function handle(payment, cfg) {
   const product = productFor(payment);
-  const reason = product ? whyNot(payment, cfg.min) : "no product matched this payment";
+  const reason = product ? whyNot(payment, product.min || cfg.min) : "no product matched this payment";
   if (reason) return sendTed(payment, product, { summary: "no code sent", detail: `No supporter code was sent: ${reason}.` }, cfg);
 
   const privateKey = cfg.key(product);
