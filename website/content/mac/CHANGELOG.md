@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.7 Dev] - 2026-10-23
+
+### Changed
+- **Supporter:** the Support Kodiak Cleaner card now says that a one-time $10 or more unlocks the Supporter color schemes.
+
 ## [0.8.6 Dev] - 2026-10-23
 
 ### Changed
