@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.98 Dev] - 2026-10-23
+
+### Startup
+- In a narrow window, the Startup lists keep every column a readable width (tick boxes and On switches included) and show a sideways scroll bar instead of squeezing the columns. The Scheduled Tasks That Run at Startup title shortens instead of covering its Open Scheduled Tasks button.
+
 ## [0.8.97 Dev] - 2026-10-23
 
 ### All Lists
