@@ -309,7 +309,10 @@ public sealed class ExtensionsViewModel : ObservableObject, ILoadOnFirstVisit
     private void Finish(List<string> errors)
     {
         Refresh();
-        if (errors.Count > 0) Dialogs.Error(string.Join("\n\n", errors));
+        if (errors.Count == 0) return;
+        var text = string.Join("\n\n", errors);
+        if (errors.Any(e => e.EndsWith(ExtensionControl.NeedsAdmin))) Elevation.OfferRestart(text);
+        else Dialogs.Error(text);
     }
 
     /// <summary>Once the browser has uninstalled an extension Kodiak Cleaner removed, its remove mark is cleared again.</summary>

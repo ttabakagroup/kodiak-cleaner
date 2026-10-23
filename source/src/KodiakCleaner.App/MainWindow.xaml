@@ -210,25 +210,29 @@
         <!-- Content -->
         <DockPanel Grid.Column="1">
             <!-- Running as a standard user is information, not a warning, so it takes the color scheme's accent tint like the
-                 notice below and matches Honey, Classic and Glacier, light or dark (Ted, 0.8.29). -->
+                 notice below and matches every color scheme, light or dark (Ted, 0.8.29). It shows only on a page that needs
+                 administrator rights or runs faster with them, as a short list of what for (AdminNeeds.cs, Ted 2026-10-23). -->
             <Border DockPanel.Dock="Top" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="20,10"
-                    Visibility="{Binding IsNotAdministrator, Converter={StaticResource BoolToVis}}">
+                    Visibility="{Binding HasPageAdminNeed, Converter={StaticResource BoolToVis}}">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Left" Text="&#xE946;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
+                    <TextBlock DockPanel.Dock="Left" Text="&#xE7EF;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
                                VerticalAlignment="Top" Margin="0,2,12,0" />
-                    <Button DockPanel.Dock="Right" Margin="0" Command="{Binding RestartAsAdminCommand}" VerticalAlignment="Center">
+                    <Button DockPanel.Dock="Right" Margin="0" Command="{Binding RestartAsAdminCommand}" VerticalAlignment="Center"
+                            ToolTip="Windows asks first. Kodiak Cleaner opens again on this page.">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE7EF;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                             <TextBlock Text="Restart as Administrator" />
                         </StackPanel>
                     </Button>
-                    <!-- Laid out as a short list (Ted, 2026-10-23): what needs administrator rights, then what runs faster with them. -->
                     <StackPanel VerticalAlignment="Center" Margin="0,0,16,0" TextElement.Foreground="{DynamicResource Text}">
-                        <TextBlock Text="Running as a standard user" FontWeight="SemiBold" />
-                        <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" Text="•  Windows temporary files and crash dumps need administrator rights to clean." />
-                        <TextBlock TextWrapping="Wrap" Text="•  All users' startup entries need administrator rights." />
-                        <TextBlock Text="Faster as administrator" FontWeight="SemiBold" Margin="0,6,0,0" />
-                        <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" Text="•  Disk Analyzer and Duplicate Finder read whole drives straight from the drive's file table instead of folder by folder." />
+                        <StackPanel Margin="0,0,0,4" Visibility="{Binding PageAdminNeed.HasNeeds, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}">
+                            <TextBlock Text="Needs Administrator Rights" FontWeight="SemiBold" />
+                            <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" LineHeight="20" Text="{Binding PageAdminNeed.NeedsList}" />
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding PageAdminNeed.HasFaster, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}">
+                            <TextBlock Text="Faster as Administrator" FontWeight="SemiBold" />
+                            <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" LineHeight="20" Text="{Binding PageAdminNeed.FasterList}" />
+                        </StackPanel>
                     </StackPanel>
                 </DockPanel>
             </Border>

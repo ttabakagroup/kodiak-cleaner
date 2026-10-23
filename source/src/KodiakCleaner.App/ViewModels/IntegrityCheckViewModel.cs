@@ -293,7 +293,7 @@ public sealed class IntegrityCheckViewModel : ObservableObject, ILoadOnFirstVisi
     private bool CheckAdmin(string what)
     {
         if (Elevation.IsAdministrator) return true;
-        Dialogs.Error($"{what} uses Windows' own tool, which needs administrator rights. Use Restart as Administrator, then try again.");
+        Elevation.OfferRestart($"{what} uses Windows' own tool, which needs administrator rights.");
         return false;
     }
 

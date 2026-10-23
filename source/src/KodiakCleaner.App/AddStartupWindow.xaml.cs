@@ -68,9 +68,8 @@ public partial class AddStartupWindow : Window
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or
                                          System.Runtime.InteropServices.COMException or System.Security.SecurityException)
         {
-            Dialogs.Error(ex is UnauthorizedAccessException
-                ? "Adding to everyone's startup needs administrator rights. Use Restart as Administrator at the top."
-                : "That couldn't be added: " + ex.Message);
+            if (ex is UnauthorizedAccessException) Elevation.OfferRestart("Adding to everyone's startup needs administrator rights.");
+            else Dialogs.Error("That couldn't be added: " + ex.Message);
         }
     }
 }

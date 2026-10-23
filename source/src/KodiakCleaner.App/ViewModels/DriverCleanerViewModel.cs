@@ -141,7 +141,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
         {
             if (value == DriverTools.WindowsUpdateInstallsDrivers) return;
             if (!Elevation.IsAdministrator)
-                Dialogs.Error("Changing this needs administrator rights. Use Restart as Administrator.");
+                Elevation.OfferRestart("Changing this needs administrator rights.");
             else if (DriverTools.SetWindowsUpdateInstallsDrivers(value))
                 ActivityLog.Write("Driver Cleaner", value ? "Windows Update may install drivers again" : "Windows Update driver installs turned off");
             OnPropertyChanged();
@@ -273,7 +273,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
         }
         if (!Elevation.IsAdministrator)
         {
-            Dialogs.Error("Switching Safe Mode needs administrator rights. Use Restart as Administrator.");
+            Elevation.OfferRestart("Switching Safe Mode needs administrator rights.");
             return;
         }
         BitLocker = await Task.Run(() => BitLockerTools.State());
@@ -372,7 +372,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (!Elevation.IsAdministrator)
         {
-            Dialogs.Error("Showing the recovery key needs administrator rights. Use Restart as Administrator, or Open BitLocker Settings.");
+            Elevation.OfferRestart("Showing the recovery key needs administrator rights. Open BitLocker Settings shows it too.");
             return;
         }
         var keys = await Task.Run(() => BitLockerTools.RecoveryKeys());
@@ -451,7 +451,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
         if (chosen.Count == 0) return;
         if (!Elevation.IsAdministrator)
         {
-            Dialogs.Error("Removing drivers needs administrator rights. Use Restart as Administrator.");
+            Elevation.OfferRestart("Removing drivers needs administrator rights.");
             return;
         }
         int packs = chosen.Count(i => i.Package is not null);

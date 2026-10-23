@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.95 Dev] - 2026-10-23
+
+### Interface
+- Pages that need administrator rights now say so at the top, with what for and a Restart as Administrator button. Pages that run faster as administrator (Disk Analyzer, Duplicate Finder) say that instead. Pages that work the same either way no longer show the standard-user bar.
+- Restart as Administrator opens Kodiak Cleaner again on the page you were on.
+- When a step needs administrator rights, Kodiak Cleaner now offers to restart as administrator right away instead of only showing a message.
+
+### Startup
+- Both cards on the Startup page now grow and shrink with the window. The startup list keeps two thirds of the room and Scheduled Tasks That Run at Startup takes the rest, so neither is cut off in a small window.
+
 ## [0.8.94 Dev] - 2026-10-23
 
 ### Duplicate Finder

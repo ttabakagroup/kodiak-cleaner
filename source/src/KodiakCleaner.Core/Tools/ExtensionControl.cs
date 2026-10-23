@@ -248,17 +248,20 @@ public static class ExtensionControl
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException)
         {
-            return "Windows only lets administrators change browser policies. Use Restart as Administrator, then try again.";
+            return NeedsAdmin;
         }
         catch (IOException ex) { return ex.Message; }
     }
+
+    /// <summary>The reason given when Windows refuses a policy change; the page then offers to restart as administrator.</summary>
+    public const string NeedsAdmin = "Windows only lets administrators change browser policies.";
 
     private static string? Write(Func<string?> change)
     {
         try { return change(); }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException)
         {
-            return "Windows only lets administrators change browser policies. Use Restart as Administrator, then try again.";
+            return NeedsAdmin;
         }
     }
 }

@@ -661,7 +661,7 @@ public sealed class ScheduledTaskItem : ObservableObject
         set
         {
             if (!TrySetEnabled(value))
-                Dialogs.Error("Changing this task needs administrator rights. Use Restart as Administrator at the top.");
+                Elevation.OfferRestart("Changing this task needs administrator rights.");
         }
     }
 
@@ -830,7 +830,7 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
     {
         var failed = items.Count(i => !i.TrySetEnabled(enabled));
         if (failed > 0)
-            Dialogs.Error($"{failed} task(s) need administrator rights to change. Use Restart as Administrator at the top.");
+            Elevation.OfferRestart($"{failed} task(s) need administrator rights to change.");
     }
 
     /// <summary>Saves the tasks to Backups\Scheduled Tasks without changing them.</summary>

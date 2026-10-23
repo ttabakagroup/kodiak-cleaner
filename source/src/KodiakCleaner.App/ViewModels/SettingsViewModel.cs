@@ -448,7 +448,10 @@ public sealed class SettingsViewModel : ObservableObject
         set => Apply(value, v =>
         {
             if (!Elevation.IsAdministrator)
-                throw new UnauthorizedAccessException("Changing this needs administrator rights. Use Restart as Administrator, then try again.");
+            {
+                Elevation.OfferRestart("Turning this on or off needs administrator rights.");
+                return;
+            }
             Integration.SetSkipUac(v);
             S.SkipUac = v;
         });

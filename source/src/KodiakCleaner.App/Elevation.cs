@@ -10,7 +10,8 @@ public static class Elevation
     public static bool IsAdministrator { get; } =
         new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
-    public static void RestartElevated()
+    /// <summary>Restarts Kodiak Cleaner as administrator (Windows asks first), reopening on <paramref name="page"/> (a --page= key).</summary>
+    public static void RestartElevated(string? page = null)
     {
         var exe = Environment.ProcessPath;
         if (exe is null) return;
@@ -18,7 +19,8 @@ public static class Elevation
         if (!MainWindow.ConfirmExit("Restart")) return;
         try
         {
-            Process.Start(new ProcessStartInfo(exe, RestartedArg) { UseShellExecute = true, Verb = "runas" });
+            var args = RestartedArg + (page is { Length: > 0 } ? $" {Integration.PageArgPrefix}{page}" : "");
+            Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = true, Verb = "runas" });
             Application.Current.Shutdown();
         }
         catch (System.ComponentModel.Win32Exception)
@@ -26,6 +28,22 @@ public static class Elevation
             // The user declined the UAC prompt; keep running as-is (and ask again before a later close).
             MainWindow.ExitCancelled();
         }
+    }
+
+    /// <summary>The page open now, so a restart comes back to it; MainViewModel keeps it current.</summary>
+    public static string? CurrentPage { get; set; }
+
+    /// <summary>
+    /// Says why a step needs administrator rights and offers to restart as administrator right away (Ted, 2026-10-23: a tool
+    /// that needs them prompts for the restart). Every "needs administrator rights" message goes through here, never Dialogs.Error.
+    /// </summary>
+    public static void OfferRestart(string why)
+    {
+        if (IsAdministrator) { Dialogs.Error(why); return; }
+        var choice = Dialogs.Choose(MessageKind.Question, "Administrator Rights Needed",
+            why.TrimEnd() + "\n\nRestart Kodiak Cleaner as administrator now? Windows asks first, then Kodiak Cleaner opens again on the page you're on.", null,
+            ["Not Now", "Restart as Administrator"], 1, 0);
+        if (choice == 1) Application.Current.Dispatcher.Invoke(() => RestartElevated(CurrentPage));
     }
 
     /// <summary>Tells the new copy to wait for this one to close before it takes over the window.</summary>

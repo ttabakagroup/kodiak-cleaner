@@ -101,10 +101,6 @@
 
         <ScrollViewer x:Name="Page" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0,0,4,0">
-                <TextBlock Style="{StaticResource Caption}" Margin="2,0,0,12" TextWrapping="Wrap"
-                           Text="Drive File System, Windows Component Store and Windows System Files need administrator rights. Use Restart as Administrator to run them."
-                           Visibility="{Binding IsAdministrator, Converter={StaticResource NotVis}}" />
-
                 <!-- Checks A to Z. -->
 
                 <!-- Drive Error History -->

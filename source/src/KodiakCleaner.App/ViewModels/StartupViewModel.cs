@@ -62,7 +62,7 @@ public sealed class StartupItemViewModel : ObservableObject
         set
         {
             if (!TrySetEnabled(value))
-                Dialogs.Error("Changing this entry needs administrator rights. Use Restart as Administrator at the top.");
+                Elevation.OfferRestart("Changing this entry needs administrator rights.");
         }
     }
 
@@ -151,7 +151,7 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
     {
         var failed = HighlightedTasks.Where(t => t.Enabled != enabled).Count(t => !t.TrySetEnabled(enabled));
         if (failed > 0)
-            Dialogs.Error("Changing this task needs administrator rights. Use Restart as Administrator at the top.");
+            Elevation.OfferRestart("Changing this task needs administrator rights.");
     }
 
     private void DeleteTask()
@@ -237,7 +237,7 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
     {
         var failed = items.ToList().Count(i => !i.TrySetEnabled(enabled));
         if (failed > 0)
-            Dialogs.Error($"{failed} entr{(failed == 1 ? "y needs" : "ies need")} administrator rights to change. Use Restart as Administrator at the top.");
+            Elevation.OfferRestart($"{failed} entr{(failed == 1 ? "y needs" : "ies need")} administrator rights to change.");
     }
 
     public ObservableCollection<StartupItemViewModel> Items { get; } = new();
@@ -318,7 +318,7 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         }
         OnPropertyChanged(nameof(AllChecked));
         if (failed > 0)
-            Dialogs.Error($"{failed} entr{(failed == 1 ? "y needs" : "ies need")} administrator rights to remove. Use Restart as Administrator at the top.");
+            Elevation.OfferRestart($"{failed} entr{(failed == 1 ? "y needs" : "ies need")} administrator rights to remove.");
         if (failedOther > 0)
             Dialogs.Error($"{failedOther} entr{(failedOther == 1 ? "y" : "ies")} couldn't be removed. The shortcut may be in use; try again in a moment.");
     }

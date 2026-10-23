@@ -71,7 +71,7 @@ public sealed class MainViewModel : ObservableObject
         };
         SettingsPage.ShowRequested += () => FooterPages[0].IsSelected = true;
 
-        RestartAsAdminCommand = new RelayCommand(Elevation.RestartElevated, () => !IsAdministrator);
+        RestartAsAdminCommand = new RelayCommand(() => Elevation.RestartElevated(Elevation.CurrentPage), () => !IsAdministrator);
         HomeCommand = new RelayCommand(() => MainPages[0].IsSelected = true);
         MainPages[0].IsSelected = true;
 
@@ -185,7 +185,18 @@ public sealed class MainViewModel : ObservableObject
     public ICommand ToggleSidebarLockCommand { get; }
 
     public bool IsAdministrator => Elevation.IsAdministrator;
-    public bool IsNotAdministrator => !Elevation.IsAdministrator;
+
+    private AdminNeed? _pageAdminNeed;
+    /// <summary>
+    /// Running as a standard user: what the open page needs administrator rights for, or runs faster with. Shown at the top
+    /// of the page with Restart as Administrator; null (hidden) as administrator and on pages that work the same either way.
+    /// </summary>
+    public AdminNeed? PageAdminNeed
+    {
+        get => _pageAdminNeed;
+        private set { if (Set(ref _pageAdminNeed, value)) OnPropertyChanged(nameof(HasPageAdminNeed)); }
+    }
+    public bool HasPageAdminNeed => PageAdminNeed is not null;
     public string VersionName => AppInfo.VersionName;
     public string WindowTitle => AppInfo.Name + (IsAdministrator ? " (Administrator)" : "");
     public bool ShowBadge => Supporter.ShowBadge;
@@ -257,6 +268,33 @@ public sealed class MainViewModel : ObservableObject
         SettingsPage.About.ShowChangelog = true;
     }
 
+    /// <summary>Each page's short name for --page= (jump lists, the Safe Mode and Boot Timer restarts, Restart as Administrator).</summary>
+    private Dictionary<string, object> PageByKey => _pageByKey ??= new()
+    {
+        ["cleaner"] = Cleaner,
+        ["registry"] = Registry,
+        ["startup"] = Startup,
+        ["programs"] = Programs,
+        ["duplicates"] = Duplicates,
+        ["disk"] = DiskAnalyzer,
+        ["drivers"] = DriverCleaner,
+        ["emptyfolders"] = EmptyFolders,
+        ["hash"] = HashChecker,
+        ["integrity"] = Integrity,
+        ["largefiles"] = LargeFiles,
+        ["rename"] = MassRename,
+        ["tasks"] = ScheduledTasks,
+        ["sysinfo"] = SystemInfo,
+        ["extensions"] = Extensions,
+        ["restore"] = Restore,
+        ["wiper"] = Wiper,
+        ["boottimer"] = BootTimer,
+        ["optimize"] = Optimize,
+        ["settings"] = SettingsPage,
+        ["about"] = SettingsPage.About,
+    };
+    private Dictionary<string, object>? _pageByKey;
+
     /// <summary>Opens a page by short name (used by jump list tasks: --page=registry). Settings pages work too (--page=feedback).</summary>
     public void Navigate(string key)
     {
@@ -266,31 +304,7 @@ public sealed class MainViewModel : ObservableObject
             SettingsPage.Open(key);
             key = "settings";
         }
-        object? target = key switch
-        {
-            "cleaner" => Cleaner,
-            "registry" => Registry,
-            "startup" => Startup,
-            "programs" => Programs,
-            "duplicates" => Duplicates,
-            "disk" => DiskAnalyzer,
-            "drivers" => DriverCleaner,
-            "emptyfolders" => EmptyFolders,
-            "hash" => HashChecker,
-            "integrity" => Integrity,
-            "largefiles" => LargeFiles,
-            "rename" => MassRename,
-            "tasks" => ScheduledTasks,
-            "sysinfo" => SystemInfo,
-            "extensions" => Extensions,
-            "restore" => Restore,
-            "wiper" => Wiper,
-            "boottimer" => BootTimer,
-            "optimize" => Optimize,
-            "settings" => SettingsPage,
-            "about" => SettingsPage.About,
-            _ => null,
-        };
+        var target = PageByKey.GetValueOrDefault(key);
         var page = AllPages.FirstOrDefault(p => p.Content == target);
         if (page is not null) page.IsSelected = true;
     }
@@ -300,6 +314,8 @@ public sealed class MainViewModel : ObservableObject
         foreach (var p in AllPages)
             if (p != page) p.IsSelected = false;
         CurrentContent = page.Content;
+        Elevation.CurrentPage = PageByKey.FirstOrDefault(p => p.Value == page.Content).Key;
+        PageAdminNeed = IsAdministrator ? null : AdminNeed.For(page.Content);
         UpdateCornerTask();
         if (ToolPages.Contains(page)) ToolsExpanded = true; // opened from a jump list or link: show where it lives
         // Lists are read when their page is first shown, not at startup.

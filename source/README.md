@@ -135,7 +135,7 @@ The first time Kodiak Cleaner starts, **Getting Started** walks you through the 
 Tips:
 - Use the search box to find any item, and **Sort By** to order the list (Default, A to Z, Last Cleaned, Most Space Freed or Largest Found).
 - Browsers are skipped while they're open, so close them first.
-- Some items need administrator rights. Click **Restart as Administrator** on the banner, or turn on **Always Start as Administrator** under **Settings > Advanced**.
+- Some items need administrator rights. Pages that need them, or run faster with them, say what for at the top with a **Restart as Administrator** button, and a step that can't run offers the restart right away (Kodiak Cleaner opens again on the same page). Or turn on **Always Start as Administrator** under **Settings > Advanced**.
 
 ### Fix Registry Problems
 

@@ -108,7 +108,7 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
             // WMI can fail in several ways (access denied, service stopped, missing components); all mean "can't list".
             Summary = Elevation.IsAdministrator
                 ? "Restore points could not be read: " + e.Message
-                : "Restore points can only be listed with administrator rights. Use Restart as administrator.";
+                : "Restore points can only be listed with administrator rights. Use Restart as Administrator at the top.";
         }
         finally { IsBusy = false; }
     }
@@ -117,7 +117,7 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (!Elevation.IsAdministrator)
         {
-            Dialogs.Error("Creating a restore point needs administrator rights. Use Restart as administrator.");
+            Elevation.OfferRestart("Creating a restore point needs administrator rights.");
             return;
         }
         IsBusy = true;
@@ -326,7 +326,7 @@ public sealed class PointInTimeRestoreViewModel : ObservableObject
                 : snapshots.Count == 0
                     ? Elevation.IsAdministrator
                         ? "No snapshots yet. Windows takes the first one when the PC is idle, or use Snapshot Now."
-                        : "Snapshots can only be listed with administrator rights. Use Restart as administrator."
+                        : "Snapshots can only be listed with administrator rights. Use Restart as Administrator at the top."
                     : $"{snapshots.Count} snapshot(s). To go back to one, use Restart to Recovery and pick Troubleshoot, then Point-in-Time Restore.";
         }
         catch (Exception e)
@@ -348,7 +348,7 @@ public sealed class PointInTimeRestoreViewModel : ObservableObject
         if (_applying || _settings is null) return false;
         if (!Elevation.IsAdministrator)
         {
-            Dialogs.Error("Changing Point-in-Time Restore needs administrator rights. Use Restart as administrator.");
+            Elevation.OfferRestart("Changing Point-in-Time Restore needs administrator rights.");
             return false;
         }
         _applying = true;
@@ -370,7 +370,7 @@ public sealed class PointInTimeRestoreViewModel : ObservableObject
     {
         if (!Elevation.IsAdministrator)
         {
-            Dialogs.Error("Taking a snapshot needs administrator rights. Use Restart as administrator.");
+            Elevation.OfferRestart("Taking a snapshot needs administrator rights.");
             return;
         }
         IsBusy = true;
@@ -663,7 +663,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     {
         var chosen = Disks.Where(d => d.IsChecked && d.CanWipe).ToList();
         if (chosen.Count == 0) return;
-        if (!Elevation.IsAdministrator) { Dialogs.Error("Erasing a whole drive needs administrator rights. Use Restart as Administrator, then try again."); return; }
+        if (!Elevation.IsAdministrator) { Elevation.OfferRestart("Erasing a whole drive needs administrator rights."); return; }
         foreach (var row in chosen)
             if (WipeMethods.FormatProblem(row.Disk.Size, Format) is { } problem) { Dialogs.Error($"{row.Disk.Name} ({row.Size}): {problem}"); return; }
 

@@ -72,6 +72,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   Bottom right of the sidebar: the paperclip (on its side = locked at the default 310 width, upright = drag the edge, 240 to 480)
   above the collapse button (icons only, 84 wide, bigger centered icons; every nav entry has its name as a tooltip).
   A divider with space above it separates Settings and About from the scrolling list (Ted, 0.8.29). The standard-user bar uses AccentTint, Line and Text, not Warn colors.
+- Administrator rights (Ted, 2026-10-23): running as a standard user, a page that needs administrator rights or runs faster with them shows
+  the bar at the top with its own short lists (Needs Administrator Rights / Faster as Administrator, from `AdminNeeds.cs`, pages A to Z) and
+  Restart as Administrator, which reopens on the same page (`--page=`); other pages show no bar. A step that can't run without the rights
+  calls `Elevation.OfferRestart(why)` (Not Now | Restart as Administrator), never a plain Dialogs.Error that says to restart. `AdminNoticeTests`
+  fails when a page checks `IsAdministrator`, says it needs administrator rights or offers the restart without an AdminNeeds entry.
   Width, lock and collapse are saved in the ini. Settings > General > Sidebar: Adjustable Sidebar Width and Show the Paperclip (0.8.12).
 - Refer to the app by name ("Kodiak Cleaner", `AppInfo.Name`), never "the app". Since 0.8.7 the shown name never
   includes the channel (Ted's choice); the channel appears in the version ("0.8.7 Dev") and the About chip. Plain hyphens in names.
@@ -241,7 +246,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   Newest/Oldest only tick too, nothing is removed before Remove Selected. Remove To: Recycle Bin, or A Folder (`DuplicateMover`): a dated
   "Duplicates yyyy-MM-dd HHmmss" folder per move with files under their old drive and folders, Duplicate Report.csv (kept copy, old place,
   new place) and moves.json for Restore (`DuplicateRestoreWindow`, never overwrites a file at the old place). The folder is never searched.
-  The page is three cards: Summary, Actions, Results. The faster-as-administrator note lives in the standard-user banner (MainWindow).
+  The page is three cards: Summary, Actions, Results. The faster-as-administrator note is its AdminNeeds entry (the bar at the top).
   Fast scan (Ted, 2026-10-23): a whole NTFS drive (Fixed or Removable) is listed from its file table when Kodiak Cleaner runs as
   administrator (`NtfsFileTable.TryListDrive`, the Disk Analyzer's reader with `keepFiles`), with the same folders left out through
   `keepFolder`; anything else (folders, FAT32/exFAT, no admin) falls back to the folder walk. Hard-linked files are listed once.

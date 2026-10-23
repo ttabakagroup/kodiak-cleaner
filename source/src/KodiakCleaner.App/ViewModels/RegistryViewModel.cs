@@ -190,9 +190,14 @@ public sealed class RegistryViewModel : ObservableObject
             var (backupPath, fixedCount, errors) = await Task.Run(() => RegistryScanner.Fix(selected.Select(i => i.Issue).ToList(), backup));
             Summary = $"Fixed {fixedCount} issue(s)." +
                       (backupPath is null ? " No backup was made." : $" Backup saved to {backupPath}.") +
-                      (errors.Count > 0 ? $" {errors.Count} could not be changed (try Restart as administrator)." : "");
+                      (errors.Count > 0 ? $" {errors.Count} could not be changed." : "");
             ActivityLog.Write("Registry", Summary);
-            if (errors.Count > 0) Dialogs.Error(string.Join(Environment.NewLine, errors.Take(15)));
+            if (errors.Count > 0)
+            {
+                var list = string.Join(Environment.NewLine, errors.Take(15));
+                if (Elevation.IsAdministrator) Dialogs.Error(list);
+                else Elevation.OfferRestart(list + Environment.NewLine + Environment.NewLine + "Entries saved for all users need administrator rights.");
+            }
             // Re-scan so the list shows what is actually left.
             var remaining = await Task.Run(() => RegistryScanner.Scan(ChosenCategories()));
             ShowIssues(remaining);

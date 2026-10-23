@@ -377,7 +377,7 @@ public sealed class BootTimerViewModel : ObservableObject, ILoadOnFirstVisit
             catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException) { needAdmin = true; }
         }
         _startup.RefreshCommand.Execute(null);
-        if (needAdmin) Dialogs.Error("Changing this entry needs administrator rights. Use Restart as Administrator at the top.");
+        if (needAdmin) Elevation.OfferRestart("Changing this entry needs administrator rights.");
     }
 
     private void ClearHistory()

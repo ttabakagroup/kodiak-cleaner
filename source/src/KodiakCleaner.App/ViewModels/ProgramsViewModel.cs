@@ -179,7 +179,7 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         }
         catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException)
         {
-            Dialogs.Error("Renaming a program installed for all users needs administrator rights. Use Restart as Administrator at the top.");
+            Elevation.OfferRestart("Renaming a program installed for all users needs administrator rights.");
         }
         catch (Exception e) when (e is InvalidOperationException or IOException)
         {
@@ -226,9 +226,9 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
             Summary = done.Count == 1 ? done[0] : $"Deleted {done.Count} entries from the programs list. Backups are in History.";
         }
         if (denied > 0)
-            Dialogs.Error(denied == 1 && items.Count == 1
-                ? "Deleting a program installed for all users needs administrator rights. Use Restart as Administrator at the top."
-                : $"{denied} entr{(denied == 1 ? "y needs" : "ies need")} administrator rights to delete. Use Restart as Administrator at the top.");
+            Elevation.OfferRestart(denied == 1 && items.Count == 1
+                ? "Deleting a program installed for all users needs administrator rights."
+                : $"{denied} entr{(denied == 1 ? "y needs" : "ies need")} administrator rights to delete.");
         if (errors.Count > 0) Dialogs.Error(string.Join("\n\n", errors));
     }
 
@@ -352,7 +352,7 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         ProgramHistoryStore.Leftovers(program, result);
         if (result.Failed.Count > 0)
             Dialogs.Error($"{result.Failed.Count} leftover item(s) of '{name}' couldn't be removed" +
-                          (Elevation.IsAdministrator ? " (in use or protected):" : ". Some may need administrator rights (use Restart as Administrator):") +
+                          (Elevation.IsAdministrator ? " (in use or protected):" : ". Some may need administrator rights:") +
                           "\n\n" + string.Join("\n", result.Failed.Take(12)) + (result.Failed.Count > 12 ? "\n…" : ""));
         return $"Uninstalled '{name}' and removed {result.Removed} leftover item(s). Backup: {backup}" +
                (result.RegistryBackup is { } rb ? $", removed keys: {rb}" : "");

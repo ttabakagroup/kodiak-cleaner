@@ -117,7 +117,7 @@ public sealed class OptimizeViewModel : ObservableObject, ILoadOnFirstVisit
     private bool CheckAdmin()
     {
         if (Elevation.IsAdministrator) return true;
-        Dialogs.Error("Defrag and TRIM uses Windows' own optimizer, which needs administrator rights. Use Restart as Administrator, then try again.");
+        Elevation.OfferRestart("Defrag and TRIM uses Windows' own optimizer, which needs administrator rights.");
         return false;
     }
 

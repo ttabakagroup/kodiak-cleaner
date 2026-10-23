@@ -97,8 +97,8 @@ public partial class NewStartupWindow : Window
             ActivityLog.Write("Startup", $"From the new startup pop-up: {disabled} disabled, {deleted} deleted.");
         Close();
         (Application.Current as App)?.StartupChanged();
-        if (failed.Count > 0)
-            Dialogs.Error($"These couldn't be changed{(Elevation.IsAdministrator ? "" : ". Entries for all users need administrator rights (use Restart as Administrator)")}:\n\n" +
-                          string.Join("\n", failed));
+        if (failed.Count == 0) return;
+        if (Elevation.IsAdministrator) Dialogs.Error("These couldn't be changed:\n\n" + string.Join("\n", failed));
+        else Elevation.OfferRestart("These couldn't be changed. Entries for all users need administrator rights:\n\n" + string.Join("\n", failed));
     }
 }
