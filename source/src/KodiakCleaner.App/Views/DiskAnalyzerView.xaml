@@ -166,9 +166,11 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*" MinWidth="300" />
-                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="16" />
                         <ColumnDefinition Width="2*" MinWidth="280" />
                     </Grid.ColumnDefinitions>
+                    <!-- Drag the grip to share the room between the map and the list (Ted, 0.8.99). -->
+                    <GridSplitter Grid.Column="1" Style="{StaticResource PaneColumns}" views:PaneSplitter.Remember="diskanalyzer" />
 
                     <!-- The map -->
                     <Border Style="{StaticResource Card}" Padding="10">

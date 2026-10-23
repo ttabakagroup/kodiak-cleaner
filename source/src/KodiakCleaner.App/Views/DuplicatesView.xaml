@@ -1,6 +1,7 @@
 <UserControl x:Class="KodiakCleaner.App.Views.DuplicatesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:KodiakCleaner.App.Views"
              xmlns:tc="clr-namespace:KodiakCleaner.App.Views">
     <UserControl.Resources>
         <!-- A caption that takes no room while it has nothing to say. -->
@@ -41,276 +42,286 @@
             </StackPanel>
         </Grid>
 
-        <Border DockPanel.Dock="Left" Width="310" Style="{StaticResource Card}" Margin="0,0,16,0" Padding="0">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,16">
-                <StackPanel>
-                    <TextBlock Text="Search Mode" Style="{StaticResource SectionTitle}" />
-                    <Border Style="{StaticResource SegmentHost}" Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton GroupName="DupMode" Style="{StaticResource Segment}" Content="Identical Files" IsChecked="{Binding Identical}" />
-                            <RadioButton GroupName="DupMode" Style="{StaticResource Segment}" Content="In-Depth" IsChecked="{Binding InDepth}" />
-                        </StackPanel>
-                    </Border>
-                    <TextBlock Style="{StaticResource Caption}" Margin="0,6,0,0"
-                               Text="In-Depth also finds files that are alike: edited copies, re-saved pictures and older drafts, ranked by how alike they are." />
+        <!-- Drag the grip between the options and the groups to give either more room (Ted, 0.8.99). -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="310" MinWidth="240" MaxWidth="520" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" MinWidth="320" />
+            </Grid.ColumnDefinitions>
+            <GridSplitter Grid.Column="1" Style="{StaticResource PaneColumns}" views:PaneSplitter.Remember="duplicates" />
 
-                    <DockPanel Margin="0,20,0,0">
-                        <CheckBox DockPanel.Dock="Right" Content="All Drives" IsChecked="{Binding AllDrives}" VerticalAlignment="Center" />
-                        <TextBlock Text="Drives" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Drives}" Margin="0,8,0,0" Padding="8,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Root}" HorizontalContentAlignment="Stretch">
-                                    <Grid Margin="2,0,0,0" Width="214">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="&#xEDA2;" Style="{StaticResource Icon}" FontSize="20" Foreground="{DynamicResource AccentText}"
-                                                   VerticalAlignment="Top" Margin="0,2,10,0" />
-                                        <StackPanel Grid.Column="1">
-                                            <DockPanel>
-                                                <Border DockPanel.Dock="Right" Style="{StaticResource Chip}" Margin="6,0,0,0"
-                                                        Visibility="{Binding IsWindows, Converter={StaticResource BoolToVis}}">
-                                                    <TextBlock Text="Windows" />
-                                                </Border>
-                                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                            </DockPanel>
-                                            <ProgressBar Style="{StaticResource Meter}" Value="{Binding UsedPercent, Mode=OneWay}" Margin="0,5,0,3" />
-                                            <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" />
-                                        </StackPanel>
-                                    </Grid>
-                                </CheckBox>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="{Binding DrivesNote}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+            <Border Grid.Column="0" Style="{StaticResource Card}" Padding="0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,16">
+                    <StackPanel>
+                        <TextBlock Text="Search Mode" Style="{StaticResource SectionTitle}" />
+                        <Border Style="{StaticResource SegmentHost}" Margin="0,10,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton GroupName="DupMode" Style="{StaticResource Segment}" Content="Identical Files" IsChecked="{Binding Identical}" />
+                                <RadioButton GroupName="DupMode" Style="{StaticResource Segment}" Content="In-Depth" IsChecked="{Binding InDepth}" />
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,6,0,0"
+                                   Text="In-Depth also finds files that are alike: edited copies, re-saved pictures and older drafts, ranked by how alike they are." />
 
-                    <TextBlock Text="Folders" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
-                    <ItemsControl ItemsSource="{Binding Folders}" Margin="0,8,0,0" Padding="8,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Name}">
-                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                </CheckBox>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Button Content="Add Folder…" Command="{Binding AddFolderCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
-
-                    <TextBlock Text="Options" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
-                    <DockPanel Margin="0,10,0,0">
-                        <TextBlock DockPanel.Dock="Right" Text="MB" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
-                        <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinSizeMb, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Text="Minimum File Size" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <DockPanel Margin="0,8,0,0" Visibility="{Binding InDepth, Converter={StaticResource BoolToVis}}"
-                               ToolTip="How alike two files must be to be listed as similar, from 30% to 99%.">
-                        <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
-                        <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinLikeness, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Text="Minimum Similarity" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <CheckBox Content="Include Hidden Files" IsChecked="{Binding IncludeHidden}" Margin="0,10,0,0" />
-                    <CheckBox Content="Names Must Match Too" IsChecked="{Binding MatchName}" Margin="0,6,0,0" />
-
-                    <!-- In-Depth only: how names are compared, and patterns that gather files the person expects to belong together. -->
-                    <StackPanel Visibility="{Binding InDepth, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="Name Matching" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
-                        <CheckBox Content="Any File Type" IsChecked="{Binding AnyFileType}" Margin="0,10,0,0"
-                                  ToolTip="Compare names across file types too, so Report.docx and Report.pdf can be listed together" />
-                        <CheckBox Content="Match Similar Names" IsChecked="{Binding MatchNames}" Margin="0,6,0,0"
-                                  ToolTip="List files whose names are alike even when their contents differ" />
-                        <DockPanel Margin="26,8,0,0" Visibility="{Binding MatchNames, Converter={StaticResource BoolToVis}}"
-                                   ToolTip="How alike two names must be, from 50% to 100%. 100% means the same name once the parts below are left out.">
-                            <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
-                            <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinNameLikeness, UpdateSourceTrigger=PropertyChanged}" />
-                            <TextBlock Text="Name Similarity" VerticalAlignment="Center" />
+                        <DockPanel Margin="0,20,0,0">
+                            <CheckBox DockPanel.Dock="Right" Content="All Drives" IsChecked="{Binding AllDrives}" VerticalAlignment="Center" />
+                            <TextBlock Text="Drives" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
                         </DockPanel>
-
-                        <TextBlock Text="Leave Out of Names" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
-                        <CheckBox Content="Copy Marks" IsChecked="{Binding IgnoreCopyMarks}" Margin="0,8,0,0"
-                                  ToolTip="Copy of …, … (1), … - Copy" />
-                        <CheckBox Content="Dates and Times" IsChecked="{Binding IgnoreDates}" Margin="0,6,0,0"
-                                  ToolTip="2024-05-01, 20240501, 01.05.2024, 14-30-05" />
-                        <CheckBox Content="Numbers" IsChecked="{Binding IgnoreNumbers}" Margin="0,6,0,0"
-                                  ToolTip="Every number, so IMG_0041 and IMG_0042 count as the same name" />
-                        <CheckBox Content="Version Words" IsChecked="{Binding IgnoreVersionWords}" Margin="0,6,0,0"
-                                  ToolTip="final, old, backup, edited, latest, v2 and similar at the end of a name" />
-                        <TextBlock Text="Your Own Words" Style="{StaticResource SettingTitle}" Margin="0,12,0,0" />
-                        <TextBox Text="{Binding ExtraWords, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Tag="draft, scan, signed" />
-                        <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0" Text="Separate words with commas. They're left out wherever they appear in a name." />
-
-                        <TextBlock Text="Name Patterns" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
-                        <TextBox Text="{Binding NamePatterns, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Tag="Invoice #.pdf"
-                                 AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" VerticalContentAlignment="Top" />
-                        <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0"
-                                   Text="One per line. * means any text, ? one character and # a number. Files that match the same pattern are listed together, for example IMG_#.jpg or *holiday*." />
-                    </StackPanel>
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
-
-        <!-- Three cards (Ted, 2026-10-23): what happened, what to do with the results, and the results themselves. -->
-        <DockPanel>
-            <!-- Summary: the search's outcome and progress. Running faster as administrator is said in the banner at the top. -->
-            <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Summary" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,6,0,0" />
-                    <ProgressBar IsIndeterminate="True" Margin="0,10,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
-                    <tc:TaskClock Margin="0,6,0,0" />
-                </StackPanel>
-            </Border>
-
-            <!-- Actions: choosing and checking copies on the first row, removing and restoring on the second. -->
-            <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Actions" Style="{StaticResource SectionTitle}" />
-                    <WrapPanel Margin="0,4,0,0">
-                        <Button Command="{Binding CheckAllCommand}" Margin="0,6,8,0"
-                                ToolTip="Tick every copy except one in each set of files with the same SHA-256. Kept: the one without &quot;Copy&quot; or (1) in its name, outside Downloads, and the oldest. Nothing is removed yet.">
-                            <TextBlock Text="Check All" />
-                        </Button>
-                        <Button Content="Keep Newest" Command="{Binding SelectAllButNewestCommand}" Margin="0,6,8,0"
-                                ToolTip="Tick every copy except the newest one in each identical set. Nothing is removed yet." />
-                        <Button Content="Keep Oldest" Command="{Binding SelectAllButOldestCommand}" Margin="0,6,8,0"
-                                ToolTip="Tick every copy except the oldest one in each identical set. Nothing is removed yet." />
-                        <Button Content="Clear" Command="{Binding ClearSelectionCommand}" Margin="0,6,8,0" />
-                        <Button Command="{Binding VerifyCommand}" Margin="0,6,0,0"
-                                ToolTip="Read every listed file again in full and compare SHA-256 hashes to confirm which are identical">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                                <TextBlock Text="Verify Hashes" />
-                            </StackPanel>
-                        </Button>
-                    </WrapPanel>
-                    <Border Height="1" Background="{DynamicResource Line}" Margin="0,12,0,6" />
-                    <WrapPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,6,12,0">
-                            <TextBlock Text="Remove To" VerticalAlignment="Center" Margin="0,0,10,0" />
-                            <Border Style="{StaticResource SegmentHost}" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal">
-                                    <RadioButton GroupName="DupRemoveTo" Style="{StaticResource Segment}" Content="Recycle Bin" IsChecked="{Binding ToRecycleBin}" />
-                                    <RadioButton GroupName="DupRemoveTo" Style="{StaticResource Segment}" Content="A Folder" IsChecked="{Binding MoveToFolder}"
-                                                 ToolTip="Move them to a folder you choose, sorted by their old drive and folders, with a report and Restore" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                        <Button Command="{Binding DeleteCommand}" Margin="0,6,8,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                                <TextBlock Text="{Binding RemoveLabel}" />
-                            </StackPanel>
-                        </Button>
-                        <Button Command="{Binding RestoreCommand}" Margin="0,6,0,0" ToolTip="Put back any duplicates moved to the folder">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                                <TextBlock Text="Restore…" />
-                            </StackPanel>
-                        </Button>
-                    </WrapPanel>
-                    <DockPanel Margin="0,8,0,0" Visibility="{Binding MoveToFolder, Converter={StaticResource BoolToVis}}">
-                        <Button DockPanel.Dock="Right" Content="Change Folder…" Style="{StaticResource LinkButton}" Command="{Binding ChooseMoveFolderCommand}" Margin="12,0,0,0" />
-                        <TextBlock Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" ToolTip="{Binding MoveFolder}" VerticalAlignment="Center">
-                            <Run Text="Moves to" /> <Run Text="{Binding MoveFolder, Mode=OneWay}" />
-                        </TextBlock>
-                    </DockPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Results -->
-            <Border Style="{StaticResource Card}" Padding="8">
-                <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Margin="12,8,12,8">
-                        <TextBlock DockPanel.Dock="Right" Text="{Binding Selection}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="12,0,0,0" />
-                        <StackPanel>
-                            <DockPanel>
-                                <Border DockPanel.Dock="Right" Style="{StaticResource SegmentHost}" Margin="12,0,0,0"
-                                        Visibility="{Binding HasSimilarResults, Converter={StaticResource BoolToVis}}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <RadioButton GroupName="DupResults" Style="{StaticResource Segment}" Content="{Binding IdenticalLabel}" IsChecked="{Binding ShowIdentical}" />
-                                        <RadioButton GroupName="DupResults" Style="{StaticResource Segment}" Content="{Binding SimilarLabel}" IsChecked="{Binding ShowSimilar}" />
-                                    </StackPanel>
-                                </Border>
-                                <TextBlock Text="Results" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
-                            </DockPanel>
-                            <TextBlock Text="{Binding ResultsHint}" Style="{StaticResource OptionalCaption}" Margin="0,6,0,0" />
-                        </StackPanel>
-                    </DockPanel>
-                    <!-- Virtualized: a whole-drive search can list thousands of sets. -->
-                    <ItemsControl ItemsSource="{Binding ShownGroups}" VirtualizingPanel.IsVirtualizing="True"
-                                  VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
-                        <ItemsControl.Template>
-                            <ControlTemplate TargetType="ItemsControl">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,0" CanContentScroll="True" Focusable="False">
-                                    <ItemsPresenter />
-                                </ScrollViewer>
-                            </ControlTemplate>
-                        </ItemsControl.Template>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
+                        <ItemsControl ItemsSource="{Binding Drives}" Margin="0,8,0,0" Padding="8,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="0,0,0,16">
-                                        <DockPanel Margin="0,0,0,6">
-                                            <Border DockPanel.Dock="Right" ToolTip="{Binding BadgeTip}" Margin="12,0,0,0">
-                                                <Border.Style>
-                                                    <Style TargetType="Border" BasedOn="{StaticResource Chip}">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding BadgeWarn}" Value="True">
-                                                                <Setter Property="Background" Value="{DynamicResource WarnBg}" />
-                                                                <Setter Property="TextElement.Foreground" Value="{DynamicResource WarnText}" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <TextBlock Text="{Binding Badge}" />
-                                            </Border>
-                                            <ProgressBar DockPanel.Dock="Right" Style="{StaticResource Meter}" Width="90" Value="{Binding Likeness, Mode=OneWay}"
-                                                         Visibility="{Binding ShowMeter, Converter={StaticResource BoolToVis}}" ToolTip="{Binding BadgeTip}" />
-                                            <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                        </DockPanel>
-                                        <ItemsControl ItemsSource="{Binding Files}" Padding="8,0">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <DockPanel Margin="0,4">
-                                                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Show" VerticalAlignment="Top" Margin="12,0,0,0"
-                                                                Command="{Binding Group.Owner.OpenFolderCommand}" CommandParameter="{Binding}" />
-                                                        <TextBlock DockPanel.Dock="Right" Text="{Binding LikenessText}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
-                                                                   VerticalAlignment="Top" Margin="12,0,0,0" ToolTip="How alike this file is to its closest match in the set" />
-                                                        <StackPanel>
-                                                            <CheckBox IsChecked="{Binding IsChecked}" IsEnabled="{Binding CanTick}" VerticalAlignment="Center" ToolTip="{Binding TickTip}"
-                                                                  ToolTipService.ShowOnDisabled="True">
-                                                                <TextBlock TextTrimming="CharacterEllipsis">
-                                                                    <Run Text="{Binding Name, Mode=OneWay}" />
-                                                                    <Run Text="{Binding Folder, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
-                                                                </TextBlock>
-                                                            </CheckBox>
-                                                            <TextBlock Text="{Binding Details}" Style="{StaticResource Caption}" Margin="28,1,0,0" ToolTip="{Binding File.Path}" />
-                                                            <TextBlock Text="{Binding Hash}" ToolTip="{Binding HashTip}" Margin="28,1,0,0">
-                                                                <TextBlock.Style>
-                                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource OptionalCaption}">
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding HashMismatch}" Value="True">
-                                                                                <Setter Property="Foreground" Value="{DynamicResource WarnText}" />
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </TextBlock.Style>
-                                                            </TextBlock>
-                                                        </StackPanel>
-                                                    </DockPanel>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </StackPanel>
+                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Root}" HorizontalContentAlignment="Stretch">
+                                        <Grid Margin="2,0,0,0" Width="214">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="&#xEDA2;" Style="{StaticResource Icon}" FontSize="20" Foreground="{DynamicResource AccentText}"
+                                                       VerticalAlignment="Top" Margin="0,2,10,0" />
+                                            <StackPanel Grid.Column="1">
+                                                <DockPanel>
+                                                    <Border DockPanel.Dock="Right" Style="{StaticResource Chip}" Margin="6,0,0,0"
+                                                            Visibility="{Binding IsWindows, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="Windows" />
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                </DockPanel>
+                                                <ProgressBar Style="{StaticResource Meter}" Value="{Binding UsedPercent, Mode=OneWay}" Margin="0,5,0,3" />
+                                                <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </CheckBox>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </DockPanel>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding DrivesNote}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+
+                        <TextBlock Text="Folders" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
+                        <ItemsControl ItemsSource="{Binding Folders}" Margin="0,8,0,0" Padding="8,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Name}">
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Add Folder…" Command="{Binding AddFolderCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+
+                        <TextBlock Text="Options" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
+                        <DockPanel Margin="0,10,0,0">
+                            <TextBlock DockPanel.Dock="Right" Text="MB" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
+                            <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinSizeMb, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Minimum File Size" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <DockPanel Margin="0,8,0,0" Visibility="{Binding InDepth, Converter={StaticResource BoolToVis}}"
+                                   ToolTip="How alike two files must be to be listed as similar, from 30% to 99%.">
+                            <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
+                            <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinLikeness, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Minimum Similarity" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <CheckBox Content="Include Hidden Files" IsChecked="{Binding IncludeHidden}" Margin="0,10,0,0" />
+                        <CheckBox Content="Names Must Match Too" IsChecked="{Binding MatchName}" Margin="0,6,0,0" />
+
+                        <!-- In-Depth only: how names are compared, and patterns that gather files the person expects to belong together. -->
+                        <StackPanel Visibility="{Binding InDepth, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Name Matching" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
+                            <CheckBox Content="Any File Type" IsChecked="{Binding AnyFileType}" Margin="0,10,0,0"
+                                      ToolTip="Compare names across file types too, so Report.docx and Report.pdf can be listed together" />
+                            <CheckBox Content="Match Similar Names" IsChecked="{Binding MatchNames}" Margin="0,6,0,0"
+                                      ToolTip="List files whose names are alike even when their contents differ" />
+                            <DockPanel Margin="26,8,0,0" Visibility="{Binding MatchNames, Converter={StaticResource BoolToVis}}"
+                                       ToolTip="How alike two names must be, from 50% to 100%. 100% means the same name once the parts below are left out.">
+                                <TextBlock DockPanel.Dock="Right" Text="%" VerticalAlignment="Center" Margin="8,0,0,0" Width="24" />
+                                <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding MinNameLikeness, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Name Similarity" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                            <TextBlock Text="Leave Out of Names" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                            <CheckBox Content="Copy Marks" IsChecked="{Binding IgnoreCopyMarks}" Margin="0,8,0,0"
+                                      ToolTip="Copy of …, … (1), … - Copy" />
+                            <CheckBox Content="Dates and Times" IsChecked="{Binding IgnoreDates}" Margin="0,6,0,0"
+                                      ToolTip="2024-05-01, 20240501, 01.05.2024, 14-30-05" />
+                            <CheckBox Content="Numbers" IsChecked="{Binding IgnoreNumbers}" Margin="0,6,0,0"
+                                      ToolTip="Every number, so IMG_0041 and IMG_0042 count as the same name" />
+                            <CheckBox Content="Version Words" IsChecked="{Binding IgnoreVersionWords}" Margin="0,6,0,0"
+                                      ToolTip="final, old, backup, edited, latest, v2 and similar at the end of a name" />
+                            <TextBlock Text="Your Own Words" Style="{StaticResource SettingTitle}" Margin="0,12,0,0" />
+                            <TextBox Text="{Binding ExtraWords, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Tag="draft, scan, signed" />
+                            <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0" Text="Separate words with commas. They're left out wherever they appear in a name." />
+
+                            <TextBlock Text="Name Patterns" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                            <TextBox Text="{Binding NamePatterns, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Tag="Invoice #.pdf"
+                                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" VerticalContentAlignment="Top" />
+                            <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0"
+                                       Text="One per line. * means any text, ? one character and # a number. Files that match the same pattern are listed together, for example IMG_#.jpg or *holiday*." />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
-        </DockPanel>
+
+            <!-- Three cards (Ted, 2026-10-23): what happened, what to do with the results, and the results themselves. -->
+            <DockPanel Grid.Column="2">
+                <!-- Summary: the search's outcome and progress. Running faster as administrator is said in the banner at the top. -->
+                <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Summary" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <ProgressBar IsIndeterminate="True" Margin="0,10,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                        <tc:TaskClock Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Actions: choosing and checking copies on the first row, removing and restoring on the second. -->
+                <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Actions" Style="{StaticResource SectionTitle}" />
+                        <WrapPanel Margin="0,4,0,0">
+                            <Button Command="{Binding CheckAllCommand}" Margin="0,6,8,0"
+                                    ToolTip="Tick every copy except one in each set of files with the same SHA-256. Kept: the one without &quot;Copy&quot; or (1) in its name, outside Downloads, and the oldest. Nothing is removed yet.">
+                                <TextBlock Text="Check All" />
+                            </Button>
+                            <Button Content="Keep Newest" Command="{Binding SelectAllButNewestCommand}" Margin="0,6,8,0"
+                                    ToolTip="Tick every copy except the newest one in each identical set. Nothing is removed yet." />
+                            <Button Content="Keep Oldest" Command="{Binding SelectAllButOldestCommand}" Margin="0,6,8,0"
+                                    ToolTip="Tick every copy except the oldest one in each identical set. Nothing is removed yet." />
+                            <Button Content="Clear" Command="{Binding ClearSelectionCommand}" Margin="0,6,8,0" />
+                            <Button Command="{Binding VerifyCommand}" Margin="0,6,0,0"
+                                    ToolTip="Read every listed file again in full and compare SHA-256 hashes to confirm which are identical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                    <TextBlock Text="Verify Hashes" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                        <Border Height="1" Background="{DynamicResource Line}" Margin="0,12,0,6" />
+                        <WrapPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,12,0">
+                                <TextBlock Text="Remove To" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <Border Style="{StaticResource SegmentHost}" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton GroupName="DupRemoveTo" Style="{StaticResource Segment}" Content="Recycle Bin" IsChecked="{Binding ToRecycleBin}" />
+                                        <RadioButton GroupName="DupRemoveTo" Style="{StaticResource Segment}" Content="A Folder" IsChecked="{Binding MoveToFolder}"
+                                                     ToolTip="Move them to a folder you choose, sorted by their old drive and folders, with a report and Restore" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            <Button Command="{Binding DeleteCommand}" Margin="0,6,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                    <TextBlock Text="{Binding RemoveLabel}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding RestoreCommand}" Margin="0,6,0,0" ToolTip="Put back any duplicates moved to the folder">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                    <TextBlock Text="Restore…" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                        <DockPanel Margin="0,8,0,0" Visibility="{Binding MoveToFolder, Converter={StaticResource BoolToVis}}">
+                            <Button DockPanel.Dock="Right" Content="Change Folder…" Style="{StaticResource LinkButton}" Command="{Binding ChooseMoveFolderCommand}" Margin="12,0,0,0" />
+                            <TextBlock Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" ToolTip="{Binding MoveFolder}" VerticalAlignment="Center">
+                                <Run Text="Moves to" /> <Run Text="{Binding MoveFolder, Mode=OneWay}" />
+                            </TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Results -->
+                <Border Style="{StaticResource Card}" Padding="8">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="12,8,12,8">
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Selection}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                            <StackPanel>
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Right" Style="{StaticResource SegmentHost}" Margin="12,0,0,0"
+                                            Visibility="{Binding HasSimilarResults, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton GroupName="DupResults" Style="{StaticResource Segment}" Content="{Binding IdenticalLabel}" IsChecked="{Binding ShowIdentical}" />
+                                            <RadioButton GroupName="DupResults" Style="{StaticResource Segment}" Content="{Binding SimilarLabel}" IsChecked="{Binding ShowSimilar}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="Results" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <TextBlock Text="{Binding ResultsHint}" Style="{StaticResource OptionalCaption}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </DockPanel>
+                        <!-- Virtualized: a whole-drive search can list thousands of sets. -->
+                        <ItemsControl ItemsSource="{Binding ShownGroups}" VirtualizingPanel.IsVirtualizing="True"
+                                      VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
+                            <ItemsControl.Template>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,0" CanContentScroll="True" Focusable="False">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,16">
+                                            <DockPanel Margin="0,0,0,6">
+                                                <Border DockPanel.Dock="Right" ToolTip="{Binding BadgeTip}" Margin="12,0,0,0">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border" BasedOn="{StaticResource Chip}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding BadgeWarn}" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource WarnBg}" />
+                                                                    <Setter Property="TextElement.Foreground" Value="{DynamicResource WarnText}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Badge}" />
+                                                </Border>
+                                                <ProgressBar DockPanel.Dock="Right" Style="{StaticResource Meter}" Width="90" Value="{Binding Likeness, Mode=OneWay}"
+                                                             Visibility="{Binding ShowMeter, Converter={StaticResource BoolToVis}}" ToolTip="{Binding BadgeTip}" />
+                                                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </DockPanel>
+                                            <ItemsControl ItemsSource="{Binding Files}" Padding="8,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <DockPanel Margin="0,4">
+                                                            <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Show" VerticalAlignment="Top" Margin="12,0,0,0"
+                                                                    Command="{Binding Group.Owner.OpenFolderCommand}" CommandParameter="{Binding}" />
+                                                            <TextBlock DockPanel.Dock="Right" Text="{Binding LikenessText}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
+                                                                       VerticalAlignment="Top" Margin="12,0,0,0" ToolTip="How alike this file is to its closest match in the set" />
+                                                            <StackPanel>
+                                                                <CheckBox IsChecked="{Binding IsChecked}" IsEnabled="{Binding CanTick}" VerticalAlignment="Center" ToolTip="{Binding TickTip}"
+                                                                      ToolTipService.ShowOnDisabled="True">
+                                                                    <TextBlock TextTrimming="CharacterEllipsis">
+                                                                        <Run Text="{Binding Name, Mode=OneWay}" />
+                                                                        <Run Text="{Binding Folder, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
+                                                                    </TextBlock>
+                                                                </CheckBox>
+                                                                <TextBlock Text="{Binding Details}" Style="{StaticResource Caption}" Margin="28,1,0,0" ToolTip="{Binding File.Path}" />
+                                                                <TextBlock Text="{Binding Hash}" ToolTip="{Binding HashTip}" Margin="28,1,0,0">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource OptionalCaption}">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding HashMismatch}" Value="True">
+                                                                                    <Setter Property="Foreground" Value="{DynamicResource WarnText}" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+            </DockPanel>
+        </Grid>
     </DockPanel>
 </UserControl>

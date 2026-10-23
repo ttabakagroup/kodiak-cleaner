@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.99 Dev] - 2026-10-23
+
+### Everywhere
+- Draggable dividers: where a page has two areas side by side or one above the other, a small grip between them can be dragged to give either one more room. On Startup it sits between the startup list and Scheduled Tasks That Run at Startup; it's also between the options and the results in Duplicate Finder, Empty Folders and Mass Rename, between the map and the list in Disk Analyzer, and between the Settings list and its pages. The grip turns your accent color under the mouse. Kodiak Cleaner remembers where you left each divider, a double-click puts it back, and Reset to Default puts them all back.
+
 ## [0.8.98 Dev] - 2026-10-23
 
 ### Startup

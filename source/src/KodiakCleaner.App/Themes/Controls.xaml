@@ -121,6 +121,71 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- Draggable dividers between two areas of a page (Ted, 0.8.99): a short grip bar in the gap, accent on hover and while
+         dragging. Put one in its own 16 px row (PaneRows) or column (PaneColumns) between the areas, with
+         views:PaneSplitter.Remember="key" so the sizes are kept; double-click puts the page's own sizes back. -->
+    <Style x:Key="PaneSplitterBase" TargetType="GridSplitter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="ResizeBehavior" Value="PreviousAndNext" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ShowsPreview" Value="False" />
+        <Setter Property="ToolTip" Value="Drag to resize. Double-click to put it back." />
+        <Setter Property="ToolTipService.InitialShowDelay" Value="700" />
+    </Style>
+    <Style x:Key="PaneRows" TargetType="GridSplitter" BasedOn="{StaticResource PaneSplitterBase}">
+        <Setter Property="ResizeDirection" Value="Rows" />
+        <Setter Property="Cursor" Value="SizeNS" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GridSplitter">
+                    <Border Background="{TemplateBinding Background}">
+                        <Border x:Name="Grip" Width="44" Height="4" CornerRadius="2" Background="{DynamicResource Muted}" Opacity="0.45"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Grip" Property="Opacity" Value="1" />
+                            <Setter TargetName="Grip" Property="Width" Value="64" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Grip" Property="Opacity" Value="1" />
+                            <Setter TargetName="Grip" Property="Width" Value="64" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="PaneColumns" TargetType="GridSplitter" BasedOn="{StaticResource PaneSplitterBase}">
+        <Setter Property="ResizeDirection" Value="Columns" />
+        <Setter Property="Cursor" Value="SizeWE" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GridSplitter">
+                    <Border Background="{TemplateBinding Background}">
+                        <Border x:Name="Grip" Width="4" Height="44" CornerRadius="2" Background="{DynamicResource Muted}" Opacity="0.45"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Grip" Property="Opacity" Value="1" />
+                            <Setter TargetName="Grip" Property="Height" Value="64" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Grip" Property="Opacity" Value="1" />
+                            <Setter TargetName="Grip" Property="Height" Value="64" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <!-- The sidebar's draggable edge (only while the paperclip is upright). -->
     <Style x:Key="SidebarSplitter" TargetType="GridSplitter">
         <Setter Property="Width" Value="5" />

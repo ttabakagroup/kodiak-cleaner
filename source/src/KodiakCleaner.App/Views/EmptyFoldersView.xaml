@@ -25,49 +25,59 @@
         </DockPanel>
 
         <!-- Search whole drives, one or many, or folders (Ted, 0.8.65). -->
-        <Border DockPanel.Dock="Left" Width="290" Style="{StaticResource Card}" Margin="0,0,16,0" VerticalAlignment="Top">
-            <StackPanel>
-                <TextBlock Text="Search In" Style="{StaticResource SectionTitle}" />
-                <local:PlacesPicker DataContext="{Binding Places}" Margin="0,4,0,0" />
-                <Button Content="Add Folder…" Command="{Binding BrowseCommand}" HorizontalAlignment="Left" Margin="0,10,0,0" />
-            </StackPanel>
-        </Border>
+        <!-- Drag the grip between the folder picker and the list to give either more room (Ted, 0.8.99). -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="290" MinWidth="220" MaxWidth="480" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" MinWidth="320" />
+            </Grid.ColumnDefinitions>
+            <GridSplitter Grid.Column="1" Style="{StaticResource PaneColumns}" local:PaneSplitter.Remember="emptyfolders" />
 
-        <Border Style="{StaticResource Card}" Padding="8">
-            <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Margin="8,4,8,8">
-                    <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
-                    <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
-                    <tc:TaskClock Margin="0,6,0,0" />
+            <Border Grid.Column="0" Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Search In" Style="{StaticResource SectionTitle}" />
+                    <local:PlacesPicker DataContext="{Binding Places}" Margin="0,4,0,0" />
+                    <Button Content="Add Folder…" Command="{Binding BrowseCommand}" HorizontalAlignment="Left" Margin="0,10,0,0" />
                 </StackPanel>
-                <DockPanel DockPanel.Dock="Bottom" Margin="8,8,8,4">
-                    <Button DockPanel.Dock="Right" Command="{Binding RemoveCommand}" Margin="0" VerticalAlignment="Top">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                            <TextBlock Text="Remove Selected" />
-                        </StackPanel>
-                    </Button>
-                    <WrapPanel>
-                        <Button Content="Select All" Command="{Binding SelectAllCommand}" Margin="0,0,8,6" />
-                        <Button Content="Clear" Command="{Binding ClearCommand}" Margin="0,0,8,6" />
-                    </WrapPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}" Padding="8">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="8,4,8,8">
+                        <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
+                        <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                        <tc:TaskClock Margin="0,6,0,0" />
+                    </StackPanel>
+                    <DockPanel DockPanel.Dock="Bottom" Margin="8,8,8,4">
+                        <Button DockPanel.Dock="Right" Command="{Binding RemoveCommand}" Margin="0" VerticalAlignment="Top">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                <TextBlock Text="Remove Selected" />
+                            </StackPanel>
+                        </Button>
+                        <WrapPanel>
+                            <Button Content="Select All" Command="{Binding SelectAllCommand}" Margin="0,0,8,6" />
+                            <Button Content="Clear" Command="{Binding ClearCommand}" Margin="0,0,8,6" />
+                        </WrapPanel>
+                    </DockPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Found}" Padding="8,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,5">
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Open"
+                                                Command="{Binding DataContext.ShowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                        <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" ToolTip="{Binding Path}">
+                                            <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" />
+                                        </CheckBox>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </DockPanel>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Found}" Padding="8,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <DockPanel Margin="0,5">
-                                    <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Open"
-                                            Command="{Binding DataContext.ShowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
-                                    <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" ToolTip="{Binding Path}">
-                                        <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" />
-                                    </CheckBox>
-                                </DockPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
+            </Border>
+        </Grid>
     </DockPanel>
 </UserControl>

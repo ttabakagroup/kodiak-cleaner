@@ -559,12 +559,15 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="240" MinWidth="200" MaxWidth="400" />
+            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="*" MinWidth="360" />
         </Grid.ColumnDefinitions>
+        <!-- Drag the grip to widen or narrow the Settings list (Ted, 0.8.99). -->
+        <GridSplitter Grid.Column="1" Style="{StaticResource PaneColumns}" views:PaneSplitter.Remember="settings" />
 
         <!-- Settings sidebar -->
-        <DockPanel Margin="-12,0,16,0">
+        <DockPanel Margin="-12,0,0,0">
             <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
                 <!-- A divider with space on both sides sets Support Kodiak Cleaner and the privacy note apart from the pages
                      above, like the one over Settings and About in the main sidebar (Ted, 0.8.39). -->
@@ -637,7 +640,7 @@
         </DockPanel>
 
         <!-- Current page -->
-        <DockPanel Grid.Column="1">
+        <DockPanel Grid.Column="2">
             <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
                 <TextBlock Text="{Binding CurrentSection.Title}" Style="{StaticResource PageTitle}" />
                 <TextBlock Text="{Binding CurrentSection.Description}" Style="{StaticResource PageSubtitle}" />

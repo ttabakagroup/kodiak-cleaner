@@ -108,6 +108,11 @@ public sealed class Settings
     public int SidebarWidth { get; set; } = DefaultSidebarWidth;
     public bool SidebarLocked { get; set; } = true;
     public bool SidebarCollapsed { get; set; }
+    /// <summary>
+    /// Where the page dividers were dragged to (Ted, 0.8.99): "startup=420|260;duplicates=310|900", each the two areas' sizes.
+    /// Empty until a divider is moved; Reset to Default empties it.
+    /// </summary>
+    public string PaneSizes { get; set; } = "";
     /// <summary>Off: the sidebar always keeps the default width and the paperclip is hidden (Settings › General, 0.8.12).</summary>
     public bool SidebarAdjustable { get; set; } = true;
     /// <summary>Off hides the paperclip button; the sidebar keeps whatever width and lock it had.</summary>
@@ -240,6 +245,7 @@ public sealed class Settings
         LastSeenVersion = ini.Get("General", "LastSeenVersion");
         ToolsExpanded = ini.GetBool("General", "ToolsOpen", ToolsExpanded);
         SidebarWidth = Math.Clamp(ini.GetInt("General", "SidebarWidth", SidebarWidth), MinSidebarWidth, MaxSidebarWidth);
+        PaneSizes = ini.Get("Layout", "Panes") ?? "";
         SidebarLocked = ini.GetBool("General", "SidebarLocked", SidebarLocked);
         SidebarCollapsed = ini.GetBool("General", "SidebarCollapsed", SidebarCollapsed);
         SidebarAdjustable = ini.GetBool("General", "SidebarAdjustable", SidebarAdjustable);
@@ -305,6 +311,7 @@ public sealed class Settings
         ini.Set("General", "LastSeenVersion", LastSeenVersion ?? "");
         ini.Set("General", "ToolsOpen", ToolsExpanded);
         ini.Set("General", "SidebarWidth", SidebarWidth);
+        ini.Set("Layout", "Panes", PaneSizes);
         ini.Set("General", "SidebarLocked", SidebarLocked);
         ini.Set("General", "SidebarCollapsed", SidebarCollapsed);
         ini.Set("General", "SidebarAdjustable", SidebarAdjustable);
