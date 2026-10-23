@@ -310,7 +310,7 @@ private struct SupporterSettings: View {
             }
         }
         if !model.plan.isSupporter {
-            Card(title: "Support Kodiak Cleaner", subtitle: "Supporting is optional. Every cleaning feature works without it.") {
+            Card(title: "Support Kodiak Cleaner", subtitle: "Supporting is optional. Every cleaning feature works without it. A one-time $10 or more unlocks the Supporter color schemes; your code arrives by email.") {
                 Button("Support on Ko-fi ♥") { openLink(AppInfo.kofiURL) }.kcButton(.secondary)
             }
         }
