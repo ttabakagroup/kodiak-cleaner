@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.10 Dev] - 2026-10-23
+
+### Supporter
+- Supporter codes are now checked with Ted's own key, so real codes from Ko-fi work.
+
 ## [0.8.9 Dev] - 2026-10-22
 
 ### Appearance

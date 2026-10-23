@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.81 Dev] - 2026-10-23
+
+### Supporter
+- Supporter codes are now checked with Ted's own key, so real codes from Ko-fi work. The "Test key in use" note on the Supporter page is gone.
+
 ## [0.8.80 Dev] - 2026-10-23
 
 ### Settings
