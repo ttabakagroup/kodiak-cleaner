@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using KodiakCleaner.App.ViewModels;
 using KodiakCleaner.Core.About;
@@ -20,7 +21,12 @@ public partial class MainWindow : Window
             if (e.PropertyName is nameof(MainViewModel.SidebarCollapsed) or nameof(MainViewModel.SidebarLocked)) ApplySidebar();
             if (e.PropertyName == nameof(MainViewModel.HasCornerTask) && _vm.HasCornerTask) SlideInTaskCard();
         };
-        SourceInitialized += (_, _) => ThemeManager.ApplyTitleBar(this);
+        SourceInitialized += (_, _) =>
+        {
+            ThemeManager.ApplyTitleBar(this);
+            // Run as administrator, files dropped from Explorer only arrive this way (Hash Checker).
+            ElevatedFileDrop.Attach(this, () => _vm.CurrentContent as IFileDropTarget);
+        };
         PreviewKeyDown += FindShortcut;
         // Everything that can wait (pop-ups, the update check) waits until the window has been drawn once (0.8.47), so a
         // first start, which is slower while Windows checks the new program, never shows a blank or frozen window.
@@ -147,6 +153,114 @@ public partial class MainWindow : Window
     {
         Settings.Current.SidebarWidth = (int)Math.Round(Math.Clamp(SidebarColumn.ActualWidth, Settings.MinSidebarWidth, Settings.MaxSidebarWidth));
         Settings.Current.Save();
+    }
+
+    // ===== Favorites (Ted, 2026-10-23): right-click to pin, unpin or move; drag to reorder, pin or unpin. =====
+
+    private static NavPage? PageOf(object sender) => (sender as FrameworkElement)?.DataContext as NavPage;
+
+    private void Nav_ContextMenuOpening(object sender, System.Windows.Controls.ContextMenuEventArgs e)
+    {
+        if (PageOf(sender) is not { CanPin: true } page || sender is not FrameworkElement target) return;
+        e.Handled = true;
+        var menu = new System.Windows.Controls.ContextMenu { PlacementTarget = target };
+        if (page.IsFavorite)
+        {
+            menu.Items.Add(MenuEntry("Unpin from Favorites", "\uE77A", true, () => _vm.Unpin(page)));
+            menu.Items.Add(new System.Windows.Controls.Separator());
+            // A to Z has no order of its own to change; the tooltip says where to switch it.
+            var why = _vm.FavoritesAToZ ? "Favorites are shown A to Z. Choose Default Order in Settings › General to move them." : null;
+            menu.Items.Add(MenuEntry("Move Up", "\uE74A", _vm.CanMoveFavorite(page, -1), () => Move(page, -1), why));
+            menu.Items.Add(MenuEntry("Move Down", "\uE74B", _vm.CanMoveFavorite(page, 1), () => Move(page, 1), why));
+        }
+        else
+        {
+            menu.Items.Add(MenuEntry("Pin to Favorites", "\uE718", true, () => _vm.Pin(page)));
+        }
+        menu.IsOpen = true;
+    }
+
+    private void Move(NavPage page, int by) => _vm.MoveFavorite(page, _vm.FavoritePages.IndexOf(page) + by);
+
+    private System.Windows.Controls.MenuItem MenuEntry(string header, string glyph, bool enabled, Action click, string? tip = null)
+    {
+        var item = new System.Windows.Controls.MenuItem
+        {
+            Header = header,
+            IsEnabled = enabled,
+            Icon = new System.Windows.Controls.TextBlock { Text = glyph, Style = (Style)FindResource("Icon"), FontSize = 14 },
+        };
+        if (tip is not null)
+        {
+            item.ToolTip = tip;
+            ToolTipService.SetShowOnDisabled(item, true);
+        }
+        item.Click += (_, _) => click();
+        return item;
+    }
+
+    private Point _dragStart;
+    private NavPage? _dragPage;
+
+    private void Nav_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _dragPage = PageOf(sender) is { CanPin: true } page ? page : null;
+        _dragStart = e.GetPosition(this);
+    }
+
+    private void Nav_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_dragPage is null || e.LeftButton != MouseButtonState.Pressed || sender is not DependencyObject source) return;
+        var moved = e.GetPosition(this) - _dragStart;
+        if (Math.Abs(moved.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(moved.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        var page = _dragPage;
+        _dragPage = null;
+        DragDrop.DoDragDrop(source, new DataObject(typeof(NavPage), page), DragDropEffects.Move | DragDropEffects.Copy);
+    }
+
+    private static NavPage? Dragged(DragEventArgs e) => e.Data.GetData(typeof(NavPage)) as NavPage;
+
+    /// <summary>Where a drop at the mouse would land in Favorites: before the first entry whose middle is below the mouse.</summary>
+    private int FavoriteIndexAt(DragEventArgs e)
+    {
+        for (var i = 0; i < _vm.FavoritePages.Count; i++)
+            if (FavoritesList.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement row &&
+                e.GetPosition(row).Y < row.ActualHeight / 2)
+                return i;
+        return _vm.FavoritePages.Count;
+    }
+
+    // A favorite moves as it's dragged; a tool is pinned where it's dropped.
+    private void Favorites_DragOver(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (Dragged(e) is not { } page) { e.Effects = DragDropEffects.None; return; }
+        if (!page.IsFavorite) { e.Effects = DragDropEffects.Copy; return; }
+        e.Effects = _vm.FavoritesAToZ ? DragDropEffects.None : DragDropEffects.Move;
+        if (_vm.FavoritesAToZ) return;
+        var at = FavoriteIndexAt(e);
+        var from = _vm.FavoritePages.IndexOf(page);
+        _vm.MoveFavorite(page, at > from ? at - 1 : at);
+    }
+
+    private void Favorites_Drop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (Dragged(e) is { IsFavorite: false } page) _vm.Pin(page, FavoriteIndexAt(e));
+    }
+
+    // A favorite dragged down into the Tools list is unpinned.
+    private void Tools_DragOver(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        e.Effects = Dragged(e) is { IsFavorite: true } ? DragDropEffects.Move : DragDropEffects.None;
+    }
+
+    private void Tools_Drop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (Dragged(e) is { IsFavorite: true } page) _vm.Unpin(page);
     }
 
     /// <summary>Command-line / jump list arguments, e.g. --page=registry.</summary>

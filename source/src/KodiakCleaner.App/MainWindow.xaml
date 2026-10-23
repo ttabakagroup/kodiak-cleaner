@@ -35,8 +35,10 @@
 
         <DataTemplate x:Key="NavItem" DataType="{x:Type vm:NavPage}">
             <!-- Hovering any entry shows its name, which matters most when the sidebar is collapsed to icons. -->
+            <!-- Right-click (or the menu key) pins, unpins and moves; dragging moves favorites or drops a tool into Favorites. -->
             <RadioButton GroupName="Nav" Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                         ToolTip="{Binding Title}" AutomationProperties.Name="{Binding Title}">
+                         ToolTip="{Binding Title}" AutomationProperties.Name="{Binding Title}"
+                         ContextMenuOpening="Nav_ContextMenuOpening" PreviewMouseLeftButtonDown="Nav_PreviewMouseDown" PreviewMouseMove="Nav_PreviewMouseMove">
                 <StackPanel x:Name="Row" Orientation="Horizontal">
                     <Grid x:Name="IconBox" Margin="0,0,14,0" VerticalAlignment="Center">
                         <TextBlock x:Name="IconText" Text="{Binding Glyph}" Style="{StaticResource Icon}" />
@@ -173,7 +175,26 @@
                     </StackPanel>
                     <ItemsControl ItemsSource="{Binding FooterPages}" ItemTemplate="{StaticResource NavItem}" VerticalAlignment="Bottom" />
                 </DockPanel>
-                <ScrollViewer Focusable="False">
+                <!-- Favorites stay put at the top (Ted, 2026-10-23); only the Tools list below them scrolls. -->
+                <StackPanel x:Name="FavoritesZone" DockPanel.Dock="Top" Background="Transparent" AllowDrop="True"
+                            DragOver="Favorites_DragOver" Drop="Favorites_Drop">
+                    <TextBlock Text="Favorites" Style="{StaticResource GroupHeading}" Margin="24,0,0,6"
+                               Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}" />
+                    <ItemsControl x:Name="FavoritesList" ItemsSource="{Binding FavoritePages}" ItemTemplate="{StaticResource NavItem}" />
+                    <!-- Everything unpinned: say how to pin something (a drop here pins too). -->
+                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="24,0,22,4"
+                               Text="Right-click a tool and pick Pin to Favorites, or drag it here."
+                               Visibility="{Binding ShowFavoritesHint, Converter={StaticResource BoolToVis}}" />
+                    <!-- Tools start open (Ted, 0.8.11); click the heading to fold them away. Collapsed, a line stands in for it. -->
+                    <Border Height="1" Margin="22,10,22,8" Background="{DynamicResource Line}"
+                            Visibility="{Binding SidebarCollapsed, Converter={StaticResource BoolToVis}}" />
+                    <ToggleButton Style="{StaticResource GroupToggle}" IsChecked="{Binding ToolsExpanded}"
+                                  Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}"
+                                  ToolTip="Show or hide the tools" AutomationProperties.Name="Tools">
+                        <TextBlock Text="Tools" />
+                    </ToggleButton>
+                </StackPanel>
+                <ScrollViewer x:Name="ToolsZone" Focusable="False" AllowDrop="True" DragOver="Tools_DragOver" Drop="Tools_Drop">
                     <!-- Collapsed, the scroll bar would push the icons off center, so it hides (the wheel still scrolls). -->
                     <ScrollViewer.Style>
                         <Style TargetType="ScrollViewer">
@@ -185,21 +206,9 @@
                             </Style.Triggers>
                         </Style>
                     </ScrollViewer.Style>
-                    <StackPanel>
-                        <TextBlock Text="Cleaning" Style="{StaticResource GroupHeading}" Margin="24,0,0,6"
-                                   Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}" />
-                        <ItemsControl ItemsSource="{Binding MainPages}" ItemTemplate="{StaticResource NavItem}" />
-                        <!-- Tools start open (Ted, 0.8.11); click the heading to fold them away. Collapsed, a line stands in for it. -->
-                        <Border Height="1" Margin="22,10,22,8" Background="{DynamicResource Line}"
-                                Visibility="{Binding SidebarCollapsed, Converter={StaticResource BoolToVis}}" />
-                        <ToggleButton Style="{StaticResource GroupToggle}" IsChecked="{Binding ToolsExpanded}"
-                                      Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}"
-                                      ToolTip="Show or hide the tools" AutomationProperties.Name="Tools">
-                            <TextBlock Text="Tools" />
-                        </ToggleButton>
-                        <ItemsControl ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}"
-                                      Visibility="{Binding ToolsVisible, Converter={StaticResource BoolToVis}}" />
-                    </StackPanel>
+                    <!-- A favorite dropped anywhere here is unpinned, so the empty space under the list takes drops too. -->
+                    <ItemsControl ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}" Background="Transparent"
+                                  Visibility="{Binding ToolsVisible, Converter={StaticResource BoolToVis}}" />
                 </ScrollViewer>
             </DockPanel>
         </Border>

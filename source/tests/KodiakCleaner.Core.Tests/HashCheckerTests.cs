@@ -156,4 +156,20 @@ public sealed class HashCheckerTests : IDisposable
         Assert.Equal(new[] { "MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512" }, HashChecker.Kinds.Select(HashChecker.Name));
         Assert.All(HashChecker.Kinds, k => Assert.Equal(k, HashChecker.KindForLabel(HashChecker.Name(k))));
     }
+
+    [Fact]
+    public void A_hash_file_beside_a_file_checks_it_later()
+    {
+        var path = Path.Combine(_dir, "report.html");
+        File.WriteAllText(path, "abc");
+        var file = HashChecker.ComputeFile(path);
+        var written = HashChecker.WriteHashFile(path, HashKind.Sha256, file.Hashes[HashKind.Sha256]);
+        Assert.Equal(path + ".sha256", written);
+        Assert.True(HashChecker.IsListFile(written));
+        Assert.Equal($"{AbcSha256} *report.html", File.ReadAllText(written).TrimEnd());
+        var list = HashChecker.ParseList(File.ReadAllText(written));
+        Assert.Equal(HashVerdict.Verified, HashChecker.Check(file, list, _dir).Verdict);
+        File.WriteAllText(path, "abd"); // changed after the hash file was made
+        Assert.Equal(HashVerdict.Mismatch, HashChecker.Check(HashChecker.ComputeFile(path), list, _dir).Verdict);
+    }
 }

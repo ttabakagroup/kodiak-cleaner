@@ -39,6 +39,40 @@
                         </StackPanel>
                     </DockPanel>
                     <Border Style="{StaticResource RowDivider}" />
+                    <!-- Favorites (Ted, 2026-10-23): pinned pages at the top of the sidebar, in their own order or A to Z. -->
+                    <StackPanel Margin="0,10,0,0">
+                        <TextBlock Text="Favorites Order" Style="{StaticResource SettingTitle}" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap"
+                                   Text="Favorites stay at the top of the sidebar while the tools below them scroll. Right-click any page in the sidebar to pin or unpin it, or drag it in or out of Favorites. In Default Order, drag favorites or use Move Up and Move Down to set your own order." />
+                        <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left" Margin="0,10,0,0">
+                            <ItemsControl ItemsSource="{Binding FavoriteOrders}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton GroupName="FavoritesOrder" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <Button DockPanel.Dock="Right" Command="{Binding RestoreFavoritesOrderCommand}" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                <TextBlock Text="Restore Default Order" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Margin="0,0,24,0">
+                            <TextBlock Text="Restore Favorites" Style="{StaticResource SettingTitle}" />
+                            <TextBlock Text="Puts Cleaner, Registry, Startup and Programs back at the top in that order, pinning any you unpinned. Anything else you pinned stays, below them."
+                                       Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" />
                     <DockPanel Style="{StaticResource SettingRow}" IsEnabled="{Binding SidebarAdjustable}">
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ShowSidebarLock}" />
                         <StackPanel Margin="0,0,24,0">
@@ -287,7 +321,7 @@
                 <StackPanel>
                     <TextBlock Text="Reset to Default" Style="{StaticResource SectionTitle}" />
                     <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0" TextWrapping="Wrap"
-                               Text="Puts every setting back to how it was when Kodiak Cleaner was first installed, after you confirm. The start count for the donation reminder starts again, so it can be turned off after 10 more starts (never shown to Supporters). Kept: your Supporter code, update bookkeeping, scheduled cleanings, Cleaner history, and every backup, report and log." />
+                               Text="Puts every setting back to how it was when Kodiak Cleaner was first installed, after you confirm, sidebar Favorites included. The start count for the donation reminder starts again, so it can be turned off after 10 more starts (never shown to Supporters). Kept: your Supporter code, update bookkeeping, scheduled cleanings, Cleaner history, and every backup, report and log." />
                     <Button Command="{Binding ResetCommand}" HorizontalAlignment="Left" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />

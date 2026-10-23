@@ -87,6 +87,20 @@ public static class HashChecker
     /// <summary>One line of a checksum file, as sha256sum writes it in binary mode ("hash *name"); sha256sum -c and most tools read it.</summary>
     public static string ChecksumLine(string hash, string name) => $"{hash} *{name}";
 
+    /// <summary>The hash file that goes beside a file: game.iso -> game.iso.sha256 (the name sha256sum and download sites use).</summary>
+    public static string HashFileFor(string path, HashKind kind) => path + Extension(kind);
+
+    /// <summary>
+    /// Writes the hash file beside a file, one line naming it by file name only, so the pair can be moved or sent together and
+    /// checked later (drop the hash file on Hash Checker, or sha256sum -c). Returns the hash file's path.
+    /// </summary>
+    public static string WriteHashFile(string path, HashKind kind, string hash)
+    {
+        var target = HashFileFor(path, kind);
+        File.WriteAllText(target, ChecksumLine(hash, Path.GetFileName(path)) + Environment.NewLine);
+        return target;
+    }
+
     /// <summary>Reads the stream once and returns every kind of hash. <paramref name="progress"/> gets the bytes read so far.</summary>
     public static Dictionary<HashKind, string> Compute(Stream stream, Action<long>? progress = null, CancellationToken ct = default)
     {

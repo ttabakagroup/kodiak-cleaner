@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using KodiakCleaner.Core.Util;
 
 namespace KodiakCleaner.App.ViewModels;
 
@@ -35,26 +36,27 @@ public sealed class MainViewModel : ObservableObject
             ShowDonationBanner = false;
         };
 
-        // Glyphs from Segoe Fluent Icons / Segoe MDL2 Assets.
-        MainPages.Add(new NavPage("Cleaner", "", Cleaner, OnNavigated));
-        MainPages.Add(new NavPage("Registry", "", Registry, OnNavigated));
-        MainPages.Add(new NavPage("Startup", "", Startup, OnNavigated));
-        MainPages.Add(new NavPage("Programs", "", Programs, OnNavigated));
-        // Tools in alphabetical order (Ted's choice).
-        ToolPages.Add(new NavPage("Boot Timer", "\uE916", BootTimer, OnNavigated));
-        ToolPages.Add(new NavPage("Browser Extensions", "\uEA86", Extensions, OnNavigated));
-        ToolPages.Add(new NavPage("Defrag and TRIM", "\uEC4A", Optimize, OnNavigated));
-        ToolPages.Add(new NavPage("Disk Analyzer", "\uEB05", DiskAnalyzer, OnNavigated));
-        ToolPages.Add(new NavPage("Drive Wiper", "\uEDA2", Wiper, OnNavigated, badge: "\uE74D"));
-        ToolPages.Add(new NavPage("Driver Cleaner", "\uE950", DriverCleaner, OnNavigated));
-        ToolPages.Add(new NavPage("Duplicate Finder", "", Duplicates, OnNavigated));
-        ToolPages.Add(new NavPage("Empty Folders", "\uE8B7", EmptyFolders, OnNavigated));
-        ToolPages.Add(new NavPage("Hash Checker", "\uE928", HashChecker, OnNavigated));
-        ToolPages.Add(new NavPage("Integrity Check", "\uE9D9", Integrity, OnNavigated));
-        ToolPages.Add(new NavPage("Large Files", "\uE8A5", LargeFiles, OnNavigated));
-        ToolPages.Add(new NavPage("Mass Rename", "\uE8AC", MassRename, OnNavigated));
-        ToolPages.Add(new NavPage("Scheduled Tasks", "\uE823", ScheduledTasks, OnNavigated));
-        ToolPages.Add(new NavPage("System Restore", "", Restore, OnNavigated));
+        // Glyphs from Segoe Fluent Icons / Segoe MDL2 Assets. Every page here can be pinned to Favorites (Ted, 2026-10-23);
+        // the rest show under Tools, A to Z (Ted's choice). The key is the page's --page= name.
+        Pinnable.Add(new NavPage("Cleaner", "\uE74D", Cleaner, OnNavigated, key: "cleaner"));
+        Pinnable.Add(new NavPage("Registry", "\uE943", Registry, OnNavigated, key: "registry"));
+        Pinnable.Add(new NavPage("Startup", "\uE7E8", Startup, OnNavigated, key: "startup"));
+        Pinnable.Add(new NavPage("Programs", "\uE71D", Programs, OnNavigated, key: "programs"));
+        Pinnable.Add(new NavPage("Boot Timer", "\uE916", BootTimer, OnNavigated, key: "boottimer"));
+        Pinnable.Add(new NavPage("Browser Extensions", "\uEA86", Extensions, OnNavigated, key: "extensions"));
+        Pinnable.Add(new NavPage("Defrag and TRIM", "\uEC4A", Optimize, OnNavigated, key: "optimize"));
+        Pinnable.Add(new NavPage("Disk Analyzer", "\uEB05", DiskAnalyzer, OnNavigated, key: "disk"));
+        Pinnable.Add(new NavPage("Drive Wiper", "\uEDA2", Wiper, OnNavigated, badge: "\uE74D", key: "wiper"));
+        Pinnable.Add(new NavPage("Driver Cleaner", "\uE950", DriverCleaner, OnNavigated, key: "drivers"));
+        Pinnable.Add(new NavPage("Duplicate Finder", "\uE8C8", Duplicates, OnNavigated, key: "duplicates"));
+        Pinnable.Add(new NavPage("Empty Folders", "\uE8B7", EmptyFolders, OnNavigated, key: "emptyfolders"));
+        Pinnable.Add(new NavPage("Hash Checker", "\uE928", HashChecker, OnNavigated, key: "hash"));
+        Pinnable.Add(new NavPage("Integrity Check", "\uE9D9", Integrity, OnNavigated, key: "integrity"));
+        Pinnable.Add(new NavPage("Large Files", "\uE8A5", LargeFiles, OnNavigated, key: "largefiles"));
+        Pinnable.Add(new NavPage("Mass Rename", "\uE8AC", MassRename, OnNavigated, key: "rename"));
+        Pinnable.Add(new NavPage("Scheduled Tasks", "\uE823", ScheduledTasks, OnNavigated, key: "tasks"));
+        Pinnable.Add(new NavPage("System Restore", "\uE777", Restore, OnNavigated, key: "restore"));
+        ArrangeSidebar();
         FooterPages.Add(new NavPage("Settings", "", SettingsPage, OnNavigated));
         // System Information sits with Settings and About (Ted, 0.8.46), not in Tools.
         FooterPages.Add(new NavPage("System Information", "\uE7F4", SystemInfo, OnNavigated));
@@ -68,12 +70,13 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(ToolsExpanded));
             OnPropertyChanged(nameof(ToolsVisible));
             OnPropertyChanged(nameof(SidebarLocked)); // re-sizes the sidebar (MainWindow.ApplySidebar)
+            ArrangeSidebar(); // Favorites Order, Restore Default Order and Reset to Default
         };
         SettingsPage.ShowRequested += () => FooterPages[0].IsSelected = true;
 
         RestartAsAdminCommand = new RelayCommand(() => Elevation.RestartElevated(Elevation.CurrentPage), () => !IsAdministrator);
-        HomeCommand = new RelayCommand(() => MainPages[0].IsSelected = true);
-        MainPages[0].IsSelected = true;
+        HomeCommand = new RelayCommand(() => Pinnable[0].IsSelected = true);
+        Pinnable[0].IsSelected = true;
 
         BackgroundTasks.Changed += UpdateCornerTask;
         _cornerDelay.Tick += (_, _) => { _cornerDelay.Stop(); UpdateCornerTask(); };
@@ -116,10 +119,81 @@ public sealed class MainViewModel : ObservableObject
     public OptimizeViewModel Optimize { get; }
     public SettingsViewModel SettingsPage { get; }
 
-    public ObservableCollection<NavPage> MainPages { get; } = new();
+    /// <summary>Every page that can sit in Favorites or Tools.</summary>
+    private List<NavPage> Pinnable { get; } = new();
+    /// <summary>Pinned at the top of the sidebar; they don't scroll (Ted, 2026-10-23).</summary>
+    public ObservableCollection<NavPage> FavoritePages { get; } = new();
+    /// <summary>Everything not in Favorites, A to Z, in the scrolling list.</summary>
     public ObservableCollection<NavPage> ToolPages { get; } = new();
     public ObservableCollection<NavPage> FooterPages { get; } = new();
-    private IEnumerable<NavPage> AllPages => MainPages.Concat(ToolPages).Concat(FooterPages);
+    private IEnumerable<NavPage> AllPages => Pinnable.Concat(FooterPages);
+
+    /// <summary>With nothing pinned, Favorites says how to pin something (not when collapsed to icons).</summary>
+    public bool ShowFavoritesHint => FavoritePages.Count == 0 && !SidebarCollapsed;
+    public bool FavoritesAToZ => Settings.Current.FavoritesAToZ;
+
+    private List<string> SavedFavorites() =>
+        SidebarFavorites.Normalize(Settings.Current.Favorites, Pinnable.Select(p => p.Key).ToList());
+
+    /// <summary>Fills Favorites and Tools from the saved favorites and the Favorites Order setting.</summary>
+    private void ArrangeSidebar()
+    {
+        var favorites = SavedFavorites();
+        var byKey = Pinnable.ToDictionary(p => p.Key);
+        Refill(FavoritePages, SidebarFavorites.Arrange(favorites, byKey, p => p.Title, Settings.Current.FavoritesAToZ));
+        Refill(ToolPages, Pinnable.Where(p => !favorites.Contains(p.Key)).OrderBy(p => p.Title, StringComparer.CurrentCultureIgnoreCase).ToList());
+        foreach (var p in Pinnable) p.IsFavorite = favorites.Contains(p.Key);
+        OnPropertyChanged(nameof(ShowFavoritesHint));
+        OnPropertyChanged(nameof(FavoritesAToZ));
+    }
+
+    /// <summary>Changes the lists in place, so entries that stay keep their place on screen (and their selection).</summary>
+    private static void Refill(ObservableCollection<NavPage> list, List<NavPage> wanted)
+    {
+        for (var i = list.Count - 1; i >= 0; i--)
+            if (!wanted.Contains(list[i])) list.RemoveAt(i);
+        for (var i = 0; i < wanted.Count; i++)
+        {
+            var at = list.IndexOf(wanted[i]);
+            if (at < 0) list.Insert(i, wanted[i]);
+            else if (at != i) list.Move(at, i);
+        }
+    }
+
+    private void SaveFavorites(List<string> favorites)
+    {
+        Settings.Current.Favorites = favorites;
+        Settings.Current.Save();
+        ArrangeSidebar();
+    }
+
+    /// <summary>Right-click › Pin to Favorites, or a tool dropped on Favorites (at the place it was dropped).</summary>
+    public void Pin(NavPage page, int index = -1)
+    {
+        var favorites = SavedFavorites();
+        if (SidebarFavorites.Pin(favorites, page.Key, index)) SaveFavorites(favorites);
+    }
+
+    public void Unpin(NavPage page)
+    {
+        var favorites = SavedFavorites();
+        if (SidebarFavorites.Unpin(favorites, page.Key)) SaveFavorites(favorites);
+    }
+
+    /// <summary>Move Up and Move Down, or a drag inside Favorites. Only in the saved order; A to Z has no order to change.</summary>
+    public void MoveFavorite(NavPage page, int index)
+    {
+        if (Settings.Current.FavoritesAToZ) return;
+        var favorites = SavedFavorites();
+        if (SidebarFavorites.Move(favorites, page.Key, index)) SaveFavorites(favorites);
+    }
+
+    public bool CanMoveFavorite(NavPage page, int by)
+    {
+        if (Settings.Current.FavoritesAToZ) return false;
+        var at = FavoritePages.IndexOf(page);
+        return at >= 0 && at + by >= 0 && at + by < FavoritePages.Count;
+    }
 
     private object? _currentContent;
     public object? CurrentContent { get => _currentContent; private set => Set(ref _currentContent, value); }
@@ -157,6 +231,7 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged();
             OnPropertyChanged(nameof(ToolsVisible));
             OnPropertyChanged(nameof(ShowPaperclip));
+            OnPropertyChanged(nameof(ShowFavoritesHint));
         }
     }
 

@@ -6,11 +6,15 @@ No. Kodiak Cleaner sends no usage data, shows no ads and has no tracking. It onl
 
 ## How Do I Check That a Download Isn't Damaged?
 
-Open Hash Checker under Tools and drop the file on the page (or click Add Files). Copy the hash the download page lists into Expected Hashes, or drop the .sha256, .md5 or SHA256SUMS file that came with the download. Each file then shows Verified when it matches, or Doesn't Match when it differs from the one listed, which means it is damaged, changed or a different version. Press Ctrl+F to find a file by its name or any part of a hash. Hash Checker only reads your files and never sends them anywhere.
+Open Hash Checker under Tools and drop the file on the page (or click Add Files). Copy the hash the download page lists into Expected Hashes, or drop the .sha256, .md5 or SHA256SUMS file that came with the download. Each file then shows Verified when it matches, or Doesn't Match when it differs from the one listed, which means it is damaged, changed or a different version. Press Ctrl+F to find a file by its name or any part of a hash. To let someone check a file you send or export, click it and choose Create Hash File: a small .sha256 file is saved beside it, and dropping that file here later shows Verified if the file hasn't changed. Hash Checker only reads your files and never sends them anywhere.
 
 ## How Do I Move Kodiak Cleaner to a New PC?
 
 Under Settings, Application, click Back Up Settings. It saves a dated copy of your settings and your Programs and Startup histories in Backups\Settings. Install Kodiak Cleaner on the new PC, close it, then copy those files over KodiakCleaner.ini, Backups\Programs History\history.json and Backups\Startup History\history.json. A Supporter code is part of the settings, so it moves with them.
+
+## How Do I Pin a Tool to Favorites?
+
+Right-click any page in the sidebar and pick Pin to Favorites, or drag it up into Favorites. Favorites stay at the top of the sidebar while the Tools list below them scrolls. Right-click a favorite to unpin it or to move it up or down, or drag it to a new place (drag it down into Tools to unpin it). Under Settings, General, Favorites Order shows them in your own order or A to Z, and Restore Default Order puts Cleaner, Registry, Startup and Programs back at the top.
 
 ## How Do I Select Many Items at Once?
 
@@ -42,7 +46,7 @@ Kodiak Cleaner only changes what you pick. Registry fixes, startup entries, sche
 
 ## What Does Reset to Default Keep?
 
-Reset to Default, under Settings, Advanced, puts every setting and your Cleaner selections back to how they were at install. It keeps your Supporter code, your cleaning history, your scheduled cleanings and every backup, log and report.
+Reset to Default, under Settings, Advanced, puts every setting, your sidebar Favorites and your Cleaner selections back to how they were at install. It keeps your Supporter code, your cleaning history, your scheduled cleanings and every backup, log and report.
 
 ## Where Are My Backups, Logs and Reports?
 

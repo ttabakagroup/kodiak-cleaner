@@ -68,7 +68,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   headers, buttons, switches and option labels. Sentences (help text, captions, hints) stay sentence case. Use the
   `PageTitle`, `SectionTitle` and `SettingTitle` styles; the test also checks every Button/CheckBox/RadioButton label and (0.8.24)
   labels set in code (prompts, folder pickers, Sort By, table values like All Users). Getting Started's Features list stays A to Z and current.
-- Main sidebar: a Cleaning heading over Cleaner/Registry/Startup/Programs, and Tools open by default (Ted, 0.8.11; folding is remembered as `ToolsOpen`).
+- Main sidebar: Favorites at the top (Ted, 2026-10-23; was the Cleaning heading), fixed, with only the Tools list below scrolling. Default
+  favorites, always in this order: Cleaner, Registry, Startup, Programs (`SidebarFavorites.Default`). Any page in Favorites or Tools can be
+  pinned or unpinned (right-click, or drag in or out of Favorites) and moved (Move Up/Down, or drag); pinned pages leave Tools, which stays
+  A to Z. Saved as `[General] Favorites=<page keys>` and `FavoritesOrder=Default|AToZ`; Settings > General > Sidebar has Favorites Order
+  (Default Order or A to Z) and Restore Default Order; Reset to Default resets them. Tools open by default (Ted, 0.8.11; folding is remembered as `ToolsOpen`).
   Bottom right of the sidebar: the paperclip (on its side = locked at the default 310 width, upright = drag the edge, 240 to 480)
   above the collapse button (icons only, 84 wide, bigger centered icons; every nav entry has its name as a tooltip).
   A divider with space above it separates Settings and About from the scrolling list (Ted, 0.8.29). The standard-user bar uses AccentTint, Line and Text, not Warn colors.
@@ -160,7 +164,12 @@ privacy first, local first, security paramount, convenient, practical and useful
   PowerShell Get-FileHash (table and list) and bare hashes; the hash length decides the kind. A file the list names must match that entry
   (else Doesn't Match); otherwise any equal hash verifies it. Dropped checksum files (`IsListFile`) become the list and add the files they
   name from the list's folder; folders add at most 5000 files. Read-only: only Save Checksum File writes (where the person picks). Ctrl+F
-  (MainWindow `FindShortcut`) focuses the first search box shown on any page.
+  (MainWindow `FindShortcut`) focuses the first search box shown on any page. Run as administrator, Explorer can't drop files the normal
+  way, so `ElevatedFileDrop` (MainWindow, admin only) revokes WPF's drop target, takes WM_DROPFILES (message filter opened) and hands the
+  files to the open page if it is an `IFileDropTarget` (Ted, 2026-10-23). A dropped or added file is highlighted and its details open
+  (path, size, dates, all five hashes). Create Hash File writes name.<kind> beside each file (`HashChecker.WriteHashFile`, one
+  "hash *name" line), asks before replacing, and offers a Save dialog when the folder can't be written. Buttons inside the table's row
+  details are Focusable="False" (the table pulls focus back on the first click, which cancelled it).
 - Integrity Check (Ted, 2026-10-12, `IntegrityCheck` in Core, `IntegrityCheckViewModel`): cards A to Z, each with Check (read-only)
   and, where Windows can fix it, Repair. Only Windows' own tools from System32: sfc /verifyonly and /scannow (UTF-16 output, English
   messages only, else "Finished, see Details"), DISM /Online /Cleanup-Image /ScanHealth and /RestoreHealth with /English, chkdsk (NTFS /scan

@@ -5,14 +5,23 @@ public sealed class NavPage : ObservableObject
 {
     private readonly Action<NavPage> _onSelected;
 
-    public NavPage(string title, string glyph, object content, Action<NavPage> onSelected, string badge = "")
+    public NavPage(string title, string glyph, object content, Action<NavPage> onSelected, string badge = "", string key = "")
     {
+        Key = key;
         Title = title;
         Glyph = glyph;
         Badge = badge;
         Content = content;
         _onSelected = onSelected;
     }
+
+    /// <summary>The page's --page= name, saved in the Favorites list ("" for Settings, System Information and About).</summary>
+    public string Key { get; }
+    public bool CanPin => Key.Length > 0;
+
+    private bool _isFavorite;
+    /// <summary>Pinned to Favorites at the top of the sidebar.</summary>
+    public bool IsFavorite { get => _isFavorite; set => Set(ref _isFavorite, value); }
 
     public string Title { get; }
     public string Glyph { get; }

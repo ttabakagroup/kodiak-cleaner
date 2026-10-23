@@ -519,7 +519,7 @@ public class StaysCurrentTests
         var welcome = Repo.Read("src", "KodiakCleaner.App", "WelcomeWindow.xaml.cs");
         var features = Regex.Matches(welcome, @"new\(""([^""]+)"", "": ").Select(m => m.Groups[1].Value).ToList();
         Assert.Equal(features.OrderBy(f => f, StringComparer.OrdinalIgnoreCase), features);
-        foreach (Match page in Regex.Matches(nav, @"(?:MainPages|ToolPages)\.Add\(new NavPage\(""([^""]+)"""))
+        foreach (Match page in Regex.Matches(nav, @"Pinnable\.Add\(new NavPage\(""([^""]+)"""))
             Assert.Contains(page.Groups[1].Value, features);
     }
 

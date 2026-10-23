@@ -5,6 +5,19 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.96 Dev] - 2026-10-23
+
+### Sidebar
+- The sidebar's Cleaning heading is now Favorites, which stays put while the tools scroll. Pin any tool to Favorites by right-clicking it or dragging it there, and drag or right-click to reorder or unpin. Settings, General has Favorites Order (Default Order or A to Z) and Restore Default Order, and Reset to Default resets Favorites too.
+
+### Startup
+- In a narrow window, the Add, History, Refresh and Remove Selected buttons wrap onto a second line instead of being squeezed and cut off.
+
+### Tools
+- Hash Checker: dropping a file opens everything about it straight away (path, size, dates and all five hashes), and drag and drop now works when Kodiak Cleaner runs as administrator.
+- Hash Checker: Create Hash File saves name.sha256 (or the kind shown) beside a file, so it can be checked later or by whoever receives it; drop the hash file back in to see Verified.
+- Hash Checker: buttons in a file's details work on the first click.
+
 ## [0.8.95 Dev] - 2026-10-23
 
 ### Interface

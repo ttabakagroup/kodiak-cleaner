@@ -112,6 +112,11 @@ public sealed class Settings
     public bool SidebarAdjustable { get; set; } = true;
     /// <summary>Off hides the paperclip button; the sidebar keeps whatever width and lock it had.</summary>
     public bool ShowSidebarLock { get; set; } = true;
+    /// <summary>Sidebar Favorites (Ted, 2026-10-23): page keys in the order they show; null until changed, which means
+    /// <see cref="KodiakCleaner.Core.Util.SidebarFavorites.Default"/>. Reset to Default puts the default back.</summary>
+    public List<string>? Favorites { get; set; }
+    /// <summary>Settings › General › Favorites Order: A to Z instead of the order set by dragging or Move Up and Move Down.</summary>
+    public bool FavoritesAToZ { get; set; }
     public bool ShowBetaNotice { get; set; } = true;
 
     // [Appearance]
@@ -239,6 +244,8 @@ public sealed class Settings
         SidebarCollapsed = ini.GetBool("General", "SidebarCollapsed", SidebarCollapsed);
         SidebarAdjustable = ini.GetBool("General", "SidebarAdjustable", SidebarAdjustable);
         ShowSidebarLock = ini.GetBool("General", "ShowSidebarLock", ShowSidebarLock);
+        Favorites = ini.Get("General", "Favorites")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        FavoritesAToZ = string.Equals(ini.Get("General", "FavoritesOrder"), "AToZ", StringComparison.OrdinalIgnoreCase);
         ShowBetaNotice = ini.GetBool("General", "ShowBetaNotice", ShowBetaNotice);
 
         Theme = Enum.TryParse<AppTheme>(ini.Get("Appearance", "Theme"), ignoreCase: true, out var t) ? t : Theme;
@@ -302,6 +309,8 @@ public sealed class Settings
         ini.Set("General", "SidebarCollapsed", SidebarCollapsed);
         ini.Set("General", "SidebarAdjustable", SidebarAdjustable);
         ini.Set("General", "ShowSidebarLock", ShowSidebarLock);
+        if (Favorites is not null) ini.Set("General", "Favorites", string.Join(",", Favorites));
+        ini.Set("General", "FavoritesOrder", FavoritesAToZ ? "AToZ" : "Default");
         ini.Set("General", "ShowBetaNotice", ShowBetaNotice);
 
         ini.Set("Appearance", "Theme", Theme.ToString());

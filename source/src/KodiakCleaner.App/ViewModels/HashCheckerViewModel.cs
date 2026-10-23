@@ -12,7 +12,7 @@ namespace KodiakCleaner.App.ViewModels;
 /// Tools › Hash Checker (Ted, 2026-10-23): add or drop files, see their MD5, SHA-1, SHA-256, SHA-384 and SHA-512, and check them
 /// against a pasted or loaded list of hashes. Files are only read; nothing goes online. Ctrl+F jumps to the search box.
 /// </summary>
-public sealed class HashCheckerViewModel : ObservableObject
+public sealed class HashCheckerViewModel : ObservableObject, IFileDropTarget
 {
     private CancellationTokenSource? _cts;
     private IReadOnlyList<ExpectedHash> _expected = Array.Empty<ExpectedHash>();
@@ -40,6 +40,8 @@ public sealed class HashCheckerViewModel : ObservableObject
         CopyAllCommand = new RelayCommand(CopyAll, () => Highlighted.Any(r => r.Hashes is not null));
         CopyOneCommand = new RelayCommand<HashLine>(l => ClipboardHelper.CopyOrExplain(l.Hash));
         ShowInFolderCommand = new RelayCommand(() => { if (Current is { } c) Elevation.ShowInExplorer(c.Path); }, () => Current is not null);
+        CreateHashFileCommand = new RelayCommand(() => CreateHashFiles(Picked()), () => !IsBusy && Picked().Any(r => r.Hashes is not null));
+        CreateHashFileForCommand = new RelayCommand<HashFileRow>(r => CreateHashFiles(new List<HashFileRow> { r }));
         SaveCommand = new RelayCommand(SaveChecksumFile, () => !IsBusy && Picked(all: true).Any(r => r.Hashes is not null));
     }
 
@@ -63,6 +65,13 @@ public sealed class HashCheckerViewModel : ObservableObject
     public ICommand CopyOneCommand { get; }
     public ICommand ShowInFolderCommand { get; }
     public ICommand SaveCommand { get; }
+    /// <summary>Right-click › Create Hash File: game.iso.sha256 (the shown kind) beside each picked file, in one click.</summary>
+    public ICommand CreateHashFileCommand { get; }
+    /// <summary>The Create Hash File button in a file's details.</summary>
+    public ICommand CreateHashFileForCommand { get; }
+
+    /// <summary>Raised with the first file just added, so the view highlights it and opens all its details (Ted: drop a file, see everything).</summary>
+    public event Action<HashFileRow>? Reveal;
 
     private HashKind _shownKind = HashKind.Sha256;
     public HashKind ShownKind { get => _shownKind; private set => Set(ref _shownKind, value); }
@@ -257,14 +266,27 @@ public sealed class HashCheckerViewModel : ObservableObject
         if (paths.Count == 0) return;
         var known = new HashSet<string>(Files.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
         int skipped = 0;
+        HashFileRow? first = null;
         foreach (var path in ExpandAll(paths, ref skipped))
         {
-            if (!known.Add(path)) continue;
+            if (!known.Add(path))
+            {
+                // Dropped again: show the one already in the list.
+                first ??= Files.FirstOrDefault(f => string.Equals(f.Path, path, StringComparison.OrdinalIgnoreCase));
+                continue;
+            }
             var row = new HashFileRow(path, ShownKind);
             row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(HashFileRow.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
             Files.Add(row);
+            first ??= row;
         }
         OnPropertyChanged(nameof(AllChecked));
+        OnPropertyChanged(nameof(ShowCompute));
+        if (first is not null)
+        {
+            if (Filter.Length > 0) Filter = ""; // a search could hide the file just dropped
+            Reveal?.Invoke(first);
+        }
         if (skipped > 0)
             Dialogs.Info($"Only the first {FolderLimit:N0} files of a folder are added, so {skipped:N0} file(s) were left out. Add a smaller folder to check the rest.");
         if (!IsBusy) await ComputeAsync();
@@ -332,7 +354,7 @@ public sealed class HashCheckerViewModel : ObservableObject
             }
             Summary = Files.Count == 0 ? "No files yet." : $"{Files.Count(f => f.Hashes is not null):N0} file(s) hashed" +
                 (failed > 0 ? $", {failed:N0} couldn't be read (see Status)." : ".") +
-                " Click a file to see all five hashes, or right-click to copy one.";
+                " Click a file to see everything about it, or right-click to copy a hash or create a hash file.";
         }
         catch (OperationCanceledException)
         {
@@ -411,6 +433,58 @@ public sealed class HashCheckerViewModel : ObservableObject
         if (lines.Count > 0) ClipboardHelper.CopyOrExplain(string.Join(Environment.NewLine, lines));
     }
 
+    /// <summary>
+    /// Writes game.iso.sha256 (the shown kind) beside each file, so the file can be checked later or by whoever receives it.
+    /// Asks before replacing hash files that are already there; a folder that can't be written to (Program Files, a CD) gets
+    /// a Save dialog for a one-file pick, else is listed as not done.
+    /// </summary>
+    private void CreateHashFiles(List<HashFileRow> rows)
+    {
+        rows = rows.Where(r => r.Hashes?.ContainsKey(ShownKind) == true).ToList();
+        if (rows.Count == 0) return;
+        var existing = rows.Where(r => File.Exists(HashChecker.HashFileFor(r.Path, ShownKind))).ToList();
+        if (existing.Count > 0 && !Dialogs.Confirm(existing.Count == 1
+                ? $"'{System.IO.Path.GetFileName(HashChecker.HashFileFor(existing[0].Path, ShownKind))}' already exists. Replace it with the hash the file has now?"
+                : $"{existing.Count} of these files already have a {ShownKindName} hash file. Replace them with the hashes the files have now?"))
+            return;
+        var made = new List<string>();
+        var failed = new List<(HashFileRow Row, string Why)>();
+        foreach (var r in rows)
+        {
+            try { made.Add(HashChecker.WriteHashFile(r.Path, ShownKind, r.Hashes![ShownKind])); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { failed.Add((r, e is UnauthorizedAccessException ? "access denied" : e.Message)); }
+        }
+        if (failed.Count == 1 && rows.Count == 1)
+        {
+            // Can't write beside it: let the person pick a folder (the line still names the file, so keep the two together).
+            var r = failed[0].Row;
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Save the Hash File Somewhere Else",
+                FileName = System.IO.Path.GetFileName(HashChecker.HashFileFor(r.Path, ShownKind)),
+                Filter = $"{ShownKindName} Hash File (*{HashChecker.Extension(ShownKind)})|*{HashChecker.Extension(ShownKind)}",
+            };
+            if (dialog.ShowDialog() != true) return;
+            try
+            {
+                File.WriteAllText(dialog.FileName, HashChecker.ChecksumLine(r.Hashes![ShownKind], r.Name) + Environment.NewLine);
+                made.Add(dialog.FileName);
+                failed.Clear();
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                Dialogs.Error("The hash file could not be saved: " + e.Message);
+                return;
+            }
+        }
+        foreach (var m in made) ActivityLog.Write("Hash Checker", $"Hash file created: {m} ({ShownKindName})");
+        Summary = made.Count == 0 ? "No hash files were created." :
+            (made.Count == 1 ? $"Created {System.IO.Path.GetFileName(made[0])}." : $"Created {made.Count} {ShownKindName} hash files beside their files.") +
+            " Keep each hash file with its file: dropping the hash file here later shows Verified if the file hasn't changed.";
+        if (failed.Count > 0)
+            Dialogs.Error("These hash files could not be created:\n\n" + string.Join("\n", failed.Select(f => $"{f.Row.Name} ({f.Why})")));
+    }
+
     /// <summary>Saves a checksum file of the shown kind (game.iso.sha256 for one file, else hashes.sha256), readable by sha256sum -c and by this page.</summary>
     private void SaveChecksumFile()
     {
@@ -448,6 +522,9 @@ public sealed class HashCheckerViewModel : ObservableObject
 /// <summary>One kind of hash of the current file, for the details card (label, hash, Copy).</summary>
 public sealed record HashLine(string Label, string Hash, bool IsMatch);
 
+/// <summary>One line about the file itself in its details (Full Path, Size, Created, Modified).</summary>
+public sealed record FileFact(string Label, string Value);
+
 /// <summary>One file in Hash Checker: its hashes once worked out, and how it compares with the list.</summary>
 public sealed class HashFileRow : ObservableObject
 {
@@ -456,9 +533,27 @@ public sealed class HashFileRow : ObservableObject
         Path = path;
         Name = System.IO.Path.GetFileName(path);
         Folder = System.IO.Path.GetDirectoryName(path) ?? "";
-        try { Bytes = new FileInfo(path).Length; } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        try
+        {
+            var info = new FileInfo(path);
+            Bytes = info.Length;
+            _created = info.CreationTime;
+            _modified = info.LastWriteTime;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         _shown = shown;
     }
+
+    private readonly DateTime? _created, _modified;
+
+    /// <summary>Everything about the file besides its hashes, shown above them in its details.</summary>
+    public IReadOnlyList<FileFact> Facts => new List<FileFact>
+    {
+        new("Path", Path),
+        new("Size", $"{ByteSize.Format(Bytes)} ({Bytes:N0} bytes)"),
+        new("Created", _created is { } c ? c.ToString("f") : ""),
+        new("Modified", _modified is { } m ? m.ToString("f") : ""),
+    }.Where(f => f.Value.Length > 0).ToList();
 
     public string Path { get; }
     public string Name { get; }
@@ -522,6 +617,7 @@ public sealed class HashFileRow : ObservableObject
         OnPropertyChanged(nameof(Hashes));
         OnPropertyChanged(nameof(Hash));
         OnPropertyChanged(nameof(Size));
+        OnPropertyChanged(nameof(Facts));
         OnPropertyChanged(nameof(Lines));
     }
 

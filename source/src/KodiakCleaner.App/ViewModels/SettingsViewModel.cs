@@ -83,6 +83,7 @@ public sealed class SettingsViewModel : ObservableObject
         OpenSettingsFolderCommand = new RelayCommand(() => Elevation.ShowInExplorer(Settings.FilePath));
         OpenDataFolderCommand = new RelayCommand(() => Elevation.OpenFolder(Settings.Data.Root));
         ResetCommand = new RelayCommand(Reset);
+        RestoreFavoritesOrderCommand = new RelayCommand(RestoreFavoritesOrder);
         BackUpRegistryCommand = new RelayCommand(BackUpRegistryAsync, () => !IsBackingUp);
         BackUpSettingsCommand = new RelayCommand(BackUpSettings);
         CheckForUpdatesCommand = new RelayCommand(CheckForUpdatesAsync, () => !IsCheckingUpdates);
@@ -173,6 +174,8 @@ public sealed class SettingsViewModel : ObservableObject
     public string LicenseLine => "Free and open source under the MIT License.";
 
     public ObservableCollection<Choice<AppTheme>> Themes { get; } = new();
+    /// <summary>Favorites Order: Default Order (as set by dragging or Move Up and Move Down) or A to Z (Ted, 2026-10-23).</summary>
+    public ObservableCollection<Choice<bool>> FavoriteOrders { get; } = new();
     public ObservableCollection<PaletteChoice> Palettes { get; } = new();
     public ObservableCollection<AccentChoice> Accents { get; } = new();
 
@@ -213,6 +216,22 @@ public sealed class SettingsViewModel : ObservableObject
         "Logs has the activity log; Reports has the System Information reports you export and the Boot Timer and Integrity Check results. " +
         (Integration.IsInstalled ? "Uninstalling Kodiak Cleaner asks whether to delete them." : "Delete the folder to remove them.");
     public ICommand ResetCommand { get; }
+    public ICommand RestoreFavoritesOrderCommand { get; }
+
+    /// <summary>
+    /// Restore Default Order: Cleaner, Registry, Startup and Programs back at the top in that order (pinned again if they were
+    /// unpinned), other favorites after them, and Favorites Order back to Default Order.
+    /// </summary>
+    private void RestoreFavoritesOrder()
+    {
+        var known = KodiakCleaner.Core.Util.SidebarFavorites.Default.ToList();
+        var saved = S.Favorites ?? known;
+        S.Favorites = KodiakCleaner.Core.Util.SidebarFavorites.RestoreDefaultOrder(saved, saved.Concat(known).ToList());
+        S.FavoritesAToZ = false;
+        S.Save();
+        foreach (var c in FavoriteOrders) c.IsSelected = c.Value == false;
+        MainViewModel.NotifySidebarSettingsChanged();
+    }
     public ICommand BackUpRegistryCommand { get; }
     public ICommand BackUpSettingsCommand { get; }
 
@@ -532,6 +551,15 @@ public sealed class SettingsViewModel : ObservableObject
 
     private void BuildChoices()
     {
+        FavoriteOrders.Clear();
+        foreach (var (label, aToZ) in new[] { ("Default Order", false), ("A to Z", true) })
+            FavoriteOrders.Add(new Choice<bool>(label, aToZ, S.FavoritesAToZ == aToZ, v =>
+            {
+                S.FavoritesAToZ = v;
+                S.Save();
+                MainViewModel.NotifySidebarSettingsChanged();
+            }));
+
         Themes.Clear();
         foreach (var (label, theme) in new[] { ("Match Device", AppTheme.System), ("Light", AppTheme.Light), ("Dark", AppTheme.Dark) })
             Themes.Add(new Choice<AppTheme>(label, theme, S.Theme == theme, t =>

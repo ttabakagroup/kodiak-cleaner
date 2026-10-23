@@ -100,11 +100,11 @@
                     <local:TaskClock Margin="0,6,0,0" />
                 </StackPanel>
                 <!-- Tick boxes, Ctrl-click, Shift-click and drag to pick several (ListSelect, from the shared style), and a right-click menu. -->
-                <DataGrid ItemsSource="{Binding View}" RowDetailsVisibilityMode="Collapsed" AreRowDetailsFrozen="True" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
+                <DataGrid x:Name="FileGrid" ItemsSource="{Binding View}" VirtualizingPanel.ScrollUnit="Pixel" RowDetailsVisibilityMode="Collapsed" AreRowDetailsFrozen="True" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
                           SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <!-- A to Z (Ted's rule): the copy items, then the file items. -->
+                            <!-- A to Z (Ted's rule): copy and create, then the file items. -->
                             <MenuItem Header="Copy All Hashes" Command="{Binding CopyAllCommand}" />
                             <MenuItem Header="Copy Another Hash">
                                 <MenuItem Header="MD5" Command="{Binding CopyKindCommand}" CommandParameter="Md5" />
@@ -115,6 +115,9 @@
                             </MenuItem>
                             <MenuItem Header="{Binding ShownKindName}" HeaderStringFormat="Copy {0}" Command="{Binding CopyShownCommand}">
                                 <MenuItem.Icon><TextBlock Text="&#xE8C8;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{Binding ShownKindName}" HeaderStringFormat="Create {0} Hash File" Command="{Binding CreateHashFileCommand}">
+                                <MenuItem.Icon><TextBlock Text="&#xE74E;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
                             </MenuItem>
                             <Separator />
                             <MenuItem Header="Remove from List" Command="{Binding RemoveRowCommand}">
@@ -127,17 +130,45 @@
                     </DataGrid.ContextMenu>
                     <!-- The one highlighted file's five hashes in full, each with Copy, open right under its row. -->
                     <DataGrid.RowDetailsTemplate>
+                        <!-- The buttons don't take the keyboard focus: the table pulls the focus back to its row on the first click into it,
+                             which would cancel that click (it took two clicks). -->
                         <DataTemplate>
                             <!-- As wide as the table shows (not as wide as a SHA-512), so the Copy buttons stay in view; long hashes wrap. -->
                             <Border Padding="56,4,16,10" HorizontalAlignment="Left"
                                     Width="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}">
                             <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Button Focusable="False" Command="{Binding DataContext.CreateHashFileForCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                            ToolTip="Saves the shown hash beside the file (name.sha256), so it can be checked later or by whoever you send it to.">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE74E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding DataContext.ShownKindName, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='Create {0} Hash File'}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Focusable="False" Command="{Binding DataContext.ShowInFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE838;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                            <TextBlock Text="Show in Folder" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Facts}" Margin="0,0,0,6">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,1">
+                                                <TextBlock DockPanel.Dock="Left" Text="{Binding Label}" Width="72" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" />
+                                                <TextBox Text="{Binding Value, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0"
+                                                         Background="Transparent" Padding="0,2" VerticalContentAlignment="Center" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                                 <ItemsControl ItemsSource="{Binding Lines}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <DockPanel Margin="0,1">
                                                 <TextBlock DockPanel.Dock="Left" Text="{Binding Label}" Width="72" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" />
-                                                <Button DockPanel.Dock="Right" Margin="6,0,0,0" Padding="8,2" ToolTip="Copy" VerticalAlignment="Center"
+                                                <Button Focusable="False" DockPanel.Dock="Right" Margin="6,0,0,0" Padding="8,2" ToolTip="Copy" VerticalAlignment="Center"
                                                         Command="{Binding DataContext.CopyOneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
                                                     <TextBlock Text="&#xE8C8;" Style="{StaticResource Icon}" FontSize="13" />
                                                 </Button>

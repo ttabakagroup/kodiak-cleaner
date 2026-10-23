@@ -6,7 +6,23 @@ namespace KodiakCleaner.App.Views;
 
 public partial class HashCheckerView : UserControl
 {
-    public HashCheckerView() => InitializeComponent();
+    public HashCheckerView()
+    {
+        InitializeComponent();
+        DataContextChanged += (_, e) =>
+        {
+            if (e.OldValue is ViewModels.HashCheckerViewModel old) old.Reveal -= Reveal;
+            if (e.NewValue is ViewModels.HashCheckerViewModel vm) vm.Reveal += Reveal;
+        };
+    }
+
+    /// <summary>A file was just dropped or added: highlight it and open its details (path, size, dates and every hash as it arrives).</summary>
+    private void Reveal(ViewModels.HashFileRow row)
+    {
+        FileGrid.SelectedItems.Clear();
+        FileGrid.SelectedItem = row;
+        FileGrid.ScrollIntoView(row);
+    }
 
     private ViewModels.HashCheckerViewModel? Vm => DataContext as ViewModels.HashCheckerViewModel;
 
@@ -16,7 +32,9 @@ public partial class HashCheckerView : UserControl
         if (Vm is not { } vm || sender is not DataGrid grid) return;
         vm.Highlighted = grid.SelectedItems.OfType<ViewModels.HashFileRow>().ToList();
         // One highlighted file opens its five hashes under its row; picking several closes them, so the list stays short.
-        grid.RowDetailsVisibilityMode = grid.SelectedItems.Count == 1 ? DataGridRowDetailsVisibilityMode.VisibleWhenSelected : DataGridRowDetailsVisibilityMode.Collapsed;
+        // Set only when it changes: setting it rebuilds the open details, and a button under the mouse would lose its click.
+        var mode = grid.SelectedItems.Count == 1 ? DataGridRowDetailsVisibilityMode.VisibleWhenSelected : DataGridRowDetailsVisibilityMode.Collapsed;
+        if (grid.RowDetailsVisibilityMode != mode) grid.RowDetailsVisibilityMode = mode;
     }
 
     private void Grid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e) => GridRightClick.SelectRowUnderMouse(e);
