@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.12 Dev] - 2026-10-23
+
+### Supporter
+- The Support card and the Terms of Use now say that one supporter code covers up to 10 of your computers.
+
 ## [0.8.11 Dev] - 2026-10-23
 
 ### Supporter

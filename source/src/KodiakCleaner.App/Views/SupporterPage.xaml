@@ -75,7 +75,7 @@
         <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding IsFree, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <TextBlock Text="Become a Supporter" Style="{StaticResource SectionTitle}" />
-                <TextBlock Text="Support Kodiak Cleaner on Ko-fi with $10 or more to unlock the Supporter color schemes. Your supporter code arrives by email; enter it below." TextWrapping="Wrap" Margin="0,6,0,0" />
+                <TextBlock Text="Support Kodiak Cleaner on Ko-fi with $10 or more to unlock the Supporter color schemes. Your supporter code arrives by email; enter it below. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/." TextWrapping="Wrap" Margin="0,6,0,0" />
                 <Button Command="{Binding KoFiCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" Margin="0,12,0,0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xEB51;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />

@@ -35,7 +35,7 @@ Kodiak Cleaner works on your computer. It collects no personal data, sends no us
 
 ## Supporting Kodiak Cleaner
 
-Supporting Kodiak Cleaner on Ko-fi is optional and is a one-time thank-you. A supporter code unlocks small extras such as the Classic and Glacier themes. Every cleaning feature works without one.
+Supporting Kodiak Cleaner on Ko-fi is optional and is a one-time thank-you. A supporter code unlocks small extras such as the Classic and Glacier themes. Every cleaning feature works without one. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/.
 
 ## Changes to These Terms
 

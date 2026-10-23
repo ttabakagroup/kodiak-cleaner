@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.83 Dev] - 2026-10-23
+
+### Supporter
+- The Supporter page, the FAQ and the Terms of Use now say that one supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/.
+
 ## [0.8.82 Dev] - 2026-10-23
 
 ### Supporter

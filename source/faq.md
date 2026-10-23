@@ -22,7 +22,7 @@ Files the Cleaner deletes, wiped free space and erased drives can't be brought b
 
 ## How Do Supporter Codes Work?
 
-Kodiak Cleaner is free, with every tool included. If you support it on Ko-fi with $10 or more, you receive a Supporter code by email. Enter it under Settings, Supporter and click Apply Code. The code is checked on this PC only and is never sent anywhere. It unlocks the Classic, Glacier and Lagoon themes and a Supporter badge you can hide, and the Support link and startup reminders go away.
+Kodiak Cleaner is free, with every tool included. If you support it on Ko-fi with $10 or more, you receive a Supporter code by email. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/. Enter it under Settings, Supporter and click Apply Code. The code is checked on this PC only and is never sent anywhere. It unlocks the Classic, Glacier and Lagoon themes and a Supporter badge you can hide, and the Support link and startup reminders go away.
 
 ## How Do Updates Work?
 
