@@ -12,7 +12,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
 - Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
   `Documents\Kodiak Cleaner` for an installed copy (AppData\Local\Kodiak Cleaner only if Documents can't be written), beside
-  the exe for a portable copy, with `Backups\{Drivers, Event Logs, Mass Rename, Programs History, Registry, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
+  the exe for a portable copy, with `Backups\{Drivers, Event Logs, Mass Rename, Programs History, Registry, Scheduled Tasks, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
   Nothing else in AppData. Never write user data into Program Files (only KodiakCleaner.ini is writable there).
 - `ActivityLog` writes one plain-text file per month in Logs (12 kept): counts, sizes and item names only, never file
   contents; Settings > Application > Keep an Activity Log turns it off. Log every user-visible change it makes.
@@ -40,7 +40,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   wherever it said Cleaner; 0.8.13: light wording edit at Ted's invitation, his voice and first person kept; 0.8.25: opens "For well over two decades", Ted's words; 0.8.57: replaced word for word with Ted's new text, heading "Built Around What Matters.", ending with a donation ask); it shows under Settings > Help > Why It Was Made, in larger text (17, Ted, 0.8.24).
 - Tools must stay local and reversible: read-only, or removals go to the Recycle Bin after a confirm. Browser
   Extensions only lists; removal happens in the browser. Empty Folders never searches Windows, program folders or any user's AppData (0.8.48), as a starting point or inside one (`EmptyFolderFinder.Find`/`IsStillEmpty` take the protected list), and never lists Desktop, Documents and the other Windows user folders (the kept list; searched inside). Large Files skips Windows, program folders and hidden/system files.
-  Scheduled Tasks only turns tasks on or off, never deletes them, and hides Windows tasks unless asked.
+  Scheduled Tasks turns tasks on or off and hides Windows tasks unless asked. Delete (Ted, 2026-10-23) always saves the task's XML to
+  Backups\Scheduled Tasks first (`ScheduledTaskBackups`, index.json keeps each file's task path) and skips a task whose backup fails;
+  Restore re-registers it in its old folder (backing up and replacing a task of the same name). Password-logon tasks can't be restored
+  from here (the password isn't in the XML); the message points to Task Scheduler's Import Task.
 - Drive Wiper (2026-10-12): `DriveMedia` reads each disk's type from the storage stack (NVMe bus, seek penalty, USB/SD bus; no WMI).
   Entire Drive works on whole physical disks (`DriveWiper.ListDisks`/`EraseAsync`): a disk is refused when any letter on it is protected
   (`ProtectedReason`: Windows, Kodiak Cleaner's drive, page file, user folder, programs), when it holds the start-up partition

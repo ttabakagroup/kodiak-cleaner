@@ -5,11 +5,12 @@
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
             <TextBlock Text="Scheduled Tasks" Style="{StaticResource PageTitle}" />
             <TextBlock Style="{StaticResource PageSubtitle}"
-                       Text="Programs Windows runs on a schedule, like updaters that check in the background. Turning one off can be undone any time." />
+                       Text="Programs Windows runs on a schedule, like updaters that check in the background. Turning one off can be undone any time. A task you delete is backed up first, and Restore puts it back." />
         </StackPanel>
 
-        <!-- Batch actions, like Startup: tick tasks (or the header box for all), then turn them on or off together. -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16" LastChildFill="False">
+        <!-- Batch actions, like Startup: tick tasks (or the header box for all), then turn them on or off, back them up or delete them
+             together. Delete always backs up to Backups\Scheduled Tasks first; Restore lists those backups (Ted, 2026-10-23). -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12" LastChildFill="False">
             <Button DockPanel.Dock="Left" Command="{Binding DisableSelectedCommand}" Style="{StaticResource AccentButton}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE769;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
@@ -22,13 +23,34 @@
                     <TextBlock Text="Enable Selected" />
                 </StackPanel>
             </Button>
+            <Button DockPanel.Dock="Left" Command="{Binding BackUpSelectedCommand}" ToolTip="Saves the ticked tasks to Backups\Scheduled Tasks without changing them.">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE74E;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Back Up Selected" />
+                </StackPanel>
+            </Button>
+            <Button DockPanel.Dock="Left" Command="{Binding DeleteSelectedCommand}" ToolTip="Backs up the ticked tasks, then deletes them.">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Delete Selected" />
+                </StackPanel>
+            </Button>
+        </DockPanel>
+        <!-- Second row so Restore and the switch aren't pushed off the edge in a normal-size window. -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16" LastChildFill="False">
             <Button DockPanel.Dock="Right" Command="{Binding RefreshCommand}" Margin="0">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE72C;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                     <TextBlock Text="Refresh" />
                 </StackPanel>
             </Button>
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
+            <Button DockPanel.Dock="Right" Command="{Binding RestoreCommand}" ToolTip="Puts back tasks from Backups\Scheduled Tasks.">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="Restore" />
+                </StackPanel>
+            </Button>
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="Show Windows Tasks" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" Margin="0,0,10,0" />
                 <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ShowWindowsTasks}" AutomationProperties.Name="Show Windows Tasks" />
             </StackPanel>
@@ -45,6 +67,13 @@
                             </MenuItem>
                             <MenuItem Header="Disable" Command="{Binding DisableRowCommand}">
                                 <MenuItem.Icon><TextBlock Text="&#xE769;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Header="Back Up" Command="{Binding BackUpRowCommand}">
+                                <MenuItem.Icon><TextBlock Text="&#xE74E;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Delete" Command="{Binding DeleteRowCommand}">
+                                <MenuItem.Icon><TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
                             </MenuItem>
                             <Separator />
                             <MenuItem Header="Open File Location" Command="{Binding OpenLocationCommand}">

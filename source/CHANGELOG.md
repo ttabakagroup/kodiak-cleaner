@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.76 Dev] - 2026-10-23
+
+### Scheduled Tasks
+- Scheduled tasks can now be deleted: tick them and choose Delete Selected, or right-click a task and choose Delete. Every task is backed up before it is deleted, and a task that can't be backed up is left alone.
+- New Back Up Selected button (and Back Up on the right-click menu) saves tasks without changing them. Backups go in Backups\Scheduled Tasks as the same XML files Task Scheduler's own Export makes.
+- New Restore button lists every backup, A to Z, with when and why it was saved and whether the task is still scheduled. Restore Selected puts a task back in its old folder; if a task of that name is there now, it is backed up first and then replaced.
+
 ## [0.8.75 Dev] - 2026-10-23
 
 ### Driver Cleaner

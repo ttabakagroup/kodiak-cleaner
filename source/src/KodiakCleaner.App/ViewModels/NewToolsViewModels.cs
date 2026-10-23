@@ -539,12 +539,18 @@ public sealed class ScheduledTaskItem : ObservableObject
         _task = task;
         Name = (string)task.Name;
         Folder = folder;
+        TaskPath = folder.TrimEnd('\\') + "\\" + Name;
         ReadAction(task);
         Refresh();
     }
 
     public string Name { get; }
     public string Folder { get; }
+    /// <summary>The task's full path in Task Scheduler ("\Google\GoogleUpdater").</summary>
+    public string TaskPath { get; }
+
+    /// <summary>The task as Task Scheduler's Export would write it.</summary>
+    public string ReadXml() => (string)_task.Xml;
 
     /// <summary>What the task runs, as written in the task ("%windir%\system32\x.exe"), and its arguments.</summary>
     public string Command { get; private set; } = "";
@@ -671,7 +677,8 @@ public sealed class ScheduledTaskItem : ObservableObject
 
 /// <summary>
 /// Tools › Scheduled Tasks: programs Windows runs on a schedule. Turning a task off is reversible, like Task Scheduler's
-/// Disable; Kodiak Cleaner never deletes tasks. Windows' own tasks are hidden unless Show Windows Tasks is on.
+/// Disable. Delete saves the task to Backups\Scheduled Tasks first, and Restore puts it back from there (Ted, 2026-10-23).
+/// Windows' own tasks are hidden unless Show Windows Tasks is on.
 /// </summary>
 public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisit
 {
@@ -686,7 +693,19 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         DisableRowCommand = new RelayCommand(() => SetRows(Selected, false), () => Selected is { Enabled: true });
         OpenLocationCommand = new RelayCommand(() => Elevation.ShowInExplorer(Selected!.ProgramPath), () => Selected is { HasProgram: true });
         ShowProgramCommand = new RelayCommand<ScheduledTaskItem>(t => { if (t.HasProgram) Elevation.ShowInExplorer(t.ProgramPath); });
+        BackUpSelectedCommand = new RelayCommand(() => BackUp(Items.Where(i => i.IsChecked).ToList()), () => Items.Any(i => i.IsChecked));
+        DeleteSelectedCommand = new RelayCommand(() => Delete(Items.Where(i => i.IsChecked).ToList()), () => Items.Any(i => i.IsChecked));
+        BackUpRowCommand = new RelayCommand(() => BackUp(new List<ScheduledTaskItem> { Selected! }), () => Selected is not null);
+        DeleteRowCommand = new RelayCommand(() => Delete(new List<ScheduledTaskItem> { Selected! }), () => Selected is not null);
+        RestoreCommand = new RelayCommand(OpenRestore);
     }
+
+    public ICommand BackUpSelectedCommand { get; }
+    public ICommand DeleteSelectedCommand { get; }
+    public ICommand BackUpRowCommand { get; }
+    public ICommand DeleteRowCommand { get; }
+    /// <summary>Opens Restore Tasks: every backup in Backups\Scheduled Tasks.</summary>
+    public ICommand RestoreCommand { get; }
 
     /// <summary>Shows the program a task runs in File Explorer (Ted, 0.8.65): right-click, or click the program's name.</summary>
     public ICommand OpenLocationCommand { get; }
@@ -736,10 +755,7 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         _all = new List<ScheduledTaskItem>();
         try
         {
-            var type = Type.GetTypeFromProgID("Schedule.Service") ?? throw new COMException("Task Scheduler isn't available.");
-            dynamic service = Activator.CreateInstance(type)!;
-            service.Connect();
-            Walk(service.GetFolder(@"\"));
+            Walk(ScheduledTaskTools.Connect().GetFolder(@"\"));
         }
         catch (Exception e) when (IsSchedulerError(e))
         {
@@ -785,7 +801,7 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         var hidden = _all.Count - Items.Count;
         Summary = Items.Count == 0 && hidden == 0 ? "No scheduled tasks found." :
             $"{Items.Count} task(s) shown" + (hidden > 0 ? $"; {hidden} Windows task(s) hidden." : ".") +
-            " Turning a task off is reversible; Kodiak Cleaner never deletes tasks.";
+            " Turning a task off is reversible. Deleted tasks are backed up first and can be put back with Restore.";
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -805,5 +821,42 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         var failed = items.Count(i => !i.TrySetEnabled(enabled));
         if (failed > 0)
             Dialogs.Error($"{failed} task(s) need administrator rights to change. Use Restart as Administrator at the top.");
+    }
+
+    /// <summary>Saves the tasks to Backups\Scheduled Tasks without changing them.</summary>
+    private void BackUp(List<ScheduledTaskItem> items)
+    {
+        if (items.Count == 0) return;
+        var problems = items.Select(i => (i, problem: ScheduledTaskTools.BackUp(i, ScheduledTaskBackups.Manual)))
+            .Where(r => r.problem is not null).Select(r => $"{r.i.Name}: {r.problem}").ToList();
+        if (problems.Count > 0)
+            Dialogs.Error($"{problems.Count} of {items.Count} task(s) couldn't be backed up:\n\n" + string.Join("\n", problems));
+        else
+            Dialogs.Info((items.Count == 1 ? $"'{items[0].Name}' is" : $"All {items.Count} tasks are") +
+                         " backed up in Backups\\Scheduled Tasks. Restore puts a task back from there.", "Back Up");
+    }
+
+    /// <summary>Asks once (Yes is the default), backs each task up, then deletes it. A task whose backup fails is kept.</summary>
+    private void Delete(List<ScheduledTaskItem> items)
+    {
+        if (items.Count == 0) return;
+        var windows = items.Count(i => i.IsWindowsTask);
+        var what = items.Count == 1 ? $"the task '{items[0].Name}'" : $"{items.Count} tasks";
+        if (!Dialogs.Warn($"Delete {what}? Each one is backed up to Backups\\Scheduled Tasks first, so Restore can put it back. " +
+                          "If you only want it to stop running, turning it off is simpler.", "Delete Tasks",
+                windows == 0 ? null : (windows == 1 && items.Count == 1 ? "This is one of Windows' own tasks." : $"{windows} of these are Windows' own tasks.") +
+                                      " Deleting them can stop Windows features like updates, backups or maintenance from working."))
+            return;
+        var problems = new List<string>();
+        foreach (var i in items)
+            if (ScheduledTaskTools.Delete(i) is { } problem) problems.Add($"{i.Name}: {problem}");
+        Refresh();
+        if (problems.Count > 0)
+            Dialogs.Error($"{problems.Count} of {items.Count} task(s) weren't deleted:\n\n" + string.Join("\n", problems));
+    }
+
+    private void OpenRestore()
+    {
+        if (ScheduledTaskRestoreWindow.Show(System.Windows.Application.Current.MainWindow, _all)) Refresh();
     }
 }
