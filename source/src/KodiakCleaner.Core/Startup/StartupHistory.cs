@@ -9,7 +9,7 @@ public sealed class StartupRecord
     public string Name { get; set; } = "";
     public string Command { get; set; } = "";
     public StartupSource Source { get; set; }
-    /// <summary>The shortcut's file name, for Startup-folder entries.</summary>
+    /// <summary>The shortcut's file name, for Startup-folder entries; the task's full path, for scheduled tasks.</summary>
     public string? FileName { get; set; }
     public bool Enabled { get; set; } = true;
     public DateTime FirstSeen { get; set; }
@@ -33,7 +33,10 @@ public sealed class StartupRecord
     [JsonIgnore] public string Key => KeyOf(Source, FileName ?? Name);
 
     public static string KeyOf(StartupSource source, string name) => $"{source}|{name}".ToUpperInvariant();
-    public static string KeyOf(StartupItem item) => KeyOf(item.Source, item.FilePath is not null ? Path.GetFileName(item.FilePath) : item.Name);
+    public static string KeyOf(StartupItem item) => KeyOf(item.Source, NameOf(item));
+
+    /// <summary>What tells entries apart: the task path, the shortcut's file name, or the registry value's name.</summary>
+    private static string NameOf(StartupItem item) => item.TaskPath ?? (item.FilePath is not null ? Path.GetFileName(item.FilePath) : item.Name);
 }
 
 /// <summary>
@@ -77,8 +80,11 @@ public sealed class StartupHistory
     /// Records what is in startup now. New entries are added, ones seen before are updated, and ones no longer there are
     /// marked removed. <paramref name="copyShortcut"/> keeps a copy of a Startup-folder shortcut and returns its file name.
     /// Returns the entries that came back after Kodiak Cleaner removed them, so the caller can find out why.
+    /// Startup entries and scheduled tasks are read separately, so <paramref name="tasks"/> says which kind <paramref name="current"/>
+    /// holds: only records of that kind are marked removed when they're missing.
     /// </summary>
-    public List<(StartupItem Item, StartupRecord Record)> Observe(IEnumerable<StartupItem> current, DateTime now, Func<StartupItem, string?> copyShortcut)
+    public List<(StartupItem Item, StartupRecord Record)> Observe(IEnumerable<StartupItem> current, DateTime now, Func<StartupItem, string?> copyShortcut,
+        bool tasks = false)
     {
         var returned = new List<(StartupItem, StartupRecord)>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -104,14 +110,14 @@ public sealed class StartupHistory
             r.Name = item.Name;
             r.Command = item.Command;
             r.Source = item.Source;
-            r.FileName = item.FilePath is not null ? Path.GetFileName(item.FilePath) : null;
+            r.FileName = item.TaskPath ?? (item.FilePath is not null ? Path.GetFileName(item.FilePath) : null);
             r.Enabled = item.Enabled;
             r.LastSeen = now;
             r.RemovedOn = null;
             r.RemovedByKodiakCleaner = false;
             if (item.FilePath is not null && r.ShortcutCopy is null) r.ShortcutCopy = copyShortcut(item);
         }
-        foreach (var r in Records.Where(r => !r.IsRemoved && !seen.Contains(r.Key)))
+        foreach (var r in Records.Where(r => !r.IsRemoved && !seen.Contains(r.Key) && (r.Source == StartupSource.ScheduledTask) == tasks))
             r.RemovedOn = now;
         return returned;
     }
@@ -144,9 +150,20 @@ public sealed class StartupHistory
         r.RegistryBackup = registryBackup;
     }
 
-    /// <summary>Removed entries that can be put back: a registry entry with its command, or a shortcut with a saved copy.</summary>
+    /// <summary>
+    /// Notes that Kodiak Cleaner is putting this entry back, so seeing it again isn't counted as coming back by itself.
+    /// </summary>
+    public void MarkRestored(StartupRecord r) => r.RemovedByKodiakCleaner = false;
+
+    /// <summary>
+    /// Removed entries that can be put back: a registry entry with its command, a shortcut with a saved copy, or a scheduled
+    /// task Kodiak Cleaner deleted (it always backs a task up first).
+    /// </summary>
     public static bool CanRestore(StartupRecord r) =>
-        r.IsRemoved && (r.Source is StartupSource.UserStartupFolder or StartupSource.CommonStartupFolder
-            ? r.ShortcutCopy is not null
-            : r.Command.Length > 0);
+        r.IsRemoved && r.Source switch
+        {
+            StartupSource.UserStartupFolder or StartupSource.CommonStartupFolder => r.ShortcutCopy is not null,
+            StartupSource.ScheduledTask => r.RemovedByKodiakCleaner,
+            _ => r.Command.Length > 0,
+        };
 }

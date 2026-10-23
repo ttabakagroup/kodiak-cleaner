@@ -1,4 +1,5 @@
 using System.IO;
+using KodiakCleaner.App.ViewModels;
 using KodiakCleaner.Core.Startup;
 using KodiakCleaner.Core.Util;
 
@@ -19,6 +20,73 @@ public static class StartupHistoryStore
     /// gets a note of when it came back and what most likely put it back.
     /// </summary>
     public static void Record(IReadOnlyList<StartupItem> items) => Try(() => ExplainReturns(Current.Observe(items, DateTime.Now, CopyShortcut)));
+
+    /// <summary>
+    /// Notes the scheduled tasks that start a program at sign-in or when Windows starts (Ted, 0.8.92), called whenever the
+    /// Startup page reads them. Only call it after a full read: a task missing here is marked removed.
+    /// </summary>
+    public static void RecordTasks(IEnumerable<ScheduledTaskItem> tasks) =>
+        Try(() => ExplainReturns(Current.Observe(tasks.Where(IsStartupTask).Select(ItemOf).ToList(), DateTime.Now, _ => null, tasks: true)));
+
+    /// <summary>Reads every scheduled task again and notes the ones that start with Windows; quietly does nothing if Task Scheduler can't be read.</summary>
+    public static void RecordTasksNow()
+    {
+        try { RecordTasks(ScheduledTaskTools.ReadAll()); }
+        catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+    }
+
+    /// <summary>The tasks the Startup page and its history cover: ones that start with Windows, not Windows' own.</summary>
+    public static bool IsStartupTask(ScheduledTaskItem t) => t.RunsAtStartup && !t.IsWindowsTask;
+
+    /// <summary>Notes that Kodiak Cleaner deleted a task that started with Windows (it was backed up first).</summary>
+    public static void TaskRemoved(ScheduledTaskItem task)
+    {
+        if (IsStartupTask(task)) Removed(ItemOf(task), null);
+    }
+
+    /// <summary>Notes that Kodiak Cleaner put a task back from its backup, so it isn't counted as coming back by itself.</summary>
+    public static void TaskRestored(string taskPath) => Try(() =>
+    {
+        var key = StartupRecord.KeyOf(StartupSource.ScheduledTask, taskPath);
+        if (Current.Records.LastOrDefault(r => r.Key == key && r.IsRemoved) is { } r) Current.MarkRestored(r);
+    });
+
+    /// <summary>
+    /// Puts a removed entry back: a startup entry from its saved copy, or a scheduled task from its newest backup. Throws
+    /// IOException (with the reason) or UnauthorizedAccessException when it can't.
+    /// </summary>
+    public static void Restore(StartupRecord r)
+    {
+        if (r.Source == StartupSource.ScheduledTask)
+        {
+            var backup = ScheduledTaskTools.Backups.List()
+                .Where(b => string.Equals(b.TaskPath, r.FileName ?? r.Name, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(b => b.SavedAt)
+                .FirstOrDefault() ?? throw new IOException("There's no backup of this task in Backups\\Scheduled Tasks.");
+            // A task of that name made again since is backed up before it's replaced.
+            ScheduledTaskItem? current = null;
+            try { current = ScheduledTaskTools.ReadAll().FirstOrDefault(t => string.Equals(t.TaskPath, backup.TaskPath, StringComparison.OrdinalIgnoreCase)); }
+            catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+            if (ScheduledTaskTools.Restore(backup, current) is { } problem) throw new IOException(problem);
+            RecordTasksNow();
+            return;
+        }
+        StartupManager.Restore(r, Folder);
+        Try(() => Current.MarkRestored(r));
+    }
+
+    private static StartupItem ItemOf(ScheduledTaskItem t)
+    {
+        var program = t.ProgramPath.Length > 0 ? $"\"{t.ProgramPath}\"" : t.Command;
+        return new StartupItem
+        {
+            Name = t.Name,
+            Command = t.Arguments.Length > 0 ? $"{program} {t.Arguments}" : program,
+            Source = StartupSource.ScheduledTask,
+            TaskPath = t.TaskPath,
+            Enabled = t.Enabled,
+        };
+    }
 
     /// <summary>The history's record of an entry in startup now, or null.</summary>
     public static StartupRecord? Find(StartupItem item) => Current.Find(item);

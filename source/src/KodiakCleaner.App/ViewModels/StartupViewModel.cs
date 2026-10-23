@@ -137,7 +137,8 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
             TasksSummary = "Scheduled tasks couldn't be read on this PC.";
             return;
         }
-        foreach (var t in all.Where(t => t.RunsAtStartup && !t.IsWindowsTask)) StartupTasks.Add(t);
+        foreach (var t in all.Where(StartupHistoryStore.IsStartupTask)) StartupTasks.Add(t);
+        StartupHistoryStore.RecordTasks(StartupTasks);
         TasksSummary = StartupTasks.Count == 0
             ? "No scheduled tasks start a program when you sign in or when Windows starts."
             : $"{StartupTasks.Count} scheduled task{(StartupTasks.Count == 1 ? "" : "s")} start{(StartupTasks.Count == 1 ? "s" : "")} a program when you sign in " +

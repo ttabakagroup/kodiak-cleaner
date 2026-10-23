@@ -112,7 +112,7 @@ public static class ProgramHistoryStore
         if (record is null || !StartupHistory.CanRestore(record)) return "The Startup history has no saved copy of it.";
         try
         {
-            StartupManager.Restore(record, StartupHistoryStore.Folder);
+            StartupHistoryStore.Restore(record);
             StartupHistoryStore.Record(StartupManager.List());
             return null;
         }

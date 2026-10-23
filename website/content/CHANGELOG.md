@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.92 Dev] - 2026-10-23
+
+### Startup
+- Startup History now includes scheduled tasks that start a program at sign-in or when Windows starts, shown with Location "Scheduled Task". They're recorded whenever the Startup page reads them, a deleted task (from the Startup page or Tools > Scheduled Tasks) shows as Removed by Kodiak Cleaner, and Restore Selected puts it back from its backup in Backups\Scheduled Tasks. A task that comes back by itself after it was deleted is marked "Came Back", like startup entries.
+- Putting an entry back from History (or from Programs History) no longer counts as the entry coming back by itself.
+
 ## [0.8.91 Dev] - 2026-10-23
 
 ### Everywhere

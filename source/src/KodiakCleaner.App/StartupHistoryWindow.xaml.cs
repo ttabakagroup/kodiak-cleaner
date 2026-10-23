@@ -82,8 +82,8 @@ public partial class StartupHistoryWindow : Window
         _view.Refresh();
         AllBox.IsChecked = false;
         var removed = _rows.Count(r => r.Record.IsRemoved);
-        Subheading.Text = $"Every startup entry Kodiak Cleaner has seen: {_rows.Count} in all, {removed} removed. " +
-                          "Entries are recorded each time the Startup page is opened or refreshed, and a removed entry can be put back. " +
+        Subheading.Text = $"Every startup entry Kodiak Cleaner has seen, and every scheduled task that starts with Windows: {_rows.Count} in all, {removed} removed. " +
+                          "Entries are recorded each time the Startup page is opened or refreshed, and a removed entry or deleted task can be put back. " +
                           "Kodiak Cleaner backs up an entry before it removes one.";
     }
 
@@ -120,7 +120,7 @@ public partial class StartupHistoryWindow : Window
         {
             try
             {
-                StartupManager.Restore(r.Record, StartupHistoryStore.Folder);
+                StartupHistoryStore.Restore(r.Record);
                 _restored = true;
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException)

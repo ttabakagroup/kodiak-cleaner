@@ -75,6 +75,7 @@ public static class ScheduledTaskTools
             dynamic folder = Connect().GetFolder(task.Folder);
             folder.DeleteTask(task.Name, 0);
             ActivityLog.Write("Scheduled Tasks", $"Deleted task {task.TaskPath} (backup kept)");
+            StartupHistoryStore.TaskRemoved(task);
             return null;
         }
         catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e))
@@ -106,6 +107,7 @@ public static class ScheduledTaskTools
             string? user = Text(() => definition.Principal.UserId) ?? Text(() => definition.Principal.GroupId);
             folder.RegisterTaskDefinition(backup.Name, definition, 6, user, null, logon, null); // 6 = create or update
             ActivityLog.Write("Scheduled Tasks", $"Restored task {backup.TaskPath} from {backup.File}");
+            StartupHistoryStore.TaskRestored(backup.TaskPath);
             return null;
         }
         catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e))

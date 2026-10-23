@@ -157,6 +157,48 @@ public sealed class StartupHistoryTests : IDisposable
         Assert.Equal("chat.exe was running", r.ReturnedBy);
     }
 
+    private static StartupItem TaskEntry(string path, bool enabled = true) =>
+        new() { Name = path[(path.LastIndexOf('\\') + 1)..], Command = "app.exe /background", Source = StartupSource.ScheduledTask, TaskPath = path, Enabled = enabled };
+
+    [Fact]
+    public void ScheduledTasksAndStartupEntriesAreObservedSeparately()
+    {
+        var h = new StartupHistory();
+        h.Observe(new[] { Run("Chat", "chat.exe") }, Day1, _ => null);
+        h.Observe(new[] { TaskEntry(@"\Sync\Sync Startup") }, Day1, _ => null, tasks: true);
+        Assert.Equal(2, h.Records.Count);
+
+        // Reading startup entries never marks tasks removed, and reading tasks never marks startup entries removed.
+        h.Observe(new[] { Run("Chat", "chat.exe") }, Day2, _ => null);
+        h.Observe(Array.Empty<StartupItem>(), Day2, _ => null, tasks: true);
+        var task = Assert.Single(h.Records, r => r.Source == StartupSource.ScheduledTask);
+        Assert.Equal(Day2, task.RemovedOn);
+        Assert.Equal(@"\Sync\Sync Startup", task.FileName);
+        Assert.Null(Assert.Single(h.Records, r => r.Name == "Chat").RemovedOn);
+        Assert.False(StartupHistory.CanRestore(task)); // removed elsewhere: no backup of ours
+    }
+
+    [Fact]
+    public void ADeletedTaskCanBeRestoredAndRestoringIsNotCountedAsComingBack()
+    {
+        var h = new StartupHistory();
+        var task = TaskEntry(@"\Sync Startup");
+        h.Observe(new[] { task }, Day1, _ => null, tasks: true);
+        h.MarkRemoved(task, null, Day2);
+        h.Observe(Array.Empty<StartupItem>(), Day2, _ => null, tasks: true);
+        var r = Assert.Single(h.Records);
+        Assert.True(StartupHistory.CanRestore(r));
+        Assert.Equal("Scheduled Task", task.Location);
+
+        h.MarkRestored(r);
+        Assert.Empty(h.Observe(new[] { task }, Day3, _ => null, tasks: true));
+        Assert.Equal(0, r.TimesReturned);
+
+        // Two tasks with the same name in different folders are different entries.
+        h.Observe(new[] { task, TaskEntry(@"\Other\Sync Startup") }, Day3, _ => null, tasks: true);
+        Assert.Equal(2, h.Records.Count);
+    }
+
     [Fact]
     public void ShortcutsAreCopiedOnceAndOnlyRestorableWithACopy()
     {
