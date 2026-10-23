@@ -47,6 +47,12 @@ public sealed class AboutViewModel : ObservableObject
     public ChangelogRelease? CurrentRelease => AppInfo.Releases.FirstOrDefault(r => r.Version == AppInfo.Version) ?? AppInfo.Releases.FirstOrDefault();
     public List<ChangelogRelease> Releases => AppInfo.Releases;
 
+    /// <summary>
+    /// The full changelog, only while it is open. Built while hidden, its 90-odd releases made About take most of a
+    /// second to open every time (Ted, 2026-10-23).
+    /// </summary>
+    public List<ChangelogRelease>? ShownReleases => ShowChangelog ? Releases : null;
+
     public string PrivacySummary =>
         $"{AppInfo.ShortName} works entirely on this PC. It sends no usage data, crash reports or identifiers, and shows no ads. " +
         "Your settings, backups and activity log are saved in plain files on this PC and never leave your computer. " +
@@ -56,7 +62,7 @@ public sealed class AboutViewModel : ObservableObject
     public IReadOnlyList<Credit> Credits => global::KodiakCleaner.App.Credits.All;
 
     private bool _showChangelog;
-    public bool ShowChangelog { get => _showChangelog; set { if (Set(ref _showChangelog, value)) OnPropertyChanged(nameof(ShowAbout)); } }
+    public bool ShowChangelog { get => _showChangelog; set { if (Set(ref _showChangelog, value)) { OnPropertyChanged(nameof(ShowAbout)); OnPropertyChanged(nameof(ShownReleases)); } } }
     public bool ShowAbout => !ShowChangelog;
 
     public ICommand SeeAllChangesCommand { get; }

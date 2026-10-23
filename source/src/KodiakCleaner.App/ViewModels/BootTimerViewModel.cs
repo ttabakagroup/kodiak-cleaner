@@ -58,7 +58,7 @@ public sealed class BootTimerViewModel : ObservableObject, ILoadOnFirstVisit
         CancelCommand = new RelayCommand(CancelTiming, () => IsWaiting || IsMeasuring);
         RefreshCommand = new RelayCommand(RefreshWindowsLog, () => HasReport && !IsMeasuring);
         ShowInStartupCommand = new RelayCommand(ShowInStartup, () => Selected is { IsStartupEntry: true });
-        DisableCommand = new RelayCommand(DisableSelected, () => Selected is { IsStartupEntry: true, Note: "" });
+        DisableCommand = new RelayCommand(DisableSelected, () => Highlighted.Any(r => r is { IsStartupEntry: true, Note: "" }));
         ClearHistoryCommand = new RelayCommand(ClearHistory, () => HasReport || _state.History.Count > 0);
     }
 
@@ -74,6 +74,9 @@ public sealed class BootTimerViewModel : ObservableObject, ILoadOnFirstVisit
 
     private BootItemViewModel? _selected;
     public BootItemViewModel? Selected { get => _selected; set => Set(ref _selected, value); }
+
+    /// <summary>Rows highlighted with Ctrl-click, Shift-click or a drag (0.8.90); Turn Off at Startup acts on all of them.</summary>
+    public IReadOnlyList<BootItemViewModel> Highlighted { get; set; } = Array.Empty<BootItemViewModel>();
 
     public bool IsAdministrator => Elevation.IsAdministrator;
 
@@ -354,22 +357,27 @@ public sealed class BootTimerViewModel : ObservableObject, ILoadOnFirstVisit
         _startup.Filter = row.Item.StartupName;
     }
 
+    /// <summary>Turns off the startup entry of every highlighted row (Ctrl-click, Shift-click or drag, 0.8.90).</summary>
     private void DisableSelected()
     {
-        if (Selected is not { IsStartupEntry: true } row) return;
-        var entry = StartupManager.List().FirstOrDefault(i => i.Enabled && i.Name == row.Item.StartupName);
-        if (entry is null) { row.Note = "Turned Off"; return; }
-        try
+        var rows = Highlighted.Where(r => r is { IsStartupEntry: true, Note: "" }).ToList();
+        if (rows.Count == 0) return;
+        var entries = StartupManager.List();
+        var needAdmin = false;
+        foreach (var row in rows)
         {
-            StartupManager.SetEnabled(entry, false);
-            ActivityLog.Write("Startup", $"Turned off '{entry.Name}' (Boot Timer)");
-            row.Note = "Turned Off";
-            _startup.RefreshCommand.Execute(null);
+            var entry = entries.FirstOrDefault(i => i.Enabled && i.Name == row.Item.StartupName);
+            if (entry is null) { row.Note = "Turned Off"; continue; }
+            try
+            {
+                StartupManager.SetEnabled(entry, false);
+                ActivityLog.Write("Startup", $"Turned off '{entry.Name}' (Boot Timer)");
+                row.Note = "Turned Off";
+            }
+            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException) { needAdmin = true; }
         }
-        catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException)
-        {
-            Dialogs.Error("Changing this entry needs administrator rights. Use Restart as Administrator at the top.");
-        }
+        _startup.RefreshCommand.Execute(null);
+        if (needAdmin) Dialogs.Error("Changing this entry needs administrator rights. Use Restart as Administrator at the top.");
     }
 
     private void ClearHistory()

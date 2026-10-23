@@ -59,7 +59,8 @@
         <Border Style="{StaticResource Card}" Padding="8">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" TextWrapping="Wrap" Margin="8,4,8,8" />
-                <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+                <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                          SelectionChanged="Grid_SelectionChanged">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Enable" Command="{Binding EnableRowCommand}">

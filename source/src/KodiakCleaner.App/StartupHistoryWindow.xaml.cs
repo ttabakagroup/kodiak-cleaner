@@ -87,11 +87,11 @@ public partial class StartupHistoryWindow : Window
                           "Kodiak Cleaner backs up an entry before it removes one.";
     }
 
-    /// <summary>Ticked rows, or the highlighted row when none are ticked.</summary>
+    /// <summary>Ticked rows, or the highlighted rows (Ctrl-click, Shift-click or drag) when none are ticked.</summary>
     private List<StartupHistoryRow> Picked()
     {
         var ticked = _rows.Where(r => r.IsChecked).ToList();
-        return ticked.Count > 0 || Grid.SelectedItem is not StartupHistoryRow s ? ticked : new List<StartupHistoryRow> { s };
+        return ticked.Count > 0 ? ticked : Grid.SelectedItems.OfType<StartupHistoryRow>().ToList();
     }
 
     private void All_Click(object sender, RoutedEventArgs e)

@@ -1,6 +1,7 @@
 <UserControl x:Class="KodiakCleaner.App.Views.BootTimerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tc="clr-namespace:KodiakCleaner.App.Views">
     <UserControl.Resources>
         <!-- A summary tile: a colored dot that matches its part of the timeline, a label and the time. -->
         <Style x:Key="TileValue" TargetType="TextBlock">
@@ -100,6 +101,7 @@
                 <TextBlock Text="Timing This Start" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
                 <TextBlock Text="{Binding Progress}" TextWrapping="Wrap" />
                 <ProgressBar IsIndeterminate="True" Margin="0,12,0,0" Visibility="{Binding IsMeasuring, Converter={StaticResource BoolToVis}}" />
+                <tc:TaskClock Margin="0,6,0,0" />
             </StackPanel>
         </Border>
 
@@ -213,7 +215,7 @@
                         </StackPanel>
                     </DockPanel>
                     <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True"
-                              PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+                              PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown" SelectionChanged="Grid_SelectionChanged">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Show in Startup" Command="{Binding ShowInStartupCommand}">

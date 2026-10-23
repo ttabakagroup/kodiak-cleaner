@@ -99,9 +99,9 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         DisableSelectedCommand = new RelayCommand(() => SetPicked(false), () => Picked().Any(i => i.Enabled));
         AddCommand = new RelayCommand(Add);
         HistoryCommand = new RelayCommand(() => { if (StartupHistoryWindow.Show(null)) Refresh(); });
-        TaskOnCommand = new RelayCommand(() => SetTask(true), () => SelectedTask is { Enabled: false });
-        TaskOffCommand = new RelayCommand(() => SetTask(false), () => SelectedTask is { Enabled: true });
-        TaskDeleteCommand = new RelayCommand(DeleteTask, () => SelectedTask is not null);
+        TaskOnCommand = new RelayCommand(() => SetTask(true), () => HighlightedTasks.Any(t => !t.Enabled));
+        TaskOffCommand = new RelayCommand(() => SetTask(false), () => HighlightedTasks.Any(t => t.Enabled));
+        TaskDeleteCommand = new RelayCommand(DeleteTask, () => HighlightedTasks.Count > 0);
         OpenTasksCommand = new RelayCommand(() => (System.Windows.Application.Current as App)?.ShowPage("tasks"));
     }
 
@@ -115,6 +115,9 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
 
     private ScheduledTaskItem? _selectedTask;
     public ScheduledTaskItem? SelectedTask { get => _selectedTask; set => Set(ref _selectedTask, value); }
+
+    /// <summary>Task rows highlighted with Ctrl-click, Shift-click or a drag (0.8.90); the right-click menu acts on all of them.</summary>
+    public IReadOnlyList<ScheduledTaskItem> HighlightedTasks { get; set; } = Array.Empty<ScheduledTaskItem>();
 
     private string _tasksSummary = "Reading scheduled tasks...";
     public string TasksSummary { get => _tasksSummary; private set => Set(ref _tasksSummary, value); }
@@ -145,17 +148,21 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
 
     private void SetTask(bool enabled)
     {
-        if (SelectedTask is { } t && !t.TrySetEnabled(enabled))
+        var failed = HighlightedTasks.Where(t => t.Enabled != enabled).Count(t => !t.TrySetEnabled(enabled));
+        if (failed > 0)
             Dialogs.Error("Changing this task needs administrator rights. Use Restart as Administrator at the top.");
     }
 
     private void DeleteTask()
     {
-        if (SelectedTask is not { } t) return;
-        if (!Dialogs.Warn($"Delete the scheduled task '{t.Name}'?\n\nKodiak Cleaner backs it up first, and you can put it back from " +
-                          "Tools > Scheduled Tasks > Restore. Turning it off instead is reversible.", "Delete Scheduled Task",
-                          t.UsesPassword ? ScheduledTaskTools.PasswordCaution : null)) return;
-        if (ScheduledTaskTools.Delete(t) is { } problem) Dialogs.Error(problem);
+        var tasks = HighlightedTasks.ToList();
+        if (tasks.Count == 0) return;
+        var what = tasks.Count == 1 ? $"the scheduled task '{tasks[0].Name}'" : $"these {tasks.Count} scheduled tasks";
+        if (!Dialogs.Warn($"Delete {what}?\n\nKodiak Cleaner backs them up first, and you can put them back from " +
+                          "Tools > Scheduled Tasks > Restore. Turning them off instead is reversible.", "Delete Scheduled Task",
+                          tasks.Any(t => t.UsesPassword) ? ScheduledTaskTools.PasswordCaution : null)) return;
+        var problems = tasks.Select(ScheduledTaskTools.Delete).OfType<string>().ToList();
+        if (problems.Count > 0) Dialogs.Error(string.Join("\n\n", problems));
         LoadTasks();
     }
 
@@ -165,8 +172,11 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (_loaded) return;
         _loaded = true;
-        Refresh();
+        LoadFirstTime();
     }
+
+    /// <summary>The first visit reads the entries in the background, so the page opens straight away (Ted, 2026-10-23).</summary>
+    private async void LoadFirstTime() => Fill(await Task.Run(StartupManager.List));
 
     public ICommand EnableSelectedCommand { get; }
     public ICommand AddCommand { get; }
@@ -236,10 +246,11 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
     private StartupItemViewModel? _selected;
     public StartupItemViewModel? Selected { get => _selected; set => Set(ref _selected, value); }
 
-    private void Refresh()
+    private void Refresh() => Fill(StartupManager.List());
+
+    private void Fill(List<StartupItem> list)
     {
         Items.Clear();
-        var list = StartupManager.List();
         StartupHistoryStore.Record(list);
         foreach (var i in list)
         {

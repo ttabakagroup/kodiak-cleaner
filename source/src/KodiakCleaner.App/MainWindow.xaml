@@ -242,7 +242,7 @@
                                Text="Kodiak Cleaner is made for free in spare time. A donation, however small, really keeps the work going." />
                 </DockPanel>
             </Border>
-            <ContentControl Content="{Binding CurrentContent}" Margin="32,28,32,24" Focusable="False" />
+            <views:PageHost Page="{Binding CurrentContent}" Margin="32,28,32,24" />
         </DockPanel>
 
         <!-- Work still running on another page: a small card in the bottom right corner with what it's doing and how far along
@@ -277,6 +277,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource AccentTint}" Margin="0,0,10,0" VerticalAlignment="Top">
                         <TextBlock Text="{Binding CornerPageGlyph}" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
@@ -299,7 +300,9 @@
                                    Foreground="{DynamicResource AccentText}" Text="{Binding CornerTask.PercentText}"
                                    Visibility="{Binding CornerTask.HasPercent, Converter={StaticResource BoolToVis}}" />
                     </Grid>
-                    <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Margin="0,8,0,0" Style="{StaticResource Caption}" Text="{Binding CornerMore}"
+                    <!-- Elapsed time, and the time left once there's enough progress to tell (Ted, 2026-10-23). -->
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Margin="0,6,0,0" Style="{StaticResource Caption}" Text="{Binding CornerTask.TimeText}" />
+                    <TextBlock Grid.Row="3" Grid.ColumnSpan="3" Margin="0,6,0,0" Style="{StaticResource Caption}" Text="{Binding CornerMore}"
                                Visibility="{Binding HasCornerMore, Converter={StaticResource BoolToVis}}" />
                 </Grid>
             </Button>

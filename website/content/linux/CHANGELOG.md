@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.15 Dev] - 2026-10-23
+
+### Interface
+- The Cleaner's and Drive Wiper's progress bars now show how long the work has run (1:05 elapsed) and, once there's enough progress to tell, about how long is left (about 3 min left, less than a minute left), like the Windows edition.
+
 ## [0.8.14 Dev] - 2026-10-23
 
 ### Supporter

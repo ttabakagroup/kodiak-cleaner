@@ -236,7 +236,7 @@ Exit codes: `0` done, `1` done with some failures, `2` wrong switch, nothing fou
 | **Scheduled Tasks** | Lists the programs Windows runs on a schedule, each with the program it starts and its icon (click to see it in File Explorer), and turns them off or back on. Delete backs each task up first, Back Up saves tasks on request, and Restore puts deleted tasks back. Windows' own tasks are hidden unless you show them |
 | **System Restore** | Lists, creates and removes restore points, and opens System Restore to roll back. The newest point can't be removed. Create Restore Point works even when Windows already made one that day, so you can make one right before a big install. The Point-in-Time Restore tab (Windows 11 24H2/25H2, June 2026 update or later) turns that feature on or off, sets how often Windows takes snapshots, how long it keeps them (72 hours at most) and how much space they may use, lists the snapshots, takes one now with Windows' own snapshot task, and restarts into Windows Recovery, where the restore itself happens. |
 
-While a tool works you can open any other page: a small card in the bottom right corner shows what it's doing and how far along it is (click it to go back). Closing Kodiak Cleaner while a task is running asks first, with Keep Open as the default.
+While a tool works you can open any other page: a small card in the bottom right corner shows what it's doing, how far along it is, how long it has run and about how long is left (click it to go back). Closing Kodiak Cleaner while a task is running asks first, with Keep Open as the default.
 
 <p align="center"><img src="website/github/images/disk-analyzer.png" alt="Disk Analyzer showing a map of folder sizes colored by kind of file" width="760"></p>
 

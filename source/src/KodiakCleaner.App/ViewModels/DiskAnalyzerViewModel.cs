@@ -143,8 +143,9 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
         GoToCommand = new RelayCommand<DiskNode>(n => _ = OpenAsync(n));
         UpCommand = new RelayCommand(() => OpenAsync(Current!.Parent!), () => Current?.Parent is not null);
         ShowInExplorerCommand = new RelayCommand(ShowInExplorer, () => SelectedEntry?.FullPath is not null);
-        CopyPathCommand = new RelayCommand(() => ClipboardHelper.CopyOrExplain(SelectedEntry!.FullPath!), () => SelectedEntry?.FullPath is not null);
-        RecycleCommand = new RelayCommand(RecycleAsync, () => SelectedEntry?.File is not null && !IsScanning);
+        CopyPathCommand = new RelayCommand(() => ClipboardHelper.CopyOrExplain(string.Join(Environment.NewLine, Targets.Select(t => t.FullPath).OfType<string>())),
+                                           () => Targets.Any(t => t.FullPath is not null));
+        RecycleCommand = new RelayCommand(RecycleAsync, () => Targets.Any(t => t.File is not null) && !IsScanning);
         ShowContentsCommand = new RelayCommand(() => ShowLargest = false);
         ShowLargestCommand = new RelayCommand(() => ShowLargest = true);
     }
@@ -196,6 +197,13 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
 
     private DiskEntry? _selectedEntry;
     public DiskEntry? SelectedEntry { get => _selectedEntry; set => Set(ref _selectedEntry, value); }
+
+    /// <summary>Rows highlighted with Ctrl-click, Shift-click or a drag (0.8.90).</summary>
+    public IReadOnlyList<DiskEntry> Highlighted { get; set; } = Array.Empty<DiskEntry>();
+
+    /// <summary>What Copy Path and Move to Recycle Bin act on: every highlighted row when the menu was opened on one of them, else the entry clicked.</summary>
+    private IReadOnlyList<DiskEntry> Targets =>
+        SelectedEntry is not { } e ? Array.Empty<DiskEntry>() : Highlighted.Count > 1 && Highlighted.Contains(e) ? Highlighted : new[] { e };
 
     private FileKind? _highlightKind;
     public FileKind? HighlightKind { get => _highlightKind; set => Set(ref _highlightKind, value); }
@@ -253,6 +261,7 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
         ScanFolder = "";
         IsScanning = true;
         using var task = _task = BackgroundTasks.Start(this, "Scanning for Files");
+        task.Rough = true; // the percentage is bytes found against the drive's used space
         _used = 0;
         // Whole drives: how much is in use gives the corner pop-up a rough percentage (the bytes found so far against it).
         if (target.Roots.All(r => Path.GetPathRoot(r.Path) == r.Path))
@@ -379,29 +388,38 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
         else if (e.Folder is { IsGroup: false } f && Directory.Exists(f.Path)) Elevation.OpenFolder(f.Path);
     }
 
+    /// <summary>Moves the file, or every highlighted file (0.8.90), to the Recycle Bin. Folders aren't moved from here.</summary>
     private async Task RecycleAsync()
     {
-        var entry = SelectedEntry!;
-        var file = entry.File!;
-        if (!Dialogs.Confirm($"Move {file.Name} ({entry.Size}) to the Recycle Bin?")) return;
-        try
+        var entries = Targets.Where(t => t.File is not null).ToList();
+        if (entries.Count == 0) return;
+        var what = entries.Count == 1 ? $"{entries[0].File!.Name} ({entries[0].Size})" : $"{entries.Count} files ({ByteSize.Format(entries.Sum(e => e.Bytes))})";
+        if (!Dialogs.Confirm($"Move {what} to the Recycle Bin?")) return;
+        var moved = new List<DiskEntry>();
+        foreach (var entry in entries)
         {
-            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file.Path,
-                Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+            var file = entry.File!;
+            try
+            {
+                Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file.Path,
+                    Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or OperationCanceledException)
+            {
+                Dialogs.Error($"{file.Name} couldn't be moved to the Recycle Bin: {e.Message}");
+                continue;
+            }
+            moved.Add(entry);
+            ActivityLog.Write("Disk Analyzer", $"Moved {file.Name} ({entry.Size}) to the Recycle Bin");
+            if (_scan is not null)
+            {
+                if (FolderOf(_scan.Root, Path.GetDirectoryName(file.Path) ?? "") is { } folder) folder.FileRemoved(file);
+                _scan = _scan with { LargestFiles = _scan.LargestFiles.Where(f => !string.Equals(f.Path, file.Path, StringComparison.OrdinalIgnoreCase)).ToList() };
+            }
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or OperationCanceledException)
-        {
-            Dialogs.Error($"{file.Name} couldn't be moved to the Recycle Bin: {e.Message}");
-            return;
-        }
-        ActivityLog.Write("Disk Analyzer", $"Moved {file.Name} ({entry.Size}) to the Recycle Bin");
-        if (_scan is not null)
-        {
-            if (FolderOf(_scan.Root, Path.GetDirectoryName(file.Path) ?? "") is { } folder) folder.FileRemoved(file);
-            _scan = _scan with { LargestFiles = _scan.LargestFiles.Where(f => !string.Equals(f.Path, file.Path, StringComparison.OrdinalIgnoreCase)).ToList() };
-        }
+        if (moved.Count == 0) return;
         if (Current is not null) await OpenAsync(Current);
-        Notice = $"Moved {file.Name} to the Recycle Bin.";
+        Notice = moved.Count == 1 ? $"Moved {moved[0].File!.Name} to the Recycle Bin." : $"Moved {moved.Count} files to the Recycle Bin.";
     }
 
     /// <summary>The scanned folder at a path, found by walking down from the top.</summary>

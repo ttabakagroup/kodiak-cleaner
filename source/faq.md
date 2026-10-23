@@ -8,6 +8,10 @@ No. Kodiak Cleaner sends no usage data, shows no ads and has no tracking. It onl
 
 Under Settings, Application, click Back Up Settings. It saves a dated copy of your settings and your Programs and Startup histories in Backups\Settings. Install Kodiak Cleaner on the new PC, close it, then copy those files over KodiakCleaner.ini, Backups\Programs History\history.json and Backups\Startup History\history.json. A Supporter code is part of the settings, so it moves with them.
 
+## How Do I Select Many Items at Once?
+
+Every table works like File Explorer. Hold the mouse button on an entry and drag up or down to highlight everything in between, or start in the empty space under the entries to draw a selection box. Ctrl-click adds or removes one entry, and Shift-click highlights a whole range. Right-click acts on every highlighted entry, and Space ticks or unticks them all. To tick many boxes, in a table or in a list of tick boxes such as Duplicate Finder's folders, press one tick box and drag across the others: each one you pass gets the same tick.
+
 ## How Do I Undo a Change?
 
 - Programs: Programs, History restores deleted entries, renames and removed leftovers. Uninstalls are only recorded; install the program again to get it back.

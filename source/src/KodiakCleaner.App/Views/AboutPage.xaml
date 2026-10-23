@@ -144,7 +144,7 @@
                     <TextBlock Text="Back to About" />
                 </StackPanel>
             </Button>
-            <ItemsControl ItemsSource="{Binding Releases}" ItemTemplate="{StaticResource ReleaseTemplate}" Focusable="False" />
+            <ItemsControl ItemsSource="{Binding ShownReleases}" ItemTemplate="{StaticResource ReleaseTemplate}" Focusable="False" />
         </StackPanel>
     </Grid>
 </UserControl>

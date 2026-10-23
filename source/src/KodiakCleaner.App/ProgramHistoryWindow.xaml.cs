@@ -67,11 +67,11 @@ public partial class ProgramHistoryWindow : Window
                           "it can't be put back from here, so install it again to get it back.";
     }
 
-    /// <summary>Ticked rows, or the highlighted row when none are ticked.</summary>
+    /// <summary>Ticked rows, or the highlighted rows (Ctrl-click, Shift-click or drag) when none are ticked.</summary>
     private List<ProgramHistoryRow> Picked()
     {
         var ticked = _rows.Where(r => r.IsChecked).ToList();
-        return ticked.Count > 0 || Grid.SelectedItem is not ProgramHistoryRow s ? ticked : new List<ProgramHistoryRow> { s };
+        return ticked.Count > 0 ? ticked : Grid.SelectedItems.OfType<ProgramHistoryRow>().ToList();
     }
 
     private void All_Click(object sender, RoutedEventArgs e)

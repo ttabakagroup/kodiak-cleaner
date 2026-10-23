@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:app="clr-namespace:KodiakCleaner.App"
+                    xmlns:views="clr-namespace:KodiakCleaner.App.Views"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
     <!-- Every color, corner radius and font comes from the active theme dictionary (Honey, Classic, Glacier or
          Lagoon, each Light or Dark), so everything here is a DynamicResource and switches live. -->
@@ -820,8 +821,15 @@
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="RowHeaderWidth" Value="0" />
-        <Setter Property="SelectionMode" Value="Single" />
+        <!-- Every table highlights several rows (Ctrl-click, Shift-click and drag, Ted 0.8.90); the few single-pick tables say
+             SelectionMode="Single" themselves. ListSelect adds the selection box, drag-to-tick and Space. -->
+        <Setter Property="SelectionMode" Value="Extended" />
         <Setter Property="SelectionUnit" Value="FullRow" />
+        <Setter Property="views:ListSelect.IsEnabled" Value="True" />
+    </Style>
+    <!-- Lists of tick boxes: press a box and drag over the others to tick (or untick) them all (Ted, 0.8.90). -->
+    <Style TargetType="ItemsControl">
+        <Setter Property="views:ListSelect.IsEnabled" Value="True" />
     </Style>
     <Style TargetType="DataGridColumnHeader">
         <Setter Property="Foreground" Value="{DynamicResource Muted}" />

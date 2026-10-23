@@ -87,11 +87,11 @@ public partial class ScheduledTaskRestoreWindow : Window
                           "Password-protected tasks (Needs Password) may not back up or restore here; use Task Scheduler's Import Task for those.";
     }
 
-    /// <summary>Ticked rows, or the highlighted row when none are ticked.</summary>
+    /// <summary>Ticked rows, or the highlighted rows (Ctrl-click, Shift-click or drag) when none are ticked.</summary>
     private List<TaskBackupRow> Picked()
     {
         var ticked = _rows.Where(r => r.IsChecked).ToList();
-        return ticked.Count > 0 || Grid.SelectedItem is not TaskBackupRow s ? ticked : new List<TaskBackupRow> { s };
+        return ticked.Count > 0 ? ticked : Grid.SelectedItems.OfType<TaskBackupRow>().ToList();
     }
 
     private void All_Click(object sender, RoutedEventArgs e)

@@ -68,7 +68,7 @@
                 </DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{Binding TasksSummary}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,8" />
                 <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding StartupTasks}" SelectedItem="{Binding SelectedTask}"
-                          IsSynchronizedWithCurrentItem="False" SelectionMode="Single" MaxHeight="220"
+                          IsSynchronizedWithCurrentItem="False" MaxHeight="220" SelectionChanged="Tasks_SelectionChanged"
                           PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                     <DataGrid.ContextMenu>
                         <ContextMenu>

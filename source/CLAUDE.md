@@ -90,8 +90,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   `LeftoverNames`/`LeftoverFinder` match exact names only, never generic names, protected folders, roots or other programs' folders.
 - Programs (0.8.15): program icons (`ProgramIcons`: DisplayIcon, Installer ProductIcon, main exe), tick boxes + Select All; batch uninstall
   runs the full flow per program strictly one at a time, waiting for helper uninstallers (Temp, Un/Au_/_iu/unins) to close.
-- Multi-select (Ted, 0.8.49): Startup and Programs tables use `SelectionMode="Extended"` (the shared DataGrid style stays Single) and pass
-  their highlighted rows to the view model's `Highlighted`. Right-click actions act on every highlighted row (`GridRightClick` keeps a
+- Multi-select (Ted, 0.8.49; every list 0.8.90): the shared DataGrid style is `SelectionMode="Extended"` and switches on `Views/ListSelect`
+  for every table and ItemsControl (drag across rows, a selection box from the empty space under them, press-and-drag over tick boxes,
+  Space ticks the highlighted rows). Only `ListSelectTests.SingleRowTables` may say `SelectionMode="Single"`; a table or list never gets
+  its own Style (it would lose ListSelect). Tables with a right-click menu pass their highlighted rows to the view model's `Highlighted`. Right-click actions act on every highlighted row (`GridRightClick` keeps a
   selection when the clicked row is in it); the buttons act on ticked rows, else the highlighted ones. Repair and Rename need exactly one row.
 - Icons (0.8.16): only from files already on the PC (`ProgramIcons`, `FileIcons`: exe icons via ExtractIconEx, others via SHGetFileInfo), never bundled brand logos;
   a plain Segoe glyph when nothing is found. Cleaner groups take the icon from `CleanTarget.AppFiles`, then App Paths.
@@ -214,6 +216,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   bottom right corner (`MainViewModel.CornerTask`, after 1 s so quick reads never flash it; click opens the page, X hides it until the next
   task). Closing, tray Exit, Restart as Administrator and Install Now ask with `MainWindow.ConfirmExit` (Close Anyway | Keep Open, Keep Open
   the default and what Esc means); Close to System Tray and Windows signing out never ask.
+  Time (Ted, 2026-10-23): `ProgressClock` (Core) gives "1:05 elapsed · about 3 min left"; time left only after 5 s and 2% since the
+  percentage last started over (a drop or a first value), counted down between updates. `RunningTask.TimeText` ticks once a second from one
+  timer that runs only while a task does; `Rough` marks a guessed percentage (~42%, "rough guess"). Pages show it with `Views/TaskClock`
+  under their own bar (follows the page's newest task, hides itself).
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
 - Duplicate Finder (Ted, 2026-10-12): searches folders and whole drives (Fixed and Removable, each given 5 s to answer). It never searches Windows,
   program folders, ProgramData, AppData (any user's), Temp\.net, its own folder, or a drive's Recycle Bin/System Volume Information/Recovery,

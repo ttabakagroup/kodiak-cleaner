@@ -5,6 +5,22 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.90 Dev] - 2026-10-23
+
+### All Lists
+- Drag to select: hold the mouse button on a row and drag up or down to highlight every row in between, in every table that has more than one entry. Start in the empty space under the rows to draw a selection box, as in File Explorer. Ctrl-click and Shift-click work everywhere too.
+- Drag over tick boxes: press a tick box and drag across the others, and every box you pass gets the same tick (all on or all off). This works in tables and in the tick-box lists, such as Duplicate Finder's drives and folders.
+- Space ticks or unticks every highlighted row at once.
+- Right-click menus act on every highlighted row on Large Files (Show in Folder, Move to Recycle Bin), Scheduled Tasks (Enable, Disable, Back Up, Delete), Startup's Scheduled Tasks That Run at Startup card (Enable, Disable, Delete Task), Boot Timer (Turn Off at Startup) and Disk Analyzer (Copy Path, Move to Recycle Bin). The Programs, Startup and Scheduled Tasks histories restore or forget the highlighted rows when none are ticked.
+
+### Interface
+- Progress now shows time: the corner card and the progress bars on the tool pages show how long the task has run (1:05 elapsed) and, once there's enough progress to tell, about how long is left (about 3 min left, less than a minute left). The estimate counts down between updates and starts over when a task moves to its next step. Disk Analyzer's percentage is itself an estimate, so it shows as ~42% and its time left says rough guess.
+
+### Speed
+- Switching pages is now instant after the first visit: pages you've opened are kept, so going back shows them straight away with their lists, scroll position and sorting as you left them.
+- About opens much faster (the full changelog is only built when you click See All Changes).
+- Startup and Programs open straight away on the first visit and read their lists in the background.
+
 ## [0.8.89 Dev] - 2026-10-23
 
 ### Startup

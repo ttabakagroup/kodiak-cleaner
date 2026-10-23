@@ -1,6 +1,7 @@
 <UserControl x:Class="KodiakCleaner.App.Views.DiskAnalyzerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tc="clr-namespace:KodiakCleaner.App.Views"
              xmlns:views="clr-namespace:KodiakCleaner.App.Views"
              Focusable="True" PreviewMouseUp="View_PreviewMouseUp" PreviewKeyDown="View_PreviewKeyDown">
     <UserControl.Resources>
@@ -88,6 +89,7 @@
                     <ProgressBar IsIndeterminate="True" Margin="0,14,0,12" Height="8" />
                     <TextBlock Text="{Binding ScanCounts}" FontWeight="SemiBold" />
                     <TextBlock Text="{Binding ScanFolder}" Style="{StaticResource Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,4,0,18" />
+                    <tc:TaskClock Margin="0,-12,0,18" />
                     <Button Content="Cancel" Command="{Binding CancelCommand}" HorizontalAlignment="Right" Margin="0" />
                 </StackPanel>
             </Border>
@@ -194,7 +196,7 @@
                             <Grid>
                                 <DataGrid ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
                                           ContextMenu="{StaticResource EntryMenu}" MouseDoubleClick="Grid_MouseDoubleClick"
-                                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown" SelectionChanged="Grid_SelectionChanged"
                                           Visibility="{Binding ShowLargest, Converter={StaticResource NotVis}}">
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn Header="Name" CellTemplate="{StaticResource NameCell}" SortMemberPath="Name" Width="2*" MinWidth="120" />
@@ -205,7 +207,7 @@
                                 </DataGrid>
                                 <DataGrid ItemsSource="{Binding LargestFiles}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
                                           ContextMenu="{StaticResource EntryMenu}" MouseDoubleClick="Grid_MouseDoubleClick"
-                                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown" SelectionChanged="Grid_SelectionChanged"
                                           Visibility="{Binding ShowLargest, Converter={StaticResource BoolToVis}}">
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn Header="Name" CellTemplate="{StaticResource NameCell}" SortMemberPath="Name" Width="1.6*" />

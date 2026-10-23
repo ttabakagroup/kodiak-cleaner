@@ -66,7 +66,14 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (_loaded) return;
         _loaded = true;
-        Refresh();
+        LoadFirstTime();
+    }
+
+    /// <summary>The first visit reads the list in the background, so the page opens straight away (Ted, 2026-10-23).</summary>
+    private async void LoadFirstTime()
+    {
+        Summary = "Reading installed programs…";
+        Fill(await Task.Run(ProgramInventory.List));
     }
 
     public ObservableCollection<ProgramItem> Programs { get; } = new();
@@ -117,11 +124,13 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         }
     }
 
-    private void Refresh()
+    private void Refresh() => Fill(ProgramInventory.List());
+
+    private void Fill(List<InstalledProgram> list)
     {
         var ticked = Programs.Where(p => p.IsChecked).Select(p => p.Program.Location).ToHashSet();
         Programs.Clear();
-        foreach (var p in ProgramInventory.List())
+        foreach (var p in list)
         {
             var item = new ProgramItem(p) { IsChecked = ticked.Contains(p.Location) };
             item.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ProgramItem.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };

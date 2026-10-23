@@ -39,8 +39,8 @@ public sealed class LargeFilesViewModel : ObservableObject
         SearchCommand = new RelayCommand(SearchAsync, () => !IsBusy && !string.IsNullOrWhiteSpace(Root));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
         RemoveCommand = new RelayCommand(() => RemoveAsync(Found.Where(f => f.IsChecked).ToList()), () => !IsBusy && Found.Any(f => f.IsChecked));
-        RemoveRowCommand = new RelayCommand(() => RemoveAsync(Selected is { } s ? new List<LargeFileItem> { s } : new()), () => !IsBusy && Selected is not null);
-        ShowRowCommand = new RelayCommand(() => { if (Selected is { } s) Elevation.ShowInExplorer(s.Path); }, () => Selected is not null);
+        RemoveRowCommand = new RelayCommand(() => RemoveAsync(Highlighted.ToList()), () => !IsBusy && Highlighted.Count > 0);
+        ShowRowCommand = new RelayCommand(() => { if (Highlighted.FirstOrDefault() is { } s) Elevation.ShowInExplorer(s.Path); }, () => Highlighted.Count > 0);
     }
 
     public ObservableCollection<LargeFileItem> Found { get; } = new();
@@ -57,6 +57,9 @@ public sealed class LargeFilesViewModel : ObservableObject
 
     private LargeFileItem? _selected;
     public LargeFileItem? Selected { get => _selected; set => Set(ref _selected, value); }
+
+    /// <summary>Rows highlighted with Ctrl-click, Shift-click or a drag (0.8.90); the right-click menu acts on all of them.</summary>
+    public IReadOnlyList<LargeFileItem> Highlighted { get; set; } = Array.Empty<LargeFileItem>();
 
     private string _root;
     public string Root { get => _root; set => Set(ref _root, value); }
@@ -713,14 +716,14 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         RefreshCommand = new RelayCommand(Refresh);
         EnableSelectedCommand = new RelayCommand(() => SetPicked(true), () => Items.Any(i => i.IsChecked && !i.Enabled));
         DisableSelectedCommand = new RelayCommand(() => SetPicked(false), () => Items.Any(i => i.IsChecked && i.Enabled));
-        EnableRowCommand = new RelayCommand(() => SetRows(Selected, true), () => Selected is { Enabled: false });
-        DisableRowCommand = new RelayCommand(() => SetRows(Selected, false), () => Selected is { Enabled: true });
+        EnableRowCommand = new RelayCommand(() => SetRows(Highlighted.Where(i => !i.Enabled).ToList(), true), () => Highlighted.Any(i => !i.Enabled));
+        DisableRowCommand = new RelayCommand(() => SetRows(Highlighted.Where(i => i.Enabled).ToList(), false), () => Highlighted.Any(i => i.Enabled));
         OpenLocationCommand = new RelayCommand(() => Elevation.ShowInExplorer(Selected!.ProgramPath), () => Selected is { HasProgram: true });
         ShowProgramCommand = new RelayCommand<ScheduledTaskItem>(t => { if (t.HasProgram) Elevation.ShowInExplorer(t.ProgramPath); });
         BackUpSelectedCommand = new RelayCommand(() => BackUp(Items.Where(i => i.IsChecked).ToList()), () => Items.Any(i => i.IsChecked));
         DeleteSelectedCommand = new RelayCommand(() => Delete(Items.Where(i => i.IsChecked).ToList()), () => Items.Any(i => i.IsChecked));
-        BackUpRowCommand = new RelayCommand(() => BackUp(new List<ScheduledTaskItem> { Selected! }), () => Selected is not null);
-        DeleteRowCommand = new RelayCommand(() => Delete(new List<ScheduledTaskItem> { Selected! }), () => Selected is not null);
+        BackUpRowCommand = new RelayCommand(() => BackUp(Highlighted.ToList()), () => Highlighted.Count > 0);
+        DeleteRowCommand = new RelayCommand(() => Delete(Highlighted.ToList()), () => Highlighted.Count > 0);
         RestoreCommand = new RelayCommand(OpenRestore);
     }
 
@@ -744,6 +747,9 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
 
     private ScheduledTaskItem? _selected;
     public ScheduledTaskItem? Selected { get => _selected; set => Set(ref _selected, value); }
+
+    /// <summary>Rows highlighted with Ctrl-click, Shift-click or a drag (0.8.90); the right-click menu acts on all of them.</summary>
+    public IReadOnlyList<ScheduledTaskItem> Highlighted { get; set; } = Array.Empty<ScheduledTaskItem>();
 
     private bool _loaded;
     /// <summary>Loads the first time the page is shown (reading every task takes a moment).</summary>
@@ -819,11 +825,6 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
     }
 
     private void SetPicked(bool enabled) => SetRows(Items.Where(i => i.IsChecked).ToList(), enabled);
-
-    private static void SetRows(ScheduledTaskItem? item, bool enabled)
-    {
-        if (item is not null) SetRows(new List<ScheduledTaskItem> { item }, enabled);
-    }
 
     private static void SetRows(List<ScheduledTaskItem> items, bool enabled)
     {

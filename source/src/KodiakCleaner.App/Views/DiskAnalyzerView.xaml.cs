@@ -21,6 +21,12 @@ public partial class DiskAnalyzerView
         if (Vm is { } vm) vm.HighlightKind = null;
     }
 
+    /// <summary>Ctrl-click, Shift-click and dragging highlight several rows; Copy Path and Move to Recycle Bin act on all of them.</summary>
+    private void Grid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (Vm is { } vm && sender is DataGrid grid) vm.Highlighted = grid.SelectedItems.OfType<DiskEntry>().ToList();
+    }
+
     private void Grid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e) => GridRightClick.SelectRowUnderMouse(e);
 
     private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

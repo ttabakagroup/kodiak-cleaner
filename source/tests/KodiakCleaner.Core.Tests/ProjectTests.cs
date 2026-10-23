@@ -547,4 +547,22 @@ public class StaysCurrentTests
         Assert.True(questions.Count >= 6);
         Assert.Equal(questions.OrderBy(q => q, StringComparer.OrdinalIgnoreCase), questions);
     }
+
+    /// <summary>
+    /// Switching pages was slow because each visit built the page again and About built the whole changelog while hidden
+    /// (Ted, 2026-10-23). Visited pages are kept (PageHost), the changelog is built only when opened, and Startup and
+    /// Programs read their first list in the background.
+    /// </summary>
+    [Fact]
+    public void Pages_open_without_a_pause()
+    {
+        var window = Repo.Read("src", "KodiakCleaner.App", "MainWindow.xaml");
+        Assert.Contains("<views:PageHost Page=\"{Binding CurrentContent}\"", window);
+        Assert.DoesNotContain("<ContentControl Content=\"{Binding CurrentContent}\"", window);
+        var about = Repo.Read("src", "KodiakCleaner.App", "Views", "AboutPage.xaml");
+        Assert.Contains("ItemsSource=\"{Binding ShownReleases}\"", about);
+        Assert.DoesNotContain("ItemsSource=\"{Binding Releases}\"", about);
+        foreach (var vm in new[] { "StartupViewModel.cs", "ProgramsViewModel.cs" })
+            Assert.Contains("await Task.Run(", Repo.Read("src", "KodiakCleaner.App", "ViewModels", vm));
+    }
 }

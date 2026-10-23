@@ -132,3 +132,58 @@ public class SettingsSearchTests
         Assert.Equal(["Light or Dark"], SettingsSearch.Hints("dark", ["Honey theme in light and dark, with a long description after it.", "Light or Dark"], max: 1));
     }
 }
+
+public class ProgressClockTests
+{
+    private static readonly DateTime T0 = new(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+    [Fact]
+    public void Elapsed_and_remaining_read_plainly()
+    {
+        Assert.Equal("0:42", KodiakCleaner.Core.Util.ProgressClock.FormatElapsed(TimeSpan.FromSeconds(42)));
+        Assert.Equal("12:05", KodiakCleaner.Core.Util.ProgressClock.FormatElapsed(TimeSpan.FromSeconds(725)));
+        Assert.Equal("1:02:03", KodiakCleaner.Core.Util.ProgressClock.FormatElapsed(new TimeSpan(1, 2, 3)));
+        Assert.Equal("almost done", KodiakCleaner.Core.Util.ProgressClock.FormatRemaining(TimeSpan.FromSeconds(3)));
+        Assert.Equal("less than a minute left", KodiakCleaner.Core.Util.ProgressClock.FormatRemaining(TimeSpan.FromSeconds(40)));
+        Assert.Equal("about 3 min left", KodiakCleaner.Core.Util.ProgressClock.FormatRemaining(TimeSpan.FromSeconds(150)));
+        Assert.Equal("about 1 h 20 min left", KodiakCleaner.Core.Util.ProgressClock.FormatRemaining(TimeSpan.FromMinutes(80)));
+        Assert.Equal("about 2 h left", KodiakCleaner.Core.Util.ProgressClock.FormatRemaining(TimeSpan.FromMinutes(120)));
+    }
+
+    [Fact]
+    public void Time_left_waits_for_enough_progress_then_counts_down()
+    {
+        var c = new KodiakCleaner.Core.Util.ProgressClock(T0);
+        Assert.Equal("0:00 elapsed", c.Text(T0));
+        c.Report(0, T0);
+        c.Report(1, T0.AddSeconds(10));
+        Assert.Null(c.Remaining(T0.AddSeconds(10))); // 1% isn't enough to go on
+        Assert.Equal("0:10 elapsed · working out the time left", c.Text(T0.AddSeconds(10)));
+        c.Report(25, T0.AddSeconds(60));
+        Assert.Equal(TimeSpan.FromSeconds(180), c.Remaining(T0.AddSeconds(60)));
+        Assert.Equal(TimeSpan.FromSeconds(170), c.Remaining(T0.AddSeconds(70)));
+        Assert.Equal("1:10 elapsed · about 3 min left (rough guess)", c.Text(T0.AddSeconds(70), rough: true));
+    }
+
+    [Fact]
+    public void A_new_stage_starts_the_speed_over()
+    {
+        var c = new KodiakCleaner.Core.Util.ProgressClock(T0);
+        c.Report(50, T0.AddSeconds(100));
+        c.Report(5, T0.AddSeconds(120)); // the next stage starts again near 0
+        Assert.Null(c.Remaining(T0.AddSeconds(120)));
+        c.Report(55, T0.AddSeconds(140));
+        Assert.Equal(TimeSpan.FromSeconds(18), c.Remaining(T0.AddSeconds(140)));
+        c.Report(null, T0.AddSeconds(150));
+        Assert.Equal("2:30 elapsed", c.Text(T0.AddSeconds(150)));
+    }
+
+    [Fact]
+    public void A_stalled_percentage_makes_the_estimate_grow_instead_of_sitting_at_zero()
+    {
+        var c = new KodiakCleaner.Core.Util.ProgressClock(T0);
+        c.Report(0, T0);
+        c.Report(50, T0.AddSeconds(60)); // 60 s left by that speed
+        Assert.Equal(TimeSpan.FromSeconds(120), c.Remaining(T0.AddSeconds(120))); // still 50% a minute later: 2 min left by the slower speed
+    }
+}
