@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.85 Dev] - 2026-10-23
+
+### Supporter
+- Every donate button (Support on Ko-fi, the donation pop-up, the banner and the sidebar's Support link) goes straight to the Kodiak Cleaner supporter item in Ted's Ko-fi Shop.
+
 ## [0.8.84 Dev] - 2026-10-23
 
 ### Supporter

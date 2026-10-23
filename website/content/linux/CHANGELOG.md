@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.14 Dev] - 2026-10-23
+
+### Supporter
+- Remove Code now asks first ("Remove Supporter Code?"), like the Windows edition. You can enter the code again at any time.
+
 ## [0.8.13 Dev] - 2026-10-23
 
 ### Supporter

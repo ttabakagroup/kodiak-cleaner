@@ -281,7 +281,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
 - Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Updates come from the website since 0.8.40; release downloads stay on GitHub releases; source and Star on GitHub stay on the repo.
 - The repository (ttabakagroup/kodiakcleaner) is private for now (2026-10-06). Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
-- Never offer anything in return for a rating. Support link: https://ko-fi.com/ttabaka. The only donation asks are the ones Ted asked for in 0.8.55
+- Never offer anything in return for a rating. Support link: https://ko-fi.com/s/aabd61b988 (the Kodiak Cleaner supporter item in Ted's Ko-fi Shop; every donate button uses AppInfo.KoFiUrl). The only donation asks are the ones Ted asked for in 0.8.55
   (`Donation`): the startup pop-up (`DonationWindow`, `[General] ShowDonationPrompt`, can't be turned off before 10 launches counted in
   `[General] LaunchCount`, never stacked on Getting Started/What's New) and the banner on every 10th launch. Supporters see neither.
 - Supporter tier only (Ted removed Premium). Codes are verified offline; never run `make-key` for Ted or touch his private key.
