@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -172,6 +173,7 @@ public static partial class IntegrityCheck
     }
 
     /// <summary>Whether Windows will check this drive at the next start (chkdsk adds it to Session Manager's BootExecute).</summary>
+    [SupportedOSPlatform("windows")]
     public static bool IsScheduledAtRestart(string letter)
     {
         try
@@ -323,6 +325,7 @@ public static partial class IntegrityCheck
     /// Every physical disk's health as Windows' storage stack reports it, plus temperature, wear and uncorrected errors when
     /// Windows shares them (those need administrator rights). Empty when the storage classes aren't there.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public static List<DiskHealth> ReadDiskHealth()
     {
         const string scope = @"root\Microsoft\Windows\Storage";

@@ -29,6 +29,7 @@
     <Resource Include="Assets\logo.png" />
     <Resource Include="Assets\Fonts\Fredoka-SemiBold.ttf" />
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="CHANGELOG.md" />
+    <EmbeddedResource Include="..\..\faq.md" LogicalName="faq.md" />
     <EmbeddedResource Include="..\..\terms-of-use.md" LogicalName="terms-of-use.md" />
     <EmbeddedResource Include="..\..\PRIVACY.md" LogicalName="PRIVACY.md" />
     <EmbeddedResource Include="..\..\why-it-was-made.md" LogicalName="why-it-was-made.md" />

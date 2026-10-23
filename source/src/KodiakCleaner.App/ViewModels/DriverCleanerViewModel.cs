@@ -303,7 +303,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
 
             var failed = new List<string>();
             int removed = 0, backedUp = 0;
-            var backupFolder = Path.Combine(Settings.Data.Backups, "Drivers", $"{DateTime.Now:yyyy-MM-dd_HHmmss}_{VendorName}");
+            var backupFolder = Path.Combine(Settings.Data.Drivers, $"{DateTime.Now:yyyy-MM-dd_HHmmss}_{VendorName}");
             int step = 0, steps = chosen.Count;
             foreach (var item in chosen.Where(i => i.Package is not null))
             {

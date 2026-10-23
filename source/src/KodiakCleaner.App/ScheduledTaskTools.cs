@@ -17,7 +17,7 @@ public static class ScheduledTaskTools
         "Windows never gives out a task's saved password, so backing up a password-protected task may fail, and it may not be possible " +
         "to restore it from the backup. Kodiak Cleaner can't put these back itself; Task Scheduler's Import Task can, if you type the account's password again.";
 
-    public static ScheduledTaskBackups Backups => new(Path.Combine(Settings.Data.Backups, ScheduledTaskBackups.FolderName));
+    public static ScheduledTaskBackups Backups => new(Settings.Data.ScheduledTasks);
 
     /// <summary>Task Scheduler's COM service, connected as the current user.</summary>
     public static dynamic Connect()

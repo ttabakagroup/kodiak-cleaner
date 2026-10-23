@@ -254,7 +254,7 @@ Left out on purpose: the Windows product key, nearby Wi-Fi networks, and per-cor
 
 ### Settings and Personalization
 
-Every setting is a switch and is saved straight away. Type in the search box above General to find a setting by name.
+Every setting is a switch and is saved straight away. Pages are A to Z under each heading in the Settings sidebar, and Settings opens on General. Type in the search box above the pages to find a setting by name.
 
 | Area | What's there |
 |------|--------------|
@@ -262,6 +262,7 @@ Every setting is a switch and is saved straight away. Type in the search box abo
 | **Appearance** | Honey, Classic, Glacier or Lagoon color scheme, an optional accent color, Match Device, Light or Dark, and an Animations switch. |
 | **Cleaning** | Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours. |
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on the website in your browser with the topic picked. |
+| **FAQ** | Plain answers about going online, moving to a new PC, undoing a change, Supporter codes, updates, safety, Reset to Default and where backups are. Works offline. |
 | **General** | What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
 | **Protect** | Back Up Now saves the registry areas Kodiak Cleaner can change into one `.reg` file (the very large ones are backed up with each fix instead), with an optional prompt before each registry fix. Back up, open or reset the settings file. |
 | **Updates** | Check Now (also on the About page as Check for Updates). Check for Updates Automatically (off by default) looks for a new version as often as you pick (On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly) and tells you when one is out. Download and Install Updates Automatically (off by default) also downloads it and installs it when you close Kodiak Cleaner. |
@@ -397,6 +398,7 @@ src/KodiakCleaner.App/  WPF app: views, view models and the Honey, Classic, Glac
 src/KodiakCleaner.Core/ cleaning, registry, startup, tools, updates and supporter logic (no UI)
 store-assets/           privacy-policy.html (ready to host) and store screenshots
 tests/                  unit tests and project checks
+tools/container/        sets up a Linux container to build, test and screenshot under Wine (never shipped)
 tools/design/           the build standard's theme.css, accent.js and check_contrast.py (never shipped)
 tools/MakeDocs/         writes the seven Docs files for the packages (never shipped)
 tools/SupporterCodes/   supporter code tool (never shipped)
@@ -407,6 +409,7 @@ Directory.Build.props   reads version.json for every project
 KodiakCleaner.sln       solution file
 PRIVACY.md              privacy policy
 SECURITY.md             how to report a security problem privately
+faq.md                  FAQ (built into Settings > FAQ)
 terms-of-use.md         Terms of Use
 version.json            version and release channel (single source)
 why-it-was-made.md      the story behind Kodiak Cleaner

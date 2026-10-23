@@ -33,6 +33,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
   Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.
 - About is its own sidebar entry under Settings (Ted's choice), not a page inside the Settings sidebar.
+- Settings sidebar (2026-10-23 review): pages A to Z under each heading ("", Personalize, Protect, Help, Developer); Settings opens on General.
+  Help has FAQ (`faq.md`, questions A to Z): keep its answers true to the code whenever a feature changes. The Developer page is titled
+  Developer Tools. A test (`StaysCurrentTests`) checks the order, that Getting Started lists every sidebar page, and that every
+  Backups folder is a `DataFolders.BackupKinds` entry named in both privacy policies (never `Path.Combine(Settings.Data.Backups, "...")`).
   Check for Updates is a large button on About right below the version card (Ted, 0.8.41; on the right with the text beside it, 0.8.42), and also stays under Settings > Updates;
   the automatic-updates switch is only in Settings.
 - Slogan (`AppInfo.Slogan`, Ted's exact words): "Not a Crap Cleaner. A Cleaner App, Built Around What Matters."
@@ -306,8 +310,10 @@ After each completed, tested change:
    build.ps1, a test checks it). Test the MSI installs before shipping.
 8. Docs (standard): `tools/MakeDocs` writes Changelog.txt, Download.url, Homepage.url, License.txt, Privacy.txt, ReadMe.txt
    (from `dist-files/ReadMe.md`, the user-facing read me) and TermsOfUse.txt as plain text with CRLF. Both ZIPs have a `Docs\` folder and the
-   MSI installs it to `Program Files\Kodiak Cleaner\Docs`. Download.url: `releases/download/latest-dev/KodiakCleaner-Dev-Setup.msi`
-   (Beta: latest-beta; Stable: `releases/latest/download/KodiakCleaner-Stable-Setup.msi`); CI refreshes the fixed latest-dev/latest-beta release.
+   MSI installs it to `Program Files\Kodiak Cleaner\Docs`. Download.url: Dev = the website's /download/ page (the repository is private
+   until the first Beta, `DocsFolder.RepositoryIsPublic`); Beta: `releases/download/latest-beta/KodiakCleaner-Beta-Setup.msi`; Stable:
+   `releases/latest/download/KodiakCleaner-Stable-Setup.msi`. Project Page (About) opens the website's /open-source/ page and Star on GitHub
+   is hidden while `AppInfo.RepositoryIsPublic` is false; both switch to GitHub on their own with the first Beta build.
 9. Deliver the project-folder layout (`C:\Projects\Kodiak Cleaner`, standard's project-folders.md) as one `Kodiak Cleaner.zip` when
    C:\Projects can't be reached: Source (with .git), Website (+ReadMe.txt, no .dev.vars/.wrangler/node_modules), Assets\Design,
    Assets\Logos, Assets\StoreAssets, Assets\Git (mirror clone), Application\Windows, Application\Linux, Docs, ARCHIVE\ChangelogComplete.txt.
@@ -317,5 +323,6 @@ After each completed, tested change:
 Push each valid build to the private repo without asking, then have the PC copy synced (Ted, 2026-10-09).
 
 ## Testing on Linux
-The app builds on Linux (WindowsDesktop SDK copied in) and runs under Wine for screenshots. Wine can't check
+The app builds on Linux (WindowsDesktop SDK copied in) and runs under Wine for screenshots: `sudo tools/container/setup.sh` sets up
+the SDK in a fresh container, and `--wine` adds Wine, Xvfb (:97) and stand-in fonts with real icons. Never set TMPDIR for Wine (it crashes). Wine can't check
 supporter codes (no ECDSA in its CNG), so use the Developer page preview there.

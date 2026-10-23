@@ -213,7 +213,7 @@ public sealed class MassRenameViewModel : ObservableObject
 
     public bool ShowSubfolder => IncludeSubfolders && Rows.Any(r => r.Subfolder.Length > 0);
 
-    private static string JournalPath => Path.Combine(Settings.Data.Backups, "Mass Rename", "last-rename.json");
+    private static string JournalPath => Path.Combine(Settings.Data.MassRename, "last-rename.json");
     public bool CanUndo => File.Exists(JournalPath);
 
     public RenameRules Rules => new()

@@ -22,7 +22,6 @@ public sealed record TaskBackup(string File, string TaskPath, string Program, Da
 /// </summary>
 public sealed class ScheduledTaskBackups
 {
-    public const string FolderName = "Scheduled Tasks";
     public const string BeforeDelete = "Before Delete", Manual = "Backed Up", BeforeRestore = "Before Restore";
     private const string IndexName = "index.json";
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };

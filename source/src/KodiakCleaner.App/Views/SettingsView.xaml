@@ -516,6 +516,7 @@
 
         <DataTemplate x:Key="feedbackPage"><views:FeedbackPage DataContext="{Binding Context}" /></DataTemplate>
         <DataTemplate x:Key="supporterPage"><views:SupporterPage DataContext="{Binding Context}" /></DataTemplate>
+        <DataTemplate x:Key="faqPage"><views:DocumentView DataContext="{Binding Context}" /></DataTemplate>
         <DataTemplate x:Key="termsPage"><views:DocumentView DataContext="{Binding Context}" /></DataTemplate>
         <DataTemplate x:Key="privacyPage"><views:DocumentView DataContext="{Binding Context}" /></DataTemplate>
         <DataTemplate x:Key="storyPage"><views:DocumentView DataContext="{Binding Context}" /></DataTemplate>

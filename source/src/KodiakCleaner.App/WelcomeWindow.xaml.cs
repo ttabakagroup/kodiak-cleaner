@@ -38,7 +38,7 @@ public partial class WelcomeWindow : Window
         new("Programs", ": uninstall several at once, clear leftovers, restore from History"),
         new("Registry", ": finds leftovers and backs up before every fix"),
         new("Scheduled Cleaning", ": clean chosen items every week or month"),
-        new("Scheduled Tasks", ": see each task's program, turn tasks off and back on"),
+        new("Scheduled Tasks", ": see each task's program, turn tasks off or on, back up, delete and restore"),
         new("Search and Sort", ": find any item, sort by last cleaned or space freed"),
         new("Startup", ": add, turn off or remove programs, restore from History"),
         new("System Information", ": your PC at a glance, with details and reports"),

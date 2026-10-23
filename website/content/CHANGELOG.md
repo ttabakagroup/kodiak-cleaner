@@ -5,6 +5,23 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.80 Dev] - 2026-10-23
+
+### Settings
+- New FAQ page under Help: plain answers about what goes online, moving to a new PC, undoing a change, Supporter codes, updates, safety, what Reset to Default keeps and where backups are. It works offline.
+- The Settings sidebar is A to Z under each heading (Application now comes before Registry, and Privacy Policy before Terms of Use). Settings still opens on General.
+- The Developer page is now called Developer Tools. It still goes away in public releases.
+- Supporter Code buttons are now Apply Code and Remove Code.
+- Settings > Application now lists every backup folder, including Drivers, Mass Rename and Scheduled Tasks, and says Reports also holds Boot Timer and Integrity Check results.
+
+### Links
+- Dev builds no longer link to the GitHub repository while it is private, since visitors only got GitHub's "page not found". Project Page on About opens the website's Open Source page, the Star on GitHub button waits for the first Beta, and Download.url in the Docs folder opens the website's download page.
+
+### Documents
+- The privacy policy now names the Drivers and Scheduled Tasks backups and what Boot Timer saves in Reports.
+- The Terms of Use now mention deleting scheduled tasks, removing drivers and renaming files, and that scheduled tasks and drivers are backed up first.
+- Getting Started's Scheduled Tasks line mentions back up, delete and restore.
+
 ## [0.8.79 Dev] - 2026-10-23
 
 ### Scheduled Tasks

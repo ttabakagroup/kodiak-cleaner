@@ -57,9 +57,9 @@ public sealed class SettingsSection : ObservableObject
 }
 
 /// <summary>
-/// Options &amp; Settings: the app's own pages (General, Cleaning, Updates, Advanced), then Personalize
-/// (Appearance, Supporter), Protect (Backups), Help (Contact &amp; Feedback, Terms of Use, Privacy Policy, Why It Was Made) and, in
-/// development builds only, Developer. About has its own sidebar entry under Settings in the main window.
+/// Options &amp; Settings: the app's own pages (Advanced, Cleaning, General, Updates), then Personalize
+/// (Appearance, Supporter), Protect (Application, Registry), Help (Contact &amp; Feedback, FAQ, Privacy Policy, Terms of Use,
+/// Why It Was Made) and, in development builds only, Developer Tools. Pages are A to Z under each heading. About has its own sidebar entry under Settings in the main window.
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
 {
@@ -72,6 +72,7 @@ public sealed class SettingsViewModel : ObservableObject
         About = new AboutViewModel(this);
         Feedback = new FeedbackViewModel();
         SupporterPage = new SupporterViewModel();
+        Faq = new DocumentViewModel(AppInfo.ReadResource("faq.md") ?? "");
         Terms = new DocumentViewModel(AppInfo.ReadResource("terms-of-use.md") ?? "");
         Privacy = new DocumentViewModel(AppInfo.ReadResource("PRIVACY.md") ?? "");
         Story = new DocumentViewModel(AppInfo.ReadResource("why-it-was-made.md") ?? "", bodySize: 17);
@@ -88,24 +89,26 @@ public sealed class SettingsViewModel : ObservableObject
         InstallUpdateCommand = new RelayCommand(InstallUpdateAsync, () => _available is not null && !IsCheckingUpdates);
         BuildChoices();
 
-        Add("general", "General", "\uE713", "", "How Kodiak Cleaner fits into Windows.", this);
-        Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
-        Add("updates", "Updates", "\uE895", "", "Get new versions of Kodiak Cleaner.", this);
+        // Each heading's pages are A to Z (Ted's rule; a test checks). Settings still opens on General.
         Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need, and Reset to Default.", this);
+        Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
+        Add("general", "General", "\uE713", "", "How Kodiak Cleaner fits into Windows.", this);
+        Add("updates", "Updates", "\uE895", "", "Get new versions of Kodiak Cleaner.", this);
         Add("appearance", "Appearance", "\uE790", "Personalize", "Color scheme, accent color and light or dark mode.", this);
         Add("supporter", "Supporter", "\uEB51", "Personalize", "Say thanks and unlock a few extras.", SupporterPage);
-        Add("backups", "Registry", "\uE8F1", "Protect", "Registry backups: made before every fix, or whenever you choose.", this);
         Add("application", "Application", "\uE74C", "Protect", "Kodiak Cleaner's settings file, backups and activity log.", this);
+        Add("backups", "Registry", "\uE8F1", "Protect", "Registry backups: made before every fix, or whenever you choose.", this);
         Add("feedback", "Contact & Feedback", "\uE8BD", "Help", "Tell us what's working and what isn't.", Feedback);
-        Add("terms", "Terms of Use", "\uE8A5", "Help", "The terms for using Kodiak Cleaner.", Terms);
+        Add("faq", "FAQ", "\uE897", "Help", "Plain answers to common questions about Kodiak Cleaner.", Faq);
         Add("privacy", "Privacy Policy", "\uE72E", "Help", "What Kodiak Cleaner does with information: everything stays on this PC.", Privacy);
+        Add("terms", "Terms of Use", "\uE8A5", "Help", "The terms for using Kodiak Cleaner.", Terms);
         Add("story", "Why It Was Made", "\uE736", "Help", "The story behind Kodiak Cleaner, in Ted's words.", Story);
 #if DEVTOOLS
         // Development builds only; release builds leave this page (and its code) out.
-        Add("developer", "Developer", "\uEC7A", "Developer", "Test plans and check how this build is set up.",
+        Add("developer", "Developer Tools", "\uEC7A", "Developer", "Test plans and check how this build is set up.",
             new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel() });
 #endif
-        Sections[0].IsSelected = true;
+        Sections.First(s => s.Key == "general").IsSelected = true;
 
         Supporter.Changed += () =>
         {
@@ -153,6 +156,7 @@ public sealed class SettingsViewModel : ObservableObject
     public AboutViewModel About { get; }
     public FeedbackViewModel Feedback { get; }
     public SupporterViewModel SupporterPage { get; }
+    public DocumentViewModel Faq { get; }
     public DocumentViewModel Terms { get; }
     public DocumentViewModel Privacy { get; }
     public DocumentViewModel Story { get; }
@@ -205,7 +209,8 @@ public sealed class SettingsViewModel : ObservableObject
     public string DataFolderNote => (Integration.IsInstalled
             ? "Kept in your Documents folder, so saving them never needs administrator rights. "
             : "This portable copy keeps them beside KodiakCleaner.exe. ") +
-        "Backups has a folder for each kind (Event Logs, Programs History, Registry, Settings and Startup History); Logs has the activity log; Reports has the System Information reports you export. " +
+        $"Backups has a folder for each kind ({string.Join(", ", DataFolders.BackupKinds[..^1])} and {DataFolders.BackupKinds[^1]}); " +
+        "Logs has the activity log; Reports has the System Information reports you export and the Boot Timer and Integrity Check results. " +
         (Integration.IsInstalled ? "Uninstalling Kodiak Cleaner asks whether to delete them." : "Delete the folder to remove them.");
     public ICommand ResetCommand { get; }
     public ICommand BackUpRegistryCommand { get; }

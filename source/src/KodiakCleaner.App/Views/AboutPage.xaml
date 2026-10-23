@@ -126,7 +126,7 @@
             <Border Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Learn More" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="A quick tour of Kodiak Cleaner, its website, and its project page on GitHub where the code, releases and discussions live." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <TextBlock Text="A quick tour of Kodiak Cleaner, its website, and its project page, where the source code lives." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
                     <WrapPanel Margin="0,12,0,0">
                         <Button Content="Getting Started" Command="{Binding GettingStartedCommand}" Style="{StaticResource AccentButton}" Margin="0,0,8,0" />
                         <Button Content="Website" Command="{Binding WebsiteCommand}" Margin="0,0,8,0" />

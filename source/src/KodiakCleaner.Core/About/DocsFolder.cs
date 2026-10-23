@@ -17,14 +17,27 @@ public static class DocsFolder
     public static readonly string[] Files =
         ["Changelog.txt", "Download.url", "Homepage.url", "License.txt", "Privacy.txt", "ReadMe.txt", "TermsOfUse.txt"];
 
+    /// <summary>The website's download page, which always has the newest installer.</summary>
+    public const string DownloadPage = Homepage + "download/";
+
     /// <summary>
-    /// The direct download of the newest installer for a channel. GitHub's releases/latest skips pre-releases, so Dev and
-    /// Beta use a fixed release (latest-dev, latest-beta) that each build replaces. It links the bare MSI, the installer
-    /// every release carries (Ted, 0.8.31; the only installer file since 0.8.37).
+    /// Where Download.url points. Dev builds come out while the repository is private (Ted makes it public with the first
+    /// Beta, see <see cref="RepositoryIsPublic"/>), so they link the website's download page. Beta and Stable link the
+    /// direct download of the newest installer: GitHub's releases/latest skips pre-releases, so Beta uses a fixed release
+    /// (latest-beta) that each build replaces. It links the bare MSI, the installer every release carries (Ted, 0.8.31).
     /// </summary>
-    public static string DownloadUrl(ReleaseChannel channel) => channel == ReleaseChannel.Stable
-        ? $"{Repository}/releases/latest/download/KodiakCleaner-{channel}-Setup.msi"
-        : $"{Repository}/releases/download/latest-{channel.ToString().ToLowerInvariant()}/KodiakCleaner-{channel}-Setup.msi";
+    public static string DownloadUrl(ReleaseChannel channel) => channel switch
+    {
+        ReleaseChannel.Dev => DownloadPage,
+        ReleaseChannel.Stable => $"{Repository}/releases/latest/download/KodiakCleaner-{channel}-Setup.msi",
+        _ => $"{Repository}/releases/download/latest-{channel.ToString().ToLowerInvariant()}/KodiakCleaner-{channel}-Setup.msi",
+    };
+
+    /// <summary>
+    /// The GitHub repository stays private for Dev builds and goes public with the first Beta (Ted, 2026-10-14), so links to it
+    /// (Project Page, Star on GitHub, Download.url) only show from Beta on. Visitors would get GitHub's 404 page before that.
+    /// </summary>
+    public static bool RepositoryIsPublic(ReleaseChannel channel) => channel != ReleaseChannel.Dev;
 
     /// <summary>KodiakCleaner-Dev-Setup.msi, KodiakCleaner-Stable-Portable.zip: the same name every release, so links keep working.</summary>
     public static string PackageName(ReleaseChannel channel, string kind) => $"KodiakCleaner-{channel}-{kind}.zip";

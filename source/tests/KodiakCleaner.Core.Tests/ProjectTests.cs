@@ -293,12 +293,17 @@ public class DocumentTests
                 Assert.DoesNotContain("\n", text.Replace("\r\n", ""));
             }
             Assert.Contains("URL=https://www.kodiakcleaner.app/\r\n", File.ReadAllText(Path.Combine(dir, "Homepage.url")));
-            Assert.Contains("URL=https://github.com/ttabakagroup/kodiakcleaner/releases/download/latest-dev/KodiakCleaner-Dev-Setup.msi\r\n",
+            // The repository is private while builds are Dev, so Dev links the website (Ted, 2026-10-14: public with the first Beta).
+            Assert.Contains("URL=https://www.kodiakcleaner.app/download/\r\n",
                 File.ReadAllText(Path.Combine(dir, "Download.url")));
         }
         finally { Directory.Delete(dir, true); }
         Assert.Equal("https://github.com/ttabakagroup/kodiakcleaner/releases/latest/download/KodiakCleaner-Stable-Setup.msi",
             DocsFolder.DownloadUrl(ReleaseChannel.Stable));
+        Assert.Equal("https://github.com/ttabakagroup/kodiakcleaner/releases/download/latest-beta/KodiakCleaner-Beta-Setup.msi",
+            DocsFolder.DownloadUrl(ReleaseChannel.Beta));
+        Assert.False(DocsFolder.RepositoryIsPublic(ReleaseChannel.Dev));
+        Assert.True(DocsFolder.RepositoryIsPublic(ReleaseChannel.Beta));
     }
 
     [Fact]
@@ -329,7 +334,7 @@ public class DocumentTests
         // A DynamicResource finds the Controls.xaml entry first, so a style named like a brush (FocusRing in 0.8.31) breaks every use.
         static IEnumerable<string> Keys(string file) => Regex.Matches(Repo.Read("src", "KodiakCleaner.App", "Themes", file), @"x:Key=""([^""]+)""").Select(m => m.Groups[1].Value);
         var colors = Keys("HoneyLight.xaml").ToHashSet();
-        Assert.Empty(Keys("Controls.xaml").Where(colors.Contains));
+        Assert.DoesNotContain(Keys("Controls.xaml"), colors.Contains);
     }
 
     [Fact]
@@ -482,5 +487,64 @@ public class BackgroundTaskTests
         Assert.Contains("\"Keep Open\" }, defaultButton: 1, cancelButton: 1", tasks);
         Assert.Contains("MainWindow.ConfirmExit()", Repo.Read("src", "KodiakCleaner.App", "TrayIcon.cs"));
         Assert.Contains("MainWindow.ConfirmExit(\"Restart\")", Repo.Read("src", "KodiakCleaner.App", "Elevation.cs"));
+    }
+}
+
+/// <summary>
+/// Lists that describe the whole app (Getting Started, Settings > Application, the privacy policy, the Settings sidebar) fall
+/// behind when a tool is added. These checks make a new tool or backup folder fail the build until every list knows about it.
+/// </summary>
+public class StaysCurrentTests
+{
+    [Fact]
+    public void Settings_pages_are_A_to_Z_under_each_heading_and_open_on_general()
+    {
+        var src = Repo.Read("src", "KodiakCleaner.App", "ViewModels", "SettingsViewModel.cs");
+        var pages = Regex.Matches(src, @"Add\(""(\w+)"", ""([^""]+)"", ""[^""]*"", ""([^""]*)""")
+            .Select(m => (Key: m.Groups[1].Value, Title: m.Groups[2].Value, Group: m.Groups[3].Value)).ToList();
+        Assert.Contains(pages, p => p.Key == "faq" && p.Group == "Help");
+        Assert.Contains(pages, p => p.Key == "developer" && p.Title == "Developer Tools");
+        foreach (var group in pages.GroupBy(p => p.Group))
+        {
+            var titles = group.Select(p => p.Title).ToList();
+            Assert.Equal(titles.OrderBy(t => t, StringComparer.OrdinalIgnoreCase), titles);
+        }
+        Assert.Contains("Sections.First(s => s.Key == \"general\").IsSelected = true;", src);
+    }
+
+    [Fact]
+    public void Getting_started_lists_every_page_in_the_sidebar()
+    {
+        var nav = Repo.Read("src", "KodiakCleaner.App", "ViewModels", "MainViewModel.cs");
+        var welcome = Repo.Read("src", "KodiakCleaner.App", "WelcomeWindow.xaml.cs");
+        var features = Regex.Matches(welcome, @"new\(""([^""]+)"", "": ").Select(m => m.Groups[1].Value).ToList();
+        Assert.Equal(features.OrderBy(f => f, StringComparer.OrdinalIgnoreCase), features);
+        foreach (Match page in Regex.Matches(nav, @"(?:MainPages|ToolPages)\.Add\(new NavPage\(""([^""]+)"""))
+            Assert.Contains(page.Groups[1].Value, features);
+    }
+
+    [Fact]
+    public void Every_backup_folder_is_named_and_in_the_privacy_policy()
+    {
+        Assert.Equal(DataFolders.BackupKinds.OrderBy(k => k, StringComparer.OrdinalIgnoreCase), DataFolders.BackupKinds);
+        // New backups use a named folder from DataFolders, never Path.Combine(Settings.Data.Backups, "..."), so the lists stay whole.
+        foreach (var file in Directory.GetFiles(Repo.File("src"), "*.cs", SearchOption.AllDirectories))
+            Assert.DoesNotContain("Path.Combine(Settings.Data.Backups,", File.ReadAllText(file));
+        var privacy = Repo.Read("PRIVACY.md");
+        var hosted = Repo.Read("store-assets", "privacy-policy.html");
+        foreach (var kind in DataFolders.BackupKinds)
+        {
+            Assert.Contains($"{kind} (", privacy);
+            Assert.Contains($"{kind} (", hosted);
+        }
+    }
+
+    [Fact]
+    public void Faq_is_built_in_and_its_questions_are_A_to_Z()
+    {
+        Assert.Contains(@"Include=""..\..\faq.md"" LogicalName=""faq.md""", Repo.Read("src", "KodiakCleaner.App", "KodiakCleaner.App.csproj"));
+        var questions = SimpleMarkdown.Parse(Repo.Read("faq.md")).Where(b => b.Kind == MarkdownBlockKind.Heading2).Select(b => b.Text).ToList();
+        Assert.True(questions.Count >= 6);
+        Assert.Equal(questions.OrderBy(q => q, StringComparer.OrdinalIgnoreCase), questions);
     }
 }

@@ -106,7 +106,7 @@ public sealed class DuplicateGroupItem : ObservableObject
 
     private string _badge;
     public string Badge { get => _badge; set => Set(ref _badge, value); }
-    private string _badgeTip;
+    private string _badgeTip = "";
     public string BadgeTip { get => _badgeTip; set => Set(ref _badgeTip, value); }
     private bool _badgeWarn;
     /// <summary>True when a hash check found a copy that no longer matches.</summary>

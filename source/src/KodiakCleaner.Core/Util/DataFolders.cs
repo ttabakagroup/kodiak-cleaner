@@ -6,20 +6,31 @@ namespace KodiakCleaner.Core.Util;
 /// KodiakCleaner.exe. Each kind of backup has its own folder:
 /// <code>
 /// Kodiak Cleaner\
+///   Backups\Drivers\           driver packages exported before Driver Cleaner removes them
 ///   Backups\Event Logs\        Windows event logs saved before they are cleared
+///   Backups\Mass Rename\       the last rename, so Undo Last Rename can put the old names back
 ///   Backups\Programs History\  what the Programs page removed, and how to put it back
 ///   Backups\Registry\          a .reg file before every registry change (double-click to undo)
+///   Backups\Scheduled Tasks\   task XML saved before a scheduled task is deleted or replaced
 ///   Backups\Settings\          Back Up Settings copies of KodiakCleaner.ini and both histories
 ///   Backups\Startup History\   startup entries seen and removed, with copies of their shortcuts
 ///   Logs\                      one activity log per month
-///   Reports\                   System Information reports you export (Ted, 0.8.46)
+///   Reports\                   System Information reports you export (Ted, 0.8.46), Boot Timer and Integrity Check results
 /// </code>
 /// </summary>
 public sealed class DataFolders
 {
     public const string FolderName = "Kodiak Cleaner";
-    public const string EventLogsName = "Event Logs", ProgramsHistoryName = "Programs History", RegistryName = "Registry",
+    public const string DriversName = "Drivers", EventLogsName = "Event Logs", MassRenameName = "Mass Rename",
+        ProgramsHistoryName = "Programs History", RegistryName = "Registry", ScheduledTasksName = "Scheduled Tasks",
         SettingsName = "Settings", StartupHistoryName = "Startup History";
+
+    /// <summary>
+    /// Every folder inside Backups, A to Z. Settings &gt; Application and the privacy policy list these, and a test checks that
+    /// nothing saves into a Backups folder missing from here, so the list can't fall behind a new tool.
+    /// </summary>
+    public static readonly string[] BackupKinds =
+        [DriversName, EventLogsName, MassRenameName, ProgramsHistoryName, RegistryName, ScheduledTasksName, SettingsName, StartupHistoryName];
 
     public DataFolders(string root)
     {
@@ -36,9 +47,12 @@ public sealed class DataFolders
     public string Backups { get; }
     public string Logs { get; }
     public string Reports { get; }
+    public string Drivers => Path.Combine(Backups, DriversName);
     public string EventLogs => Path.Combine(Backups, EventLogsName);
+    public string MassRename => Path.Combine(Backups, MassRenameName);
     public string ProgramsHistory => Path.Combine(Backups, ProgramsHistoryName);
     public string Registry => Path.Combine(Backups, RegistryName);
+    public string ScheduledTasks => Path.Combine(Backups, ScheduledTasksName);
     public string Settings => Path.Combine(Backups, SettingsName);
     public string StartupHistory => Path.Combine(Backups, StartupHistoryName);
 

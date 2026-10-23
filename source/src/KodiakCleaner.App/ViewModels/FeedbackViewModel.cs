@@ -37,7 +37,11 @@ public sealed class FeedbackViewModel : ObservableObject
 
     public string Intro => "Tell us what's working, what isn't, and what you'd like next. Missing a feature you'd like? Let us know and we'll look into it.";
     public string RateTitle => $"Rate {AppInfo.ShortName}";
-    public string RateText => $"If {AppInfo.ShortName} has earned it, please give it a star on GitHub.";
+    public string RateText => AppInfo.RepositoryIsPublic
+        ? $"If {AppInfo.ShortName} has earned it, please give it a star on GitHub."
+        : $"If {AppInfo.ShortName} has earned it, you'll be able to give it a star on GitHub once the source code is public with the first Beta.";
+    /// <summary>Star on GitHub shows once the repository is public (Beta on); before that GitHub shows visitors a 404.</summary>
+    public bool ShowStar => AppInfo.RepositoryIsPublic;
     public string RateNote => "Before leaving a negative review, please contact us first so we can address any issues and meet your needs.";
 
     /// <summary>Safe, non-personal facts: version, Windows, plan, install type, theme. Never files or folders.</summary>

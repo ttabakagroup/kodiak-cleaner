@@ -164,7 +164,7 @@ public static partial class SystemDetails
     private static IEnumerable<SystemFact> Network()
     {
         // Each detail is read on its own: a driver that refuses one (NetworkInformationException) only loses that line.
-        static T? Safe<T>(Func<T> read) where T : class
+        static T? Safe<T>(Func<T?> read) where T : class
         {
             try { return read(); }
             catch (Exception e) when (e is NetworkInformationException or PlatformNotSupportedException or InvalidOperationException) { return null; }

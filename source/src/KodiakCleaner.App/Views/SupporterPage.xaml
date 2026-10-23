@@ -105,11 +105,11 @@
                 <TextBlock Text="Supporter Code" Style="{StaticResource SettingTitle}" />
                 <TextBlock Text="Checked on this PC only. Nothing is sent anywhere." Style="{StaticResource Caption}" Margin="0,2,0,8" />
                 <DockPanel>
-                    <Button DockPanel.Dock="Right" Content="Apply" Command="{Binding ApplyCodeCommand}" Style="{StaticResource AccentButton}" Margin="8,0,0,0" />
+                    <Button DockPanel.Dock="Right" Content="Apply Code" Command="{Binding ApplyCodeCommand}" Style="{StaticResource AccentButton}" Margin="8,0,0,0" />
                     <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" Tag="e.g. eyJpZCI6IjNmOWMx...Q2xvdWQ" FontFamily="Consolas" />
                 </DockPanel>
                 <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,8,0,0" />
-                <Button Content="Remove Code from This PC" Command="{Binding RemoveCodeCommand}" Style="{StaticResource LinkButton}"
+                <Button Content="Remove Code" Command="{Binding RemoveCodeCommand}" Style="{StaticResource LinkButton}"
                         HorizontalAlignment="Left" Margin="-8,4,0,0" Visibility="{Binding HasCode, Converter={StaticResource BoolToVis}}" />
             </StackPanel>
         </Border>

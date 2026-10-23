@@ -15,7 +15,10 @@ public static class AppInfo
 
     /// <summary>GitHub "owner/name": source code and Star on GitHub.</summary>
     public const string Repository = "ttabakagroup/kodiakcleaner";
-    public static string ProjectUrl => $"https://github.com/{Repository}";
+    /// <summary>False for Dev builds: the repository goes public with the first Beta, and until then GitHub shows visitors a 404.</summary>
+    public static bool RepositoryIsPublic => DocsFolder.RepositoryIsPublic(Channel);
+    /// <summary>The source code on GitHub, or the website's Open Source page while the repository is still private.</summary>
+    public static string ProjectUrl => RepositoryIsPublic ? $"https://github.com/{Repository}" : HomepageUrl + "open-source/";
     /// <summary>Kodiak Cleaner's own website (Ted registered it in 0.8.28). Updates come from it since 0.8.40; code stays on the repository.</summary>
     public const string HomepageUrl = "https://www.kodiakcleaner.app/";
     /// <summary>A hosted privacy policy. Empty = show the copy built into the app.</summary>
