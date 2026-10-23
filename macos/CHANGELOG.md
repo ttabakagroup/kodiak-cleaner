@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.8 Dev] - 2026-10-23
+
+### Changed
+- **Supporter:** the Support card and the Terms of Use now say that one supporter code covers up to 10 of your computers.
+
 ## [0.8.7 Dev] - 2026-10-23
 
 ### Changed
