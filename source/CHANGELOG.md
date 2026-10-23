@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.79 Dev] - 2026-10-23
+
+### Scheduled Tasks
+- Password-protected tasks (ones that sign in with a saved password) are now flagged. Back Up, Delete and Restore warn that backing one up may fail and that it may not be possible to restore it, because Windows never gives out the saved password. Hovering a task shows "Sign-in: Saved password".
+- Restore Tasks marks these backups "Needs Password" and explains how to put them back with Task Scheduler's Import Task; the other ticked tasks are still restored.
+
 ## [0.8.78 Dev] - 2026-10-23
 
 ### Interface

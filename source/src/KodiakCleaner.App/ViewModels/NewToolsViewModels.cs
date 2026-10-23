@@ -578,7 +578,10 @@ public sealed class ScheduledTaskItem : ObservableObject
     /// <summary>Hover details, one "Label: value" line each.</summary>
     public string Details => DetailText.Lines(("Name", Name), ("Folder", Folder), ("Program", Program), ("Runs", ProgramPath.Length > 0 ? ProgramPath : Command),
         ("Arguments", Arguments), ("Publisher", Publisher), ("Author", Author), ("Description", Description), ("Status", Status),
-        ("Next run", NextRun), ("Last run", LastRun));
+        ("Next run", NextRun), ("Last run", LastRun), ("Sign-in", UsesPassword ? "Saved password (backup and restore may not work)" : ""));
+
+    /// <summary>The task signs in with a saved password (TASK_LOGON_PASSWORD), which a backup can't hold (Ted, 2026-10-23).</summary>
+    public bool UsesPassword { get; private set; }
 
     /// <summary>The task's first action: a program it starts, or a Windows component (COM handler) it calls.</summary>
     private void ReadAction(dynamic task)
@@ -588,6 +591,7 @@ public sealed class ScheduledTaskItem : ObservableObject
             dynamic definition = task.Definition;
             try { Author = (string?)definition.RegistrationInfo.Author ?? ""; } catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
             try { Description = (string?)definition.RegistrationInfo.Description ?? ""; } catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+            try { UsesPassword = (int)definition.Principal.LogonType == 1; } catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
             foreach (dynamic action in definition.Actions)
             {
                 int type = action.Type;
@@ -833,6 +837,8 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
     private void BackUp(List<ScheduledTaskItem> items)
     {
         if (items.Count == 0) return;
+        if (PasswordNote(items) is { } note && !Dialogs.Warn(note + " Back them up anyway?", "Password-Protected Tasks", ScheduledTaskTools.PasswordCaution))
+            return;
         var problems = items.Select(i => (i, problem: ScheduledTaskTools.BackUp(i, ScheduledTaskBackups.Manual)))
             .Where(r => r.problem is not null).Select(r => $"{r.i.Name}: {r.problem}").ToList();
         if (problems.Count > 0)
@@ -850,8 +856,9 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         var what = items.Count == 1 ? $"the task '{items[0].Name}'" : $"{items.Count} tasks";
         if (!Dialogs.Warn($"Delete {what}? Each one is backed up to Backups\\Scheduled Tasks first, so Restore can put it back. " +
                           "If you only want it to stop running, turning it off is simpler.", "Delete Tasks",
-                windows == 0 ? null : (windows == 1 && items.Count == 1 ? "This is one of Windows' own tasks." : $"{windows} of these are Windows' own tasks.") +
-                                      " Deleting them can stop Windows features like updates, backups or maintenance from working."))
+                Join(windows == 0 ? null : (windows == 1 && items.Count == 1 ? "This is one of Windows' own tasks." : $"{windows} of these are Windows' own tasks.") +
+                                           " Deleting them can stop Windows features like updates, backups or maintenance from working.",
+                     PasswordNote(items) is { } note ? note + " " + ScheduledTaskTools.PasswordCaution : null)))
             return;
         var problems = new List<string>();
         foreach (var i in items)
@@ -860,6 +867,15 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         if (problems.Count > 0)
             Dialogs.Error($"{problems.Count} of {items.Count} task(s) weren't deleted:\n\n" + string.Join("\n", problems));
     }
+
+    /// <summary>"This task is password-protected." / "2 of these tasks are password-protected.", or null when none are.</summary>
+    private static string? PasswordNote(List<ScheduledTaskItem> items)
+    {
+        var n = items.Count(i => i.UsesPassword);
+        return n == 0 ? null : n == 1 && items.Count == 1 ? "This task is password-protected." : $"{n} of these tasks are password-protected.";
+    }
+
+    private static string? Join(string? a, string? b) => a is null ? b : b is null ? a : a + "\n\n" + b;
 
     private void OpenRestore()
     {

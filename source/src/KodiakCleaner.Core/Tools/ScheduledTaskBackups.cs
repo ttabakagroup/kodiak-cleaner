@@ -75,6 +75,12 @@ public sealed class ScheduledTaskBackups
 
     public string PathOf(TaskBackup backup) => Path.Combine(Folder, backup.File);
 
+    /// <summary>
+    /// True when the task signs in with a saved password (LogonType Password). Windows never hands that password out, so its
+    /// backup may fail and Kodiak Cleaner can't register it again; only Task Scheduler's Import Task, with the password, can.
+    /// </summary>
+    public static bool UsesPassword(string xml) => Regex.IsMatch(xml, @"<LogonType>\s*Password\s*</LogonType>");
+
     /// <summary>The task path in the XML's RegistrationInfo URI ("\Folder\Name"), or null.</summary>
     public static string? UriFrom(string xml)
     {

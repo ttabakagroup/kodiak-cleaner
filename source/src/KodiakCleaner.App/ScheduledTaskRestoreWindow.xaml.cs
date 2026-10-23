@@ -23,7 +23,17 @@ public sealed class TaskBackupRow : ObservableObject
     public string Program => Backup.Program;
     public DateTime SavedAt => Backup.SavedAt;
     public string Reason => Backup.Reason;
-    public string Status => Current is null ? "Deleted" : "Still Scheduled";
+    public string Status => UsesPassword ? "Needs Password" : Current is null ? "Deleted" : "Still Scheduled";
+
+    private bool? _usesPassword;
+    /// <summary>The backed-up task signs in with a saved password, so only Task Scheduler's Import Task can put it back.</summary>
+    public bool UsesPassword => _usesPassword ??= Read() is { } xml && ScheduledTaskBackups.UsesPassword(xml);
+
+    private string? Read()
+    {
+        try { return System.IO.File.ReadAllText(ScheduledTaskTools.Backups.PathOf(Backup)); }
+        catch (Exception e) when (e is System.IO.IOException or UnauthorizedAccessException) { return null; }
+    }
 
     public bool Matches(string search) =>
         string.IsNullOrWhiteSpace(search) ||
@@ -73,7 +83,8 @@ public partial class ScheduledTaskRestoreWindow : Window
         Empty.Visibility = _rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         Subheading.Text = $"Every scheduled task saved in Backups\\Scheduled Tasks: {TargetRun.Plural(_rows.Count, "backup")}, A to Z. " +
                           "Tasks are saved there before Kodiak Cleaner deletes them and whenever you choose Back Up. Restore puts a task back in its old folder; " +
-                          "if a task of that name is scheduled now, it is backed up and then replaced. The files are the same XML Task Scheduler's Import Task reads.";
+                          "if a task of that name is scheduled now, it is backed up and then replaced. The files are the same XML Task Scheduler's Import Task reads. " +
+                          "Password-protected tasks (Needs Password) may not back up or restore here; use Task Scheduler's Import Task for those.";
     }
 
     /// <summary>Ticked rows, or the highlighted row when none are ticked.</summary>
@@ -98,6 +109,21 @@ public partial class ScheduledTaskRestoreWindow : Window
         {
             Dialogs.Info($"Two backups of '{twice.First().Name}' are ticked. Tick just the one to put back.", "Restore Selected");
             return;
+        }
+        // Password-protected tasks can't be registered without the password, so they are left for Task Scheduler's Import Task.
+        var withPassword = picked.Count(r => r.UsesPassword);
+        if (withPassword == picked.Count)
+        {
+            Dialogs.Info((picked.Count == 1 ? "This task is password-protected." : "These tasks are password-protected.") + " " + ScheduledTaskTools.PasswordCaution +
+                         "\n\nIn Task Scheduler choose Action > Import Task and pick the file from Open Backups Folder.", "Password-Protected Tasks");
+            return;
+        }
+        if (withPassword > 0)
+        {
+            if (!Dialogs.Warn($"{withPassword} of these tasks are password-protected and will be skipped. Restore the other {picked.Count - withPassword}?",
+                    "Password-Protected Tasks", ScheduledTaskTools.PasswordCaution))
+                return;
+            picked = picked.Where(r => !r.UsesPassword).ToList();
         }
         var what = picked.Count == 1 ? $"the task '{picked[0].Name}'" : $"{picked.Count} tasks";
         var scheduled = picked.Count(r => r.Current is not null);

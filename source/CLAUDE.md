@@ -43,7 +43,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   Scheduled Tasks turns tasks on or off and hides Windows tasks unless asked. Delete (Ted, 2026-10-23) always saves the task's XML to
   Backups\Scheduled Tasks first (`ScheduledTaskBackups`, index.json keeps each file's task path) and skips a task whose backup fails;
   Restore re-registers it in its old folder (backing up and replacing a task of the same name). Password-logon tasks can't be restored
-  from here (the password isn't in the XML); the message points to Task Scheduler's Import Task.
+  from here (the password isn't in the XML); the message points to Task Scheduler's Import Task. Back Up, Delete and Restore warn
+  first when a picked task is password-protected (`ScheduledTaskTools.PasswordCaution`, Ted 2026-10-23).
 - Drive Wiper (2026-10-12): `DriveMedia` reads each disk's type from the storage stack (NVMe bus, seek penalty, USB/SD bus; no WMI).
   Entire Drive works on whole physical disks (`DriveWiper.ListDisks`/`EraseAsync`): a disk is refused when any letter on it is protected
   (`ProtectedReason`: Windows, Kodiak Cleaner's drive, page file, user folder, programs), when it holds the start-up partition

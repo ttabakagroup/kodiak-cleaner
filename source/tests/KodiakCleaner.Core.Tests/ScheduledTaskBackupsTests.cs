@@ -73,6 +73,16 @@ public class ScheduledTaskBackupsTests
     public void File_names_are_safe(string name, string expected) => Assert.Equal(expected, ScheduledTaskBackups.SafeFileName(name));
 
     [Fact]
+    public void Password_protected_tasks_are_spotted()
+    {
+        Assert.True(ScheduledTaskBackups.UsesPassword("<Principals><Principal id=\"Author\"><UserId>PC\\Ted</UserId><LogonType>Password</LogonType></Principal></Principals>"));
+        Assert.True(ScheduledTaskBackups.UsesPassword("<LogonType> Password </LogonType>"));
+        Assert.False(ScheduledTaskBackups.UsesPassword("<LogonType>InteractiveToken</LogonType>"));
+        Assert.False(ScheduledTaskBackups.UsesPassword("<LogonType>InteractiveTokenOrPassword</LogonType>"));
+        Assert.False(ScheduledTaskBackups.UsesPassword(Xml));
+    }
+
+    [Fact]
     public void Empty_task_is_not_saved()
     {
         var store = new ScheduledTaskBackups(Path.Combine(Path.GetTempPath(), "kc-tasks-" + Guid.NewGuid().ToString("N")));

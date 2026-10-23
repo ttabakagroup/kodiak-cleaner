@@ -12,6 +12,11 @@ namespace KodiakCleaner.App;
 /// </summary>
 public static class ScheduledTaskTools
 {
+    /// <summary>What Back Up, Delete and Restore say about a task that signs in with a saved password (Ted, 2026-10-23).</summary>
+    public const string PasswordCaution =
+        "Windows never gives out a task's saved password, so backing up a password-protected task may fail, and it may not be possible " +
+        "to restore it from the backup. Kodiak Cleaner can't put these back itself; Task Scheduler's Import Task can, if you type the account's password again.";
+
     public static ScheduledTaskBackups Backups => new(Path.Combine(Settings.Data.Backups, ScheduledTaskBackups.FolderName));
 
     /// <summary>Task Scheduler's COM service, connected as the current user.</summary>
@@ -34,6 +39,7 @@ public static class ScheduledTaskTools
         }
         catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e) || e is IOException or InvalidDataException)
         {
+            if (task.UsesPassword) return "Windows wouldn't give out this password-protected task.";
             return e is UnauthorizedAccessException or COMException ? "Windows wouldn't give out this task (try Restart as Administrator)." : e.Message;
         }
     }
@@ -74,7 +80,7 @@ public static class ScheduledTaskTools
             definition.XmlText = xml;
             int logon = definition.Principal.LogonType;
             if (logon == 1) // TASK_LOGON_PASSWORD: Windows needs the account's password again
-                return "This task runs with a saved password, which a backup can't hold. Open Task Scheduler, choose Import Task and pick the backup file, then type the password.";
+                return "This task is password-protected, and a backup can't hold the password. Open Task Scheduler, choose Import Task, pick the backup file, then type the account's password.";
             string? user = Text(() => definition.Principal.UserId) ?? Text(() => definition.Principal.GroupId);
             folder.RegisterTaskDefinition(backup.Name, definition, 6, user, null, logon, null); // 6 = create or update
             ActivityLog.Write("Scheduled Tasks", $"Restored task {backup.TaskPath} from {backup.File}");
