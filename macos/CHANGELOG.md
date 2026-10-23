@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.6 Dev] - 2026-10-23
+
+### Changed
+- **Supporter codes:** now checked with Ted's own key, so real codes from Ko-fi work.
+
 ## [0.8.5 Dev] - 2026-10-22
 
 ### Added
