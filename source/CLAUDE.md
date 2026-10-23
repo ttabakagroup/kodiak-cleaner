@@ -91,8 +91,9 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Programs (0.8.15): program icons (`ProgramIcons`: DisplayIcon, Installer ProductIcon, main exe), tick boxes + Select All; batch uninstall
   runs the full flow per program strictly one at a time, waiting for helper uninstallers (Temp, Un/Au_/_iu/unins) to close.
 - Multi-select (Ted, 0.8.49; every list 0.8.90): the shared DataGrid style is `SelectionMode="Extended"` and switches on `Views/ListSelect`
-  for every table and ItemsControl (drag across rows, a selection box from the empty space under them, press-and-drag over tick boxes,
-  Space ticks the highlighted rows). Only `ListSelectTests.SingleRowTables` may say `SelectionMode="Single"`; a table or list never gets
+  for every table and ItemsControl (0.8.92: a drag starts anywhere on the list's Card border and always shows an accent outline;
+  tables highlight the covered rows by item index, so it scrolls and survives virtualization; tick-box lists tick the covered rows,
+  highlight whole rows on hover and when ticked via an adorner, and a click anywhere on a row ticks it; Space ticks highlighted rows). Only `ListSelectTests.SingleRowTables` may say `SelectionMode="Single"`; a table or list never gets
   its own Style (it would lose ListSelect). Tables with a right-click menu pass their highlighted rows to the view model's `Highlighted`. Right-click actions act on every highlighted row (`GridRightClick` keeps a
   selection when the clicked row is in it); the buttons act on ticked rows, else the highlighted ones. Repair and Rename need exactly one row.
 - Icons (0.8.16): only from files already on the PC (`ProgramIcons`, `FileIcons`: exe icons via ExtractIconEx, others via SHGetFileInfo), never bundled brand logos;

@@ -34,6 +34,13 @@ public class ListSelectTests
             .SelectMany(s => s.Elements(Ns + "Setter")).FirstOrDefault(s => (string?)s.Attribute("Property") == property)?.Attribute("Value")?.Value;
 
         Assert.Equal("Extended", Setter("DataGrid", "SelectionMode"));
+        // Whole rows highlight, never a single cell (Ted, 0.8.92): under the mouse and when selected.
+        Assert.Equal("FullRow", Setter("DataGrid", "SelectionUnit"));
+        var row = xaml.Root!.Elements(Ns + "Style").Single(s => (string?)s.Attribute("TargetType") == "DataGridRow" &&
+                                                                 s.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is null);
+        var triggers = row.Descendants(Ns + "Trigger").Select(t => (string?)t.Attribute("Property")).ToList();
+        Assert.Contains("IsMouseOver", triggers);
+        Assert.Contains("IsSelected", triggers);
         Assert.Equal("True", Setter("DataGrid", "views:ListSelect.IsEnabled"));
         Assert.Equal("True", Setter("ItemsControl", "views:ListSelect.IsEnabled"));
     }
@@ -49,6 +56,8 @@ public class ListSelectTests
                 problems.Add($"{file}: a table set to SelectionMode=\"{mode}\" can't drag-select. Remove it or add the file to SingleRowTables with a reason.");
             if (grid.Attributes().Any(a => a.Name.LocalName == "ListSelect.IsEnabled"))
                 problems.Add($"{file}: a table turns ListSelect off.");
+            if ((string?)grid.Attribute("SelectionUnit") is { } unit && unit != "FullRow")
+                problems.Add($"{file}: a table set to SelectionUnit=\"{unit}\" highlights cells, not whole rows.");
             if (grid.Attribute("Style") is { } style)
                 problems.Add($"{file}: a table with its own Style ({style.Value}) loses the shared one; use BasedOn and keep ListSelect.");
         }

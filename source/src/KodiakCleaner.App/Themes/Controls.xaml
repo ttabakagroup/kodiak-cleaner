@@ -821,13 +821,16 @@
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="RowHeaderWidth" Value="0" />
-        <!-- Every table highlights several rows (Ctrl-click, Shift-click and drag, Ted 0.8.90); the few single-pick tables say
-             SelectionMode="Single" themselves. ListSelect adds the selection box, drag-to-tick and Space. -->
+        <!-- Every table highlights whole rows, several at a time (Ctrl-click, Shift-click and drag, Ted 0.8.90); the few single-pick
+             tables say SelectionMode="Single" themselves. ListSelect adds the drag outline (from anywhere on the card), drag-to-tick
+             and Space. -->
         <Setter Property="SelectionMode" Value="Extended" />
         <Setter Property="SelectionUnit" Value="FullRow" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="views:ListSelect.IsEnabled" Value="True" />
     </Style>
-    <!-- Lists of tick boxes: press a box and drag over the others to tick (or untick) them all (Ted, 0.8.90). -->
+    <!-- Lists of tick boxes: drag from anywhere on the card to tick (or untick) every row the outline covers; rows highlight
+         across their full width on hover and when ticked, and clicking anywhere on a row ticks it (Ted, 0.8.90 and 0.8.92). -->
     <Style TargetType="ItemsControl">
         <Setter Property="views:ListSelect.IsEnabled" Value="True" />
     </Style>

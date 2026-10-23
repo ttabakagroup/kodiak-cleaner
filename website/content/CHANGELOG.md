@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.93 Dev] - 2026-10-23
+
+### All Lists
+- Selection outline: dragging in any list now draws an outline in your accent color that follows the mouse the whole time, from wherever you started. A drag can start anywhere on the list's card (a row, the empty space under the rows, or the card's edge), and the outline can cover the whole card.
+- Dragging past the top or bottom of a list keeps scrolling it, so a selection can be as long as the list.
+- Lists of tick boxes, such as Empty Folders, Duplicate Finder's drives and folders and uninstall leftovers, now highlight the whole row like the tables do: the row under the mouse, and every ticked row. Click anywhere on a row to tick or untick it, or drag the outline over rows to tick (or untick) them all.
+
 ## [0.8.92 Dev] - 2026-10-23
 
 ### Startup

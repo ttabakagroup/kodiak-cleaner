@@ -14,7 +14,7 @@ Under Settings, Application, click Back Up Settings. It saves a dated copy of yo
 
 ## How Do I Select Many Items at Once?
 
-Every table works like File Explorer. Hold the mouse button on an entry and drag up or down to highlight everything in between, or start in the empty space under the entries to draw a selection box. Ctrl-click adds or removes one entry, and Shift-click highlights a whole range. Right-click acts on every highlighted entry, and Space ticks or unticks them all. To tick many boxes, in a table or in a list of tick boxes such as Duplicate Finder's folders, press one tick box and drag across the others: each one you pass gets the same tick.
+Every list works like File Explorer. Hold the mouse button anywhere on the list's card and drag: an outline follows the mouse, and every entry it covers is highlighted (dragging past the top or bottom keeps scrolling). Ctrl-click adds or removes one entry, and Shift-click highlights a whole range. Right-click acts on every highlighted entry, and Space ticks or unticks them all. In lists of tick boxes, such as Empty Folders, the outline ticks every entry it covers instead, and clicking anywhere on an entry ticks it. Start the drag on a ticked box to untick them instead.
 
 ## How Do I Undo a Change?
 
