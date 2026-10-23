@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.75 Dev] - 2026-10-23
+
+### Driver Cleaner
+- Restart Normally from Safe Mode now clears Safe Mode from both the running and the default Windows start entry and checks that it's really gone before restarting, so Windows no longer comes back in Safe Mode.
+- If Safe Mode can't be cleared (for example without administrator rights), a pop-up walks you through doing it in System Configuration instead (Windows key + R, msconfig, Boot tab, untick Safe boot, OK, Restart), with a button that opens it.
+
 ## [0.8.74 Dev] - 2026-10-22
 
 ### Appearance

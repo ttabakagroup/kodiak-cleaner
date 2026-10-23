@@ -223,15 +223,16 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
 
     private async Task SafeModeAsync()
     {
+        if (IsSafeMode)
+        {
+            if (!Dialogs.Confirm("Restart Windows normally now? Save anything you have open first.", "Restart Normally")) return;
+            // Without admin rights bcdedit can't clear Safe Mode, but msconfig asks for them itself.
+            if (!Elevation.IsAdministrator || !DriverTools.Restart()) ShowNormalStartSteps();
+            return;
+        }
         if (!Elevation.IsAdministrator)
         {
             Dialogs.Error("Switching Safe Mode needs administrator rights. Use Restart as Administrator.");
-            return;
-        }
-        if (IsSafeMode)
-        {
-            if (Dialogs.Confirm("Restart Windows normally now? Save anything you have open first.", "Restart Normally"))
-                DriverTools.Restart();
             return;
         }
         if (!Dialogs.Warn($"Restart in Safe Mode now? Kodiak Cleaner opens on the Driver Cleaner there so you can remove the {VendorName} driver.",
@@ -249,7 +250,8 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
                 return;
             }
             ActivityLog.Write("Driver Cleaner", "Restarting in Safe Mode");
-            DriverTools.Restart(toSafeMode: true);
+            if (!DriverTools.Restart(toSafeMode: true))
+                Dialogs.Info("Windows is set to start in Safe Mode, but it didn't restart. Restart it from the Start menu.", "Restart in Safe Mode");
         }
         finally { IsBusy = false; }
     }
@@ -371,9 +373,30 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
         if (choice == 0)
         {
             // In Safe Mode, still make sure the next start is a normal one.
-            if (IsSafeMode) DriverTools.ClearSafeMode();
+            if (IsSafeMode && !DriverTools.ClearSafeMode()) ShowNormalStartSteps();
             return;
         }
-        DriverTools.Restart(shutDown: choice == 1);
+        if (DriverTools.Restart(shutDown: choice == 1)) return;
+        if (IsSafeMode) ShowNormalStartSteps();
+        else Dialogs.Error("Windows didn't " + (choice == 1 ? "shut down" : "restart") + ". Use the Start menu instead.");
+    }
+
+    /// <summary>
+    /// Shown when Kodiak Cleaner couldn't set Windows back to a normal start from Safe Mode: the same switch by hand in System
+    /// Configuration (msconfig), with a button that opens it.
+    /// </summary>
+    private static void ShowNormalStartSteps()
+    {
+        const string steps = "Kodiak Cleaner couldn't set Windows to start normally, so it would come back in Safe Mode. Switch it back in System Configuration instead:\n\n"
+            + "1. Press the Windows key + R, type msconfig and press Enter (or click Open System Configuration below).\n"
+            + "2. Go to the Boot tab.\n"
+            + "3. Under Boot options, untick Safe boot.\n"
+            + "4. Click OK, then click Restart.";
+        ActivityLog.Write("Driver Cleaner", "Couldn't clear Safe Mode; showed the System Configuration steps");
+        int choice = Dialogs.Choose(MessageKind.Warning, "Restart Normally", steps,
+            "If Windows asks for permission, click Yes. Save anything you have open before you click Restart.",
+            new[] { "Close", "Open System Configuration" }, 1, 0);
+        if (choice == 1 && !DriverTools.OpenSystemConfiguration())
+            Dialogs.Error("System Configuration couldn't be opened. Press the Windows key + R, type msconfig and press Enter.");
     }
 }

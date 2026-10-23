@@ -104,7 +104,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   /uninstall /force` (done only when its oemNN.inf is gone or pnputil says 3010), keys backed up then deleted, folders to the Recycle Bin,
   then Later / Shut Down / Restart and Get the Latest Driver (the maker's own page, opened only on click). Restart in Safe Mode uses
   `bcdedit /set {current} safeboot minimal` plus a `*` RunOnce entry that opens `--page=drivers`; every restart from Safe Mode, and
-  Later, clears safeboot; `--uninstall-system` drops the RunOnce entry. Let Windows Update Install Drivers is the live `DriverSearching\SearchOrderConfig` value, backed up first.
+  Later, clears safeboot (and safebootalternateshell) from {current} and {default} and reads it back with `bcdedit /enum`; if it's still set or
+  can't be read (no admin), it doesn't restart and shows the msconfig steps with an Open System Configuration button (Ted, 2026-10-23); `--uninstall-system` drops the RunOnce entry. Let Windows Update Install Drivers is the live `DriverSearching\SearchOrderConfig` value, backed up first.
   Never name or reference any third-party driver removal tool in the app, docs or replies.
 - Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
   vssadmin, wevtutil, netsh, cleanmgr, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;

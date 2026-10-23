@@ -210,11 +210,38 @@ public static partial class DriverTools
         return true;
     }
 
-    /// <summary>Makes the next start a normal one again (harmless when Safe Mode wasn't set) and drops the RunOnce entry.</summary>
-    public static void ClearSafeMode()
+    /// <summary>
+    /// Makes the next start a normal one again (harmless when Safe Mode wasn't set) and drops the RunOnce entry. Safe Mode is cleared
+    /// from both the running Windows entry and the default one (they can differ), then read back. Returns false when Windows is still
+    /// set to start in Safe Mode or bcdedit couldn't be read (no administrator rights), so the caller can show the msconfig steps.
+    /// </summary>
+    public static bool ClearSafeMode()
     {
-        Tool(Sys("bcdedit.exe"), "/deletevalue {current} safeboot", TimeSpan.FromMinutes(1), out _);
+        foreach (var entry in BootEntries)
+            foreach (var value in new[] { "safeboot", "safebootalternateshell" })
+                Tool(Sys("bcdedit.exe"), $"/deletevalue {entry} {value}", TimeSpan.FromMinutes(1), out _);
         RemoveSafeModeStart();
+        return BootEntries.All(entry => SafeBootSet(entry) == false);
+    }
+
+    private static readonly string[] BootEntries = { "{current}", "{default}" };
+
+    /// <summary>Whether a boot entry still has safeboot set; null when bcdedit couldn't list it. Element names aren't translated.</summary>
+    private static bool? SafeBootSet(string entry)
+    {
+        if (Tool(Sys("bcdedit.exe"), $"/enum {entry}", TimeSpan.FromMinutes(1), out var output) != 0) return null;
+        return output.Split('\n').Any(line => line.TrimStart().StartsWith("safeboot", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Opens System Configuration (msconfig), where Safe boot can be unticked by hand. Windows asks for admin rights itself.</summary>
+    public static bool OpenSystemConfiguration()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(Sys("msconfig.exe")) { UseShellExecute = true });
+            return true;
+        }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { return false; }
     }
 
     /// <summary>Drops the RunOnce entry that opens the Driver Cleaner in Safe Mode (also run on uninstall).</summary>
@@ -228,16 +255,14 @@ public static partial class DriverTools
         catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
     }
 
-    /// <summary>Restarts (or shuts down) Windows right away. Safe Mode is cleared first unless <paramref name="toSafeMode"/>.</summary>
-    public static void Restart(bool shutDown = false, bool toSafeMode = false)
+    /// <summary>
+    /// Restarts (or shuts down) Windows right away. Safe Mode is cleared first unless <paramref name="toSafeMode"/>. Returns false,
+    /// without restarting, when Safe Mode couldn't be cleared (the next start would be Safe Mode again) or Windows refused to restart.
+    /// </summary>
+    public static bool Restart(bool shutDown = false, bool toSafeMode = false)
     {
-        if (!toSafeMode && IsSafeMode) ClearSafeMode();
-        try
-        {
-            Process.Start(new ProcessStartInfo(Sys("shutdown.exe"), shutDown ? "/s /t 0" : "/r /t 0")
-                { UseShellExecute = false, CreateNoWindow = true });
-        }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+        if (!toSafeMode && IsSafeMode && !ClearSafeMode()) return false;
+        return Tool(Sys("shutdown.exe"), shutDown ? "/s /t 0" : "/r /t 0", TimeSpan.FromSeconds(30), out _) == 0;
     }
 
     /// <summary>Whether Windows Update may install drivers for devices (DriverSearching\SearchOrderConfig; missing = yes).</summary>
