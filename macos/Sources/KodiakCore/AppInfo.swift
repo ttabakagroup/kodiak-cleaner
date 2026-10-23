@@ -13,7 +13,7 @@ public enum AppInfo {
     public static let projectURL = URL(string: "https://github.com/\(repository)")!
     public static let releasesURL = URL(string: "https://github.com/\(repository)/releases")!
     public static let homepageURL = URL(string: "https://www.kodiakcleaner.app/")!
-    public static let kofiURL = URL(string: "https://ko-fi.com/ttabaka")!
+    public static let kofiURL = URL(string: "https://ko-fi.com/s/aabd61b988")!
 
     /// Contact & Feedback goes through the contact form on the website. Never put an email address in the app.
     public static let contactURL = URL(string: "https://www.kodiakcleaner.app/contact/")!

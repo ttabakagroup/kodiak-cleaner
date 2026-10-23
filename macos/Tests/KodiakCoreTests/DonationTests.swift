@@ -98,7 +98,7 @@ final class DonationTests: TempHomeTestCase {
                        "At startup, a short note asks you to consider donating to keep Kodiak Cleaner free and open source.")
         XCTAssertEqual(Donation.settingsCaption(launchCount: 2, isSupporter: true),
                        "Thank you for being a Supporter! The reminder is off for you.")
-        XCTAssertEqual(AppInfo.kofiURL.absoluteString, "https://ko-fi.com/ttabaka")
+        XCTAssertEqual(AppInfo.kofiURL.absoluteString, "https://ko-fi.com/s/aabd61b988")
     }
 
     /// Ted, 0.8.4: each start counts once, starting at 1, and the first start already asks.
