@@ -45,19 +45,33 @@ public sealed class DuplicateFileItem : ObservableObject
 
     internal string? FullHash { get; private set; }
 
-    internal void ShowHash(string? hash, bool mismatch, string note)
+    internal void ShowHash(string? hash, bool mismatch, string note, bool sameAsAnother = false)
     {
         FullHash = hash;
         Hash = hash is null ? note : $"SHA-256 {hash[..12]}… · {note}";
         HashTip = hash is null ? note : $"SHA-256: {hash}";
         HashMismatch = mismatch;
+        _sameAsAnother = sameAsAnother;
+        if (!CanTick) IsChecked = false;
+        OnPropertyChanged(nameof(CanTick));
+        OnPropertyChanged(nameof(TickTip));
     }
+
+    private bool _sameAsAnother;
+    /// <summary>
+    /// Only files whose SHA-256 matches another file can be ticked (Ted, 2026-10-23): every copy in an identical set until a hash
+    /// check finds it changed, and in a similar set only the files Verify Hashes shows are identical to another one there.
+    /// </summary>
+    public bool CanTick => Group.IsSimilar ? _sameAsAnother : !HashMismatch;
+    public string TickTip => CanTick ? File.Path
+        : Group.IsSimilar ? "Similar files aren't exact copies, so they can't be ticked. Verify Hashes finds any here that are identical, and those can be."
+        : "This copy no longer has the same SHA-256 as the others, so it can't be ticked.";
 
     private bool _isChecked;
     public bool IsChecked
     {
         get => _isChecked;
-        set { if (Set(ref _isChecked, value)) Group.Owner.UpdateSelection(); }
+        set { if (Set(ref _isChecked, value && CanTick)) Group.Owner.UpdateSelection(); }
     }
 }
 
@@ -169,8 +183,11 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         AddFolderCommand = new RelayCommand(AddFolder, () => !IsBusy);
         SearchCommand = new RelayCommand(SearchAsync, () => !IsBusy && (Folders.Any(f => f.IsChecked) || Drives.Any(d => d.IsChecked)));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
+        CheckAllCommand = new RelayCommand(CheckAll, () => !IsBusy && AllFiles.Any(f => f.CanTick));
         SelectAllButNewestCommand = new RelayCommand(() => AutoSelect(keepNewest: true), () => !IsBusy && !ShowSimilar && Groups.Count > 0);
         SelectAllButOldestCommand = new RelayCommand(() => AutoSelect(keepNewest: false), () => !IsBusy && !ShowSimilar && Groups.Count > 0);
+        ChooseMoveFolderCommand = new RelayCommand(ChooseMoveFolder, () => !IsBusy);
+        RestoreCommand = new RelayCommand(() => { if (DuplicateRestoreWindow.Show(null, MoveFolder)) Summary = "Restored files are back where they were. Search again to see them in the results."; }, () => !IsBusy);
         ClearSelectionCommand = new RelayCommand(() => { foreach (var f in AllFiles) f.IsChecked = false; }, () => AllFiles.Any(f => f.IsChecked));
         VerifyCommand = new RelayCommand(VerifyAsync, () => !IsBusy && ShownGroups.Count > 0);
         DeleteCommand = new RelayCommand(DeleteAsync, () => !IsBusy && AllFiles.Any(f => f.IsChecked));
@@ -186,12 +203,66 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     public ICommand AddFolderCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand CancelCommand { get; }
+    public ICommand CheckAllCommand { get; }
     public ICommand SelectAllButNewestCommand { get; }
     public ICommand SelectAllButOldestCommand { get; }
     public ICommand ClearSelectionCommand { get; }
     public ICommand VerifyCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand OpenFolderCommand { get; }
+    public ICommand ChooseMoveFolderCommand { get; }
+    public ICommand RestoreCommand { get; }
+
+    /// <summary>Remove Selected moves files to <see cref="MoveFolder"/> instead of the Recycle Bin (Ted, 2026-10-23).</summary>
+    public bool MoveToFolder
+    {
+        get => Settings.Current.DuplicatesMoveToFolder;
+        set
+        {
+            if (Settings.Current.DuplicatesMoveToFolder == value) return;
+            Settings.Current.DuplicatesMoveToFolder = value;
+            Settings.Current.Save();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ToRecycleBin));
+            OnPropertyChanged(nameof(RemoveLabel));
+        }
+    }
+    public bool ToRecycleBin { get => !MoveToFolder; set => MoveToFolder = !value; }
+    public string RemoveLabel => MoveToFolder ? "Move Selected" : "Remove Selected";
+
+    /// <summary>Where moved duplicates go: a dated folder per move inside it, with a report.</summary>
+    public string MoveFolder
+    {
+        get => string.IsNullOrWhiteSpace(Settings.Current.DuplicatesMoveFolder) ? DefaultMoveFolder : Settings.Current.DuplicatesMoveFolder;
+        private set
+        {
+            Settings.Current.DuplicatesMoveFolder = value;
+            Settings.Current.Save();
+            OnPropertyChanged();
+        }
+    }
+    public static string DefaultMoveFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Kodiak Cleaner Duplicates");
+
+    private void ChooseMoveFolder()
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog { Title = "Choose Where Moved Duplicates Go" };
+        if (Directory.Exists(MoveFolder)) dialog.InitialDirectory = MoveFolder;
+        if (dialog.ShowDialog() != true) return;
+        if (ProtectedFolders().Where(p => p.Length > 0).Any(p => IsInside(dialog.FolderName, p)))
+        {
+            Dialogs.Error("Windows or a program keeps its own files there. Choose another folder, for example one in your user folder or on another drive.");
+            return;
+        }
+        MoveFolder = dialog.FolderName;
+        MoveToFolder = true;
+    }
+
+    private static bool IsInside(string path, string folder)
+    {
+        var p = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        var f = Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder));
+        return p.Equals(f, StringComparison.OrdinalIgnoreCase) || p.StartsWith(f + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+    }
 
     private string _minSizeMb = "1";
     public string MinSizeMb { get => _minSizeMb; set => Set(ref _minSizeMb, value); }
@@ -270,7 +341,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     public string IdenticalLabel => $"Identical ({Groups.Count:N0})";
     public string SimilarLabel => $"Similar ({SimilarGroups.Count:N0})";
     public string ResultsHint => ShowSimilar
-        ? "Similar files aren't exact copies: an edited version, a re-saved picture or an older draft. Nothing is ticked for you; check each file before removing it."
+        ? "Similar files aren't exact copies: an edited version, a re-saved picture or an older draft, so they can't be ticked. Verify Hashes finds any that are identical, and those can be ticked."
         : "";
 
     public bool? AllDrives
@@ -366,6 +437,8 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         yield return AppContext.BaseDirectory;
         // Where .NET unpacks single-file programs (Kodiak Cleaner included) while they run.
         yield return Path.Combine(Path.GetTempPath(), ".net");
+        // Duplicates already moved aside, so they aren't found again as copies of the files that stayed.
+        yield return string.IsNullOrWhiteSpace(Settings.Current.DuplicatesMoveFolder) ? DefaultMoveFolder : Settings.Current.DuplicatesMoveFolder;
     }
 
     private void ShowResults(IReadOnlyList<DuplicateGroup> identical, IReadOnlyList<SimilarGroup> similar, bool inDepth)
@@ -447,7 +520,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             var skipped = found.SkippedRoots > 0 ? $" {found.SkippedRoots} chosen folder(s) were skipped because Windows or a program keeps its own files there." : "";
             var fast = found.FastDrives > 0 ? $" {found.FastDrives} {(found.FastDrives == 1 ? "drive was" : "drives were")} read straight from the drive's file table." : "";
             var slow = found.SlowDrives > 0 && !Elevation.IsAdministrator ? " Restart as Administrator to read whole drives straight from their file table, which is much faster." : "";
-            Summary = $"{identical}{(inDepth ? similar : ".")} Searched {found.FilesScanned:N0} files.{fast} Tick the files to remove.{skipped}{slow}";
+            Summary = $"{identical}{(inDepth ? similar : ".")} Searched {found.FilesScanned:N0} files.{fast} Tick the copies to remove, or click Check All.{skipped}{slow}";
         }
         catch (OperationCanceledException)
         {
@@ -456,14 +529,47 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         finally { IsBusy = false; }
     }
 
+    /// <summary>
+    /// Ticks only what makes sense to remove (Ted, 2026-10-23): in each identical set every copy but the one
+    /// <see cref="DuplicateFinder.SuggestKeep"/> picks, and in similar sets only files Verify Hashes found identical, again
+    /// keeping one of each. Nothing is removed until Remove Selected.
+    /// </summary>
+    private void CheckAll()
+    {
+        int ticked = 0, sets = 0;
+        foreach (var g in Groups.Concat(SimilarGroups))
+        {
+            var tickable = g.Files.Where(f => f.CanTick).ToList();
+            var same = g.IsSimilar ? tickable.GroupBy(f => f.FullHash).Where(h => h.Key is not null && h.Count() > 1).Select(h => h.ToList()).ToList()
+                : tickable.Count > 1 ? new List<List<DuplicateFileItem>> { tickable } : new List<List<DuplicateFileItem>>();
+            foreach (var f in g.Files) f.IsChecked = false;
+            foreach (var copies in same)
+            {
+                var keep = DuplicateFinder.SuggestKeep(copies.Select(f => f.File).ToList());
+                foreach (var f in copies.Where(f => f.File != keep)) { f.IsChecked = true; ticked++; }
+                sets++;
+            }
+        }
+        Summary = ticked == 0 ? "Nothing to tick: no set has two copies with the same SHA-256."
+            : $"Ticked {ticked:N0} {(ticked == 1 ? "copy" : "copies")} in {sets:N0} {(sets == 1 ? "set" : "sets")}, keeping one in each: the one without \"Copy\" or (1) in its name, outside Downloads, and the oldest. " +
+              $"Nothing is removed until you click {RemoveLabel}.";
+    }
+
     private void AutoSelect(bool keepNewest)
     {
-        // Identical sets only: which similar file to keep is always the person's call.
+        // Identical sets only: which similar file to keep is always the person's call. Only ticks; nothing is removed here.
+        int ticked = 0;
         foreach (var g in Groups)
         {
-            var keep = keepNewest ? g.Files.MaxBy(f => f.File.LastWriteUtc) : g.Files.MinBy(f => f.File.LastWriteUtc);
-            foreach (var f in g.Files) f.IsChecked = f != keep;
+            var tickable = g.Files.Where(f => f.CanTick).ToList();
+            var keep = keepNewest ? tickable.MaxBy(f => f.File.LastWriteUtc) : tickable.MinBy(f => f.File.LastWriteUtc);
+            foreach (var f in g.Files)
+            {
+                f.IsChecked = tickable.Count > 1 && f.CanTick && f != keep;
+                if (f.IsChecked) ticked++;
+            }
         }
+        Summary = $"Ticked {ticked:N0} {(ticked == 1 ? "copy" : "copies")}, keeping the {(keepNewest ? "newest" : "oldest")} one in each set. Nothing is removed until you click {RemoveLabel}.";
     }
 
     /// <summary>
@@ -523,11 +629,11 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
                 {
                     var same = g.Files.Where(f => hashes[f] is not null).GroupBy(f => hashes[f]).Where(s => s.Count() > 1).SelectMany(s => s).ToHashSet();
                     foreach (var f in g.Files)
-                        f.ShowHash(hashes[f], false, hashes[f] is null ? "Couldn't be read" : same.Contains(f) ? "Identical to another file here" : "Unique contents");
+                        f.ShowHash(hashes[f], false, hashes[f] is null ? "Couldn't be read" : same.Contains(f) ? "Identical to another file here" : "Unique contents", same.Contains(f));
                     if (same.Count > 0)
                     {
                         g.Badge = $"{same.Count} Identical";
-                        g.BadgeTip = "Some of these files have the same SHA-256, so they are exact copies of each other.";
+                        g.BadgeTip = "Some of these files have the same SHA-256, so they are exact copies of each other and can be ticked.";
                     }
                     confirmed++;
                 }
@@ -555,38 +661,58 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { return false; }
     }
 
+    /// <summary>
+    /// The copies of one SHA-256 inside a set: the whole set for identical files, and in a similar set each group of files Verify
+    /// Hashes found identical. At least one copy of each always stays.
+    /// </summary>
+    private IEnumerable<(List<DuplicateFileItem> Copies, string Hash)> CopySets() =>
+        Groups.Select(g => (g.Files, g.Hash ?? ""))
+            .Concat(SimilarGroups.SelectMany(g => g.Files.Where(f => f.CanTick && f.FullHash is not null)
+                .GroupBy(f => f.FullHash!).Select(h => (h.ToList(), h.Key))));
+
     private async Task DeleteAsync()
     {
-        var chosen = AllFiles.Where(f => f.IsChecked).ToList();
-        // Never let every copy in an identical set go.
-        // The copy that stays must still be there: one deleted or changed since the search doesn't count.
-        var wipedOut = Groups.Where(g => g.Files.Any(f => f.IsChecked) && !g.Files.Any(f => !f.IsChecked && StillThere(f.File))).ToList();
+        var sets = CopySets().Where(s => s.Copies.Any(f => f.IsChecked)).ToList();
+        // Never let every copy go. The copy that stays must still be there: one deleted or changed since the search doesn't count.
+        var wipedOut = sets.Where(s => !s.Copies.Any(f => !f.IsChecked && StillThere(f.File))).ToList();
         if (wipedOut.Count > 0)
         {
-            Dialogs.Error($"No unticked copy is left in {wipedOut.Count} set(s), for example \"{wipedOut[0].Header}\". Leave at least one copy unticked in each set, or search again if files changed since.");
+            Dialogs.Error($"No unticked copy is left in {wipedOut.Count} set(s), for example \"{wipedOut[0].Copies[0].Group.Header}\". Leave at least one copy unticked in each set, or search again if files changed since.");
             return;
         }
-        var size = ByteSize.Format(chosen.Sum(f => f.File.Size));
-        var similarCount = chosen.Count(f => f.Group.IsSimilar);
-        var wholeSimilarSets = SimilarGroups.Count(g => g.Files.All(f => f.IsChecked));
-        if (similarCount == 0)
+        // Only ticked files with a matching SHA-256 are ever removed (Ted, 2026-10-23).
+        var chosen = sets.SelectMany(s => s.Copies.Where(f => f.IsChecked && f.CanTick).Select(f =>
+            (Item: f, Kept: DuplicateFinder.SuggestKeep(s.Copies.Where(k => !k.IsChecked && StillThere(k.File)).Select(k => k.File).ToList()).Path, s.Hash))).ToList();
+        if (chosen.Count == 0) return;
+        var size = ByteSize.Format(chosen.Sum(c => c.Item.File.Size));
+        var toFolder = MoveToFolder;
+        var folder = MoveFolder;
+        if (toFolder)
         {
-            if (!Dialogs.Confirm($"Move {chosen.Count} file(s) ({size}) to the Recycle Bin?")) return;
+            if (!Dialogs.Confirm($"Move {chosen.Count} file(s) ({size}) to {folder}?\n\nEach file keeps its old drive and folders inside a dated folder there, " +
+                                 $"with {DuplicateMover.ReportName} listing the copy that stayed and where each one was. Restore puts any of them back."))
+                return;
         }
-        else if (!Dialogs.Warn($"Move {chosen.Count} file(s) ({size}) to the Recycle Bin?", caution:
-                     $"{similarCount} of them are similar files, not exact copies, so they may hold something the others don't." +
-                     (wholeSimilarSets > 0 ? $" Every file in {wholeSimilarSets} similar set(s) is ticked." : "")))
-            return;
+        else if (!Dialogs.Confirm($"Move {chosen.Count} file(s) ({size}) to the Recycle Bin?")) return;
 
         IsBusy = true;
-        using var task = BackgroundTasks.Start(this, "Moving Files to the Recycle Bin");
+        using var task = BackgroundTasks.Start(this, toFolder ? "Moving Duplicates" : "Moving Files to the Recycle Bin");
         int failed = 0;
+        string? batchFolder = null;
         try
         {
             await Task.Run(() =>
             {
+                if (toFolder)
+                {
+                    var (batch, problems) = DuplicateMover.Move(folder, chosen.Select(c => (c.Item.File, c.Kept, c.Hash)).ToList(), DateTime.Now,
+                        done => task.Step(done, chosen.Count));
+                    batchFolder = batch.Folder;
+                    failed = problems.Count;
+                    return;
+                }
                 int done = 0;
-                foreach (var f in chosen)
+                foreach (var (f, _, _) in chosen)
                 {
                     task.Step(done++, chosen.Count);
                     try
@@ -616,8 +742,14 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             OnPropertyChanged(nameof(IdenticalLabel));
             OnPropertyChanged(nameof(SimilarLabel));
             UpdateSelection();
-            ActivityLog.Write("Duplicate Finder", $"Moved {chosen.Count - failed} file(s) ({size}) to the Recycle Bin");
-            Summary = $"Moved {chosen.Count - failed} file(s) to the Recycle Bin." + (failed > 0 ? $" {failed} could not be moved." : "");
+            var where = toFolder ? batchFolder ?? folder : "the Recycle Bin";
+            ActivityLog.Write("Duplicate Finder", $"Moved {chosen.Count - failed} file(s) ({size}) to {where}");
+            Summary = $"Moved {chosen.Count - failed} file(s) to {where}." + (failed > 0 ? $" {failed} could not be moved." : "") +
+                      (toFolder ? $" {DuplicateMover.ReportName} there lists each one, and Restore puts any of them back." : "");
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Dialogs.Error($"The files couldn't be moved to {folder}: {e.Message}");
         }
         finally { IsBusy = false; }
     }

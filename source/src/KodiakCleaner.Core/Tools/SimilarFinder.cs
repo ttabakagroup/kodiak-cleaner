@@ -298,6 +298,13 @@ public static class SimilarFinder
         @"(?<!\d)(\d{4}[-_. ]?\d{2}[-_. ]?\d{2}|\d{1,2}[-_. ]\d{1,2}[-_. ]\d{2,4})([-_. t]?\d{2}[-_.: ]?\d{2}([-_.: ]?\d{2})?)?(?!\d)",
         RegexOptions.CultureInvariant);
 
+    /// <summary>True when the name carries a copy mark: Copy of …, … - Copy, … (1).</summary>
+    public static bool HasCopyMark(string fileName)
+    {
+        var stem = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant().Trim();
+        return CopyMarks.Any(m => m.IsMatch(stem));
+    }
+
     /// <summary>A file name without its extension, case or copy marks, punctuation turned into single spaces.</summary>
     public static string NameKey(string fileName) => NameKey(fileName, NameRules.Default);
 

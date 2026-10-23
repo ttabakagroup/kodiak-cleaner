@@ -215,15 +215,21 @@
                     Visibility="{Binding IsNotAdministrator, Converter={StaticResource BoolToVis}}">
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Left" Text="&#xE946;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
-                               VerticalAlignment="Center" Margin="0,0,12,0" />
-                    <Button DockPanel.Dock="Right" Margin="0" Command="{Binding RestartAsAdminCommand}">
+                               VerticalAlignment="Top" Margin="0,2,12,0" />
+                    <Button DockPanel.Dock="Right" Margin="0" Command="{Binding RestartAsAdminCommand}" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE7EF;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                             <TextBlock Text="Restart as Administrator" />
                         </StackPanel>
                     </Button>
-                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Text}" Margin="0,0,16,0"
-                               Text="Running as a standard user. Windows Temp, crash dumps and all-users startup entries need administrator rights." />
+                    <!-- Laid out as a short list (Ted, 2026-10-23): what needs administrator rights, then what runs faster with them. -->
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,16,0" TextElement.Foreground="{DynamicResource Text}">
+                        <TextBlock Text="Running as a standard user" FontWeight="SemiBold" />
+                        <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" Text="•  Windows temporary files and crash dumps need administrator rights to clean." />
+                        <TextBlock TextWrapping="Wrap" Text="•  All users' startup entries need administrator rights." />
+                        <TextBlock Text="Faster as administrator" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" Text="•  Disk Analyzer and Duplicate Finder read whole drives straight from the drive's file table instead of folder by folder." />
+                    </StackPanel>
                 </DockPanel>
             </Border>
             <Border DockPanel.Dock="Top" Background="{DynamicResource AccentTint}" Padding="20,10"

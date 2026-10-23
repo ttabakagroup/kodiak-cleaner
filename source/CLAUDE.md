@@ -233,9 +233,15 @@ privacy first, local first, security paramount, convenient, practical and useful
   program folders, ProgramData, AppData (any user's), Temp\.net, its own folder, or a drive's Recycle Bin/System Volume Information/Recovery,
   as a starting point or inside one (`DuplicateSearchOptions.Protected` + `DuplicateFinder.AlwaysSkipped`). In-Depth (`SimilarFinder`) lists
   similar files with a likeness score (capped at 99%; identical files stay in Identical): content-defined chunks of the first 8 MB, names
-  without copy marks, sizes, and pictures by a 64-bit difference hash (`PictureHasher`, Windows' decoders). Similar files are never ticked
-  for the person (Keep Newest/Oldest act on identical sets only) and removing them asks with a caution. Verify Hashes re-reads the shown
-  files in full and compares SHA-256; changed copies are unticked and marked.
+  without copy marks, sizes, and pictures by a 64-bit difference hash (`PictureHasher`, Windows' decoders). Only files whose SHA-256
+  matches another can be ticked (Ted, 2026-10-23, `DuplicateFileItem.CanTick`): identical sets until Verify Hashes finds a copy changed,
+  and in similar sets only files Verify Hashes found identical; one copy of each hash always stays. Verify Hashes re-reads the shown
+  files in full and compares SHA-256; changed copies are unticked and locked.
+  Check All ticks every copy but `DuplicateFinder.SuggestKeep` (no copy mark, outside Downloads/Temp, oldest, shortest path); Keep
+  Newest/Oldest only tick too, nothing is removed before Remove Selected. Remove To: Recycle Bin, or A Folder (`DuplicateMover`): a dated
+  "Duplicates yyyy-MM-dd HHmmss" folder per move with files under their old drive and folders, Duplicate Report.csv (kept copy, old place,
+  new place) and moves.json for Restore (`DuplicateRestoreWindow`, never overwrites a file at the old place). The folder is never searched.
+  The page is three cards: Summary, Actions, Results. The faster-as-administrator note lives in the standard-user banner (MainWindow).
   Fast scan (Ted, 2026-10-23): a whole NTFS drive (Fixed or Removable) is listed from its file table when Kodiak Cleaner runs as
   administrator (`NtfsFileTable.TryListDrive`, the Disk Analyzer's reader with `keepFiles`), with the same folders left out through
   `keepFolder`; anything else (folders, FAT32/exFAT, no admin) falls back to the folder walk. Hard-linked files are listed once.

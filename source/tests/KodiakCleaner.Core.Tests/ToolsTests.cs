@@ -70,6 +70,82 @@ public sealed class DuplicateFinderTests : IDisposable
     }
 
     [Fact]
+    public void Check_all_keeps_the_copy_without_a_copy_mark_outside_downloads_then_the_oldest()
+    {
+        var old = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var newer = old.AddDays(3);
+        DuplicateFile F(string path, DateTime when) => new(path, 10, when);
+
+        Assert.Equal(@"C:\Docs\Report.pdf", DuplicateFinder.SuggestKeep(new[]
+        {
+            F(@"C:\Docs\Report - Copy.pdf", old), F(@"C:\Docs\Report.pdf", newer), F(@"C:\Docs\Copy of Report.pdf", old),
+        }).Path);
+        Assert.Equal(@"C:\Docs\Report.pdf", DuplicateFinder.SuggestKeep(new[]
+        {
+            F(@"C:\Users\Ted\Downloads\Report.pdf", old), F(@"C:\Docs\Report.pdf", newer),
+        }).Path);
+        Assert.Equal(@"D:\Old\Report.pdf", DuplicateFinder.SuggestKeep(new[]
+        {
+            F(@"C:\Docs\Report.pdf", newer), F(@"D:\Old\Report.pdf", old),
+        }).Path);
+        Assert.Equal(@"C:\A\Report.pdf", DuplicateFinder.SuggestKeep(new[]
+        {
+            F(@"C:\A\B\Report.pdf", old), F(@"C:\A\Report.pdf", old),
+        }).Path);
+    }
+
+    [Fact]
+    public void Moved_duplicates_keep_their_folders_get_a_report_and_can_be_put_back()
+    {
+        var a = Encoding.UTF8.GetBytes("hello world");
+        var kept = Write("docs/a.txt", a);
+        var copy = Write("downloads/a.txt", a);
+        var gone = Path.Combine(_root, "missing.txt");
+        var target = Path.Combine(_root, "Moved Duplicates");
+        var when = new DateTime(2026, 10, 23, 21, 30, 5);
+
+        var (batch, failed) = DuplicateMover.Move(target, new[]
+        {
+            (new DuplicateFile(copy, a.Length, DateTime.UtcNow), kept, "abc123"),
+            (new DuplicateFile(gone, a.Length, DateTime.UtcNow), kept, "abc123"),
+        }, when);
+
+        Assert.Equal(Path.Combine(target, "Duplicates 2026-10-23 213005"), batch.Folder);
+        var moved = Assert.Single(batch.Moves);
+        Assert.Equal(gone, Assert.Single(failed).Path);
+        Assert.False(File.Exists(copy));
+        Assert.True(File.Exists(moved.To));
+        Assert.Equal(DuplicateMover.PlaceFor(batch.Folder, copy), moved.To);
+        Assert.EndsWith(Path.Combine("downloads", "a.txt"), moved.To);
+        var report = File.ReadAllText(Path.Combine(batch.Folder, DuplicateMover.ReportName));
+        Assert.Contains("Kept Copy (Original)", report);
+        Assert.Contains($"Moved,{kept},{copy},{moved.To},11,abc123", report);
+
+        // A second batch in the same second gets its own folder; the list reads both back, newest first.
+        var again = DuplicateMover.Move(target, Array.Empty<(DuplicateFile, string, string)>(), when.AddSeconds(1)).Batch;
+        var listed = DuplicateMover.List(target);
+        Assert.Equal(new[] { again.Folder, batch.Folder }, listed.Select(b => b.Folder));
+
+        var read = listed[1];
+        Assert.Null(DuplicateMover.Restore(read, read.Moves[0], when.AddHours(1)));
+        Assert.True(File.Exists(copy));
+        Assert.Equal("It was already put back.", DuplicateMover.Restore(read, read.Moves[0], when.AddHours(2)));
+        Assert.NotNull(DuplicateMover.List(target)[1].Moves[0].RestoredOn);
+        Assert.StartsWith("Restored,", File.ReadAllLines(Path.Combine(batch.Folder, DuplicateMover.ReportName))[1]);
+    }
+
+    [Fact]
+    public void Restore_never_overwrites_a_file_at_the_old_place()
+    {
+        var a = Encoding.UTF8.GetBytes("hello world");
+        var copy = Write("two/a.txt", a);
+        var (batch, _) = DuplicateMover.Move(Path.Combine(_root, "out"), new[] { (new DuplicateFile(copy, a.Length, DateTime.UtcNow), "kept", "h") }, DateTime.Now);
+        Write("two/a.txt", Encoding.UTF8.GetBytes("new file"));
+        Assert.Equal("Another file is already at its old place.", DuplicateMover.Restore(batch, batch.Moves[0], DateTime.Now));
+        Assert.True(File.Exists(batch.Moves[0].To));
+    }
+
+    [Fact]
     public void Finds_identical_files_and_ignores_same_size_different_content()
     {
         var a = Encoding.UTF8.GetBytes("hello world");

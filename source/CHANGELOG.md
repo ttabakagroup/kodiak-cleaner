@@ -5,6 +5,18 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.94 Dev] - 2026-10-23
+
+### Duplicate Finder
+- New Check All button: ticks every copy except one in each set, keeping the copy without "Copy" or (1) in its name, outside Downloads, and the oldest. Nothing is removed until you click Remove Selected.
+- Only files with the same SHA-256 as another can be ticked. Similar files can't be ticked unless Verify Hashes finds they're identical.
+- Remove To: send removed copies to the Recycle Bin or move them to a folder you choose. Each move gets its own dated folder, sorted by the files' old drive and folders, with Duplicate Report.csv listing the copy that stayed and where each duplicate was.
+- Restore puts any moved duplicate back where it was.
+- Clearer layout: Summary, Actions and Results each have their own card.
+
+### Interface
+- The standard-user notice is now a short list of what needs administrator rights and which tools run faster as administrator.
+
 ## [0.8.93 Dev] - 2026-10-23
 
 ### All Lists

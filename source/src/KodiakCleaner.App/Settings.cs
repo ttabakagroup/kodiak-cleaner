@@ -147,6 +147,12 @@ public sealed class Settings
     /// <summary>The format Export Report saves in (Ted, 0.8.46): Text, HTML or CSV, remembered between runs.</summary>
     public KodiakCleaner.Core.Tools.ReportFormat ReportFormat { get; set; } = KodiakCleaner.Core.Tools.ReportFormat.Html;
 
+    // [Duplicate Finder]
+    /// <summary>Remove Selected moves duplicates to <see cref="DuplicatesMoveFolder"/> instead of the Recycle Bin (Ted, 2026-10-23).</summary>
+    public bool DuplicatesMoveToFolder { get; set; }
+    /// <summary>Where moved duplicates go; "" means the user folder's Kodiak Cleaner Duplicates.</summary>
+    public string DuplicatesMoveFolder { get; set; } = "";
+
     // [Mass Rename]
     /// <summary>The rules from the last rename, so a pattern used before is ready again (Ted, 2026-10-12).</summary>
     public KodiakCleaner.Core.Tools.RenameRules MassRename { get; set; } = new();
@@ -256,6 +262,8 @@ public sealed class Settings
             System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var d) ? d : null;
 
         ReportFormat = Enum.TryParse<KodiakCleaner.Core.Tools.ReportFormat>(ini.Get("System Information", "ReportFormat"), ignoreCase: true, out var format) ? format : ReportFormat;
+        DuplicatesMoveToFolder = ini.GetBool("Duplicate Finder", "MoveToFolder", DuplicatesMoveToFolder);
+        DuplicatesMoveFolder = ini.GetString("Duplicate Finder", "MoveFolder", DuplicatesMoveFolder);
         MassRename = ReadMassRename(ini);
 
         TempOlderThan24h = ini.GetBool("Advanced", "TempOlderThan24h", TempOlderThan24h);
@@ -312,6 +320,8 @@ public sealed class Settings
         ini.Set("Updates", "LastCheckUtc", LastUpdateCheckUtc?.ToString("o") ?? "");
 
         ini.Set("System Information", "ReportFormat", ReportFormat.ToString());
+        ini.Set("Duplicate Finder", "MoveToFolder", DuplicatesMoveToFolder);
+        if (DuplicatesMoveFolder.Length > 0) ini.Set("Duplicate Finder", "MoveFolder", DuplicatesMoveFolder);
         WriteMassRename(ini, MassRename);
 
         ini.Set("Advanced", "TempOlderThan24h", TempOlderThan24h);
