@@ -2,7 +2,7 @@
 import { test, before, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
-import { onRequestPost, whyNot, cleanName, codeId, makeCode, sameToken, MIN_PER_5_USD } from "../functions/api/kofi.js";
+import { onPost, whyNot, cleanName, codeId, makeCode, sameToken, productFor, PRODUCTS, MIN_PER_5_USD } from "../worker.js";
 
 let privatePem, publicKey;
 before(async () => {
@@ -12,7 +12,7 @@ before(async () => {
   publicKey = pair.publicKey;
 });
 
-const env = () => ({ KOFI_VERIFICATION_TOKEN: "tok-123", SUPPORTER_PRIVATE_KEY: privatePem, SUPPORTER_FROM: "Kodiak Cleaner <supporters@kodiakcleaner.app>", RESEND_API_KEY: "re_key", CONTACT_TO: "ted@example.com" });
+const env = () => ({ KOFI_VERIFICATION_TOKEN: "tok-123", KODIAK_PRIVATE_KEY: privatePem, RESEND_API_KEY: "re_key", NOTIFY_TO: "ted@example.com", CONTACT_TO: "ted@example.com" });
 const payment = (extra = {}) => ({
   verification_token: "tok-123", message_id: "m1", timestamp: "2026-10-11T05:00:00Z", type: "Donation", is_public: true,
   from_name: "Pat Bear", message: "Love it", amount: "5.00", email: "pat@example.com", currency: "USD",
@@ -21,7 +21,7 @@ const payment = (extra = {}) => ({
 const post = (data, e = env()) => {
   const form = new FormData();
   form.append("data", typeof data === "string" ? data : JSON.stringify(data));
-  return onRequestPost({ request: new Request("https://x/api/kofi", { method: "POST", body: form }), env: e });
+  return onPost(new Request("https://kofi.tedtabaka.com/", { method: "POST", body: form }), e);
 };
 
 let mails;
@@ -107,7 +107,7 @@ test("no email address from Ko-fi also goes to Ted with the code", async () => {
 
 test("a missing private key tells Ted instead of failing the webhook", async () => {
   const e = env();
-  delete e.SUPPORTER_PRIVATE_KEY;
+  delete e.KODIAK_PRIVATE_KEY;
   assert.equal((await post(payment(), e)).status, 200);
   assert.equal(mails.length, 1);
   assert.match(mails[0].subject, /needs a code by hand/);
@@ -133,4 +133,30 @@ test("token compare", () => {
   assert.ok(!sameToken("abc", "abd"));
   assert.ok(!sameToken("", ""));
   assert.ok(!sameToken(undefined, "abc"));
+});
+
+test("payments are matched to a product: shop item, then tier, then the default", () => {
+  const products = [
+    { id: "a", default: true, shopCodes: [], tiers: [] },
+    { id: "b", shopCodes: ["AbC123"], tiers: ["Bear Club"] },
+  ];
+  assert.equal(productFor(payment(), products).id, "a");
+  assert.equal(productFor(payment({ type: "Shop Order", shop_items: [{ direct_link_code: "abc123", quantity: 1 }] }), products).id, "b");
+  assert.equal(productFor(payment({ type: "Subscription", tier_name: "bear club" }), products).id, "b");
+  assert.equal(productFor(payment({ shop_items: [{ direct_link_code: "zzz" }] }), products).id, "a");
+  assert.equal(productFor(payment(), [{ id: "x", shopCodes: [], tiers: [] }]), null);
+});
+
+test("products are A to Z, have one default, and never carry an email in the code", () => {
+  const ids = PRODUCTS.map((p) => p.name);
+  assert.deepEqual(ids, [...ids].sort());
+  assert.equal(PRODUCTS.filter((p) => p.default).length, 1);
+  assert.doesNotMatch(JSON.stringify(PRODUCTS), /@gmail|tabakagroup/i);
+});
+
+test("nothing is mailed to Ted when NOTIFY_TO isn't set", async () => {
+  const e = env();
+  delete e.NOTIFY_TO;
+  await post(payment({ amount: "1" }), e);
+  assert.equal(mails.length, 0);
 });

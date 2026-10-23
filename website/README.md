@@ -120,19 +120,8 @@ After changing any setting in Cloudflare, deploy again; settings only reach the 
 
 ## Supporter Codes From Ko-fi
 
-`functions/api/kofi.js` is the Ko-fi webhook at `https://www.kodiakcleaner.app/api/kofi`. When someone donates, buys a shop item or
-starts a membership on ko-fi.com/ttabaka, Ko-fi posts the payment here. If the token matches and the payment is at least
-`SUPPORTER_MIN` (US dollars, default 5; a short table in the file covers EUR, GBP, CAD, AUD and a few more), it signs a supporter
-code with Ted's private key and emails it to the supporter through Resend. Ted gets a short note for every payment, with the code
-added whenever it couldn't be emailed, so he can send it by hand. Nothing is stored.
-
-- Codes use the same format as `make-code` and work in the Windows, Linux and Mac apps. The code ID comes from the Ko-fi transaction,
-  so a repeated webhook gives the same ID; add it to `keys/withdrawn-codes.txt` in the app if a payment is refunded.
-- Settings (Settings > Variables and Secrets, as secrets): `KOFI_VERIFICATION_TOKEN`, `SUPPORTER_PRIVATE_KEY` (all of
-  `keys/supporter-private.pem`), `SUPPORTER_FROM` (a sender on a domain verified in Resend), optional `SUPPORTER_MIN`.
-- Resend's test sender only delivers to Ted, so supporter emails need kodiakcleaner.app verified in Resend first.
-- While Cloudflare Access protects the site, `/api/kofi` needs a Bypass rule like the downloads, or Ko-fi gets the login page.
-- Ko-fi > Settings > API > Webhooks has a Send Test button; it should leave a note in Ted's inbox (and a code if the test amount meets the minimum).
+The Ko-fi webhook is no longer part of this site. It is one Cloudflare Worker for all of Ted's products at
+`https://kofi.tedtabaka.com/`, kept in the repo's `kofi-worker/` folder (its README covers settings, products and tests).
 
 ## Launch Video on the Homepage
 
@@ -180,7 +169,6 @@ content/                CHANGELOG.md, PRIVACY.md, terms-of-use.md, why-it-was-ma
 content/linux/          CHANGELOG.md and version.json (copied from Kodiak Cleaner for Linux)
 content/mac/            CHANGELOG.md and version.json (copied from Kodiak Cleaner for Mac)
 functions/api/contact.js  Contact Us handler (Turnstile check, then email through Resend; nothing stored)
-functions/api/kofi.js   Ko-fi webhook: signs and emails supporter codes (nothing stored)
 src/layout.mjs          header, footer and shared pieces
 src/pages/              one file per page
 src/markdown.mjs        renders the Markdown documents and reads the changelog
