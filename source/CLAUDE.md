@@ -198,6 +198,12 @@ privacy first, local first, security paramount, convenient, practical and useful
   Win32_ShadowCopy. Snapshot Now starts Windows' own `\Microsoft\Windows\Setup\PITRTask` with TASK_RUN_IGNORE_CONSTRAINTS
   (undocumented by Microsoft; the task isn't changed). Restoring only happens in WinRE (Restart to Recovery = `shutdown /r /o`).
   Never delete Point-in-Time snapshots directly; Windows manages them.
+- Background tasks (Ted, 2026-10-23, `BackgroundTasks`): every page method that sets IsBusy (or IsScanning/IsMeasuring) starts
+  `using var task = BackgroundTasks.Start(this, "Title Case Verb Phrase")` and sets `task.Percent` (or `task.Step(done, total)`) when it can
+  tell; null means a moving bar (a test checks every busy page). MainWindow shows the newest task of a page that isn't open as a card in the
+  bottom right corner (`MainViewModel.CornerTask`, after 1 s so quick reads never flash it; click opens the page, X hides it until the next
+  task). Closing, tray Exit, Restart as Administrator and Install Now ask with `MainWindow.ConfirmExit` (Close Anyway | Keep Open, Keep Open
+  the default and what Esc means); Close to System Tray and Windows signing out never ask.
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
 - Duplicate Finder (Ted, 2026-10-12): searches folders and whole drives (Fixed and Removable, each given 5 s to answer). It never searches Windows,
   program folders, ProgramData, AppData (any user's), Temp\.net, its own folder, or a drive's Recycle Bin/System Volume Information/Recovery,

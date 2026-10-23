@@ -18,6 +18,7 @@ public partial class MainWindow : Window
         _vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(MainViewModel.SidebarCollapsed) or nameof(MainViewModel.SidebarLocked)) ApplySidebar();
+            if (e.PropertyName == nameof(MainViewModel.HasCornerTask) && _vm.HasCornerTask) SlideInTaskCard();
         };
         SourceInitialized += (_, _) => ThemeManager.ApplyTitleBar(this);
         // Everything that can wait (pop-ups, the update check) waits until the window has been drawn once (0.8.47), so a
@@ -46,6 +47,45 @@ public partial class MainWindow : Window
     }
 
     private bool _started;
+
+    /// <summary>The task card rises and fades in when it appears (a short one-off animation, skipped with animations off).</summary>
+    private void SlideInTaskCard()
+    {
+        if (!Motion.Instance.Enabled) return;
+        var duration = TimeSpan.FromMilliseconds(220);
+        var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+        TaskCard.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 1, duration) { EasingFunction = ease });
+        TaskCard.RenderTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty,
+            new System.Windows.Media.Animation.DoubleAnimation(14, 0, duration) { EasingFunction = ease });
+    }
+
+    /// <summary>
+    /// Closing while a page is still working (a scan, a wipe, a clean) asks first; Keep Open is the default (Ted, 2026-10-23).
+    /// Close to System Tray keeps everything running, so it doesn't ask then.
+    /// </summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e); // Close to System Tray cancels the close here
+        if (e.Cancel || Application.Current.Dispatcher.HasShutdownStarted || _closingConfirmed) return;
+        if (!BackgroundTasks.ConfirmStop()) e.Cancel = true;
+    }
+
+    /// <summary>Set once the person agreed to stop running work, so the question isn't asked twice.</summary>
+    private static bool _closingConfirmed;
+
+    /// <summary>The close that was agreed to didn't happen (the permission prompt was declined).</summary>
+    public static void ExitCancelled() => _closingConfirmed = false;
+
+    /// <summary>Windows is signing out or shutting down: never hold that up with a question.</summary>
+    public static void SkipExitQuestion() => _closingConfirmed = true;
+
+    /// <summary>For Exit in the tray menu and Restart as Administrator, which close Kodiak Cleaner without the close button.</summary>
+    public static bool ConfirmExit(string action = "Close")
+    {
+        if (!BackgroundTasks.ConfirmStop(action)) return false;
+        _closingConfirmed = true;
+        return true;
+    }
 
     /// <summary>Set for the copy that reopens after an update (UpdateService.UpdatedArg).</summary>
     public bool BringToFront { get; init; }

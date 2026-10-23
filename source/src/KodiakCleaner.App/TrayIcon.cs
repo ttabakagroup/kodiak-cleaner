@@ -56,7 +56,12 @@ public sealed class TrayIcon : IDisposable
         _icon.ContextMenuStrip.Items.Add($"Open {AppInfo.Name}", null, (_, _) => Restore());
         _icon.ContextMenuStrip.Items.Add("Run Cleaner Now", null, (_, _) => Task.Run(AutoClean.Run));
         _icon.ContextMenuStrip.Items.Add(new WinForms.ToolStripSeparator());
-        _icon.ContextMenuStrip.Items.Add("Exit", null, (_, _) => { _exiting = true; Application.Current.Shutdown(); });
+        _icon.ContextMenuStrip.Items.Add("Exit", null, (_, _) =>
+        {
+            if (!MainWindow.ConfirmExit()) return; // something is still running and the person chose Keep Open
+            _exiting = true;
+            Application.Current.Shutdown();
+        });
         _icon.DoubleClick += (_, _) => Restore();
     }
 

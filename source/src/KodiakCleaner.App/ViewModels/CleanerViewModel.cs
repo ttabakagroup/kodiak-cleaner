@@ -299,6 +299,7 @@ public sealed class CleanerViewModel : ObservableObject
     {
         SaveChoices();
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Analyzing Files");
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
         long total = 0;
@@ -306,8 +307,11 @@ public sealed class CleanerViewModel : ObservableObject
         {
             var targets = Targets.ToList(); // a settings change can rebuild the list mid-analysis
             foreach (var item in targets) { item.Status = item.Size = ""; item.Found = 0; }
-            foreach (var item in targets.Where(t => t.IsChecked))
+            var chosen = targets.Where(t => t.IsChecked).ToList();
+            int done = 0;
+            foreach (var item in chosen)
             {
+                task.Step(done++, chosen.Count);
                 item.Status = "Analyzing…";
                 Summary = $"Analyzing {item.Group}: {item.Name}…";
                 await Task.Run(() => item.Run.Analyze(ct), ct);
@@ -387,14 +391,17 @@ public sealed class CleanerViewModel : ObservableObject
             return;
 
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Cleaning Files");
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
         long freed = 0;
         int failed = 0;
         try
         {
+            int done = 0;
             foreach (var item in toClean)
             {
+                task.Step(done++, toClean.Count);
                 item.Status = "Cleaning…";
                 Summary = $"Cleaning {item.Group}: {item.Name}…";
                 var (f, fail, status) = await Task.Run(() => item.Run.Clean(ct), ct);

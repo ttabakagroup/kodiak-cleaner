@@ -386,6 +386,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task SearchAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Scanning for Files");
         ShowResults(Array.Empty<DuplicateGroup>(), Array.Empty<SimilarGroup>(), inDepth: false);
         _cts = new CancellationTokenSource();
         var inDepth = InDepth;
@@ -412,13 +413,26 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             },
             PictureHash = PictureHasher.Hash,
         };
-        var progress = new Progress<DuplicateProgress>(p => Summary = p.Stage switch
+        var progress = new Progress<DuplicateProgress>(p =>
         {
-            "FileTable" => $"Listing files in {p.Folder}… {p.FilesScanned:N0} files so far",
-            "Scanning" => $"Scanning… {p.FilesScanned:N0} files so far",
-            "Comparing" => $"Comparing contents… {p.Done:N0} of {p.Total:N0} candidate files",
-            "Pictures" => $"Looking at pictures… {p.Done:N0} of {p.Total:N0}",
-            _ => $"Comparing similar files… {p.Done:N0} of {p.Total:N0} likely pairs",
+            Summary = p.Stage switch
+            {
+                "FileTable" => $"Listing files in {p.Folder}… {p.FilesScanned:N0} files so far",
+                "Scanning" => $"Scanning… {p.FilesScanned:N0} files so far",
+                "Comparing" => $"Comparing contents… {p.Done:N0} of {p.Total:N0} candidate files",
+                "Pictures" => $"Looking at pictures… {p.Done:N0} of {p.Total:N0}",
+                _ => $"Comparing similar files… {p.Done:N0} of {p.Total:N0} likely pairs",
+            };
+            task.Title = p.Stage switch
+            {
+                "FileTable" or "Scanning" => "Scanning for Files",
+                "Comparing" => "Comparing Files",
+                "Pictures" => "Comparing Pictures",
+                _ => "Comparing Similar Files",
+            };
+            // No total while the folders or the file table are still being listed.
+            if (p.Stage is "FileTable" or "Scanning") task.Percent = null;
+            else task.Step(p.Done, p.Total);
         });
         try
         {
@@ -462,11 +476,16 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         var sets = ShownGroups.ToList();
         var files = sets.SelectMany(g => g.Files).ToList();
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Verifying Hashes");
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         var bytes = files.Sum(f => f.File.Size);
         long read = 0;
-        var progress = new Progress<long>(r => Summary = $"Checking SHA-256 hashes… {ByteSize.Format(r)} of {ByteSize.Format(bytes)}");
+        var progress = new Progress<long>(r =>
+        {
+            Summary = $"Checking SHA-256 hashes… {ByteSize.Format(r)} of {ByteSize.Format(bytes)}";
+            task.Step(r, bytes);
+        });
         try
         {
             var hashes = await Task.Run(() =>
@@ -560,13 +579,16 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             return;
 
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Moving Files to the Recycle Bin");
         int failed = 0;
         try
         {
             await Task.Run(() =>
             {
+                int done = 0;
                 foreach (var f in chosen)
                 {
+                    task.Step(done++, chosen.Count);
                     try
                     {
                         Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(f.File.Path,

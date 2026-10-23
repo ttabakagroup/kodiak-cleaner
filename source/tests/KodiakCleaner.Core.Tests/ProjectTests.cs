@@ -446,3 +446,41 @@ public class LaunchCounterTests
         Assert.Equal(2, src); // App's single Donation.CountLaunch call, and the one assignment inside it.
     }
 }
+
+public class BackgroundTaskTests
+{
+    /// <summary>
+    /// Ted (2026-10-23): work running on a page shows in the corner pop-up when another page is open, and closing Kodiak Cleaner
+    /// asks first. Every busy page must therefore report its work, so a new tool can't forget to.
+    /// </summary>
+    [Fact]
+    public void Every_busy_page_reports_its_work()
+    {
+        var folder = Repo.File("src", "KodiakCleaner.App", "ViewModels");
+        foreach (var file in Directory.GetFiles(folder, "*.cs"))
+        {
+            var src = File.ReadAllText(file);
+            // Each method that marks its page busy starts a task within the next few lines.
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(src,
+                         @"(?:IsBusy|IsScanning|IsMeasuring|_summaryBusy|_advancedBusy) = true;"))
+            {
+                // Mass Rename's reload sets IsBusy back after reading the folder again (a task of its own).
+                if (src.Substring(Math.Max(0, m.Index - 80), Math.Min(80, m.Index)).Contains("await LoadAsync();")) continue;
+                var after = src.Substring(m.Index, Math.Min(400, src.Length - m.Index));
+                Assert.True(after.Contains("BackgroundTasks.Start("),
+                    $"{Path.GetFileName(file)} line {src[..m.Index].Count(c => c == '\n') + 1}: a busy page must call BackgroundTasks.Start");
+            }
+        }
+    }
+
+    [Fact]
+    public void Closing_asks_while_work_is_running_and_keep_open_is_the_default()
+    {
+        var window = Repo.Read("src", "KodiakCleaner.App", "MainWindow.xaml.cs");
+        Assert.Contains("BackgroundTasks.ConfirmStop()", window);
+        var tasks = Repo.Read("src", "KodiakCleaner.App", "BackgroundTasks.cs");
+        Assert.Contains("\"Keep Open\" }, defaultButton: 1, cancelButton: 1", tasks);
+        Assert.Contains("MainWindow.ConfirmExit()", Repo.Read("src", "KodiakCleaner.App", "TrayIcon.cs"));
+        Assert.Contains("MainWindow.ConfirmExit(\"Restart\")", Repo.Read("src", "KodiakCleaner.App", "Elevation.cs"));
+    }
+}

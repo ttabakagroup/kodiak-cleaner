@@ -166,6 +166,7 @@ public sealed class BootTimerViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task MeasureAsync()
     {
         IsMeasuring = true;
+        using var task = BackgroundTasks.Start(this, "Measuring Startup");
         _measuring = new CancellationTokenSource();
         var token = _measuring.Token;
         var progress = new Progress<string>(s => Progress = s);

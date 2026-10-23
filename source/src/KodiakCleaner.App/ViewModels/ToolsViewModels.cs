@@ -62,6 +62,7 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task RefreshAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading Restore Points");
         try
         {
             var list = await Task.Run(RestorePoints.List);
@@ -89,6 +90,7 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
             return;
         }
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Creating a Restore Point");
         Summary = "Creating a restore point. This can take a minute…";
         try
         {
@@ -116,6 +118,7 @@ public sealed class RestoreViewModel : ObservableObject, ILoadOnFirstVisit
         if (Selected is not { } p) return;
         if (!Dialogs.Confirm($"Remove the restore point \"{p.Description}\" from {p.Created:g}? This can't be undone.")) return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Removing a Restore Point");
         try
         {
             var code = await Task.Run(() => RestorePoints.Remove(p.Sequence));
@@ -226,6 +229,7 @@ public sealed class PointInTimeRestoreViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading Snapshots");
         try
         {
             var (available, settings, snapshots) = await Task.Run(() =>
@@ -304,6 +308,7 @@ public sealed class PointInTimeRestoreViewModel : ObservableObject
             return;
         }
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Taking a Snapshot");
         _cts = new CancellationTokenSource();
         Summary = "Windows is taking a snapshot of your system drive. This can take a few minutes; you can keep using your PC.";
         int before = Snapshots.Count;
@@ -547,6 +552,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task RefreshAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading Drives");
         ListNote = "Reading drives…";
         try
         {
@@ -616,6 +622,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         if (!string.Equals(typed?.Trim(), "ERASE", StringComparison.OrdinalIgnoreCase)) return;
 
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, chosen.Count == 1 ? "Erasing a Drive" : "Erasing Drives");
         _cts = new CancellationTokenSource();
         var done = new List<string>();
         try
@@ -624,6 +631,9 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             {
                 if (_cts.IsCancellationRequested) break;
                 var d = row.Disk;
+                int index = chosen.IndexOf(row);
+                // A Quick wipe or a firmware erase doesn't say how far along it is; with several drives, each finished one counts.
+                task.Percent = chosen.Count > 1 ? 100.0 * index / chosen.Count : null;
                 Percent = 0;
                 row.Status = "Erasing…";
                 var status = new Progress<string>(s => Status = $"{d.Name}: {s}");
@@ -636,6 +646,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                         ? $"{d.Name}: checking the last pass, {fraction:P0}"
                         : $"{d.Name}: pass {p.Pass} of {p.Passes} ({p.PassName}), {fraction:P0}";
                     row.Status = $"{Percent:0}%";
+                    task.Percent = (index + Percent / 100) * 100 / chosen.Count;
                 });
                 try
                 {
@@ -683,6 +694,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             return;
 
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Wiping Free Space");
         Percent = 0;
         _cts = new CancellationTokenSource();
         try
@@ -690,6 +702,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             var progress = new Progress<WipeProgress>(p =>
             {
                 Percent = p.BytesTotal > 0 ? 100.0 * ((p.Pass - 1) + (double)p.BytesWritten / p.BytesTotal) / p.Passes : 0;
+                task.Percent = Percent;
                 Status = $"Pass {p.Pass} of {p.Passes}: {ByteSize.Format(p.BytesWritten)} of {ByteSize.Format(p.BytesTotal)}";
             });
             var root = d.Root;

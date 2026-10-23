@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.78 Dev] - 2026-10-23
+
+### Interface
+- While a tool is working (a scan, a clean, a wipe, a check), you can open other pages: a small card in the bottom right corner shows what it's doing, such as Scanning for Files or Optimizing Drives, with a progress bar and percentage in your color scheme and accent. Work with no way to tell how far along it is shows a moving bar instead. Click the card to go back to the tool, or the X to hide it until the next task.
+- Closing Kodiak Cleaner while a task is still running asks first. Keep Open is the default; Close Anyway stops the task part way. Exit in the tray menu, Restart as Administrator and installing an update right away ask too.
+
 ## [0.8.77 Dev] - 2026-10-23
 
 ### Duplicate Finder

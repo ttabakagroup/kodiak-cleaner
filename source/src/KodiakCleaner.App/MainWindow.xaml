@@ -244,5 +244,69 @@
             </Border>
             <ContentControl Content="{Binding CurrentContent}" Margin="32,28,32,24" Focusable="False" />
         </DockPanel>
+
+        <!-- Work still running on another page: a small card in the bottom right corner with what it's doing and how far along
+             it is, in the scheme's colors and accent. Clicking it opens that page; the X hides it until the next task (Ted, 2026-10-23). -->
+        <Grid x:Name="TaskCard" Grid.Column="1" Width="264" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20"
+              Visibility="{Binding HasCornerTask, Converter={StaticResource BoolToVis}}">
+            <Grid.RenderTransform>
+                <TranslateTransform />
+            </Grid.RenderTransform>
+            <Button Command="{Binding OpenCornerTaskCommand}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusVisual}"
+                    ToolTip="{Binding CornerPageTitle, StringFormat=Open {0}}" AutomationProperties.Name="{Binding CornerTask.Title}">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                                CornerRadius="{DynamicResource RadiusCard}" Padding="14,12,14,14" SnapsToDevicePixels="True">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource AccentTint}" Margin="0,0,10,0" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding CornerPageGlyph}" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,26,0">
+                        <TextBlock Text="{Binding CornerTask.Title}" FontWeight="SemiBold" Foreground="{DynamicResource Text}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding CornerPageTitle}" Style="{StaticResource Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ProgressBar Height="6" VerticalAlignment="Center" Foreground="{DynamicResource Accent}" Background="{DynamicResource AccentTint}"
+                                     Minimum="0" Maximum="100" Value="{Binding CornerTask.PercentValue, Mode=OneWay}"
+                                     IsIndeterminate="{Binding CornerTask.NoPercent, Mode=OneWay}" />
+                        <!-- Without a percentage (a folder walk, a Windows tool that doesn't say) the bar just moves and this says so. -->
+                        <TextBlock Grid.Column="1" Margin="10,0,0,0" MinWidth="34" TextAlignment="Right" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{DynamicResource AccentText}" Text="{Binding CornerTask.PercentText}"
+                                   Visibility="{Binding CornerTask.HasPercent, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Margin="0,8,0,0" Style="{StaticResource Caption}" Text="{Binding CornerMore}"
+                               Visibility="{Binding HasCornerMore, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </Button>
+            <Button Style="{StaticResource SidebarIconButton}" Width="26" Height="26" Margin="0,8,8,0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Command="{Binding HideCornerTaskCommand}" ToolTip="Hide Until the Next Task" AutomationProperties.Name="Hide">
+                <TextBlock Text="&#xE711;" Style="{StaticResource Icon}" FontSize="11" />
+            </Button>
+        </Grid>
     </Grid>
 </Window>

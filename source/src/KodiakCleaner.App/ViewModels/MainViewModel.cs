@@ -73,6 +73,19 @@ public sealed class MainViewModel : ObservableObject
         HomeCommand = new RelayCommand(() => MainPages[0].IsSelected = true);
         MainPages[0].IsSelected = true;
 
+        BackgroundTasks.Changed += UpdateCornerTask;
+        _cornerDelay.Tick += (_, _) => { _cornerDelay.Stop(); UpdateCornerTask(); };
+        OpenCornerTaskCommand = new RelayCommand(() =>
+        {
+            var page = AllPages.FirstOrDefault(p => p.Content == CornerTask?.Owner);
+            if (page is not null) page.IsSelected = true;
+        });
+        HideCornerTaskCommand = new RelayCommand(() =>
+        {
+            foreach (var t in BackgroundTasks.Running) _hidden.Add(t);
+            UpdateCornerTask();
+        });
+
         Supporter.Changed += () =>
         {
             OnPropertyChanged(nameof(ShowBadge));
@@ -184,6 +197,57 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>The small donation banner on every 10th launch; never for Supporters (Ted, 0.8.55).</summary>
     public bool ShowDonationBanner { get => _showDonationBanner; set => Set(ref _showDonationBanner, value); }
 
+    // ---------- Corner pop-up for work running on another page (Ted, 2026-10-23) ----------
+
+    /// <summary>Tasks this new don't show yet, so a quick read never flashes a pop-up.</summary>
+    private static readonly TimeSpan CornerDelay = TimeSpan.FromSeconds(1);
+    private readonly System.Windows.Threading.DispatcherTimer _cornerDelay = new() { Interval = CornerDelay };
+
+    private RunningTask? _cornerTask;
+    /// <summary>The newest task running on a page that isn't open; null hides the pop-up.</summary>
+    public RunningTask? CornerTask
+    {
+        get => _cornerTask;
+        private set
+        {
+            if (!Set(ref _cornerTask, value)) return;
+            OnPropertyChanged(nameof(HasCornerTask));
+            OnPropertyChanged(nameof(CornerPageTitle));
+            OnPropertyChanged(nameof(CornerPageGlyph));
+        }
+    }
+
+    public bool HasCornerTask => CornerTask is not null;
+    public string CornerPageTitle => PageOf(CornerTask)?.Title ?? "";
+    public string CornerPageGlyph => PageOf(CornerTask)?.Glyph is { Length: > 0 } g ? g : "\uE9F5";
+
+    private string _cornerMore = "";
+    /// <summary>"1 more task running" when several pages are busy.</summary>
+    public string CornerMore { get => _cornerMore; private set { if (Set(ref _cornerMore, value)) OnPropertyChanged(nameof(HasCornerMore)); } }
+    public bool HasCornerMore => CornerMore.Length > 0;
+
+    /// <summary>Clicking the pop-up opens the page doing the work.</summary>
+    public ICommand OpenCornerTaskCommand { get; }
+
+    /// <summary>The X hides the pop-up for the tasks running now; the next task shows it again.</summary>
+    public ICommand HideCornerTaskCommand { get; }
+    private readonly HashSet<RunningTask> _hidden = new();
+
+    private NavPage? PageOf(RunningTask? task) => task is null ? null : AllPages.FirstOrDefault(p => p.Content == task.Owner);
+
+    private void UpdateCornerTask()
+    {
+        var now = DateTime.UtcNow;
+        _hidden.IntersectWith(BackgroundTasks.Running);
+        var elsewhere = BackgroundTasks.Running.Where(t => t.Owner != CurrentContent && !_hidden.Contains(t)).ToList();
+        var shown = elsewhere.Where(t => now - t.Started >= CornerDelay).ToList();
+        // A page can run one task inside another (Clean runs Analyze first); the newest says what is happening now.
+        CornerTask = shown.LastOrDefault();
+        var others = shown.Select(t => t.Owner).Distinct().Count() - 1;
+        CornerMore = others <= 0 ? "" : others == 1 ? "1 more task running" : $"{others} more tasks running";
+        if (elsewhere.Count > shown.Count && !_cornerDelay.IsEnabled) _cornerDelay.Start();
+    }
+
     public void ShowChangelog()
     {
         Navigate("about");
@@ -232,6 +296,7 @@ public sealed class MainViewModel : ObservableObject
         foreach (var p in AllPages)
             if (p != page) p.IsSelected = false;
         CurrentContent = page.Content;
+        UpdateCornerTask();
         if (ToolPages.Contains(page)) ToolsExpanded = true; // opened from a jump list or link: show where it lives
         // Lists are read when their page is first shown, not at startup.
         (page.Content as ILoadOnFirstVisit)?.EnsureLoaded();

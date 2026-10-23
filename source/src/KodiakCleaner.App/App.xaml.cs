@@ -106,6 +106,7 @@ public partial class App : Application
         var window = new MainWindow { BringToFront = updated };
         MainWindow = window;
         _tray = new TrayIcon(window);
+        SessionEnding += (_, _) => KodiakCleaner.App.MainWindow.SkipExitQuestion();
         window.Show();
 
         // Windows registrations (startup entry, Recycle Bin menu, jump list, scheduled cleanings) are checked once the

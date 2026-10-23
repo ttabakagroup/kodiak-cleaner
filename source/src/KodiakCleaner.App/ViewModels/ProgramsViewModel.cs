@@ -255,11 +255,13 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
                                    string.Join("\n", items.Take(15).Select(i => "• " + i.Name)) + (items.Count > 15 ? "\n…" : "") +
                                    $"\n\n{intro} Each uninstaller finishes before the next one starts.")) return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, items.Count == 1 ? "Uninstalling a Program" : "Uninstalling Programs");
         var results = new List<string>();
         try
         {
             for (int i = 0; i < items.Count; i++)
             {
+                if (items.Count > 1) task.Step(i, items.Count); // one uninstaller can't say how far along it is
                 var prefix = items.Count > 1 ? $"({i + 1} of {items.Count}) " : "";
                 var outcome = await UninstallOneAsync(items[i].Program, prefix);
                 results.Add(outcome);

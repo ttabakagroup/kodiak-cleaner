@@ -150,6 +150,22 @@ public sealed class IntegrityCheckViewModel : ObservableObject, ILoadOnFirstVisi
         RepairComponentStoreCommand = new RelayCommand(RepairComponentStoreAsync, () => !IsBusy);
         CheckSystemFilesCommand = new RelayCommand(() => Run(() => SystemFilesAsync(repair: false)), () => !IsBusy);
         RepairSystemFilesCommand = new RelayCommand(RepairSystemFilesAsync, () => !IsBusy);
+        foreach (var card in new[] { ComponentStore, DiskHealthCard, FileSystem, History, Memory, SystemFiles })
+            card.PropertyChanged += (_, e) => FollowCard(card, e.PropertyName);
+    }
+
+    private RunningTask? _task;
+
+    /// <summary>The corner pop-up names the check that is running and shows Windows' own percentage when its tool gives one.</summary>
+    private void FollowCard(IntegrityCard card, string? property)
+    {
+        if (_task is null || !card.IsRunning) return;
+        if (property == nameof(IntegrityCard.IsRunning))
+        {
+            _task.Title = (CanStop ? "Checking " : "Repairing ") + card.Title;
+            _task.Percent = null;
+        }
+        else if (property == nameof(IntegrityCard.Percent) && card.HasPercent) _task.Percent = card.Percent;
     }
 
     private bool _loaded;
@@ -241,6 +257,7 @@ public sealed class IntegrityCheckViewModel : ObservableObject, ILoadOnFirstVisi
         if (IsBusy) return;
         IsBusy = true;
         CanStop = canStop;
+        using var task = _task = BackgroundTasks.Start(this, canStop ? "Checking Integrity" : "Repairing Windows");
         _cts = new CancellationTokenSource();
         try { await work(); }
         catch (OperationCanceledException) { Status = "Stopped."; }
@@ -248,6 +265,7 @@ public sealed class IntegrityCheckViewModel : ObservableObject, ILoadOnFirstVisi
         {
             IsBusy = false;
             CanStop = false;
+            _task = null;
             CommandManager.InvalidateRequerySuggested();
         }
     }

@@ -134,6 +134,7 @@ public sealed class RegistryViewModel : ObservableObject
     private async Task BackUpNowAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Backing Up the Registry");
         Summary = "Backing up the registry…";
         try
         {
@@ -152,6 +153,7 @@ public sealed class RegistryViewModel : ObservableObject
     private async Task ScanAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Scanning the Registry");
         ShowIssues(Array.Empty<RegistryIssue>());
         Summary = "Scanning…";
         try
@@ -182,6 +184,7 @@ public sealed class RegistryViewModel : ObservableObject
         }
 
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Fixing Registry Issues");
         try
         {
             var (backupPath, fixedCount, errors) = await Task.Run(() => RegistryScanner.Fix(selected.Select(i => i.Issue).ToList(), backup));

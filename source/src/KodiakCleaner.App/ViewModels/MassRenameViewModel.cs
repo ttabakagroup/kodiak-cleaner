@@ -293,6 +293,7 @@ public sealed class MassRenameViewModel : ObservableObject
             return;
         }
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading Files");
         _cts = new CancellationTokenSource();
         Summary = $"Reading {Folder}…";
         try
@@ -416,6 +417,7 @@ public sealed class MassRenameViewModel : ObservableObject
         Settings.Current.MassRename = Rules;
         Settings.Current.Save();
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Renaming Files");
         Summary = $"Renaming {ready.Count:N0} file(s)…";
         try
         {
@@ -448,6 +450,7 @@ public sealed class MassRenameViewModel : ObservableObject
         var where = folders.Count == 1 ? $" in {folders[0]}" : "";
         if (!Dialogs.Confirm($"Put back the old names of {journal.Moves.Count:N0} file(s) renamed {journal.When:g}{where}?", "Undo Last Rename")) return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Undoing the Last Rename");
         try
         {
             var path = JournalPath;

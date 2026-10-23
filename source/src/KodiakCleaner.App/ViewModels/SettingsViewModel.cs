@@ -509,7 +509,8 @@ public sealed class SettingsViewModel : ObservableObject
         try
         {
             await UpdateService.DownloadAsync(info);
-            if (Dialogs.Confirm($"Kodiak Cleaner {info.Version.ToString(3)} is downloaded and verified. Close Kodiak Cleaner and install it now?"))
+            if (Dialogs.Confirm($"Kodiak Cleaner {info.Version.ToString(3)} is downloaded and verified. Close Kodiak Cleaner and install it now?")
+                && MainWindow.ConfirmExit()) // a scan or clean still running on another page is asked about first
                 UpdateService.InstallPendingNow();
             else
                 UpdateStatus = "The update will install when you close Kodiak Cleaner.";

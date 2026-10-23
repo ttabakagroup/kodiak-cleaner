@@ -93,6 +93,7 @@ public sealed class OptimizeViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task RefreshAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading Drives");
         Status = "Reading drives…";
         try
         {
@@ -153,6 +154,7 @@ public sealed class OptimizeViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (rows.Count == 0) return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, $"{verb} Drives");
         _cts = new CancellationTokenSource();
         var problems = new List<string>();
         int done = 0;
@@ -164,11 +166,13 @@ public sealed class OptimizeViewModel : ObservableObject, ILoadOnFirstVisit
                 row.Status = $"{verb}…";
                 row.Percent = 0;
                 int index = done;
+                task.Step(index, rows.Count);
                 var pct = new Progress<int>(v =>
                 {
                     row.Percent = v;
                     row.Status = $"{verb}… {v}%";
                     Percent = 100.0 * (index + v / 100.0) / rows.Count;
+                    task.Percent = Percent;
                     Status = $"{verb} {row.Drive.Letter}: ({row.Drive.ActionName}), drive {index + 1} of {rows.Count}";
                 });
                 Status = $"{verb} {row.Drive.Letter}: ({row.Drive.ActionName}), drive {index + 1} of {rows.Count}";

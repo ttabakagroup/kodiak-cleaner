@@ -146,6 +146,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task RefreshAsync()
     {
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading Drivers");
         Status = "Reading drivers…";
         try
         {
@@ -241,6 +242,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
                 "If your drive is encrypted with BitLocker, have its recovery key handy."))
             return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Preparing Safe Mode");
         try
         {
             if (CreateRestorePoint && !await MakeRestorePointAsync()) return;
@@ -293,6 +295,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
             return;
 
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Removing Drivers");
         try
         {
             // Restore points can't be made in Safe Mode (the shadow copy service doesn't run there).
@@ -301,8 +304,10 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
             var failed = new List<string>();
             int removed = 0, backedUp = 0;
             var backupFolder = Path.Combine(Settings.Data.Backups, "Drivers", $"{DateTime.Now:yyyy-MM-dd_HHmmss}_{VendorName}");
+            int step = 0, steps = chosen.Count;
             foreach (var item in chosen.Where(i => i.Package is not null))
             {
+                task.Step(step++, steps);
                 var p = item.Package!;
                 if (BackUpPackages)
                 {
@@ -326,15 +331,18 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
             string? regBackup = null;
             if (keys.Count > 0)
             {
+                task.Step(step, steps);
                 Status = "Backing up and removing registry keys…";
                 var (backup, keyFails) = await Task.Run(() => DriverTools.RemoveKeys(keys));
                 regBackup = backup;
+                step += keys.Count;
                 removed += keys.Count - keyFails.Count;
                 failed.AddRange(keyFails);
             }
 
             foreach (var item in chosen.Where(i => i.Folder is not null))
             {
+                task.Step(step++, steps);
                 Status = $"Moving {item.Folder} to the Recycle Bin…";
                 try
                 {

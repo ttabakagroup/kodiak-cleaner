@@ -116,6 +116,7 @@ public sealed class LargeFilesViewModel : ObservableObject
             return;
         }
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Searching for Large Files");
         Show(Array.Empty<LargeFile>());
         _cts = new CancellationTokenSource();
         Summary = $"Searching {Root}…";
@@ -139,6 +140,7 @@ public sealed class LargeFilesViewModel : ObservableObject
         var what = chosen.Count == 1 ? $"'{chosen[0].Name}'" : $"{chosen.Count} files";
         if (!Dialogs.Confirm($"Move {what} ({ByteSize.Format(chosen.Sum(f => f.Bytes))}) to the Recycle Bin?")) return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Moving Files to the Recycle Bin");
         int moved = 0, skipped = 0;
         try
         {
@@ -146,6 +148,7 @@ public sealed class LargeFilesViewModel : ObservableObject
             {
                 foreach (var f in chosen)
                 {
+                    task.Step(moved + skipped, chosen.Count);
                     try
                     {
                         Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(f.Path,
@@ -320,6 +323,7 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task LoadSummaryAsync(CancellationToken ct)
     {
         _summaryBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading System Information");
         ProgressText = "Reading Windows, the processor, memory and each drive…";
         OnStateChanged();
         try
@@ -345,6 +349,7 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
     private async Task LoadAdvancedAsync(CancellationToken ct)
     {
         _advancedBusy = true;
+        using var task = BackgroundTasks.Start(this, "Reading System Details");
         ProgressValue = 0;
         ProgressText = "Reading details…";
         OnStateChanged();
@@ -353,6 +358,7 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
         {
             if (ct.IsCancellationRequested) return; // a late report from a cancelled read
             ProgressValue = p.Total == 0 ? 0 : 100.0 * p.Done / p.Total;
+            task.Step(p.Done, p.Total);
             ProgressText = p.Group.Length == 0 ? "Finishing…" : $"Reading {p.Group} ({p.Done + 1} of {p.Total})…";
         });
         IProgress<(string, int, int)> report = progress;

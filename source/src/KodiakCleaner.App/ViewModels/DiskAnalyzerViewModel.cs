@@ -252,6 +252,15 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
         ScanCounts = "Starting…";
         ScanFolder = "";
         IsScanning = true;
+        using var task = _task = BackgroundTasks.Start(this, "Scanning for Files");
+        _used = 0;
+        // Whole drives: how much is in use gives the corner pop-up a rough percentage (the bytes found so far against it).
+        if (target.Roots.All(r => Path.GetPathRoot(r.Path) == r.Path))
+            _ = Task.Run(() =>
+            {
+                try { _used = target.Roots.Sum(r => { var d = new DriveInfo(r.Path); return d.TotalSize - d.TotalFreeSpace; }); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { }
+            });
         _ticker.Start();
         try
         {
@@ -284,10 +293,15 @@ public sealed class DiskAnalyzerViewModel : ObservableObject
         }
     }
 
+    private RunningTask? _task;
+    private long _used;
+
     private void ShowProgress()
     {
         if (_progress is not { } p) return;
         ScanCounts = $"{p.Files:N0} files, {ByteSize.Format(p.Bytes)} so far";
+        // Never 100% before the scan is done: compressed files and hard links make the count only roughly match.
+        if (_task is not null && Interlocked.Read(ref _used) > 0) _task.Percent = Math.Min(99, 100.0 * p.Bytes / Interlocked.Read(ref _used));
         ScanFolder = p.Current;
     }
 

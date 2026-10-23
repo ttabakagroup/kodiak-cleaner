@@ -14,6 +14,8 @@ public static class Elevation
     {
         var exe = Environment.ProcessPath;
         if (exe is null) return;
+        // Restarting stops anything still running, so ask first (Ted, 2026-10-23).
+        if (!MainWindow.ConfirmExit("Restart")) return;
         try
         {
             Process.Start(new ProcessStartInfo(exe, RestartedArg) { UseShellExecute = true, Verb = "runas" });
@@ -21,7 +23,8 @@ public static class Elevation
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            // The user declined the UAC prompt; keep running as-is.
+            // The user declined the UAC prompt; keep running as-is (and ask again before a later close).
+            MainWindow.ExitCancelled();
         }
     }
 

@@ -106,6 +106,7 @@ public sealed class EmptyFoldersViewModel : ObservableObject
             }
         }
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Searching for Empty Folders");
         Found.Clear();
         _cts = new CancellationTokenSource();
         Summary = roots.Count == 1 ? $"Searching {roots[0]}…" : $"Searching {roots.Count} places…";
@@ -138,6 +139,7 @@ public sealed class EmptyFoldersViewModel : ObservableObject
         var chosen = Found.Where(f => f.IsChecked).ToList();
         if (!Dialogs.Confirm($"Move {chosen.Count} empty folder(s) to the Recycle Bin?")) return;
         IsBusy = true;
+        using var task = BackgroundTasks.Start(this, "Moving Folders to the Recycle Bin");
         int moved = 0, skipped = 0;
         var guarded = ProtectedFolders().ToList();
         var kept = KeptFolders().ToList();
@@ -147,6 +149,7 @@ public sealed class EmptyFoldersViewModel : ObservableObject
             {
                 foreach (var f in chosen)
                 {
+                    task.Step(moved + skipped, chosen.Count);
                     // Something may have been saved into it since the search.
                     if (!EmptyFolderFinder.IsStillEmpty(f.Path, guarded, kept)) { skipped++; continue; }
                     try
