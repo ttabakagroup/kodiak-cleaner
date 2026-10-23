@@ -578,7 +578,11 @@ public sealed class ScheduledTaskItem : ObservableObject
     /// <summary>Hover details, one "Label: value" line each.</summary>
     public string Details => DetailText.Lines(("Name", Name), ("Folder", Folder), ("Program", Program), ("Runs", ProgramPath.Length > 0 ? ProgramPath : Command),
         ("Arguments", Arguments), ("Publisher", Publisher), ("Author", Author), ("Description", Description), ("Status", Status),
-        ("Next run", NextRun), ("Last run", LastRun), ("Sign-in", UsesPassword ? "Saved password (backup and restore may not work)" : ""));
+        ("Starts", StartsWith), ("Next run", NextRun), ("Last run", LastRun), ("Sign-in", UsesPassword ? "Saved password (backup and restore may not work)" : ""));
+
+    /// <summary>"At sign-in" or "When Windows starts" when one of its triggers starts it with Windows; "" otherwise.</summary>
+    public string StartsWith { get; private set; } = "";
+    public bool RunsAtStartup => StartsWith.Length > 0;
 
     /// <summary>The task signs in with a saved password (TASK_LOGON_PASSWORD), which a backup can't hold (Ted, 2026-10-23).</summary>
     public bool UsesPassword { get; private set; }
@@ -606,6 +610,16 @@ public sealed class ScheduledTaskItem : ObservableObject
                     Command = $"Windows component {(string?)action.ClassId}";
                 }
                 break;
+            }
+            // Sign-in (9) and startup (8) triggers make a task start a program with Windows (Ted, 0.8.89).
+            foreach (dynamic trigger in definition.Triggers)
+            {
+                int kind = trigger.Type;
+                bool on = true;
+                try { on = (bool)trigger.Enabled; } catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
+                if (!on) continue;
+                if (kind == 9) StartsWith = "At sign-in";
+                else if (kind == 8 && StartsWith.Length == 0) StartsWith = "When Windows starts";
             }
         }
         catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { }
@@ -762,19 +776,17 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
 
     private void Refresh()
     {
-        _all = new List<ScheduledTaskItem>();
         try
         {
-            Walk(ScheduledTaskTools.Connect().GetFolder(@"\"));
+            _all = ScheduledTaskTools.ReadAll();
         }
         catch (Exception e) when (IsSchedulerError(e))
         {
-            _all.Clear();
+            _all = new List<ScheduledTaskItem>();
             Summary = "Scheduled tasks couldn't be read on this PC.";
             Filter(keepSummary: true);
             return;
         }
-        _all.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
         Filter();
     }
 
@@ -782,19 +794,6 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
     internal static bool IsSchedulerError(Exception e) =>
         e is COMException or UnauthorizedAccessException or InvalidCastException or NotImplementedException
             or NotSupportedException or ArgumentException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException;
-
-    private void Walk(dynamic folder)
-    {
-        string path = folder.Path;
-        try
-        {
-            foreach (dynamic task in folder.GetTasks(1)) // 1 = include hidden tasks
-                _all.Add(new ScheduledTaskItem(task, path));
-            foreach (dynamic sub in folder.GetFolders(0))
-                Walk(sub);
-        }
-        catch (Exception e) when (IsSchedulerError(e)) { } // folders this user can't read
-    }
 
     private void Filter(bool keepSummary = false)
     {

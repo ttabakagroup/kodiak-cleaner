@@ -28,6 +28,28 @@ public static class ScheduledTaskTools
         return service;
     }
 
+    /// <summary>Every task this user can read, in every folder, A to Z. Throws when Task Scheduler can't be reached.</summary>
+    public static List<ScheduledTaskItem> ReadAll()
+    {
+        var all = new List<ScheduledTaskItem>();
+        Walk(Connect().GetFolder(@"\"), all);
+        all.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+        return all;
+    }
+
+    private static void Walk(dynamic folder, List<ScheduledTaskItem> all)
+    {
+        string path = folder.Path;
+        try
+        {
+            foreach (dynamic task in folder.GetTasks(1)) // 1 = include hidden tasks
+                all.Add(new ScheduledTaskItem(task, path));
+            foreach (dynamic sub in folder.GetFolders(0))
+                Walk(sub, all);
+        }
+        catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e)) { } // folders this user can't read
+    }
+
     /// <summary>Saves the task's XML. Returns null when saved, else what went wrong.</summary>
     public static string? BackUp(ScheduledTaskItem task, string reason)
     {

@@ -99,6 +99,64 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         DisableSelectedCommand = new RelayCommand(() => SetPicked(false), () => Picked().Any(i => i.Enabled));
         AddCommand = new RelayCommand(Add);
         HistoryCommand = new RelayCommand(() => { if (StartupHistoryWindow.Show(null)) Refresh(); });
+        TaskOnCommand = new RelayCommand(() => SetTask(true), () => SelectedTask is { Enabled: false });
+        TaskOffCommand = new RelayCommand(() => SetTask(false), () => SelectedTask is { Enabled: true });
+        TaskDeleteCommand = new RelayCommand(DeleteTask, () => SelectedTask is not null);
+        OpenTasksCommand = new RelayCommand(() => (System.Windows.Application.Current as App)?.ShowPage("tasks"));
+    }
+
+    // ------------------------------------------------ Scheduled tasks that start with Windows (Ted, 0.8.89)
+
+    /// <summary>
+    /// Scheduled tasks (not Windows' own) with a sign-in or startup trigger. They start programs with Windows too, but they
+    /// aren't startup entries, so they get their own card below the list.
+    /// </summary>
+    public ObservableCollection<ScheduledTaskItem> StartupTasks { get; } = new();
+
+    private ScheduledTaskItem? _selectedTask;
+    public ScheduledTaskItem? SelectedTask { get => _selectedTask; set => Set(ref _selectedTask, value); }
+
+    private string _tasksSummary = "Reading scheduled tasks...";
+    public string TasksSummary { get => _tasksSummary; private set => Set(ref _tasksSummary, value); }
+
+    public ICommand TaskOnCommand { get; }
+    public ICommand TaskOffCommand { get; }
+    public ICommand TaskDeleteCommand { get; }
+    public ICommand OpenTasksCommand { get; }
+
+    private void LoadTasks()
+    {
+        StartupTasks.Clear();
+        List<ScheduledTaskItem> all;
+        try { all = ScheduledTaskTools.ReadAll(); }
+        catch (Exception e) when (ScheduledTasksViewModel.IsSchedulerError(e))
+        {
+            TasksSummary = "Scheduled tasks couldn't be read on this PC.";
+            return;
+        }
+        foreach (var t in all.Where(t => t.RunsAtStartup && !t.IsWindowsTask)) StartupTasks.Add(t);
+        TasksSummary = StartupTasks.Count == 0
+            ? "No scheduled tasks start a program when you sign in or when Windows starts."
+            : $"{StartupTasks.Count} scheduled task{(StartupTasks.Count == 1 ? "" : "s")} start{(StartupTasks.Count == 1 ? "s" : "")} a program when you sign in " +
+              "or when Windows starts. These come from Windows Task Scheduler, not from a startup entry, so removing a program's startup " +
+              "entry doesn't stop them. Turning a task off is reversible; Delete backs it up first.";
+        FileIcons.LoadInto(StartupTasks.Where(i => i.NoIcon && i.HasProgram).ToList(), i => i.ProgramPath, (i, icon) => i.Icon = icon);
+    }
+
+    private void SetTask(bool enabled)
+    {
+        if (SelectedTask is { } t && !t.TrySetEnabled(enabled))
+            Dialogs.Error("Changing this task needs administrator rights. Use Restart as Administrator at the top.");
+    }
+
+    private void DeleteTask()
+    {
+        if (SelectedTask is not { } t) return;
+        if (!Dialogs.Warn($"Delete the scheduled task '{t.Name}'?\n\nKodiak Cleaner backs it up first, and you can put it back from " +
+                          "Tools > Scheduled Tasks > Restore. Turning it off instead is reversible.", "Delete Scheduled Task",
+                          t.UsesPassword ? ScheduledTaskTools.PasswordCaution : null)) return;
+        if (ScheduledTaskTools.Delete(t) is { } problem) Dialogs.Error(problem);
+        LoadTasks();
     }
 
     private bool _loaded;
@@ -191,6 +249,8 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
         }
         OnPropertyChanged(nameof(AllChecked));
         FileIcons.LoadInto(Items.ToList(), i => FileIcons.ProgramOf(i.Command), (i, icon) => i.Icon = icon);
+        // Reading every task takes a moment, so the startup list shows first.
+        System.Windows.Application.Current?.Dispatcher.BeginInvoke(LoadTasks, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void Delete() => Remove(Picked());

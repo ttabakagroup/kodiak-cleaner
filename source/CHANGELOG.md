@@ -5,6 +5,14 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.89 Dev] - 2026-10-23
+
+### Startup
+- New card below the startup list: Scheduled Tasks That Run at Startup. It lists scheduled tasks (not Windows' own) that start a program when you sign in or when Windows starts, with the program, when it starts, and its Task Scheduler folder. These come from Windows Task Scheduler rather than a startup entry, which is why some programs still start after their startup entry is removed. Turn a task on or off with its switch, or right-click to delete it (backed up first, restore from Tools > Scheduled Tasks). Open Scheduled Tasks goes to the full tool.
+
+### Scheduled Tasks
+- Hovering a task shows when it starts with Windows (at sign-in, or when Windows starts).
+
 ## [0.8.88 Dev] - 2026-10-23
 
 ### System Restore

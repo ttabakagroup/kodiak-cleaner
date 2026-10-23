@@ -52,6 +52,69 @@
 
         <local:SearchBox DockPanel.Dock="Top" Margin="0,0,0,16" Text="{Binding Filter}" Placeholder="Search by name, command or location" />
 
+        <!-- Scheduled tasks that start a program at sign-in or when Windows starts (Ted, 0.8.89). They aren't startup
+             entries, so they have their own card; turning one off or deleting it works like Tools > Scheduled Tasks. -->
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource Card}" Padding="16,12" Margin="0,16,0,0">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                    <TextBlock DockPanel.Dock="Left" Text="Scheduled Tasks That Run at Startup" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                    <Button DockPanel.Dock="Right" Command="{Binding OpenTasksCommand}" Margin="0"
+                            ToolTip="See every scheduled task, back them up and restore deleted ones.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE823;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Open Scheduled Tasks" />
+                        </StackPanel>
+                    </Button>
+                </DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{Binding TasksSummary}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,8" />
+                <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding StartupTasks}" SelectedItem="{Binding SelectedTask}"
+                          IsSynchronizedWithCurrentItem="False" SelectionMode="Single" MaxHeight="220"
+                          PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Enable" Command="{Binding TaskOnCommand}">
+                                <MenuItem.Icon><TextBlock Text="&#xE768;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Disable" Command="{Binding TaskOffCommand}">
+                                <MenuItem.Icon><TextBlock Text="&#xE769;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Header="Delete Task" Command="{Binding TaskDeleteCommand}">
+                                <MenuItem.Icon><TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" /></MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Task" Width="2*" SortMemberPath="Name">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Grid Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center">
+                                            <Image Source="{Binding Icon}" RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <TextBlock Text="&#xE823;" Style="{StaticResource Icon}" FontSize="16" HorizontalAlignment="Center"
+                                                       Foreground="{DynamicResource Muted}"
+                                                       Visibility="{Binding NoIcon, Converter={StaticResource BoolToVis}}" />
+                                        </Grid>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Program" Binding="{Binding Program}" Width="2*" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Starts" Binding="{Binding StartsWith}" Width="150" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Folder" Binding="{Binding Folder}" Width="*" IsReadOnly="True" />
+                        <DataGridTemplateColumn Header="On" Width="80" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Enabled, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
         <Border Style="{StaticResource Card}" Padding="8">
             <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding View}" IsSynchronizedWithCurrentItem="False" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
                       SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged">
