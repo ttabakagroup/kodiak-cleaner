@@ -50,6 +50,7 @@ public sealed class AdapterItem
     public string Name { get; }
     public string Detail { get; }
     public DriverVendor? Vendor { get; }
+    public string GetDriverText => Vendor is { } v ? $"Get the Latest {DriverCleaner.Name(v)} Driver" : "";
     public ICommand GetDriverCommand { get; }
 }
 
@@ -77,6 +78,8 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
     public ObservableCollection<AdapterItem> Adapters { get; } = new();
     public List<Choice<DriverVendor>> Vendors { get; } = new();
     public bool HasAdapters => Adapters.Count > 0;
+    /// <summary>One Get the Latest Driver button per maker found (A to Z), shown in the Graphics card's button row.</summary>
+    public ObservableCollection<AdapterItem> DriverLinks { get; } = new();
     public ICommand RefreshCommand { get; }
     public ICommand CleanCommand { get; }
     public ICommand SafeModeCommand { get; }
@@ -189,6 +192,9 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
             _inUse = inUse;
             Adapters.Clear();
             foreach (var a in adapters) Adapters.Add(new AdapterItem(a));
+            DriverLinks.Clear();
+            foreach (var a in Adapters.Where(a => a.Vendor is not null).DistinctBy(a => a.Vendor).OrderBy(a => a.GetDriverText, StringComparer.OrdinalIgnoreCase))
+                DriverLinks.Add(a);
             OnPropertyChanged(nameof(HasAdapters));
             if (!_vendorPicked)
             {

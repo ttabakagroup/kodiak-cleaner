@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.87 Dev] - 2026-10-23
+
+### Driver Cleaner
+- Tidier cards: Your Graphics, Safe Mode, BitLocker and Next: Install the New Driver now all keep their buttons in one row along the bottom of the card, and the Graphics and Safe Mode buttons line up side by side. Your Graphics has one Get the Latest Driver button for each maker it found.
+
 ## [0.8.86 Dev] - 2026-10-23
 
 ### Driver Cleaner

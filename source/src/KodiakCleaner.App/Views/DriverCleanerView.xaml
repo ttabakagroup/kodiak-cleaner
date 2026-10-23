@@ -8,22 +8,20 @@
                        Text="Remove an old graphics or Realtek audio driver completely, with its leftovers, so a fresh driver installs cleanly." />
         </StackPanel>
 
-        <!-- Next step after a clean: install the newest driver from the maker. -->
+        <!-- Next step after a clean: install the newest driver from the maker. Every card keeps its buttons in a row along the bottom. -->
         <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16" Background="{DynamicResource AccentTint}"
                 Visibility="{Binding JustCleaned, Converter={StaticResource BoolToVis}}">
-            <DockPanel>
-                <Button DockPanel.Dock="Right" Command="{Binding GetDriverCommand}" Style="{StaticResource AccentButton}" Margin="0" VerticalAlignment="Center">
+            <StackPanel>
+                <TextBlock Text="Next: Install the New Driver" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="Restart Windows first, then download and run the newest driver from the maker's own page."
+                           TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,8,0,12" />
+                <Button Command="{Binding GetDriverCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" Margin="0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                         <TextBlock Text="{Binding GetDriverText}" />
                     </StackPanel>
                 </Button>
-                <StackPanel Margin="0,0,16,0">
-                    <TextBlock Text="Next: Install the New Driver" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="Restart Windows first, then download and run the newest driver from the maker's own page."
-                               TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,4,0,0" />
-                </StackPanel>
-            </DockPanel>
+            </StackPanel>
         </Border>
 
         <!-- BitLocker on the Windows drive: save the recovery key and suspend protection before Safe Mode. Shown only when it's on. -->
@@ -76,40 +74,56 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Graphics adapters found, each with its maker's driver page. -->
+            <!-- Graphics adapters found, with one button per maker for its driver page. Both cards share a height, so their button rows line up. -->
             <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <TextBlock Text="Your Graphics" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="No graphics driver from AMD, Intel or NVIDIA is installed." Style="{StaticResource Caption}" Margin="0,8,0,0"
-                               Visibility="{Binding HasAdapters, Converter={StaticResource NotVis}}" />
-                    <ItemsControl ItemsSource="{Binding Adapters}">
+                <DockPanel>
+                    <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding DriverLinks}" Margin="0,12,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <DockPanel Margin="0,10,0,0">
-                                    <Button DockPanel.Dock="Right" Content="Get Latest Driver" Command="{Binding GetDriverCommand}" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" />
+                                <Button Command="{Binding GetDriverCommand}" Margin="0,0,10,6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding GetDriverText}" />
                                     </StackPanel>
-                                </DockPanel>
+                                </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Your Graphics" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="No graphics driver from AMD, Intel or NVIDIA is installed." Style="{StaticResource Caption}" Margin="0,8,0,0"
+                                   Visibility="{Binding HasAdapters, Converter={StaticResource NotVis}}" />
+                        <ItemsControl ItemsSource="{Binding Adapters}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,8,0,0">
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DockPanel>
             </Border>
 
             <!-- Safe Mode: restart into it, or back out of it. -->
             <Border Grid.Column="2" Style="{StaticResource Card}">
-                <StackPanel>
-                    <TextBlock Text="{Binding SafeModeTitle}" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{Binding SafeModeText}" TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,8,0,12" />
-                    <Button Command="{Binding SafeModeCommand}" HorizontalAlignment="Left" Margin="0">
+                <DockPanel>
+                    <Button DockPanel.Dock="Bottom" Command="{Binding SafeModeCommand}" HorizontalAlignment="Left" Margin="0,12,0,6">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                             <TextBlock Text="{Binding SafeModeButton}" />
                         </StackPanel>
                     </Button>
-                </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{Binding SafeModeTitle}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding SafeModeText}" TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,8,0,0" />
+                    </StackPanel>
+                </DockPanel>
             </Border>
         </Grid>
 
