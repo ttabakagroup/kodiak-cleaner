@@ -29,7 +29,7 @@ GLYPHS = {
     "E7EF": "shield_person", "E7F4": "desktop", "E7F8": "laptop", "E81C": "history", "E823": "clock", "E82F": "lightbulb",
     "E838": "folder_open", "E895": "arrow_sync", "E896": "arrow_download", "E897": "question_circle", "E8A5": "document",
     "E8A7": "open", "E8AC": "rename", "E8B7": "folder", "E8BB": "dismiss", "E8BD": "chat", "E8C8": "copy",
-    "E8E5": "document_arrow_right", "E8F1": "library", "E90F": "wrench", "E916": "timer", "E943": "code", "E946": "info",
+    "E8E5": "document_arrow_right", "E8F1": "library", "E90F": "wrench", "E916": "timer", "E928": "fingerprint", "E943": "code", "E946": "info",
     "E950": "developer_board", "E95E": "heart_pulse", "E9CE": "question_circle", "E9D9": "stethoscope",
     "E9F5": "settings_cog_multiple", "E9F9": "document_text", "EA18": "shield", "EA86": "puzzle_piece", "EB05": "data_pie",
     "EB51": "heart", "EBE8": "bug", "EC4A": "top_speed", "EC50": "folder", "EC7A": "wrench_screwdriver", "ED25": "folder_open",

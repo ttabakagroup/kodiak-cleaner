@@ -21,6 +21,7 @@ public partial class MainWindow : Window
             if (e.PropertyName == nameof(MainViewModel.HasCornerTask) && _vm.HasCornerTask) SlideInTaskCard();
         };
         SourceInitialized += (_, _) => ThemeManager.ApplyTitleBar(this);
+        PreviewKeyDown += FindShortcut;
         // Everything that can wait (pop-ups, the update check) waits until the window has been drawn once (0.8.47), so a
         // first start, which is slower while Windows checks the new program, never shows a blank or frozen window.
         ContentRendered += async (_, _) =>
@@ -122,6 +123,15 @@ public partial class MainWindow : Window
 
     /// <summary>Sizes the sidebar: icons only when collapsed, the default width when the paperclip is locked or
     /// Adjustable Sidebar Width is off, otherwise the saved width with a draggable edge.</summary>
+    /// <summary>Ctrl+F jumps to the open page's search box (Hash Checker, Cleaner, Programs...), as in most Windows programs.</summary>
+    private void FindShortcut(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.F || Keyboard.Modifiers != ModifierKeys.Control) return;
+        if (Views.SearchBox.FirstShownIn(Pages) is not { } box) return;
+        box.FocusBox();
+        e.Handled = true;
+    }
+
     private void ApplySidebar()
     {
         var s = Settings.Current;

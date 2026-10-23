@@ -21,6 +21,7 @@
         <DataTemplate DataType="{x:Type vm:EmptyFoldersViewModel}"><views:EmptyFoldersView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ExtensionsViewModel}"><views:ExtensionsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:LargeFilesViewModel}"><views:LargeFilesView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HashCheckerViewModel}"><views:HashCheckerView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:MassRenameViewModel}"><views:MassRenameView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ScheduledTasksViewModel}"><views:ScheduledTasksView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SystemInfoViewModel}"><views:SystemInfoView /></DataTemplate>
@@ -242,7 +243,7 @@
                                Text="Kodiak Cleaner is made for free in spare time. A donation, however small, really keeps the work going." />
                 </DockPanel>
             </Border>
-            <views:PageHost Page="{Binding CurrentContent}" Margin="32,28,32,24" />
+            <views:PageHost Page="{Binding CurrentContent}" x:Name="Pages" Margin="32,28,32,24" />
         </DockPanel>
 
         <!-- Work still running on another page: a small card in the bottom right corner with what it's doing and how far along

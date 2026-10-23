@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.91 Dev] - 2026-10-23
+
+### Everywhere
+- Ctrl+F jumps to the search box on any page that has one.
+
+### Tools
+- New Hash Checker: add or drop files (or folders) to see their MD5, SHA-1, SHA-256, SHA-384 and SHA-512, worked out in one read.
+- Paste hashes from a download page or load a checksum file (.sha256, .md5, SHA256SUMS, certutil and PowerShell output): every file shows Verified, Doesn't Match or Not in the List, and a loaded list adds the files it names.
+- Ctrl+F finds a file by name or any part of a hash; the right-click menu copies any hash; Save Checksum File writes a list sha256sum can check.
+
 ## [0.8.90 Dev] - 2026-10-23
 
 ### All Lists

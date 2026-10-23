@@ -148,6 +148,13 @@ privacy first, local first, security paramount, convenient, practical and useful
   and drive-root Windows folders are skipped. Scheduled Tasks read each task's first action (exec path, COM handler).
 - Launch count (0.8.64): Donation.CountLaunch is called once in App startup; LaunchCounter.CountsAsStart skips self-reopened
   copies (--restarted, --updated). The donation pop-up shows after Getting Started/What's New, from start 1 (a test checks).
+- Hash Checker (Ted, 2026-10-23, `HashChecker` in Core, `HashCheckerViewModel`): its own tool, not part of Integrity Check (that one checks
+  Windows itself). Every file is read once for all five kinds (MD5, SHA-1, SHA-256, SHA-384, SHA-512, one core each), shared read so open
+  files work; a kind Windows refuses (FIPS) is left out. `ParseList` reads sha256sum/md5sum, BSD "SHA256 (name) = hash", certutil,
+  PowerShell Get-FileHash (table and list) and bare hashes; the hash length decides the kind. A file the list names must match that entry
+  (else Doesn't Match); otherwise any equal hash verifies it. Dropped checksum files (`IsListFile`) become the list and add the files they
+  name from the list's folder; folders add at most 5000 files. Read-only: only Save Checksum File writes (where the person picks). Ctrl+F
+  (MainWindow `FindShortcut`) focuses the first search box shown on any page.
 - Integrity Check (Ted, 2026-10-12, `IntegrityCheck` in Core, `IntegrityCheckViewModel`): cards A to Z, each with Check (read-only)
   and, where Windows can fix it, Repair. Only Windows' own tools from System32: sfc /verifyonly and /scannow (UTF-16 output, English
   messages only, else "Finished, see Details"), DISM /Online /Cleanup-Image /ScanHealth and /RestoreHealth with /English, chkdsk (NTFS /scan

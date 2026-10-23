@@ -4,6 +4,10 @@
 
 No. Kodiak Cleaner sends no usage data, shows no ads and has no tracking. It only goes online to check for updates, and only when you click Check for Updates or turn on Check for Updates Automatically under Settings, Updates. Buttons such as Support on Ko-fi, Get Latest Driver and the Contact & Feedback buttons open your browser only when you click them. Integrity Check's Windows image repair is Windows' own DISM tool, which may download repair files from Windows Update.
 
+## How Do I Check That a Download Isn't Damaged?
+
+Open Hash Checker under Tools and drop the file on the page (or click Add Files). Copy the hash the download page lists into Expected Hashes, or drop the .sha256, .md5 or SHA256SUMS file that came with the download. Each file then shows Verified when it matches, or Doesn't Match when it differs from the one listed, which means it is damaged, changed or a different version. Press Ctrl+F to find a file by its name or any part of a hash. Hash Checker only reads your files and never sends them anywhere.
+
 ## How Do I Move Kodiak Cleaner to a New PC?
 
 Under Settings, Application, click Back Up Settings. It saves a dated copy of your settings and your Programs and Startup histories in Backups\Settings. Install Kodiak Cleaner on the new PC, close it, then copy those files over KodiakCleaner.ini, Backups\Programs History\history.json and Backups\Startup History\history.json. A Supporter code is part of the settings, so it moves with them.

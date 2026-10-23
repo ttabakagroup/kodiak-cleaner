@@ -31,6 +31,7 @@ public partial class WelcomeWindow : Window
         new("Driver Cleaner", ": remove old graphics drivers completely before a fresh install"),
         new("Duplicate Finder", ": spot copies of the same file on any drive, and files that are alike"),
         new("Empty Folders", ": find and remove empty folders on whole drives or in folders"),
+        new("Hash Checker", ": MD5, SHA-1, SHA-256 and SHA-512 of any file, checked against a list of hashes"),
         new("Integrity Check", ": check and repair Windows files, drives and memory with Windows' own tools"),
         new("Large Files", ": find the files taking the most space"),
         new("Mass Rename", ": rename many files at once by a pattern, see every new name first, undo it after"),

@@ -15,6 +15,7 @@ public sealed class MainViewModel : ObservableObject
         DiskAnalyzer = new DiskAnalyzerViewModel();
         DriverCleaner = new DriverCleanerViewModel();
         EmptyFolders = new EmptyFoldersViewModel();
+        HashChecker = new HashCheckerViewModel();
         Integrity = new IntegrityCheckViewModel();
         LargeFiles = new LargeFilesViewModel();
         MassRename = new MassRenameViewModel();
@@ -48,6 +49,7 @@ public sealed class MainViewModel : ObservableObject
         ToolPages.Add(new NavPage("Driver Cleaner", "\uE950", DriverCleaner, OnNavigated));
         ToolPages.Add(new NavPage("Duplicate Finder", "", Duplicates, OnNavigated));
         ToolPages.Add(new NavPage("Empty Folders", "\uE8B7", EmptyFolders, OnNavigated));
+        ToolPages.Add(new NavPage("Hash Checker", "\uE928", HashChecker, OnNavigated));
         ToolPages.Add(new NavPage("Integrity Check", "\uE9D9", Integrity, OnNavigated));
         ToolPages.Add(new NavPage("Large Files", "\uE8A5", LargeFiles, OnNavigated));
         ToolPages.Add(new NavPage("Mass Rename", "\uE8AC", MassRename, OnNavigated));
@@ -101,6 +103,7 @@ public sealed class MainViewModel : ObservableObject
     public DiskAnalyzerViewModel DiskAnalyzer { get; }
     public DriverCleanerViewModel DriverCleaner { get; }
     public EmptyFoldersViewModel EmptyFolders { get; }
+    public HashCheckerViewModel HashChecker { get; }
     public IntegrityCheckViewModel Integrity { get; }
     public LargeFilesViewModel LargeFiles { get; }
     public MassRenameViewModel MassRename { get; }
@@ -273,6 +276,7 @@ public sealed class MainViewModel : ObservableObject
             "disk" => DiskAnalyzer,
             "drivers" => DriverCleaner,
             "emptyfolders" => EmptyFolders,
+            "hash" => HashChecker,
             "integrity" => Integrity,
             "largefiles" => LargeFiles,
             "rename" => MassRename,
