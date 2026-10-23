@@ -51,6 +51,6 @@ Everything stays on your PC, and Kodiak Cleaner sends nothing on its own. The on
 - Feedback, bug reports and feature requests: Settings > Contact & Feedback, or the Contact Us form at https://www.kodiakcleaner.app/contact/
 - Website: https://www.kodiakcleaner.app/
 - Source code: https://www.kodiakcleaner.app/open-source/
-- Say thanks: https://ko-fi.com/ttabaka
+- Say thanks: https://ko-fi.com/s/aabd61b988
 
 Copyright © 2026 Ted Tabaka. Free and open source under the MIT License.

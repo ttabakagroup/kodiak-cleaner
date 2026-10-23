@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.13 Dev] - 2026-10-23
+
+### Supporter
+- The Support on Ko-fi buttons now open the Kodiak Cleaner supporter item in Ted's Ko-fi Shop, so your supporter code comes for Kodiak Cleaner.
+
 ## [0.8.12 Dev] - 2026-10-23
 
 ### Supporter

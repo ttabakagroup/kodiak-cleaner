@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.84 Dev] - 2026-10-23
+
+### Supporter
+- The Support on Ko-fi buttons now open the Kodiak Cleaner supporter item in Ted's Ko-fi Shop, so your supporter code comes for Kodiak Cleaner.
+
 ## [0.8.83 Dev] - 2026-10-23
 
 ### Supporter

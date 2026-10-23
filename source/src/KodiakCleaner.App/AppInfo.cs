@@ -11,7 +11,7 @@ public static class AppInfo
     public const string ShortName = "Kodiak Cleaner";
     public const string Slogan = "Not a Crap Cleaner. A Cleaner App, Built Around What Matters.";
     public const string Developer = "Ted Tabaka";
-    public const string KoFiUrl = "https://ko-fi.com/ttabaka";
+    public const string KoFiUrl = "https://ko-fi.com/s/aabd61b988";
 
     /// <summary>GitHub "owner/name": source code and Star on GitHub.</summary>
     public const string Repository = "ttabakagroup/kodiakcleaner";

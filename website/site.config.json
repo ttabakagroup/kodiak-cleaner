@@ -2,7 +2,7 @@
   "siteUrl": "https://www.kodiakcleaner.app",
   "repo": "https://github.com/ttabakagroup/kodiakcleaner",
   "homepage": "https://tedtabaka.com",
-  "kofi": "https://ko-fi.com/ttabaka",
+  "kofi": "https://ko-fi.com/s/aabd61b988",
   "copyrightYear": 2026,
   "hostedDownloads": {
     "installer": "KodiakCleaner-Installer.msi",
@@ -11,6 +11,10 @@
     "portableSize": "63.5 MB"
   },
   "releases": {
+    "0.8.84": {
+      "installerSize": "71.1 MB",
+      "portableSize": "63.8 MB"
+    },
     "0.8.83": {
       "installerSize": "71.1 MB",
       "portableSize": "63.8 MB"
