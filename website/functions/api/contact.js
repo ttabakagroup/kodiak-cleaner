@@ -4,13 +4,12 @@
 //   TURNSTILE_SITE_KEY    Turnstile widget site key (plain text)
 //   TURNSTILE_SECRET_KEY  Turnstile secret key (secret)
 //   RESEND_API_KEY        Resend API key used to email the message (secret)
-//   CONTACT_TO            optional, where messages go (default www.kodiakcleaner.app/contact)
+//   CONTACT_TO            where messages go (secret; required, never written in the code)
 //   CONTACT_FROM          optional, sender (default "Kodiak Cleaner Website <onboarding@resend.dev>")
 //
 // Nothing is stored: each message is checked, emailed, and forgotten.
 
 export const TOPICS = ["Accessibility", "Bug Report", "Feature Request", "General Feedback", "Security"];
-const DEFAULT_TO = "www.kodiakcleaner.app/contact";
 const DEFAULT_FROM = "Kodiak Cleaner Website <onboarding@resend.dev>";
 const LIMITS = { name: 100, email: 254, message: 5000, minMessage: 10 };
 const EMAIL_RE = /^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[^\s@<>()",;:]{2,}$/;
@@ -32,13 +31,13 @@ export function settings(env) {
     siteKey: get("TURNSTILE_SITE_KEY"),
     secret: get("TURNSTILE_SECRET_KEY"),
     resendKey: get("RESEND_API_KEY"),
-    to: get("CONTACT_TO") || DEFAULT_TO,
+    to: get("CONTACT_TO"),
     from: get("CONTACT_FROM") || DEFAULT_FROM,
   };
 }
 
 function ready(cfg) {
-  return Boolean(cfg.siteKey && cfg.secret && cfg.resendKey);
+  return Boolean(cfg.siteKey && cfg.secret && cfg.resendKey && cfg.to);
 }
 
 // Turns Resend's refusal into a plain explanation (shown on the form, so Ted can see what to fix).

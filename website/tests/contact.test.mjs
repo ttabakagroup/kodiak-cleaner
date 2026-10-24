@@ -3,7 +3,7 @@ import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { onRequestGet, onRequestPost, validate, buildEmail, settings, explainMailError, TOPICS } from "../functions/api/contact.js";
 
-const env = { TURNSTILE_SITE_KEY: "site", TURNSTILE_SECRET_KEY: "secret", RESEND_API_KEY: "re_key" };
+const env = { TURNSTILE_SITE_KEY: "site", TURNSTILE_SECRET_KEY: "secret", RESEND_API_KEY: "re_key", CONTACT_TO: "ted@example.com" };
 const good = { topic: "Bug Report", name: "Pat", email: "pat@example.com", message: "Cleaner froze on Analyze.", "cf-turnstile-response": "tok" };
 let calls;
 function mockFetch({ human = true, turnstileStatus = 200, mailOk = true, mailStatus = 500, mailBody = {} } = {}) {
@@ -30,7 +30,7 @@ test("sends a valid message to Ted with the visitor as reply-to", async () => {
   assert.equal(res.status, 200);
   assert.equal(calls.length, 2);
   const mail = JSON.parse(calls[1].init.body);
-  assert.deepEqual(mail.to, ["www.kodiakcleaner.app/contact"]);
+  assert.deepEqual(mail.to, ["ted@example.com"]);
   assert.equal(mail.reply_to, "pat@example.com");
   assert.match(mail.subject, /^\[Kodiak Cleaner\] Bug Report: /);
   assert.match(mail.text, /Cleaner froze on Analyze\./);
@@ -70,9 +70,9 @@ test("validate trims and normalizes", () => {
 });
 
 test("keys pasted with a stray space or line break still work", async () => {
-  const res = await post(good, { TURNSTILE_SITE_KEY: "site\n", TURNSTILE_SECRET_KEY: " secret ", RESEND_API_KEY: "re_key\r\n" });
+  const res = await post(good, { TURNSTILE_SITE_KEY: "site\n", TURNSTILE_SECRET_KEY: " secret ", RESEND_API_KEY: "re_key\r\n", CONTACT_TO: " ted@example.com\n" });
   assert.equal(res.status, 200);
-  assert.equal(JSON.parse(calls[1].init.body).to[0], "www.kodiakcleaner.app/contact");
+  assert.equal(JSON.parse(calls[1].init.body).to[0], "ted@example.com");
 });
 
 test("a crash still answers with JSON the form can show", async () => {
@@ -117,4 +117,12 @@ test("the Turnstile check is done server-side with the secret, the token and the
   assert.equal((await res.json()).ok, true);
   const sent = Object.fromEntries(calls[0].init.body.entries());
   assert.deepEqual(sent, { secret: "secret", response: "tok", remoteip: "203.0.113.7" });
+});
+
+test("without CONTACT_TO the form says it isn't set up (no address is built in)", async () => {
+  const { CONTACT_TO, ...rest } = env;
+  const res = await post(good, rest);
+  const out = await res.json();
+  assert.equal(out.code, "not_set_up");
+  assert.equal(calls.length, 0);
 });

@@ -67,7 +67,7 @@ Optional, for a nicer sender: in Resend > Domains, add `kodiakcleaner.app` and a
 | `TURNSTILE_SITE_KEY` | Text | Site Key from step 3 |
 | `TURNSTILE_SECRET_KEY` | Secret | Secret Key from step 3 |
 | `RESEND_API_KEY` | Secret | Key from step 4 |
-| `CONTACT_TO` | Text (optional) | Where messages go. Defaults to the address in functions/api/contact.js |
+| `CONTACT_TO` | Secret (required) | Where messages go. It isn't written anywhere in the code, so the form says it isn't set up until this is set |
 | `CONTACT_FROM` | Text (optional) | Sender, only after kodiakcleaner.app is verified in Resend |
 
 **6. Deploy again** with `npm run deploy` so the settings take effect, then open https://www.kodiakcleaner.app/contact/ and send yourself a test message.
