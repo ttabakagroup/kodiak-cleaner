@@ -66,7 +66,7 @@ struct BetaNoticeView: View {
     }
 }
 
-/// The donation reminder at startup (Ted, 2026-10-10). Not Now, the close button and Esc close it; Donate on Ko-fi
+/// The support reminder at startup (Ted, 2026-10-10). Not Now, the close button and Esc close it; Support on Ko-fi
 /// opens Ko-fi in the browser and closes it. Don't Show This Again at Startup works once Kodiak Cleaner has started
 /// 10 times, and applies however the pop-up closes.
 struct DonationView: View {
@@ -104,7 +104,7 @@ struct DonationView: View {
             HStack(spacing: 8) {
                 Spacer()
                 Button("Not Now") { model.sheet = nil }.kcButton(.secondary).keyboardShortcut(.cancelAction)
-                Button("Donate on Ko-fi") {
+                Button("Support on Ko-fi") {
                     openLink(AppInfo.kofiURL)
                     model.sheet = nil
                 }
@@ -129,7 +129,7 @@ struct DonationBanner: View {
             Text(Donation.bannerText).font(theme.body(13)).foregroundStyle(theme.text)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 8)
-            Button("Donate on Ko-fi") { openLink(AppInfo.kofiURL) }.kcButton(.link)
+            Button("Support on Ko-fi") { openLink(AppInfo.kofiURL) }.kcButton(.link)
             Button("Dismiss") { model.showDonationBanner = false }.kcButton(.secondary)
         }
         .padding(.horizontal, 14).padding(.vertical, 8)

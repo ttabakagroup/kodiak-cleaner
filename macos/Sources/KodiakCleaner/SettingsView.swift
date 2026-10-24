@@ -127,7 +127,7 @@ private struct GeneralSettings: View {
         }
         Card(title: "Startup") {
             // Greyed out until Kodiak Cleaner has started 10 times; Supporters have it off for good.
-            SwitchRow(title: "Ask Me to Donate at Startup",
+            SwitchRow(title: "Remind Me to Support Kodiak Cleaner at Startup",
                       help: Donation.settingsCaption(launchCount: model.settings.launchCount, isSupporter: model.plan.isSupporter),
                       isOn: Binding(get: { model.settings.showDonationPrompt },
                                     set: { on in
@@ -149,7 +149,7 @@ private struct GeneralSettings: View {
         Card(title: "Reset", subtitle: "Puts every setting back to how it was at first. Your supporter code and history stay.") {
             Button("Reset All Settings") {
                 model.ask(DialogRequest(title: "Reset All Settings?",
-                                        message: "Every setting goes back to its default, and the start count for the donation reminder starts again. Your supporter code, cleaning history and Triggers History stay.",
+                                        message: "Every setting goes back to its default, and the start count for the support reminder starts again. Your supporter code, cleaning history and Triggers History stay.",
                                         confirm: "Reset", danger: true) {
                     model.settings = model.settings.reset()
                     model.applyAppearance()
@@ -345,7 +345,7 @@ private struct SupporterSettings: View {
             Card(title: "Supporter") {
                 Text("One-time thank-you. Yours to keep.").font(theme.body(13, weight: .medium)).foregroundStyle(theme.accentText)
                 ForEach(["Everything in Free", "The Classic, Glacier and Lagoon color schemes", "A Supporter Badge (you can hide it)",
-                         "The support link and donation reminder hidden"], id: \.self) {
+                         "The support link and support reminder hidden"], id: \.self) {
                     Label($0, systemImage: "checkmark").foregroundStyle(theme.text)
                 }
             }
@@ -447,7 +447,7 @@ private struct DeveloperSettings: View {
         Card(title: "Status") {
             row("Full Disk Access", model.hasFullDiskAccess ? "Allowed" : "Not allowed")
             row("Installed As", AppInfo.build.packaged ? "App" : "Source folder")
-            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, Lagoon, badge, support link and donation reminder hidden" : "None")
+            row("Perks Active", model.plan.isSupporter ? "Classic, Glacier, Lagoon, badge, support link and support reminder hidden" : "None")
             row("Preview", model.settings.preview.capitalized)
             row("Signing Key", Supporter.publicKey.isTest ? "Test key" : "Ted's key")
             row("Starts Counted", "\(model.settings.launchCount)")

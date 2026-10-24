@@ -7,9 +7,9 @@ public struct AppSettings: Codable, Equatable {
     public var showBetaNotice = true
     public var showWhatsNew = true
     public var lastVersionRun = ""
-    /// How many times the main window has opened (the donation reminder counts these). Reset keeps it.
+    /// How many times the main window has opened (the support reminder counts these). Reset keeps it.
     public var launchCount = 0
-    /// The donation reminder at startup. It can be turned off after 10 starts; Supporters never see it.
+    /// The support reminder at startup. It can be turned off after 10 starts; Supporters never see it.
     public var showDonationPrompt = true
     /// The Settings list's Sort By: "default" (General first, as listed) or "a-z" (Ted, 2026-10-23).
     public var settingsSort = "default"
@@ -88,7 +88,7 @@ public struct AppSettings: Codable, Equatable {
     }
 
     /// Reset All Settings: everything back to its default, keeping the supporter code and the cleaning history. The
-    /// donation reminder's start count starts again (Ted, 0.8.2); AppModel turns the reminder off again for Supporters.
+    /// support reminder's start count starts again (Ted, 0.8.2); AppModel turns the reminder off again for Supporters.
     public func reset() -> AppSettings {
         var fresh = AppSettings()
         fresh.supporterCode = supporterCode

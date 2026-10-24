@@ -40,7 +40,7 @@ final class AppModel: ObservableObject {
 
     @Published var settings: AppSettings {
         didSet {
-            // A Supporter (a code just entered, or the Developer page's preview) never gets the donation reminder.
+            // A Supporter (a code just entered, or the Developer page's preview) never gets the support reminder.
             if settings.showDonationPrompt && plan.isSupporter { settings.showDonationPrompt = false }
             if settings.selected != oldValue.selected { selectedCache = nil }
             if settings != oldValue { settings.save() }
@@ -51,7 +51,7 @@ final class AppModel: ObservableObject {
     @Published var dialog: DialogRequest?
     @Published var sheet: SheetKind?
     @Published var systemAccent: String? = Theme.systemAccentHex()
-    /// The donation banner at the top of the page, on every 10th start until Dismiss.
+    /// The support banner at the top of the page, on every 10th start until Dismiss.
     @Published var showDonationBanner = false
     /// Fixes the look for screenshots (nil follows Light or Dark).
     @Published var forcedDark: Bool?
@@ -117,8 +117,8 @@ final class AppModel: ObservableObject {
         CommandLine.arguments.contains("--screenshots") || CommandLine.arguments.contains("--self-test")
     }
 
-    /// The Beta Software notice (Dev and Beta builds), then What's New after an update, then the donation reminder
-    /// (never stacked on another pop-up, and shown from the first start). Every 10th start also shows the donation banner.
+    /// The Beta Software notice (Dev and Beta builds), then What's New after an update, then the support reminder
+    /// (never stacked on another pop-up, and shown from the first start). Every 10th start also shows the support banner.
     func startup() {
         applyAppearance()
         guard !startedUp else { return }
@@ -136,7 +136,7 @@ final class AppModel: ObservableObject {
         if AppInfo.channel != "stable" && settings.showBetaNotice {
             sheet = .beta
             pendingWhatsNew = previous
-            // The donation pop-up waits until the Beta Software notice closes, as on Windows (never stacked).
+            // The support pop-up waits until the Beta Software notice closes, as on Windows (never stacked).
             pendingDonation = ask
         } else if showWhatsNewIfUpdated(previous) {
             // ...and until What's New closes (0.8.4; it used to be skipped on that start).
@@ -154,7 +154,7 @@ final class AppModel: ObservableObject {
         Donation.canOptOut(launchCount: settings.launchCount, isSupporter: plan.isSupporter)
     }
 
-    /// However the donation pop-up closes: Don't Show This Again at Startup turns the reminder off once that's allowed.
+    /// However the support pop-up closes: Don't Show This Again at Startup turns the reminder off once that's allowed.
     func donationPromptClosed(dontShowAgain: Bool) {
         guard dontShowAgain else { return }
         let isSupporter = plan.isSupporter
@@ -168,7 +168,7 @@ final class AppModel: ObservableObject {
         pendingWhatsNew = nil
         pendingDonation = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            // What's New first; the donation pop-up after it closes.
+            // What's New first; the support pop-up after it closes.
             if self.showWhatsNewIfUpdated(previous) { self.pendingDonation = donation } else if donation { self.sheet = .donation }
         }
     }

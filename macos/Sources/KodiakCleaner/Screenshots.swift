@@ -85,7 +85,7 @@ enum Screenshots {
         model.settings.accent = ""
         model.settings.preview = "free"
         await capture(MainLayout(), dark: false, to: "\(folder)/settings-appearance-free.png", model: model)
-        // The donation banner (every 10th start) and the pop-up as a Free copy sees it before 10 starts.
+        // The support banner (every 10th start) and the pop-up as a Free copy sees it before 10 starts.
         model.page = .home
         model.showDonationBanner = true
         await capture(MainLayout(), dark: false, to: "\(folder)/donation-banner.png", model: model)

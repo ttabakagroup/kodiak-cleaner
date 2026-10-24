@@ -1,7 +1,7 @@
 import XCTest
 @testable import KodiakCore
 
-/// The donation reminder: start count, when it can be turned off, the pop-up, the banner on every 10th start, and
+/// The support reminder: start count, when it can be turned off, the pop-up, the banner on every 10th start, and
 /// Supporters seeing neither.
 final class DonationTests: TempHomeTestCase {
     func testDefaultsAndSaving() {
@@ -93,9 +93,9 @@ final class DonationTests: TempHomeTestCase {
         XCTAssertEqual(Donation.promptCaption(launchCount: 10, isSupporter: false),
                        "Turn this on to stop the reminder at startup. You can turn it back on in Settings > General.")
         XCTAssertEqual(Donation.settingsCaption(launchCount: 9, isSupporter: false),
-                       "At startup, a short note asks you to consider donating. It can be turned off after Kodiak Cleaner has started 10 times (1 more to go).")
+                       "At startup, a short note invites you to support Kodiak Cleaner on Ko-fi. It can be turned off after Kodiak Cleaner has started 10 times (1 more to go).")
         XCTAssertEqual(Donation.settingsCaption(launchCount: 11, isSupporter: false),
-                       "At startup, a short note asks you to consider donating to keep Kodiak Cleaner free and open source.")
+                       "At startup, a short note invites you to support Kodiak Cleaner on Ko-fi. Every feature stays free either way.")
         XCTAssertEqual(Donation.settingsCaption(launchCount: 2, isSupporter: true),
                        "Thank you for being a Supporter! The reminder is off for you.")
         XCTAssertEqual(AppInfo.kofiURL.absoluteString, "https://ko-fi.com/s/aabd61b988")
