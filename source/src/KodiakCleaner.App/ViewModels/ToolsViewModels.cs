@@ -579,10 +579,10 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         set { if (NameDrive) Label = value; }
     }
 
-    private bool _nameDrive = true;
+    private bool _nameDrive;
     /// <summary>
-    /// Name the Drive (Ted, 0.8.116), on by default: the drive gets the name in the box. Off: the box is blank and the drive gets
-    /// no name, so Windows shows it as "USB Drive" or "Local Disk".
+    /// Name the Drive (Ted, 0.8.116), off by default since 0.8.117: the box is blank and the drive gets no name, so Windows shows
+    /// it as "USB Drive" or "Local Disk". Ticked: the drive gets the name in the box.
     /// </summary>
     public bool NameDrive
     {

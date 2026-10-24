@@ -11,6 +11,8 @@ public sealed record WipeableDrive(string Root, string Label, string Format, lon
     public string Display => $"{Letter}:  {(string.IsNullOrEmpty(Label) ? "Local Disk" : Label)}";
     public MediaKind Kind { get; init; }
     public string KindName => MediaKindText.Name(Kind);
+    /// <summary>The drive's size for the Free Space Only picker, e.g. "(14.4 GB)" (Ted, 0.8.117).</summary>
+    public string SizeText => $"({ByteSize.Format(Size)})";
 }
 
 /// <summary>A whole physical disk that can be erased, or the reason it can't (Windows, Kodiak Cleaner or programs live on it).</summary>

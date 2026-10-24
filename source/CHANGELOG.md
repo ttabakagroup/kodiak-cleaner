@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.117 Dev] - 2026-10-24
+
+### Drive Wiper
+- Name the Drive is now unticked by default, so a wiped drive gets no name unless you tick it and type one.
+- Free Space Only: each drive in the list now shows its size in parentheses, for example E:  USB Drive (14.4 GB).
+- Drive Details shows the serial number printed on an NVMe drive's label. Windows often reports a drive ID (groups of letters and numbers joined by underscores) instead, so Kodiak Cleaner now asks the drive itself; if it still gets only the ID, a note says so.
+
 ## [0.8.116 Dev] - 2026-10-24
 
 ### Drive Wiper

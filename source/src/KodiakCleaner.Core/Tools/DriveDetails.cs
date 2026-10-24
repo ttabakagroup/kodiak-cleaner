@@ -148,6 +148,8 @@ public static class DriveDetails
             new("Model", d.Model),
             new("Serial Number", string.IsNullOrWhiteSpace(d.Serial) ? NotShared : d.Serial.Trim()),
         };
+        if (SerialText.IsDriveId(d.Serial))
+            drive.Add(new("", "This is the ID Windows gives the drive; the serial number on its label may differ."));
         if (info.Manufacturer is { Length: > 0 } maker && !d.Model.Contains(maker, StringComparison.OrdinalIgnoreCase)) drive.Add(new("Manufacturer", maker));
         drive.Add(new("Type", d.KindName));
         drive.Add(new("Connection", BusName(info.BusType)));

@@ -212,7 +212,7 @@
                                        Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,0"
                                        Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}" />
 
-                            <!-- Free Space Only keeps its simple layout: one drive letter, the passes, Wipe. -->
+                            <!-- Free Space Only keeps its simple layout: one drive letter (with its size), the passes, Wipe. -->
                             <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource NotVis}}">
                                 <TextBlock Text="Drive" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
                                 <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" Width="360" HorizontalAlignment="Left"
@@ -221,6 +221,7 @@
                                         <DataTemplate>
                                             <TextBlock>
                                                 <Run Text="{Binding Display, Mode=OneWay}" />
+                                                <Run Text="{Binding SizeText, Mode=OneWay}" />
                                                 <Run Text="{Binding Format, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
                                                 <Run Text="·" Foreground="{DynamicResource Muted}" />
                                                 <Run Text="{Binding KindName, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
@@ -486,7 +487,7 @@
                                         </ItemsControl>
                                     </Border>
                                 </StackPanel>
-                                <!-- Name the Drive (Ted, 0.8.116): ticked, the drive gets the name in the box; unticked, the box is blank and
+                                <!-- Name the Drive (Ted, 0.8.116; unticked by default since 0.8.117): ticked, the drive gets the name in the box; unticked, the box is blank and
                                      the drive gets no name at all. -->
                                 <StackPanel Margin="0,0,0,8" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                                     <TextBlock Text="Drive Name" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />

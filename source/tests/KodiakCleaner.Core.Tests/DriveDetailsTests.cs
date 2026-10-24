@@ -63,13 +63,13 @@ public sealed class DriveNameTests
     private static string View() => Repo.Read("src", "KodiakCleaner.App", "Views", "WiperView.xaml");
 
     [Fact]
-    public void Entire_drive_starts_quick_formatted_and_unchecked_with_a_named_drive()
+    public void Entire_drive_starts_quick_formatted_and_unchecked_with_no_drive_name()
     {
         var vm = Vm();
         Assert.Contains("private WipeLevel _level = WipeLevel.Quick;", vm);
         Assert.Contains("private bool _leaveUninitialized;", vm);
         Assert.Matches(@"private bool _checkAfterwards;", vm);
-        Assert.Contains("private bool _nameDrive = true;", vm);
+        Assert.Contains("private bool _nameDrive;", vm);
         Assert.DoesNotContain("_label = \"Wiped\"", vm);
         // Unticking Name the Drive formats without a name; the box shows blank.
         Assert.Contains("new DiskFormat(FileSystem, Gpt, NameDrive ? Label : \"\")", vm);
@@ -230,5 +230,38 @@ public sealed class DriveDetailsTests
         Assert.DoesNotContain("PhysicalDrive", source);
         Assert.DoesNotContain("diskpart", source, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("SELECT ", source);
+    }
+}
+
+public sealed class SerialTextTests
+{
+    [Theory]
+    [InlineData("  WD-WMAY3J881436  ", "WD-WMAY3J881436")]
+    [InlineData("S4EWNX0R123456A.", "S4EWNX0R123456A")]
+    [InlineData(null, "")]
+    public void Serials_lose_their_padding(string? raw, string expected) => Assert.Equal(expected, SerialText.Clean(raw));
+
+    [Theory]
+    [InlineData("0025_3852_21B4_1234.", true)]
+    [InlineData("E823_8FA6_BF53_0001_001B_448B_4A93_6E8D", true)]
+    [InlineData("S4EWNX0R123456A", false)]
+    [InlineData("WD-WMAY3J881436", false)]
+    public void An_nvme_drive_id_is_told_apart_from_a_serial(string serial, bool id) => Assert.Equal(id, SerialText.IsDriveId(serial));
+
+    [Fact]
+    public void The_nvme_identify_serial_is_read_as_text()
+    {
+        var bytes = System.Text.Encoding.ASCII.GetBytes("S4EWNX0R123456A     ");
+        Assert.Equal("S4EWNX0R123456A", SerialText.FromIdentify(bytes));
+        Assert.Null(SerialText.FromIdentify(new byte[20]));
+        Assert.Null(SerialText.FromIdentify(new byte[] { 0x01, 0x02, 0x41 }));
+    }
+
+    [Fact]
+    public void Nvme_drives_ask_for_their_label_serial()
+    {
+        var source = Repo.Read("src", "KodiakCleaner.Core", "Tools", "DriveMedia.cs");
+        Assert.Contains("bus == BusNvme && Native.NvmeSerial(h)", source);
+        Assert.Contains("serial = SerialText.Clean(serial);", source);
     }
 }

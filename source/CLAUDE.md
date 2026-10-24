@@ -77,7 +77,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   Reports\Integrity Check (progress card after a check, Step 3, and Integrity Check's details card). A PaneRows divider ("wiper")
   sits between the progress card and the settings; it and the card hide together and the settings then span all rows.
   Ted, 0.8.116: defaults (nothing on the page is saved) are Wipe Type Quick, Leave It Uninitialized off, Check the Drive Afterwards off,
-  Name the Drive on. The drive name follows the ticked drive's type (`WipeMethods.DefaultLabel`: Flash Drive, Hard Drive, USB Drive, SSD,
+  Name the Drive off (0.8.117; was on). The drive name follows the ticked drive's type (`WipeMethods.DefaultLabel`: Flash Drive, Hard Drive, USB Drive, SSD,
   USB SSD; 11 characters at most) until typed over, never "Wiped"; unticking Name the Drive blanks the box and diskpart gets no label=.
   `DiskFormat.SafeLabel`: 32 characters on NTFS, 11 on exFAT/FAT32, capitals on FAT32. Step 1's table grows to ~10 rows (MaxHeight 460)
   and the wheel scrolls the page unless the table itself still has rows to scroll; a click anywhere on a row ticks it (not on the tick

@@ -91,6 +91,10 @@ public static class DriveMedia
             model = string.Join(" ", new[] { vendor, product }.Where(s => s.Length > 0));
             serial = Str(24);
         }
+        // NVMe drives: Windows' storage descriptor often gives a drive ID (EUI-64, like 0025_3852_...) instead of the serial
+        // printed on the label, so ask the drive's own Identify Controller data for it (Ted, 0.8.117). Read-only query.
+        if (bus == BusNvme && Native.NvmeSerial(h) is { Length: > 0 } nvme) serial = nvme;
+        serial = SerialText.Clean(serial);
         bool? seek = Native.QueryProperty(h, 7 /* StorageDeviceSeekPenaltyProperty */, 12) is { Length: >= 9 } sp ? sp[8] != 0 : null;
         bool? trim = Native.QueryProperty(h, 8 /* StorageDeviceTrimProperty */, 12) is { Length: >= 9 } tp ? tp[8] != 0 : null;
         long size = Native.Size(h);
@@ -188,6 +192,28 @@ public static class DriveMedia
             var output = new byte[size];
             return DeviceIoControl(h, IoctlStorageQueryProperty, query, query.Length, output, output.Length, out var got, IntPtr.Zero) && got > 0
                 ? output[..got] : null;
+        }
+
+        /// <summary>
+        /// The serial number from an NVMe drive's Identify Controller data (bytes 4-23), asked through
+        /// STORAGE_PROPERTY_QUERY with StorageAdapterProtocolSpecificProperty (49): ProtocolTypeNvme (3), NVMeDataTypeIdentify (1),
+        /// CNS 1 = the controller. Only asks; the drive's data isn't read or written. Null when Windows won't answer.
+        /// </summary>
+        public static string? NvmeSerial(SafeFileHandle h)
+        {
+            const int Header = 8, Specific = 40, Data = 4096;
+            var buffer = new byte[Header + Specific + Data];
+            BinaryPrimitives.WriteInt32LittleEndian(buffer, 49);            // PropertyId
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(4), 0);   // QueryType = PropertyStandardQuery
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(8), 3);   // ProtocolType = NVMe
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(12), 1);  // DataType = Identify
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(16), 1);  // ProtocolDataRequestValue = CNS controller
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(24), Specific); // ProtocolDataOffset
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(28), Data);     // ProtocolDataLength
+            if (!DeviceIoControl(h, IoctlStorageQueryProperty, buffer, buffer.Length, buffer, buffer.Length, out var got, IntPtr.Zero)) return null;
+            // STORAGE_PROTOCOL_DATA_DESCRIPTOR: Version, Size, then the protocol data whose offset counts from byte 8.
+            int offset = Header + BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(24));
+            return got >= offset + 24 && offset > Header ? SerialText.FromIdentify(buffer.AsSpan(offset + 4, 20)) : null;
         }
 
         /// <summary>DISK_GEOMETRY_EX.DiskSize (after the 24-byte DISK_GEOMETRY); needs no access rights, unlike the length IOCTL.</summary>
