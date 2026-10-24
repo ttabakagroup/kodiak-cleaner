@@ -52,7 +52,7 @@
                     <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                     <tc:TaskClock Margin="0,6,0,0" />
                 </StackPanel>
-                <DataGrid ItemsSource="{Binding Found}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
+                <DataGrid tc:Placeholder.Text="The largest files show here after you click Search." ItemsSource="{Binding Found}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
                           SelectionChanged="Grid_SelectionChanged">
                     <DataGrid.ContextMenu>
                         <ContextMenu>

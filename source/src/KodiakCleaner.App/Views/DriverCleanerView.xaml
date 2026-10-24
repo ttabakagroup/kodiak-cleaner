@@ -191,7 +191,7 @@
                     <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                     <tc:TaskClock Margin="0,6,0,0" />
                 </StackPanel>
-                <DataGrid ItemsSource="{Binding Items}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                <DataGrid tc:Placeholder.Text="Graphics and audio drivers that can be removed show here. Click Refresh to look again." ItemsSource="{Binding Items}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
                             <DataGridTemplateColumn.Header>

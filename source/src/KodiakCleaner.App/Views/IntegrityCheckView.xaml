@@ -134,7 +134,7 @@
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
                         <ContentControl Content="{Binding FileSystem}" ContentTemplate="{StaticResource CardHead}" Tag="&#xEDA2;" Focusable="False" />
-                        <DataGrid ItemsSource="{Binding Drives}" Margin="30,12,0,0" MaxHeight="260" PreviewMouseWheel="Inner_PreviewMouseWheel">
+                        <DataGrid tc:Placeholder.Text="Drives show here. Click Refresh to look again." ItemsSource="{Binding Drives}" Margin="30,12,0,0" MaxHeight="260" PreviewMouseWheel="Inner_PreviewMouseWheel">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
                                     <DataGridTemplateColumn.Header>

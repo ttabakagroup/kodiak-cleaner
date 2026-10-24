@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.102 Dev] - 2026-10-24
+
+### Interface
+- Empty lists and tables now say what will show there and how to fill them, for example "Sets of duplicate files show here after you click Search", instead of an empty card.
+
 ## [0.8.101 Dev] - 2026-10-24
 
 ### Startup

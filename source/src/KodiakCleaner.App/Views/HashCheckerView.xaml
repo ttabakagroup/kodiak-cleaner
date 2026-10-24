@@ -100,7 +100,7 @@
                     <local:TaskClock Margin="0,6,0,0" />
                 </StackPanel>
                 <!-- Tick boxes, Ctrl-click, Shift-click and drag to pick several (ListSelect, from the shared style), and a right-click menu. -->
-                <DataGrid x:Name="FileGrid" ItemsSource="{Binding View}" VirtualizingPanel.ScrollUnit="Pixel" RowDetailsVisibilityMode="Collapsed" AreRowDetailsFrozen="True" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
+                <DataGrid local:Placeholder.Text="Files you add with Add Files, Add Folder or Load List show here, with their hashes." x:Name="FileGrid" ItemsSource="{Binding View}" VirtualizingPanel.ScrollUnit="Pixel" RowDetailsVisibilityMode="Collapsed" AreRowDetailsFrozen="True" IsReadOnly="True" IsSynchronizedWithCurrentItem="False"
                           SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                     <DataGrid.ContextMenu>
                         <ContextMenu>

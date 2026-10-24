@@ -109,6 +109,9 @@ privacy first, local first, security paramount, convenient, practical and useful
   highlight whole rows on hover and when ticked via an adorner, and a click anywhere on a row ticks it; Space ticks highlighted rows). Only `ListSelectTests.SingleRowTables` may say `SelectionMode="Single"`; a table or list never gets
   its own Style (it would lose ListSelect). Tables with a right-click menu pass their highlighted rows to the view model's `Highlighted`. Right-click actions act on every highlighted row (`GridRightClick` keeps a
   selection when the clicked row is in it); the buttons act on ticked rows, else the highlighted ones. Repair and Rename need exactly one row.
+- Empty lists (Ted, 2026-10-23): every DataGrid and ItemsControl sets `views:Placeholder.Text` (Views/Placeholder.cs), a full sentence saying
+  what shows there and how to fill it ("… show here after you click Search."), drawn faintly in the middle while the list is empty.
+  `PlaceholderTests.NeverEmpty` lists the exceptions (fixed choices, lists hidden or explained when empty) with a reason; new lists need one or the other.
 - Icons (0.8.16): only from files already on the PC (`ProgramIcons`, `FileIcons`: exe icons via ExtractIconEx, others via SHGetFileInfo), never bundled brand logos;
   a plain Segoe glyph when nothing is found. Cleaner groups take the icon from `CleanTarget.AppFiles`, then App Paths.
 - Cleaner Advanced Cleaning (Ted, 0.8.16): `CleanTarget.Advanced` items sit in one group, hidden behind the Advanced Cleaning button, never ticked

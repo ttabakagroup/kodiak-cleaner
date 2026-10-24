@@ -25,7 +25,7 @@
                    Text="Right-click an extension to turn it on or off, or remove it; Ctrl-click and Shift-click pick several. Chrome, Edge and Brave are changed through their own extension policies, so they say they are managed by your organization until nothing needs it (this needs Restart as Administrator). Firefox add-ons can be removed while Firefox is closed; turn them off in Firefox itself." />
 
         <Border Style="{StaticResource Card}" Padding="8">
-            <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding View}" SelectedItem="{Binding Selected}" IsReadOnly="True"
+            <DataGrid local:Placeholder.Text="Extensions from your browsers show here. If you searched, none match; click Refresh to look again." RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding View}" SelectedItem="{Binding Selected}" IsReadOnly="True"
                       IsSynchronizedWithCurrentItem="False" SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged"
                       PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                 <!-- Right-click to turn extensions on or off or remove them (Ted, 0.8.65); the menu acts on every highlighted row. -->

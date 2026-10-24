@@ -68,7 +68,7 @@
                             <CheckBox DockPanel.Dock="Right" Content="All Drives" IsChecked="{Binding AllDrives}" VerticalAlignment="Center" />
                             <TextBlock Text="Drives" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
                         </DockPanel>
-                        <ItemsControl ItemsSource="{Binding Drives}" Margin="0,8,0,0" Padding="8,0">
+                        <ItemsControl views:Placeholder.Text="Drives show here once they answer. Folders below can still be searched." ItemsSource="{Binding Drives}" Margin="0,8,0,0" Padding="8,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Root}" HorizontalContentAlignment="Stretch">
@@ -98,7 +98,7 @@
                         <TextBlock Text="{Binding DrivesNote}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
 
                         <TextBlock Text="Folders" Style="{StaticResource SectionTitle}" Margin="0,20,0,0" />
-                        <ItemsControl ItemsSource="{Binding Folders}" Margin="0,8,0,0" Padding="8,0">
+                        <ItemsControl views:Placeholder.Text="Folders you add with Add Folder show here." ItemsSource="{Binding Folders}" Margin="0,8,0,0" Padding="8,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox IsChecked="{Binding IsChecked}" Margin="0,4" ToolTip="{Binding Name}">
@@ -249,7 +249,7 @@
                             </StackPanel>
                         </DockPanel>
                         <!-- Virtualized: a whole-drive search can list thousands of sets. -->
-                        <ItemsControl ItemsSource="{Binding ShownGroups}" VirtualizingPanel.IsVirtualizing="True"
+                        <ItemsControl views:Placeholder.Text="Sets of duplicate files show here after you click Search." ItemsSource="{Binding ShownGroups}" VirtualizingPanel.IsVirtualizing="True"
                                       VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
                             <ItemsControl.Template>
                                 <ControlTemplate TargetType="ItemsControl">

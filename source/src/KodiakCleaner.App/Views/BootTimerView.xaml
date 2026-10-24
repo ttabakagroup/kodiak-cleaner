@@ -214,7 +214,7 @@
                             <TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                         </StackPanel>
                     </DockPanel>
-                    <DataGrid RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True"
+                    <DataGrid tc:Placeholder.Text="Programs that slowed the start show here after you click Restart and Time." RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True"
                               PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown" SelectionChanged="Grid_SelectionChanged">
                         <DataGrid.ContextMenu>
                             <ContextMenu>

@@ -98,7 +98,7 @@
 
         <Border Style="{StaticResource Card}" Padding="8">
             <!-- Grouped lists aren't virtualized by default, which built every row at startup; these keep only the visible rows. -->
-            <DataGrid ItemsSource="{Binding View}" IsSynchronizedWithCurrentItem="False" VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+            <DataGrid tc:Placeholder.Text="No cleaning items match your search. Clear the search to see them all." ItemsSource="{Binding View}" IsSynchronizedWithCurrentItem="False" VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                       VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel">
                 <DataGrid.GroupStyle>
                     <GroupStyle>

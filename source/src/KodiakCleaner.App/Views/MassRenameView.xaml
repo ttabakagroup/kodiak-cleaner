@@ -166,7 +166,7 @@
                             </Button>
                         </StackPanel>
                     </DockPanel>
-                    <DataGrid x:Name="Grid" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" SelectionMode="Extended"
+                    <DataGrid views:Placeholder.Text="Files you load with Load Files show here, with their new names beside them." x:Name="Grid" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" SelectionMode="Extended"
                               SelectionChanged="Grid_SelectionChanged" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
                         <DataGrid.ContextMenu>
                             <ContextMenu>

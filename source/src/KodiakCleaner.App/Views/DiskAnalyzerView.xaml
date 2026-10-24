@@ -139,7 +139,7 @@
                             </StackPanel>
                         </DockPanel>
                         <views:KindBarView Items="{Binding Kinds}" HighlightKind="{Binding HighlightKind}" Margin="0,14,0,10" />
-                        <ItemsControl ItemsSource="{Binding Kinds}">
+                        <ItemsControl tc:Placeholder.Text="File types show here once a drive or folder is analyzed." ItemsSource="{Binding Kinds}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
@@ -196,7 +196,7 @@
                                 </StackPanel>
                             </Border>
                             <Grid>
-                                <DataGrid ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
+                                <DataGrid tc:Placeholder.Text="Folders and files show here once a drive or folder is analyzed. An empty folder stays empty." ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
                                           ContextMenu="{StaticResource EntryMenu}" MouseDoubleClick="Grid_MouseDoubleClick"
                                           PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown" SelectionChanged="Grid_SelectionChanged"
                                           Visibility="{Binding ShowLargest, Converter={StaticResource NotVis}}">
@@ -207,7 +207,7 @@
                                         <DataGridTextColumn Header="Files" Binding="{Binding Files}" SortMemberPath="FileCount" Width="60" />
                                     </DataGrid.Columns>
                                 </DataGrid>
-                                <DataGrid ItemsSource="{Binding LargestFiles}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
+                                <DataGrid tc:Placeholder.Text="The largest files in this folder show here once it's analyzed." ItemsSource="{Binding LargestFiles}" SelectedItem="{Binding SelectedEntry}" IsReadOnly="True"
                                           ContextMenu="{StaticResource EntryMenu}" MouseDoubleClick="Grid_MouseDoubleClick"
                                           PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown" SelectionChanged="Grid_SelectionChanged"
                                           Visibility="{Binding ShowLargest, Converter={StaticResource BoolToVis}}">

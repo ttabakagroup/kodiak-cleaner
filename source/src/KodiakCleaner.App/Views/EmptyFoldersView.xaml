@@ -62,7 +62,7 @@
                         </WrapPanel>
                     </DockPanel>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding Found}" Padding="8,0">
+                        <ItemsControl tc:Placeholder.Text="Empty folders show here after you click Search." ItemsSource="{Binding Found}" Padding="8,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <DockPanel Margin="0,5">

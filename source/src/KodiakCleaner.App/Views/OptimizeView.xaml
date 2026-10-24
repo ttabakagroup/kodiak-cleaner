@@ -71,7 +71,7 @@
                                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                     <tc:TaskClock Margin="0,6,0,0" />
                 </StackPanel>
-                <DataGrid ItemsSource="{Binding Drives}">
+                <DataGrid tc:Placeholder.Text="Drives that can be defragmented or trimmed show here. Click Refresh to look again." ItemsSource="{Binding Drives}">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
                             <DataGridTemplateColumn.Header>

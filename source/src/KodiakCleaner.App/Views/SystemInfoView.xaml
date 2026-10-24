@@ -96,7 +96,7 @@
                 </Button>
             </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding ShowList, Converter={StaticResource Visible}}">
-                <ItemsControl ItemsSource="{Binding Source={StaticResource Grouped}}" Focusable="False">
+                <ItemsControl tc:Placeholder.Text="Details about this PC show here as they're read. Click Refresh to read them again." ItemsSource="{Binding Source={StaticResource Grouped}}" Focusable="False">
                     <ItemsControl.GroupStyle>
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>

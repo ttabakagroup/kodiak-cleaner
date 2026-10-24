@@ -61,7 +61,7 @@
                         <!-- Entire Drive: every attached disk, tick the ones to erase. -->
                         <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="Drives" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
-                            <DataGrid ItemsSource="{Binding Disks}" MaxHeight="320" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                            <DataGrid tc:Placeholder.Text="Drives that can be wiped show here. Click Refresh to look again." ItemsSource="{Binding Disks}" MaxHeight="320" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
                                         <DataGridTemplateColumn.Header>
