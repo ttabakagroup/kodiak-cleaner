@@ -409,6 +409,14 @@ public sealed class DuplicateFinderTests : IDisposable
         Assert.Equal(0.3, SimilarFinder.NameLikeness("img 0041", "img 0042"));
         Assert.Equal(1, SimilarFinder.NameLikeness("report", "report"));
         Assert.True(SimilarFinder.NameLikeness("annual report", "anual report") > 0.9);
+        // The in-place digit check (2026-10-24) must agree with leaving every digit out.
+        Assert.Equal(0.3, SimilarFinder.NameLikeness("trip 2024", "trip 22"));
+        Assert.Equal(0.3, SimilarFinder.NameLikeness("123", "456"));
+        Assert.NotEqual(0.3, SimilarFinder.NameLikeness("img 0041", "img 0041 b"));
+        Assert.Equal(1, SimilarFinder.NameLikeness("smith john resume", "john smith resume"));
+        Assert.Equal(0.5, SimilarFinder.NameLikeness("abcd", "abxy"));
+        var longName = new string('a', 200);
+        Assert.Equal(1, SimilarFinder.NameLikeness(longName, longName + "b"));  // compared on the first 120 letters
     }
 
 }

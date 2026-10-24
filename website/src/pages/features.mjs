@@ -131,7 +131,7 @@ ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning
   <div class="wrap">
     <div class="section-head"><span class="eyebrow">Settings</span><h2>Settings and Personalization</h2><p class="lead">Every setting is a switch and is saved straight away, in a plain KodiakCleaner.ini file.</p></div>
     <div class="showcase even">
-      <div class="table-wrap"><table><thead><tr><th scope="col">Area</th><th scope="col">What's There</th></tr></thead><tbody>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Everything in Kodiak Cleaner"><table><thead><tr><th scope="col">Area</th><th scope="col">What's There</th></tr></thead><tbody>
         ${settings.map(([a, d]) => `<tr><td><strong>${a}</strong></td><td>${d}</td></tr>`).join("")}
       </tbody></table></div>
       <div>${shot(ctx, "appearance.png", "Appearance settings with the Honey, Classic and Glacier color schemes")}<p class="muted mt">The sidebar can be widened, locked with the paperclip, or collapsed to icons only. Getting Started walks you through the basics the first time.</p></div>

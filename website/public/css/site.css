@@ -55,7 +55,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .nav a { color: var(--text); padding: 8px 12px; border-radius: var(--radius); font-weight: 500; font-size: .98rem; white-space: nowrap; }
 @media (max-width: 1300px) { .nav a { padding: 8px 9px; } }
 .nav a:hover { background: var(--accent-tint); text-decoration: none; }
-.nav a[aria-current="page"] { background: var(--accent-tint); color: var(--accent-text); font-weight: 600; }
+.nav a[aria-current="page"] { background: var(--accent-tint); color: var(--text); font-weight: 600; }
 .icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; padding: 0; }
 .icon-btn:hover { border-color: var(--control-border); }
 .icon-btn svg { width: 20px; height: 20px; }
@@ -259,7 +259,7 @@ form.card { padding: clamp(24px, 4vw, 40px); }
 .field .hint { font-size: .88rem; color: var(--muted); font-weight: 400; }
 .field input, .field textarea, .field select { font: inherit; font-size: 1rem; padding: 12px 14px; width: 100%; }
 .field textarea { min-height: 180px; resize: vertical; }
-.field input:focus, .field textarea:focus { outline: none; }
+.field input:focus, .field textarea:focus { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 .topic { border: 0; padding: 0; margin: 0 0 20px; }
 .topic legend { margin-bottom: 8px; }
 .topic-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
@@ -323,7 +323,8 @@ dialog.lightbox .close { position: fixed; top: 16px; right: 16px; }
 td.nowrap { white-space: nowrap; }
 .topic-options { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
 .topic-options .hint { display: block; font-weight: 400; color: var(--muted); font-size: .86rem; }
-.field input, .field textarea { background: var(--surface-alt); border: 1px solid var(--line); }
+.topic-options label:has(input:checked) .hint { color: var(--text); }
+.field input, .field textarea { background: var(--surface-alt); border: 1px solid var(--control-border); }
 .field input:hover, .field textarea:hover { border-color: var(--control-border); }
 .form-status:focus { outline: none; }
 
@@ -389,5 +390,13 @@ dialog.thanks .close { position: absolute; top: 12px; right: 12px; }
 .license-text { font-family: ui-monospace, Consolas, monospace; font-size: .88rem; line-height: 1.6; overflow-wrap: anywhere; }
 .license-text p { margin: 0 0 1em; }
 .license-text p:last-child { margin-bottom: 0; }
-.os-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: var(--accent-tint); color: var(--accent-text); font-weight: 700; font-size: .95rem; margin-bottom: 14px; }
+.os-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: var(--accent-tint); color: var(--text); font-weight: 700; font-size: .95rem; margin-bottom: 14px; }
 .os-badge svg { width: 18px; height: 18px; }
+
+/* Accessibility (WCAG 2.1 AA, 2026-10-24 audit) */
+/* Links inside sentences are underlined, so they don't rely on color alone (1.4.1). Buttons, cards and the menus keep their look. */
+main :is(p, li, td, dd, figcaption) a:not(.btn):not(.chip-link):not(.link-card), .site-footer :is(p, .footer-bottom) a:not(.btn) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+/* The Donate menu entry: the accent text doesn't reach 4.5:1 on the hover tint. */
+.nav a.nav-donate:hover { color: var(--text); }
+/* Tables that scroll sideways on phones can be reached and scrolled with the keyboard (2.1.1). */
+.table-wrap:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

@@ -257,6 +257,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   timer that runs only while a task does; `Rough` marks a guessed percentage (~42%, "rough guess"). Pages show it with `Views/TaskClock`
   under their own bar (follows the page's newest task, hides itself).
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
+- Accessibility (WCAG 2.1 AA audit, 2026-10-24): `Views/AccessibleNames` (registered in App.Start) names every button, check box,
+  switch, text box and drop-down for screen readers from its own label, the label beside it (a Settings row's title; caption = help
+  text), "Select <row>" for table tick boxes, or its tooltip; set `AutomationProperties.Name` where that guess is wrong. Icon-only
+  buttons need a ToolTip. Keyboard focus always shows (table cells `CellFocusVisual`, dividers light up); text boxes and drop-downs
+  use `ControlBorder` (3:1); each sidebar list is one Tab stop (arrow keys inside). `AccessibilityTests` checks these.
 - Duplicate Finder (Ted, 2026-10-12): searches folders and whole drives (Fixed and Removable, each given 5 s to answer). It never searches Windows,
   program folders, ProgramData, AppData (any user's), Temp\.net, its own folder, or a drive's Recycle Bin/System Volume Information/Recovery,
   as a starting point or inside one (`DuplicateSearchOptions.Protected` + `DuplicateFinder.AlwaysSkipped`). In-Depth (`SimilarFinder`) lists

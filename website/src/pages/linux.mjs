@@ -84,6 +84,7 @@ ${pageHead("Kodiak Cleaner for Linux", `The Linux edition of Kodiak Cleaner: cle
 
 <section class="tight">
   <div class="wrap">
+    <h2 class="sr-only">Downloads</h2>
     ${linuxDownloads(ctx)}
     <p class="center muted mt">Each ZIP also has a Docs folder with the changelog, license, privacy policy, terms of use and a plain-language ReadMe. Looking for Windows? <a href="/download/">Download Kodiak Cleaner for Windows</a>.</p>
   </div>
@@ -100,7 +101,7 @@ ${pageHead("Kodiak Cleaner for Linux", `The Linux edition of Kodiak Cleaner: cle
       </div>
       ${shot(ctx, "linux-cleaner.png", "Kodiak Cleaner for Linux, Cleaner page after Analyze", { bar: BAR })}
     </div>
-    <div class="table-wrap mt-xl reveal"><table><thead><tr><th scope="col">Group</th><th scope="col">What It Cleans</th></tr></thead><tbody>
+    <div class="table-wrap mt-xl reveal" tabindex="0" role="region" aria-label="What it cleans"><table><thead><tr><th scope="col">Group</th><th scope="col">What It Cleans</th></tr></thead><tbody>
       ${groups.map(([g, d]) => `<tr><td><strong>${g}</strong></td><td>${d}</td></tr>`).join("")}
     </tbody></table></div>
   </div>
@@ -121,7 +122,7 @@ ${pageHead("Kodiak Cleaner for Linux", `The Linux edition of Kodiak Cleaner: cle
       </div>
       ${shot(ctx, "linux-triggers-needs-a-look.png", "Triggers page showing only the entries that need a look", { bar: BAR })}
     </div>
-    <div class="table-wrap mt-xl reveal"><table><thead><tr><th scope="col">Type</th><th scope="col">Where It Comes From</th><th scope="col">What You Can Do</th></tr></thead><tbody>
+    <div class="table-wrap mt-xl reveal" tabindex="0" role="region" aria-label="What starts automatically"><table><thead><tr><th scope="col">Type</th><th scope="col">Where It Comes From</th><th scope="col">What You Can Do</th></tr></thead><tbody>
       ${triggers.map(([t, w, d]) => `<tr><td><strong>${t}</strong></td><td>${w}</td><td>${d}</td></tr>`).join("")}
     </tbody></table></div>
   </div>

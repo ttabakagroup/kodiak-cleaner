@@ -102,6 +102,8 @@ public partial class App : Application
         ActivityLog.Write("Start", $"{AppInfo.Name} {AppInfo.VersionName} started" +
             $" ({(Elevation.IsAdministrator ? "as administrator" : "as a standard user")}, {(Integration.IsInstalled ? "installed" : "portable")})");
         ThemeManager.Apply();
+        // Screen readers get a name for every control that has none of its own (WCAG 2.1, 2026-10-24 audit).
+        Views.AccessibleNames.Register();
         Donation.CountLaunch(countStart);
         var window = new MainWindow { BringToFront = updated };
         MainWindow = window;

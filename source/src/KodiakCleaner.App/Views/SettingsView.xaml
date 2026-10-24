@@ -598,7 +598,7 @@
                 </DockPanel>
             </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding Source={StaticResource GroupedSections}}" Focusable="False">
+                <ItemsControl ItemsSource="{Binding Source={StaticResource GroupedSections}}" Focusable="False" KeyboardNavigation.TabNavigation="Once">
                     <ItemsControl.GroupStyle>
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>
@@ -620,7 +620,8 @@
                     </ItemsControl.GroupStyle>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <RadioButton GroupName="SettingsNav" Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                            <RadioButton GroupName="SettingsNav" Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                         AutomationProperties.Name="{Binding Title}" AutomationProperties.HelpText="{Binding Description}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Glyph}" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
                                     <StackPanel VerticalAlignment="Center">

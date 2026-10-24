@@ -5,6 +5,19 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.108 Dev] - 2026-10-24
+
+### Accessibility
+- Screen readers now name every button, switch, tick box, text box and drop-down, including the Settings sidebar and each table row's tick box.
+- Keyboard focus shows in tables and on the dividers you can drag; each sidebar list is one Tab stop, with the arrow keys moving inside it.
+- Text boxes and drop-downs have edges that are easier to see.
+
+### Duplicate Finder
+- Name Matching compares names with less work on big folders.
+
+### Programs
+- The Version column header is no longer cut off.
+
 ## [0.8.107 Dev] - 2026-10-24
 
 ### Driver Cleaner

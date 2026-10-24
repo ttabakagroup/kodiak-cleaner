@@ -80,6 +80,7 @@ ${pageHead("Kodiak Cleaner for Mac", `The Mac edition of Kodiak Cleaner: clean c
 
 <section class="tight">
   <div class="wrap">
+    <h2 class="sr-only">Downloads</h2>
     ${macDownloads(ctx)}
     <p class="center muted mt">For macOS 26 Tahoe or newer, on Apple silicon and Intel Macs. Looking for another computer? <a href="/download/">See every download</a>.</p>
   </div>
@@ -114,7 +115,7 @@ ${pageHead("Kodiak Cleaner for Mac", `The Mac edition of Kodiak Cleaner: clean c
       </div>
       ${shot(ctx, "mac-cleaner-honey-light.png", "Kodiak Cleaner for Mac, Cleaner page after Analyze", { bar: BAR })}
     </div>
-    <div class="table-wrap mt-xl reveal"><table><thead><tr><th scope="col">Group</th><th scope="col">What It Cleans</th></tr></thead><tbody>
+    <div class="table-wrap mt-xl reveal" tabindex="0" role="region" aria-label="What it cleans"><table><thead><tr><th scope="col">Group</th><th scope="col">What It Cleans</th></tr></thead><tbody>
       ${groups.map(([g, d]) => `<tr><td><strong>${g}</strong></td><td>${d}</td></tr>`).join("")}
     </tbody></table></div>
   </div>
@@ -135,7 +136,7 @@ ${pageHead("Kodiak Cleaner for Mac", `The Mac edition of Kodiak Cleaner: clean c
       </div>
       ${shot(ctx, "mac-triggers-honey-light.png", "Kodiak Cleaner for Mac, Triggers page", { bar: BAR })}
     </div>
-    <div class="table-wrap mt-xl reveal"><table><thead><tr><th scope="col">Type</th><th scope="col">Where It Comes From</th><th scope="col">What You Can Do</th></tr></thead><tbody>
+    <div class="table-wrap mt-xl reveal" tabindex="0" role="region" aria-label="What starts automatically"><table><thead><tr><th scope="col">Type</th><th scope="col">Where It Comes From</th><th scope="col">What You Can Do</th></tr></thead><tbody>
       ${triggers.map(([t, w, d]) => `<tr><td><strong>${t}</strong></td><td>${w}</td><td>${d}</td></tr>`).join("")}
     </tbody></table></div>
   </div>

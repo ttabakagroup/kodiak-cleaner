@@ -28,6 +28,7 @@ ${pageHead("Archive", "Every version of Kodiak Cleaner, with release dates, what
 
 <section class="tight">
   <div class="wrap">
+    <h2 class="sr-only">At a Glance</h2>
     <div class="grid cols-4">
       <div class="card"><span class="icon">${icons.sparkle}</span><h3>${esc(latest.name)}</h3><p class="muted">Latest version, released ${ctx.longDate(latest.date)}.</p></div>
       <div class="card"><span class="icon">${icons.archive}</span><h3>${releases.length} Versions</h3><p class="muted">Listed below, newest first. ${published} published as downloads.</p></div>
@@ -40,7 +41,7 @@ ${pageHead("Archive", "Every version of Kodiak Cleaner, with release dates, what
 <section class="tight">
   <div class="wrap">
     <div class="section-head"><h2>All Versions</h2><p class="lead">Kodiak Cleaner for Windows, newest first. Click a version to read its full notes in the changelog. Downloads stay on GitHub for every published release.</p></div>
-    <div class="table-wrap"><table>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="All versions"><table>
       <thead><tr><th scope="col">Version</th><th scope="col">Released</th><th scope="col">Channel</th><th scope="col">Areas Changed</th><th scope="col">Downloads</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>

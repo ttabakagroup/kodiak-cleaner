@@ -182,13 +182,14 @@
                             </Path>
                         </Button>
                     </StackPanel>
-                    <ItemsControl ItemsSource="{Binding FooterPages}" ItemTemplate="{StaticResource NavItem}" VerticalAlignment="Bottom" />
+                    <!-- Each sidebar list is one Tab stop; the arrow keys move between its pages and Space opens one (WCAG 2.1.1, 2026-10-24). -->
+                    <ItemsControl ItemsSource="{Binding FooterPages}" ItemTemplate="{StaticResource NavItem}" KeyboardNavigation.TabNavigation="Once" VerticalAlignment="Bottom" />
                 </DockPanel>
                 <!-- Favorites stay put at the top (Ted, 2026-10-23); only the Tools list below them scrolls. -->
                 <StackPanel x:Name="FavoritesZone" DockPanel.Dock="Top" Background="Transparent">
                     <TextBlock Text="Favorites" Style="{StaticResource GroupHeading}" Margin="24,0,0,6"
                                Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}" />
-                    <ItemsControl x:Name="FavoritesList" ItemsSource="{Binding FavoritePages}" ItemTemplate="{StaticResource NavItem}" />
+                    <ItemsControl x:Name="FavoritesList" ItemsSource="{Binding FavoritePages}" ItemTemplate="{StaticResource NavItem}" KeyboardNavigation.TabNavigation="Once" />
                     <!-- Everything unpinned: say how to pin something (a drop here pins too). -->
                     <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="24,0,22,4"
                                Text="Right-click a tool and pick Pin to Favorites, or drag it here."
@@ -216,7 +217,7 @@
                         </Style>
                     </ScrollViewer.Style>
                     <StackPanel x:Name="ToolsDropArea" Background="Transparent">
-                        <ItemsControl x:Name="ToolsList" ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}"
+                        <ItemsControl x:Name="ToolsList" ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}" KeyboardNavigation.TabNavigation="Once"
                                       Visibility="{Binding ToolsVisible, Converter={StaticResource BoolToVis}}" />
                         <!-- Reset Tools Order (Ted, 2026-10-23): last thing under the tools; Favorites back to the default four and Tools to A to Z. A small
                              centered button with the Sort icon, so it doesn't look like System Restore above it (Ted, 2026-10-24). -->

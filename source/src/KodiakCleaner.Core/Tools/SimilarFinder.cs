@@ -342,28 +342,45 @@ public static class SimilarFinder
     {
         if (a.Length == 0 || b.Length == 0) return 0;
         if (a == b) return 1;
-        if (Regex.Replace(a, @"\d", "") == Regex.Replace(b, @"\d", "")) return 0.3;
+        if (SameWithoutDigits(a, b)) return 0.3;
         // Words in another order ("smith john resume", "john smith resume") are the same name.
         static string Sorted(string s) => string.Join(' ', s.Split(' ', StringSplitOptions.RemoveEmptyEntries).Order(StringComparer.Ordinal));
-        return Math.Max(EditLikeness(a, b), EditLikeness(Sorted(a), Sorted(b)));
+        var edit = EditLikeness(a, b);
+        if (edit == 1 || (a.IndexOf(' ') < 0 && b.IndexOf(' ') < 0)) return edit;  // one word each: nothing to reorder
+        return Math.Max(edit, EditLikeness(Sorted(a), Sorted(b)));
+    }
+
+    /// <summary>The two names match once every digit is left out ("img 0041", "img 0042"). Runs once per pair of files, so it
+    /// compares in place instead of building two new strings (2026-10-24 audit: Name Matching on big folders).</summary>
+    private static bool SameWithoutDigits(string a, string b)
+    {
+        int i = 0, j = 0;
+        while (true)
+        {
+            while (i < a.Length && char.IsDigit(a[i])) i++;
+            while (j < b.Length && char.IsDigit(b[j])) j++;
+            if (i == a.Length || j == b.Length) return i == a.Length && j == b.Length;
+            if (a[i++] != b[j++]) return false;
+        }
     }
 
     private static double EditLikeness(string a, string b)
     {
         if (a == b) return 1;
-        a = a.Length > 120 ? a[..120] : a;
-        b = b.Length > 120 ? b[..120] : b;
-        var prev = new int[b.Length + 1];
-        var cur = new int[b.Length + 1];
-        for (int j = 0; j <= b.Length; j++) prev[j] = j;
-        for (int i = 1; i <= a.Length; i++)
+        var x = a.AsSpan(0, Math.Min(a.Length, 120));
+        var y = b.AsSpan(0, Math.Min(b.Length, 120));
+        // Two rows of at most 121 numbers: on the stack, so comparing every pair of names makes no garbage.
+        Span<int> prev = stackalloc int[y.Length + 1];
+        Span<int> cur = stackalloc int[y.Length + 1];
+        for (int j = 0; j <= y.Length; j++) prev[j] = j;
+        for (int i = 1; i <= x.Length; i++)
         {
             cur[0] = i;
-            for (int j = 1; j <= b.Length; j++)
-                cur[j] = Math.Min(Math.Min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1));
-            (prev, cur) = (cur, prev);
+            for (int j = 1; j <= y.Length; j++)
+                cur[j] = Math.Min(Math.Min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + (x[i - 1] == y[j - 1] ? 0 : 1));
+            var t = prev; prev = cur; cur = t;
         }
-        return 1 - prev[b.Length] / (double)Math.Max(a.Length, b.Length);
+        return 1 - prev[y.Length] / (double)Math.Max(x.Length, y.Length);
     }
 
     /// <summary>Kind of file for comparing: the extension, with spellings of the same type joined and every picture type as one.</summary>

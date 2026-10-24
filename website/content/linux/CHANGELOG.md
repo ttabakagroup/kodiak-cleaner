@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.18 Dev] - 2026-10-24
+
+### Accessibility
+- Screen readers now name buttons that show an icon with their label, the Select All box, each row's tick box ("Select <name>"), and the search boxes and drop-downs on the Cleaner, Browser Extensions, Programs, Triggers and Scheduled Cleaning pages.
+
 ## [0.8.17 Dev] - 2026-10-24
 
 ### Sidebar

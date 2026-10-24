@@ -34,6 +34,16 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- The ring for a focused table cell: drawn just inside the cell, since a ring outside it would be hidden under the next row. -->
+    <Style x:Key="CellFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Margin="1" BorderThickness="2" BorderBrush="{DynamicResource FocusRing}" CornerRadius="4" SnapsToDevicePixels="True" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <Style TargetType="ListBoxItem">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
     </Style>
@@ -132,6 +142,7 @@
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="ShowsPreview" Value="False" />
         <Setter Property="ToolTip" Value="Drag to resize. Double-click to put it back." />
+        <Setter Property="AutomationProperties.Name" Value="Resize Divider" />
         <Setter Property="ToolTipService.InitialShowDelay" Value="700" />
     </Style>
     <Style x:Key="PaneRows" TargetType="GridSplitter" BasedOn="{StaticResource PaneSplitterBase}">
@@ -152,6 +163,12 @@
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
                             <Setter TargetName="Grip" Property="Background" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Grip" Property="Opacity" Value="1" />
+                            <Setter TargetName="Grip" Property="Width" Value="64" />
+                        </Trigger>
+                        <!-- Tab reaches the divider and the arrow keys move it; the grip shows the focus (WCAG 2.4.7). -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{DynamicResource FocusRing}" />
                             <Setter TargetName="Grip" Property="Opacity" Value="1" />
                             <Setter TargetName="Grip" Property="Width" Value="64" />
                         </Trigger>
@@ -181,6 +198,12 @@
                             <Setter TargetName="Grip" Property="Opacity" Value="1" />
                             <Setter TargetName="Grip" Property="Height" Value="64" />
                         </Trigger>
+                        <!-- Tab reaches the divider and the arrow keys move it; the grip shows the focus (WCAG 2.4.7). -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{DynamicResource FocusRing}" />
+                            <Setter TargetName="Grip" Property="Opacity" Value="1" />
+                            <Setter TargetName="Grip" Property="Height" Value="64" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -189,6 +212,7 @@
     <!-- The sidebar's draggable edge (only while the paperclip is upright). -->
     <Style x:Key="SidebarSplitter" TargetType="GridSplitter">
         <Setter Property="Width" Value="5" />
+        <Setter Property="AutomationProperties.Name" Value="Sidebar Width" />
         <Setter Property="HorizontalAlignment" Value="Right" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="ResizeDirection" Value="Columns" />
@@ -202,6 +226,9 @@
             </Trigger>
             <Trigger Property="IsDragging" Value="True">
                 <Setter Property="Background" Value="{DynamicResource Accent}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="Background" Value="{DynamicResource FocusRing}" />
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -558,7 +585,7 @@
     <Style TargetType="ComboBox">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="Background" Value="{DynamicResource Surface}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="Cursor" Value="Hand" />
@@ -579,7 +606,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ControlBorder}" />
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Text}" />
                                         </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
                                             <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Accent}" />
@@ -614,7 +641,8 @@
     <Style TargetType="TextBox">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="Background" Value="{DynamicResource Surface}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
+        <!-- ControlBorder, not Line: the box's edge needs 3:1 against the card to be seen (WCAG 1.4.11). -->
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}" />
         <Setter Property="CaretBrush" Value="{DynamicResource Text}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource Accent}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -640,7 +668,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ControlBorder}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Text}" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource FocusRing}" />
@@ -898,6 +926,8 @@
          across their full width on hover and when ticked, and clicking anywhere on a row ticks it (Ted, 0.8.90 and 0.8.92). -->
     <Style TargetType="ItemsControl">
         <Setter Property="views:ListSelect.IsEnabled" Value="True" />
+        <!-- The list itself was an extra, invisible Tab stop before its rows; Tab now goes straight to the rows. -->
+        <Setter Property="IsTabStop" Value="False" />
     </Style>
     <Style TargetType="DataGridColumnHeader">
         <Setter Property="Foreground" Value="{DynamicResource Muted}" />
@@ -981,7 +1011,8 @@
     <Style TargetType="DataGridCell">
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="10,8" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <!-- Keyboard focus shows on the cell (arrow keys move it), so people using the keyboard see where they are (WCAG 2.4.7). -->
+        <Setter Property="FocusVisualStyle" Value="{StaticResource CellFocusVisual}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DataGridCell">

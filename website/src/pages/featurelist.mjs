@@ -94,7 +94,7 @@ export default function featureList() {
   const tables = GROUPS.map(([g, list]) => {
     const id = g.toLowerCase().replace(/[^a-z]+/g, "-");
     return `<h2 id="${id}" class="mt-xl">${g}</h2>
-    <div class="table-wrap reveal"><table class="feature-list">
+    <div class="table-wrap reveal" tabindex="0" role="region" aria-labelledby="${id}"><table class="feature-list">
       <colgroup><col><col class="plan-col"><col class="os-col"><col class="os-col"><col class="os-col"></colgroup>
       <thead><tr><th scope="col">Feature</th><th scope="col">Plan</th><th scope="col" class="os">Windows</th><th scope="col" class="os">Mac</th><th scope="col" class="os">Linux</th></tr></thead>
       <tbody>${list.map(([name, desc, where, p]) => `<tr><th scope="row"><strong>${esc(name)}</strong><span class="desc">${esc(desc)}</span></th><td>${plan(p)}</td>${yes(where.includes("W"), "Windows")}${yes(where.includes("M"), "Mac")}${yes(where.includes("L"), "Linux")}</tr>`).join("")}</tbody>

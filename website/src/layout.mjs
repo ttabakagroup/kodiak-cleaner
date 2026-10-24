@@ -63,7 +63,7 @@ export function layout(page, ctx) {
 </head>
 <body>
 <a class="skip" href="#main">Skip to Content</a>
-<div class="site-header"><div class="wrap">
+<header class="site-header"><div class="wrap">
   <a class="brand" href="/" aria-label="Kodiak Cleaner home"><img src="/images/logo.svg" alt="" width="42" height="42">${wordmark}</a>
   <nav class="nav" id="site-nav" aria-label="Main">${nav}</nav>
   <div class="header-tools">
@@ -71,7 +71,7 @@ export function layout(page, ctx) {
     <button class="icon-btn" type="button" data-theme-toggle aria-label="Appearance">${icons.monitor.replace("<svg", '<svg data-mode="system"')}${icons.sun.replace("<svg", '<svg data-mode="light" hidden')}${icons.moon.replace("<svg", '<svg data-mode="dark" hidden')}</button>
     <button class="icon-btn menu-btn" type="button" data-menu aria-controls="site-nav" aria-expanded="false" aria-label="Menu">${icons.menu}</button>
   </div>
-</div></div>
+</div></header>
 <main id="main">
 ${page.body}
 </main>

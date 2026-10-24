@@ -110,7 +110,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Publisher" Binding="{Binding Publisher}" Width="2*" />
-                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="*" />
+                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="*" MinWidth="76" />
                     <DataGridTextColumn Header="Installed" Binding="{Binding InstallDate, StringFormat=d}" Width="100" />
                     <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="SizeBytes" Width="90" />
                     <DataGridTextColumn Header="For" Binding="{Binding Scope}" Width="90" />
