@@ -1,5 +1,14 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.17 Dev] - 2026-10-24
+
+### Sidebar
+- Reset Tools Order also puts Favorites back to Cleaner, Triggers, Programs and Scheduled Cleaning (after asking first); any other tools you pinned go back to Tools. It's now a small centered button with a sort icon.
+
+### Duplicate Finder
+- Check All is now called Keep Original.
+- The likely original (the copy Keep Original keeps) is listed first in each set.
+
 ## [0.8.16 Dev] - 2026-10-24
 
 ### All Lists
