@@ -81,14 +81,56 @@ public static class WipeMethods
     /// </summary>
     public static List<string> DiskpartScript(int disk, DiskFormat? format)
     {
-        var lines = new List<string> { $"select disk {disk}", "clean" };
+        // rescan: Windows rereads the disk after the raw erase. A disk left offline or read-only (some USB drives) can't be set up.
+        var lines = new List<string> { "rescan", $"select disk {disk}", "attributes disk clear readonly noerr", "online disk noerr", "clean" };
         if (format is null) return lines;
-        lines.Add(format.Gpt ? "convert gpt" : "convert mbr");
+        // A cleaned removable drive is already MBR, and converting it again is an error, so only GPT has to succeed.
+        lines.Add(format.Gpt ? "convert gpt" : "convert mbr noerr");
         lines.Add("create partition primary");
         var label = format.SafeLabel;
         lines.Add($"format fs={format.FileSystem.ToLowerInvariant()} quick" + (label.Length > 0 ? $" label=\"{label}\"" : ""));
-        lines.Add("assign");
+        lines.Add("assign noerr");
         return lines;
+    }
+
+    /// <summary>The line where diskpart says what went wrong (and the one after it, which usually holds the reason).</summary>
+    public static string? DiskpartError(string output)
+    {
+        var lines = output.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
+        int i = lines.FindLastIndex(l => l.Contains("error", StringComparison.OrdinalIgnoreCase));
+        if (i < 0) return null;
+        var text = lines[i].TrimEnd(':');
+        if (i + 1 < lines.Count && lines[i].EndsWith(':')) text += ": " + lines[i + 1];
+        return text.Length > 240 ? text[..240] + "…" : text;
+    }
+
+    /// <summary>
+    /// The suggested format for a drive (Ted): flash drives MBR with FAT32 up to 32 GB or exFAT above, which TVs, cars and cameras
+    /// read; other USB drives GPT with exFAT, so Macs can use them too; SSDs and internal hard drives GPT with NTFS for Windows.
+    /// MBR can't use more than 2 TB, so bigger drives are always GPT.
+    /// </summary>
+    public static DiskFormat Recommended(MediaKind kind, bool removable, long size, string label)
+    {
+        const long GB = 1024L * 1024 * 1024;
+        if (kind == MediaKind.FlashDrive) return new DiskFormat(size <= 32 * GB ? "FAT32" : "exFAT", size > 2048 * GB, label);
+        return new DiskFormat(removable ? "exFAT" : "NTFS", true, label);
+    }
+
+    /// <summary>Why the suggestion was made, for the line under the format choices.</summary>
+    public static string RecommendedWhy(MediaKind kind, bool removable, long size)
+    {
+        var f = Recommended(kind, removable, size, "");
+        var why = kind == MediaKind.FlashDrive
+            ? (f.FileSystem == "FAT32" ? "works in almost every device, including old ones" : "works in Windows, Macs, TVs, cars and cameras")
+            : removable ? "works in Windows and Macs, and on drives over 2 TB" : "is what Windows uses for its own drives";
+        var name = kind switch
+        {
+            MediaKind.FlashDrive => "flash drive",
+            MediaKind.HardDrive => removable ? "USB hard drive" : "hard drive",
+            MediaKind.Ssd or MediaKind.NvmeSsd => removable ? "USB SSD" : "SSD",
+            _ => removable ? "USB drive" : "drive",
+        };
+        return $"Recommended for a {name}: {f.PartitionStyle} with {f.FileSystem}, which {why}.";
     }
 
     public static string Name(WipeMethod m) => m switch

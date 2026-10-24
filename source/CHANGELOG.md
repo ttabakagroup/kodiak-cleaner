@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.111 Dev] - 2026-10-24
+
+### Drive Wiper
+- Fixed: erasing an entire USB flash drive could leave it unformatted. Windows refuses GPT on many flash drives, so Drive Wiper now sets them up as MBR when GPT isn't taken, tries again if Windows is still busy with the drive, and makes sure the drive is online and writable first. If setting it up still fails, the message says why.
+- Ticking a drive now picks a suggested format for it: flash drives get MBR with FAT32 (32 GB or smaller) or exFAT, SSDs and internal hard drives get GPT with NTFS, and other USB drives get GPT with exFAT. You can still change it, and a line under the choices says why it was suggested.
+- With Leave It Uninitialized on, Partition Style, File System and Drive Name stay on screen grayed out instead of disappearing.
+
 ## [0.8.110 Dev] - 2026-10-24
 
 ### Sidebar

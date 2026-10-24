@@ -180,17 +180,45 @@ public sealed class WipeLevelAndFormatTests
     [Fact]
     public void Leaving_it_uninitialized_only_cleans()
     {
-        Assert.Equal(new[] { "select disk 3", "clean" }, WipeMethods.DiskpartScript(3, null));
+        Assert.Equal(new[] { "rescan", "select disk 3", "attributes disk clear readonly noerr", "online disk noerr", "clean" }, WipeMethods.DiskpartScript(3, null));
     }
 
     [Fact]
     public void A_format_sets_style_file_system_and_a_safe_label()
     {
-        Assert.Equal(new[] { "select disk 2", "clean", "convert gpt", "create partition primary", "format fs=ntfs quick label=\"My Drive\"", "assign" },
+        Assert.Equal(new[] { "rescan", "select disk 2", "attributes disk clear readonly noerr", "online disk noerr", "clean", "convert gpt", "create partition primary", "format fs=ntfs quick label=\"My Drive\"", "assign noerr" },
             WipeMethods.DiskpartScript(2, new DiskFormat("NTFS", true, "My \"Drive\"")));
-        Assert.Equal(new[] { "select disk 1", "clean", "convert mbr", "create partition primary", "format fs=fat32 quick label=\"BACKUPS2026\"", "assign" },
+        // A cleaned USB drive is already MBR, so converting it to MBR may say no without stopping the setup.
+        Assert.Equal(new[] { "rescan", "select disk 1", "attributes disk clear readonly noerr", "online disk noerr", "clean", "convert mbr noerr", "create partition primary", "format fs=fat32 quick label=\"BACKUPS2026\"", "assign noerr" },
             WipeMethods.DiskpartScript(1, new DiskFormat("FAT32", false, "BACKUPS2026-OLD")));
-        Assert.Equal("format fs=exfat quick", WipeMethods.DiskpartScript(1, new DiskFormat("exFAT", true, ""))[4]);
+        Assert.Equal("format fs=exfat quick", WipeMethods.DiskpartScript(1, new DiskFormat("exFAT", true, ""))[7]);
+    }
+
+    [Theory]
+    [InlineData(MediaKind.FlashDrive, true, 16, "FAT32", false)]
+    [InlineData(MediaKind.FlashDrive, true, 128, "exFAT", false)]
+    [InlineData(MediaKind.FlashDrive, true, 4000, "exFAT", true)]
+    [InlineData(MediaKind.Ssd, false, 500, "NTFS", true)]
+    [InlineData(MediaKind.NvmeSsd, false, 2000, "NTFS", true)]
+    [InlineData(MediaKind.HardDrive, false, 8000, "NTFS", true)]
+    [InlineData(MediaKind.HardDrive, true, 5000, "exFAT", true)]
+    [InlineData(MediaKind.Unknown, false, 100, "NTFS", true)]
+    public void Each_kind_of_drive_gets_a_suggested_format(MediaKind kind, bool removable, long gb, string fs, bool gpt)
+    {
+        var f = WipeMethods.Recommended(kind, removable, gb * GB, "Wiped");
+        Assert.Equal((fs, gpt), (f.FileSystem, f.Gpt));
+        Assert.Null(WipeMethods.FormatProblem(gb * GB, f));
+        Assert.StartsWith("Recommended for a", WipeMethods.RecommendedWhy(kind, removable, gb * GB));
+    }
+
+    [Fact]
+    public void Diskpart_errors_are_picked_out_of_its_output()
+    {
+        Assert.Equal("Virtual Disk Service error: The specified disk is not convertible.",
+            WipeMethods.DiskpartError("DiskPart succeeded in cleaning the disk.\r\n\r\nVirtual Disk Service error:\r\nThe specified disk is not convertible.\r\n"));
+        Assert.Equal("DiskPart has encountered an error: The media is write protected.",
+            WipeMethods.DiskpartError("DiskPart has encountered an error: The media is write protected.\r\nSee the System Event Log for more information.\r\n"));
+        Assert.Null(WipeMethods.DiskpartError("DiskPart successfully formatted the volume.\r\n"));
     }
 
     [Fact]

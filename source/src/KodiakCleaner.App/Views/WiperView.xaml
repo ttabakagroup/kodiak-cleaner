@@ -161,7 +161,14 @@
                                                Style="{StaticResource Caption}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </DockPanel>
-                            <WrapPanel Margin="0,14,0,0" Visibility="{Binding ShowFormat, Converter={StaticResource BoolToVis}}">
+                            <WrapPanel Margin="0,14,0,0" IsEnabled="{Binding FormatEnabled}">
+                                <WrapPanel.Style>
+                                    <Style TargetType="WrapPanel">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </WrapPanel.Style>
                                 <StackPanel Margin="0,0,28,8">
                                     <TextBlock Text="Partition Style" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
                                     <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
@@ -200,8 +207,18 @@
                                              IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
                                 </StackPanel>
                             </WrapPanel>
-                            <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
-                                       Style="{StaticResource Caption}" TextWrapping="Wrap" Visibility="{Binding ShowFormat, Converter={StaticResource BoolToVis}}" />
+                            <StackPanel IsEnabled="{Binding FormatEnabled}">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="{Binding RecommendHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,0,0,4" />
+                                <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
+                                           Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            </StackPanel>
                         </StackPanel>
 
                         <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"

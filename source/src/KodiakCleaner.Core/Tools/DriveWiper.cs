@@ -27,6 +27,8 @@ public sealed record DiskEraseResult(WipeMethod Method, bool FirmwareFellBack, b
     public WipeLevel Level { get; init; } = WipeLevel.Secure;
     /// <summary>The format the drive was given; null = left uninitialized (Reformatted then means the partition data was removed).</summary>
     public DiskFormat? Format { get; init; }
+    /// <summary>What diskpart said when setting the drive up failed.</summary>
+    public string? SetupError { get; init; }
 }
 
 [SupportedOSPlatform("windows")]
@@ -156,14 +158,14 @@ public static class DriveWiper
 
         // A stopped wipe still loses its partition data, and gets the chosen format so Windows can use it again.
         status.Report(format is null ? "Removing the partition tables and boot sectors…" : $"Removing the partition data, then making a {format.PartitionStyle} drive with {format.FileSystem}…");
-        var (ok, letter) = Repartition(disk, format);
+        var (ok, letter, used, error) = Repartition(disk, format, status);
         ActivityLog.Write("Drive Wiper", $"{(cancelled ? "Stopped erasing" : "Erased")} {disk.Name} ({ByteSize.Format(disk.Size)}, {disk.KindName}): " +
             $"{WipeMethods.LevelName(level)}" + (chosen is null ? ", partition data only" : $" with {(fellBack ? "a random overwrite (no firmware erase offered)" : WipeMethods.Name(method))}") +
             (verify && chosen is not null && method != WipeMethod.Firmware && !cancelled ? (mismatches == 0 ? ", verified" : $", {mismatches} bytes didn't verify") : "") +
-            (format is null ? ", left uninitialized" : $", formatted {format.PartitionStyle} {format.FileSystem}") + (ok ? "" : " (diskpart failed)"));
+            (used is null ? ", left uninitialized" : $", formatted {used.PartitionStyle} {used.FileSystem}") + (ok ? "" : $" (diskpart failed: {error ?? "no reason given"})"));
         if (cancelled) throw new OperationCanceledException(ct);
         bool? verified = !verify || chosen is null || (method == WipeMethod.Firmware && !fellBack) ? null : mismatches == 0;
-        return new DiskEraseResult(chosen ?? method, fellBack, verified, mismatches, ok, letter) { Level = level, Format = format };
+        return new DiskEraseResult(chosen ?? method, fellBack, verified, mismatches, ok, letter) { Level = level, Format = used, SetupError = error };
     }
 
     /// <summary>Locks and dismounts every volume on the disk so nothing else writes while it's erased; disposing unlocks.</summary>
@@ -215,11 +217,38 @@ public static class DriveWiper
         return DriveMedia.Native.Control(h, DriveMedia.Native.IoctlStorageReinitializeMedia);
     }
 
-    /// <summary>Windows' diskpart: remove the partition tables, then (when a format is chosen) make one partition, quick-format it (which also trims flash) and give it a letter.</summary>
-    private static (bool Ok, string? Letter) Repartition(WipeDisk disk, DiskFormat? format)
+    /// <summary>
+    /// Windows' diskpart: remove the partition tables, then (when a format is chosen) make one partition, quick-format it (which also
+    /// trims flash) and give it a letter. A drive that was just erased can still be busy, so a failed run is tried again; if GPT
+    /// is refused (some USB drives only take MBR), MBR is used instead. Returns the format actually used.
+    /// </summary>
+    private static (bool Ok, string? Letter, DiskFormat? Used, string? Error) Repartition(WipeDisk disk, DiskFormat? format, IProgress<string> status)
+    {
+        var tries = new List<DiskFormat?> { format, format };
+        if (format is { Gpt: true } && disk.Size <= 2048L * 1024 * 1024 * 1024) tries.Add(format with { Gpt = false });
+        string? error = null;
+        for (int i = 0; i < tries.Count; i++)
+        {
+            if (i > 0)
+            {
+                status.Report(tries[i] != tries[i - 1] ? "The drive didn't take GPT, so it's being set up as MBR…" : "Windows was still busy with the drive. Trying again…");
+                Thread.Sleep(3000);
+            }
+            var (ok, output) = RunDiskpart(WipeMethods.DiskpartScript(disk.Number, tries[i]));
+            if (ok)
+            {
+                var letter = tries[i] is null ? null
+                    : DriveMedia.ListVolumes().Where(v => v.Disks.Contains(disk.Number)).SelectMany(v => v.Paths).FirstOrDefault(x => x.Length == 3);
+                return (true, letter?.TrimEnd('\\'), tries[i], null);
+            }
+            error = WipeMethods.DiskpartError(output) ?? error;
+        }
+        return (false, null, format, error);
+    }
+
+    private static (bool Ok, string Output) RunDiskpart(IEnumerable<string> lines)
     {
         var script = Path.Combine(Path.GetTempPath(), $"KodiakCleaner-Wipe-{Environment.ProcessId}.txt");
-        var lines = WipeMethods.DiskpartScript(disk.Number, format);
         try
         {
             File.WriteAllLines(script, lines);
@@ -231,17 +260,15 @@ public static class DriveWiper
                 RedirectStandardError = true,
             };
             using var p = Process.Start(psi);
-            if (p is null) return (false, null);
-            _ = p.StandardError.ReadToEndAsync();
-            p.StandardOutput.ReadToEnd();
+            if (p is null) return (false, "");
+            var err = p.StandardError.ReadToEndAsync();
+            var output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
-            var letter = format is null ? null
-                : DriveMedia.ListVolumes().Where(v => v.Disks.Contains(disk.Number)).SelectMany(v => v.Paths).FirstOrDefault(x => x.Length == 3);
-            return (p.ExitCode == 0, letter?.TrimEnd('\\'));
+            return (p.ExitCode == 0, output + err.Result);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
-            return (false, null);
+            return (false, e.Message);
         }
         finally
         {

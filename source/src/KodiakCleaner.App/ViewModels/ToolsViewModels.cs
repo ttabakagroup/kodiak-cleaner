@@ -508,11 +508,12 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         set
         {
             Set(ref _leaveUninitialized, value);
-            OnPropertyChanged(nameof(ShowFormat));
+            OnPropertyChanged(nameof(FormatEnabled));
         }
     }
 
-    public bool ShowFormat => !LeaveUninitialized;
+    /// <summary>The format choices stay on screen but are grayed out while the drive is to be left uninitialized (Ted).</summary>
+    public bool FormatEnabled => !LeaveUninitialized;
 
     private string _fileSystem = "NTFS";
     public string FileSystem { get => _fileSystem; private set => Set(ref _fileSystem, value); }
@@ -524,6 +525,19 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public string Label { get => _label; set => Set(ref _label, value); }
 
     private DiskFormat? Format => LeaveUninitialized ? null : new DiskFormat(FileSystem, Gpt, Label);
+
+    private string _recommendHint = "Tick a drive to see the format suggested for it.";
+    /// <summary>Which format suits the drive just ticked, and why.</summary>
+    public string RecommendHint { get => _recommendHint; private set => Set(ref _recommendHint, value); }
+
+    /// <summary>Ticking a drive picks the format that suits it (Ted): flash drive, SSD or large storage drive. It can still be changed.</summary>
+    private void Recommend(WipeDisk d)
+    {
+        var f = WipeMethods.Recommended(d.Kind, d.Removable, d.Size, Label);
+        foreach (var c in StyleChoices) c.IsSelected = c.Value == f.Gpt;
+        foreach (var c in FileSystemChoices) c.IsSelected = c.Value == f.FileSystem;
+        RecommendHint = WipeMethods.RecommendedWhy(d.Kind, d.Removable, d.Size);
+    }
     public ICommand RefreshCommand { get; }
     public ICommand WipeCommand { get; }
     public ICommand CancelCommand { get; }
@@ -639,7 +653,12 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             foreach (var d in disks.OrderBy(d => d.Number))
             {
                 var row = new WipeDiskRow(d) { Method = MethodFor(d), Status = d.Reason ?? "Ready" };
-                row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(WipeDiskRow.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
+                row.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName != nameof(WipeDiskRow.IsChecked)) return;
+                    OnPropertyChanged(nameof(AllChecked));
+                    if (row.IsChecked) Recommend(row.Disk);
+                };
                 Disks.Add(row);
             }
             OnPropertyChanged(nameof(AllChecked));
@@ -723,7 +742,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                         : r.FirmwareFellBack ? "overwritten with random data (it offers no firmware erase)"
                         : r.Method == WipeMethod.Firmware ? "erased by its firmware" : $"erased with {WipeMethods.Name(r.Method)}";
                     var after = !r.Reformatted
-                        ? ". Windows couldn't finish setting it up afterwards; open Disk Management to initialize and format it."
+                        ? ". Windows couldn't finish setting it up afterwards" + (r.SetupError is { } why ? $" ({why})" : "") + "; open Disk Management to initialize and format it."
                         : r.Format is { } f
                             ? $". It's now an empty {f.PartitionStyle} drive formatted {f.FileSystem}{(r.NewLetter is { } l ? $" ({l})" : "")}."
                             : ". It has no partitions or MBR/GPT left; Windows will ask to initialize it, like a new drive.";
