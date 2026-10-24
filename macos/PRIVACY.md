@@ -22,7 +22,7 @@ Kodiak Cleaner for Mac never goes online by itself. When you click a link (such 
 
 ## Administrator Rights
 
-Cleaning never needs administrator rights. Turning a launch daemon off or on does: Kodiak Cleaner asks through macOS's own password prompt each time and never sees or keeps your password.
+Cleaning never needs administrator rights. Turning a launch daemon off or on does, and Drive Wiper may when macOS needs it to erase a drive: Kodiak Cleaner asks through macOS's own password prompt each time and never sees or keeps your password.
 
 ## Full Disk Access
 

@@ -54,6 +54,7 @@ struct MainLayout: View {
                 case .changelog: ChangesView(previous: nil)
                 case .triggersHistory: TriggersHistoryView()
                 case .donation: DonationView()
+                case .typedCheck(let check): TypedCheckView(check: check)
                 }
             }
             .environmentObject(model)
@@ -65,6 +66,7 @@ struct MainLayout: View {
         case .home: HomeView()
         case .cleaner: CleanerView()
         case .triggers: TriggersView()
+        case .wiper: WiperView()
         case .settings: SettingsView()
         case .about: AboutView()
         }
@@ -96,6 +98,10 @@ struct Sidebar: View {
                 .padding(.leading, 10).padding(.top, 4)
             item(.cleaner, "Cleaner", "sparkles")
             item(.triggers, "Triggers", "bolt.horizontal.circle")
+            // Tools: Drive Wiper first; future tools go here, A to Z after it.
+            Text("Tools").font(theme.body(11, weight: .semibold)).foregroundStyle(theme.muted)
+                .padding(.leading, 10).padding(.top, 14)
+            item(.wiper, "Drive Wiper", "externaldrive.badge.xmark")
             Spacer()
             if model.plan.isSupporter && model.settings.showBadge {
                 Chip(text: model.plan.badgeText, icon: "heart.fill").padding(.leading, 10).padding(.bottom, 6)

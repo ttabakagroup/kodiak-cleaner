@@ -58,6 +58,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+
+    /// A free space wipe stops and removes its filler files before Kodiak Cleaner quits; a whole drive must be stopped first.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let quit = MainActor.assumeIsolated { WiperModel.shared.shouldQuit() }
+        return quit ? .terminateNow : .terminateCancel
+    }
 }
 
 /// `KodiakCleaner --self-test` checks the parts that need a real Mac without changing anything, for the build.
@@ -96,6 +102,24 @@ enum SelfTest {
         }
         check("launchctl print-disabled", !Run.program(Triggers.launchctl, ["print-disabled", "gui/\(FS.userID)"]).output.isEmpty)
         check("Full Disk Access check runs", true, FS.isDenied(Paths.home + "/Library/Safari") ? "not allowed" : "allowed")
+        // Drive Wiper: reads the disks and prints diskutil's own usage lines for the commands it uses (no disk is named,
+        // so nothing is erased).
+        let (disks, problem) = WipeDisks.list(protectedPaths: WipeDisks.defaultProtectedPaths(appPath: Bundle.main.bundlePath))
+        check("Drive Wiper lists the disks", problem == nil && !disks.isEmpty, problem ?? "\(disks.count) disks")
+        for disk in disks {
+            print("      \(disk.name): \(disk.kindName), \(disk.size) bytes, \(disk.isInternal ? "internal" : "external"), bus \(disk.bus), volumes \(disk.volumesText): \(disk.reason ?? "can be erased")")
+        }
+        check("Drive Wiper refuses the startup disk", !disks.isEmpty && disks.contains { $0.reason == "macOS starts from this disk." })
+        let volumes = WipeDisks.volumes()
+        check("Drive Wiper lists volumes for free space", volumes.contains { $0.isStartup },
+              volumes.map { volume in "\(volume.name) (\(volume.typeName), SSD \(volume.solidState.map { $0 ? "yes" : "no" } ?? "unknown"), \(volume.wipeable) bytes)" }.joined(separator: ", "))
+        for verb in ["zeroDisk", "randomDisk", "eraseDisk"] {
+            let usage = Run.program(WipeDisks.diskutilPath, [verb])
+            print("      diskutil \(verb): " + (usage.output + usage.error).split(separator: "\n").prefix(6).joined(separator: " | "))
+        }
+        let filesystems = Run.program(WipeDisks.diskutilPath, ["listFilesystems"]).output
+        print("      diskutil listFilesystems: " + filesystems.split(separator: "\n").joined(separator: " | "))
+        check("diskutil knows the file systems", ["APFS", "HFS+", "ExFAT", "FAT32", "Free Space"].allSatisfy { filesystems.contains($0) })
         check("Fredoka font", NSFont(name: "Fredoka-SemiBold", size: 12) != nil || registerAndCheckFont())
         return ok
     }

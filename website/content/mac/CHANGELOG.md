@@ -1,5 +1,14 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.12 Dev] - 2026-10-24
+
+### Added
+- **Tools:** a new Tools section in the sidebar, under Cleaning, for tools beyond cleaning. Drive Wiper is the first.
+- **Drive Wiper, Free Space Only:** overwrites a drive's free space so files deleted earlier can't be recovered, with 1 Pass (Zeros), DoD 3 Passes, DoD 7 Passes or 30 Passes. Your files are not touched; filler files are removed after each pass, when you press Stop and when you quit. On the startup drive 1 GB stays free so macOS keeps running. On SSDs and APFS drives it says that overwriting free space mostly adds wear.
+- **Drive Wiper, Entire Drive:** erases whole external drives and memory cards. The startup disk, internal disks and any drive that holds macOS, Kodiak Cleaner or your home folder can't be ticked, and each says why. Wipe Type: Quick (removes the partition map), Thorough (zeros over every sector; one pass of random data on SSDs, because macOS has no firmware erase for external SSDs) or Secure (the chosen passes; random data in place of the ones pass, which macOS's disk tool can't write).
+- **Drive Wiper, after wiping:** Leave It Uninitialized Like a New Drive, or set the drive up with a Partition Style (GPT or MBR), File System (APFS, Mac OS Extended (Journaled), exFAT or MS-DOS (FAT32)) and Drive Name. A notice above the choices says which format is recommended for each drive type, and once you tick a drive, which drive it was picked for and why; the recommended choices are tagged Recommended, and Use Recommended puts them back if you change them. Flash drives get MBR with FAT32 (32 GB or smaller) or exFAT; other external drives get GPT with exFAT. If macOS refuses GPT, the drive is set up as MBR, and if setting it up still fails, the message says why.
+- **Drive Wiper, safety:** three checks before anything is erased: a summary, then each drive's disk identifier typed in (such as disk4), then the word ERASE. Right before erasing, Kodiak Cleaner checks it is still the same drive (identifier, size and name). If macOS needs your administrator password, it asks once for the whole job.
+- **Drive Wiper, progress:** pass x of y, percent, elapsed time and time left, and a Stop button. A stopped Entire Drive wipe is still set up so the drive can be used, and says it is only partly erased.
 ## [0.8.11 Dev] - 2026-10-24
 
 ### Added

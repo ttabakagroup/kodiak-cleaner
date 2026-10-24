@@ -2,9 +2,9 @@
 
 Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
-Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a small, honest cleaner for caches, logs, temporary files and browser data, plus Triggers, one list of everything that starts by itself on your Mac. No telemetry, no ads, no upsells, no background services. Free and open source under the MIT License.
+Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a small, honest cleaner for caches, logs, temporary files and browser data, plus Triggers, one list of everything that starts by itself on your Mac, and Drive Wiper. No telemetry, no ads, no upsells, no background services. Free and open source under the MIT License.
 
-**Status:** 0.8.4 Dev, beta software. Use at your own risk and keep your own backups.
+**Status:** 0.8.12 Dev, beta software. Use at your own risk and keep your own backups.
 
 ## Contents
 
@@ -33,6 +33,12 @@ Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a sma
 - Turn launch agents, launch daemons and cron jobs off or on, and remove your own. Every change is backed up first and can be restored from Triggers History.
 - Hover over an entry to see everything about it: its name, kind, program and full command, file, when it runs, who it runs for, whether it's on, and any notes.
 
+### Tools: Drive Wiper
+- **Free Space Only:** overwrites a drive's free space with 1 Pass (Zeros), DoD 3 Passes, DoD 7 Passes or 30 Passes, so deleted files can't be recovered. Your files stay; filler files are removed after each pass, on Stop and on quit. 1 GB stays free on the startup drive. On SSDs and APFS it mostly adds wear, and the page says so.
+- **Entire Drive:** erases whole external drives and memory cards (never the startup disk, internal disks, or the drive with macOS, Kodiak Cleaner or your home folder). Quick removes the partition map; Thorough writes zeros over every sector (one pass of random data on SSDs, since macOS has no firmware erase for external SSDs); Secure runs the chosen passes.
+- Afterwards the drive is left uninitialized like a new one, or set up as GPT or MBR with APFS, Mac OS Extended (Journaled), exFAT or MS-DOS (FAT32), with the recommended format for its type picked when you tick it.
+- Three checks before erasing: a summary, the drive's disk identifier typed in, then ERASE. diskutil does the erasing; if macOS needs your administrator password, it asks once per job.
+
 ## Download and Install
 
 The Dev build comes as **KodiakCleaner-Dev-Mac.dmg** (disk image) and **KodiakCleaner-Dev-Mac.zip**, each with a Docs folder. Kodiak Cleaner needs macOS 26 Tahoe or macOS 27 Golden Gate.
@@ -44,7 +50,7 @@ The Dev build isn't signed with an Apple Developer ID or notarized yet, so the f
 - Nothing leaves the Mac. Kodiak Cleaner has no network code; links open in your own browser.
 - Contact & Feedback opens the contact form on the website, https://www.kodiakcleaner.app/contact/, with the topic and version filled in.
 - Files are only removed inside your home folder and your own temporary folder, and links are removed, never followed.
-- Cleaning never needs your administrator password. Launch daemon changes ask for it through macOS's own prompt, once per batch.
+- Cleaning never needs your administrator password. Launch daemon changes ask for it through macOS's own prompt, once per batch, and so does Drive Wiper if diskutil needs it for a drive.
 - Safari, Mail and the Trash need Full Disk Access, which you grant (and can take back) in System Settings.
 - Settings and Triggers History live in ~/Library/Application Support/Kodiak Cleaner.
 
@@ -74,9 +80,9 @@ Needs a Mac with Xcode 26 or newer. The GitHub workflow (`.github/workflows/maco
 | Path | What it is |
 |---|---|
 | `Package.swift` | Swift package: KodiakCore (logic), KodiakCleaner (the app), KodiakCoreTests |
-| `Sources/KodiakCore/` | Cleaner catalog and cleaning, Triggers, themes and accents, settings, supporter codes, changelog, feedback |
+| `Sources/KodiakCore/` | Cleaner catalog and cleaning, Triggers, Drive Wiper (WipeMethods, WipeDisks, DiskEraser, FreeSpaceWiper), themes and accents, settings, supporter codes, changelog, feedback |
 | `Sources/KodiakCleaner/` | The SwiftUI app: pages, components, theme, dialogs, self-test and screenshots |
-| `Tests/KodiakCoreTests/` | Unit tests (cleaning, Triggers, contrast, settings, supporter codes) |
+| `Tests/KodiakCoreTests/` | Unit tests (cleaning, Triggers, Drive Wiper with a fake diskutil, contrast, settings, supporter codes) |
 | `tests/check_source.py` | Title Case, colors only in the theme files, no network code, docs present |
 | `Resources/` | Bundled into the app: logo, Fredoka font, supporter keys |
 | `packaging/` | Info.plist, app icon and the ReadMe for the Docs folder |

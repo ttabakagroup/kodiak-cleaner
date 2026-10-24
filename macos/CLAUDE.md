@@ -57,6 +57,19 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   "Label: value" line per field with empty ones skipped (`Sources/KodiakCore/DetailText.swift`, tested). New Trigger fields go
   into `detailFields` (an extension at the end of Triggers.swift, outside the groupNames block the Title Case check reads).
 
+## Drive Wiper (Tools)
+- Logic in KodiakCore (`WipeMethods.swift`, `WipeDisks.swift`, `DiskEraser.swift`, `FreeSpaceWiper.swift`), tested with a fake
+  diskutil (`WipeDisks.diskutil`, `DiskCommandRunner`). Never erase anything for real in tests or CI; the self-test only reads
+  disks and prints diskutil's usage lines. Wording follows the Windows edition's Drive Wiper (0.8.112).
+- Entire Drive: only external or removable disks can be ticked; the disk behind `/`, the app and the home folder (followed through
+  APFS containers to their physical stores) and internal disks are refused with a reason, and every disk is refused if the
+  startup disk can't be found. Re-checked (identifier, size, media name) right before erasing. Identifiers must match `^disk[0-9]+$`.
+- Three checks (Ted's rule): summary, typed disk identifier, typed ERASE. diskutil runs as the person first; if it needs root,
+  the rest of the job runs through one `osascript ... with administrator privileges` prompt with every word single-quoted.
+- Passes use `diskutil zeroDisk` and `randomDisk 1` (no ones pass on a whole drive; SSDs get one random pass). There's no
+  Verify the Last Pass on Mac: diskutil can't read a pass back. Leave It Uninitialized is `eraseDisk free EMPTY GPT` then
+  `zeroDisk short`. Setup is `eraseDisk <FS> <name> GPT|MBR`, falling back from GPT to MBR once.
+
 ## Interface
 - Lists (Ted, 2026-10-23/24, same as Windows and Linux): rows with tick boxes take `.tickDragRow` and their LazyVStack
   `.tickDragOutline` (Components.swift `TickDrag`): drag paints ticks under an accent outline. Ticks change in one step per
@@ -77,7 +90,8 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
 - Title Case for page names, card titles, headings, labels, column headers, buttons, switches, options and chips; help text
   stays sentence case. `tests/check_source.py` checks it.
 - Pop-ups go through `DialogRequest`/`DialogView` (themed); risky choices use the danger style and Cancel stays the default.
-- Main sidebar: logo and two-tone wordmark (home), Cleaning heading (Cleaner, Triggers), then Settings and About. Settings has
+- Main sidebar: logo and two-tone wordmark (home), Cleaning heading (Cleaner, Triggers), Tools heading (Drive Wiper; new tools
+  go here), then Settings and About. Settings has
   its own sidebar: General, Cleaning, Triggers, Appearance, Supporter, Contact & Feedback, Help (Changelog, Privacy Policy,
   Terms of Use), Developer last in development builds only.
 - Settings footer: `Copyright © <year> TED TABAKA.` then `Free and open source under the MIT License.`

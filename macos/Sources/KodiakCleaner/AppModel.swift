@@ -2,7 +2,7 @@ import AppKit
 import KodiakCore
 import SwiftUI
 
-enum Page: String, CaseIterable { case home, cleaner, triggers, settings, about }
+enum Page: String, CaseIterable { case home, cleaner, triggers, wiper, settings, about }
 
 enum SettingsPage: String, CaseIterable {
     case general, cleaning, triggers, appearance, supporter, feedback, changelog, privacy, terms, developer
@@ -20,7 +20,7 @@ struct DialogRequest: Identifiable {
 }
 
 enum SheetKind: Identifiable, Equatable {
-    case beta, whatsNew(previous: String), changelog, triggersHistory, donation
+    case beta, whatsNew(previous: String), changelog, triggersHistory, donation, typedCheck(TypedCheck)
     var id: String {
         switch self {
         case .beta: return "beta"
@@ -28,6 +28,7 @@ enum SheetKind: Identifiable, Equatable {
         case .whatsNew(let previous): return "whatsnew-\(previous)"
         case .changelog: return "changelog"
         case .triggersHistory: return "history"
+        case .typedCheck(let check): return "check-\(check.id)"
         }
     }
 }

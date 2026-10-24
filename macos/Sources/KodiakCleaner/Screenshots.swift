@@ -27,9 +27,14 @@ enum Screenshots {
         model.summary = "Found \(formatBytes(found)) in \(model.findings.values.reduce(0) { $0 + $1.count }) files."
         model.triggers = Triggers.list(includeSystem: true, includeApple: false)
         model.triggersLoaded = true
+        // Drive Wiper: this Mac's own volumes for Free Space Only, and a sample external drive list for Entire Drive
+        // (nothing is erased; the sample drives aren't real).
+        let wiper = WiperModel.shared
+        wiper.show(volumes: WipeDisks.volumes(), disks: Screenshots.sampleDisks, problem: nil)
+        wiper.loaded = true
 
         let pages: [(String, Page, SettingsPage?)] = [
-            ("home", .home, nil), ("cleaner", .cleaner, nil), ("triggers", .triggers, nil), ("about", .about, nil),
+            ("home", .home, nil), ("cleaner", .cleaner, nil), ("triggers", .triggers, nil), ("wiper", .wiper, nil), ("about", .about, nil),
             ("settings-general", .settings, .general), ("settings-appearance", .settings, .appearance),
             ("settings-supporter", .settings, .supporter), ("settings-feedback", .settings, .feedback),
             ("settings-changelog", .settings, .changelog), ("settings-developer", .settings, .developer),
@@ -50,6 +55,24 @@ enum Screenshots {
                               dark: dark, to: "\(folder)/dialog-\(suffix).png", model: model, fit: true)
             }
         }
+        // Drive Wiper's Entire Drive mode, with a flash drive ticked and its recommended format, then the format changed.
+        model.settings.scheme = "honey"
+        model.page = .wiper
+        wiper.mode = "entire"
+        wiper.paint(["disk4"], true)
+        for dark in [false, true] {
+            await capture(MainLayout(), dark: dark, to: "\(folder)/wiper-entire-honey-\(dark ? "dark" : "light").png", model: model, tall: true)
+        }
+        wiper.fileSystem = .apfs
+        wiper.gpt = true
+        await capture(MainLayout(), dark: false, to: "\(folder)/wiper-entire-changed.png", model: model, tall: true)
+        wiper.leaveUninitialized = true
+        await capture(MainLayout(), dark: false, to: "\(folder)/wiper-entire-uninitialized.png", model: model, tall: true)
+        await capture(TypedCheckView(check: TypedCheck(title: "Check 2 of 3: Confirm the Drive", message: "1 of 1 drives\n\nSanDisk Ultra (disk4)\n30.8 GB, Flash Drive, STICK\nSecure wipe: DoD 3 Passes\n\nAll data on this drive will be deleted and can't be recovered. Type its disk identifier (disk4) to confirm this is the right drive:", expected: "disk4", confirm: "Confirm") {}),
+                      dark: false, to: "\(folder)/wiper-check.png", model: model, fit: true)
+        wiper.leaveUninitialized = false
+        wiper.selectAll(false)
+        wiper.mode = "free"
         // Accent colors on Honey light.
         model.settings.scheme = "honey"
         model.page = .settings
@@ -72,14 +95,27 @@ enum Screenshots {
         model.settings = saved
     }
 
-    static func capture<V: View>(_ view: V, dark: Bool, to path: String, model: AppModel, fit: Bool = false) async {
+    /// Sample external drives for the Entire Drive screenshots, beside a refused internal disk.
+    static let sampleDisks: [WipeDisk] = [
+        WipeDisk(id: "disk0", mediaName: "APPLE SSD AP0512Z", size: 500_277_790_720, kind: .ssd, isInternal: true, isRemovable: false,
+                 bus: "Apple Fabric", reason: "macOS starts from this disk."),
+        WipeDisk(id: "disk4", mediaName: "SanDisk Ultra", size: 30_765_219_840, kind: .flashDrive, isInternal: false, isRemovable: true,
+                 bus: "USB", volumes: ["STICK"]),
+        WipeDisk(id: "disk6", mediaName: "Samsung T7", size: 1_000_204_886_016, kind: .ssd, isInternal: false, isRemovable: true,
+                 bus: "USB", volumes: ["Backup"]),
+        WipeDisk(id: "disk7", mediaName: "WD Elements", size: 4_000_787_030_016, kind: .hardDrive, isInternal: false, isRemovable: true,
+                 bus: "USB", volumes: ["Archive"]),
+    ]
+
+    static func capture<V: View>(_ view: V, dark: Bool, to path: String, model: AppModel, fit: Bool = false, tall: Bool = false) async {
         model.forcedDark = dark
         let root = Themed { view }
             .environmentObject(model)
             .environment(\.colorScheme, dark ? .dark : .light)
-        let hosting = NSHostingView(rootView: AnyView(fit ? AnyView(root.fixedSize()) : AnyView(root.frame(width: size.width, height: size.height))))
+        let height = tall ? 1500 : size.height
+        let hosting = NSHostingView(rootView: AnyView(fit ? AnyView(root.fixedSize()) : AnyView(root.frame(width: size.width, height: height))))
         hosting.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
-        let frame = NSRect(origin: .zero, size: fit ? hosting.fittingSize : size)
+        let frame = NSRect(origin: .zero, size: fit ? hosting.fittingSize : NSSize(width: size.width, height: height))
         hosting.frame = frame
         let window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
         window.appearance = hosting.appearance
