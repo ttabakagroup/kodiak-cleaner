@@ -161,6 +161,27 @@
                                                Style="{StaticResource Caption}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </DockPanel>
+                            <!-- Which format is recommended for the ticked drive's type, and why (Ted). -->
+                            <Border Margin="0,14,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
+                                    Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}" IsEnabled="{Binding FormatEnabled}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="Use Recommended" Command="{Binding UseRecommendedCommand}" VerticalAlignment="Center"
+                                            Margin="14,0,0,0" Visibility="{Binding IsCustomFormat, Converter={StaticResource BoolToVis}}" />
+                                    <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
+                                               VerticalAlignment="Top" Margin="0,1,10,0" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding RecommendTitle}" Style="{StaticResource SettingTitle}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding RecommendText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
                             <WrapPanel Margin="0,14,0,0" IsEnabled="{Binding FormatEnabled}">
                                 <WrapPanel.Style>
                                     <Style TargetType="WrapPanel">
@@ -178,8 +199,16 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <RadioButton GroupName="PartitionStyle" Style="{StaticResource Segment}" Content="{Binding Label}"
-                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                            <RadioButton GroupName="PartitionStyle" Style="{StaticResource Segment}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                         AutomationProperties.Name="{Binding Label}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                            Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="Recommended" FontSize="11" FontWeight="Normal" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </RadioButton>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -194,8 +223,16 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <RadioButton GroupName="FileSystem" Style="{StaticResource Segment}" Content="{Binding Label}"
-                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                            <RadioButton GroupName="FileSystem" Style="{StaticResource Segment}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                         AutomationProperties.Name="{Binding Label}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                            Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="Recommended" FontSize="11" FontWeight="Normal" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </RadioButton>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -215,7 +252,6 @@
                                         </Style.Triggers>
                                     </Style>
                                 </StackPanel.Style>
-                                <TextBlock Text="{Binding RecommendHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,0,0,4" />
                                 <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
                                            Style="{StaticResource Caption}" TextWrapping="Wrap" />
                             </StackPanel>

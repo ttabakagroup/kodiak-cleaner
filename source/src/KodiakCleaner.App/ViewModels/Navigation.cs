@@ -72,6 +72,10 @@ public sealed class Choice<T> : ObservableObject
             if (value) _onSelected(Value);
         }
     }
+
+    private bool _isRecommended;
+    /// <summary>Shows a Recommended tag on the choice (Drive Wiper's format for the ticked drive).</summary>
+    public bool IsRecommended { get => _isRecommended; set => Set(ref _isRecommended, value); }
 }
 
 /// <summary>A color scheme tile on the Appearance page. Classic, Glacier and Lagoon show a lock for non-supporters (visible, not hidden).</summary>

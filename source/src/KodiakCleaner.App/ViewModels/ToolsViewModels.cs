@@ -452,6 +452,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         RefreshCommand = new RelayCommand(RefreshAsync, () => !IsBusy);
         WipeCommand = new RelayCommand(WipeAsync, () => !IsBusy && (EntireDrive ? Disks.Any(d => d.IsChecked) : SelectedDrive is not null));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
+        UseRecommendedCommand = new RelayCommand(UseRecommended, () => !IsBusy && IsCustomFormat);
         foreach (var (label, value) in new[] { ("Free Space Only", false), ("Entire Drive", true) })
             Modes.Add(new Choice<bool>(label, value, !value, v => { EntireDrive = v; }));
         foreach (var m in new[] { WipeMethod.Zeros, WipeMethod.Dod3, WipeMethod.Dod7, WipeMethod.Pass30 })
@@ -516,28 +517,59 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public bool FormatEnabled => !LeaveUninitialized;
 
     private string _fileSystem = "NTFS";
-    public string FileSystem { get => _fileSystem; private set => Set(ref _fileSystem, value); }
+    public string FileSystem { get => _fileSystem; private set { Set(ref _fileSystem, value); OnRecommendChanged(); } }
 
     private bool _gpt = true;
-    public bool Gpt { get => _gpt; private set => Set(ref _gpt, value); }
+    public bool Gpt { get => _gpt; private set { Set(ref _gpt, value); OnRecommendChanged(); } }
 
     private string _label = "Wiped";
     public string Label { get => _label; set => Set(ref _label, value); }
 
     private DiskFormat? Format => LeaveUninitialized ? null : new DiskFormat(FileSystem, Gpt, Label);
 
-    private string _recommendHint = "Tick a drive to see the format suggested for it.";
-    /// <summary>Which format suits the drive just ticked, and why.</summary>
-    public string RecommendHint { get => _recommendHint; private set => Set(ref _recommendHint, value); }
+    private WipeDisk? _recommendedFor;
+    private DiskFormat? _recommended;
 
-    /// <summary>Ticking a drive picks the format that suits it (Ted): flash drive, SSD or large storage drive. It can still be changed.</summary>
+    /// <summary>Ticking a drive picks the format that suits its type (Ted): flash drive, SSD or large storage drive. It can still be changed.</summary>
     private void Recommend(WipeDisk d)
     {
-        var f = WipeMethods.Recommended(d.Kind, d.Removable, d.Size, Label);
+        _recommendedFor = d;
+        _recommended = WipeMethods.Recommended(d.Kind, d.Removable, d.Size, Label);
+        foreach (var c in StyleChoices) c.IsRecommended = c.Value == _recommended.Gpt;
+        foreach (var c in FileSystemChoices) c.IsRecommended = c.Value == _recommended.FileSystem;
+        UseRecommended();
+    }
+
+    private void UseRecommended()
+    {
+        if (_recommended is not { } f) return;
         foreach (var c in StyleChoices) c.IsSelected = c.Value == f.Gpt;
         foreach (var c in FileSystemChoices) c.IsSelected = c.Value == f.FileSystem;
-        RecommendHint = WipeMethods.RecommendedWhy(d.Kind, d.Removable, d.Size);
+        OnRecommendChanged();
     }
+
+    private void OnRecommendChanged()
+    {
+        OnPropertyChanged(nameof(RecommendTitle));
+        OnPropertyChanged(nameof(RecommendText));
+        OnPropertyChanged(nameof(IsCustomFormat));
+    }
+
+    /// <summary>The notice above the format choices: which drive type it's for, or the defaults before a drive is ticked.</summary>
+    public string RecommendTitle => _recommendedFor is { } d
+        ? $"Recommended for {d.Name} ({d.KindName}, {ByteSize.Format(d.Size)})"
+        : "Recommended Format for Each Drive Type";
+
+    public string RecommendText => _recommendedFor is { } d && _recommended is not null
+        ? WipeMethods.RecommendedWhy(d.Kind, d.Removable, d.Size) + (IsCustomFormat
+            ? " You changed it, so your own choice will be used."
+            : " It was picked when you ticked the drive, and the choices marked Recommended below show it. You can still change them.")
+        : "Ticking a drive picks its format for you: flash drives get MBR with FAT32 (32 GB or smaller) or exFAT; SSDs and internal hard drives get GPT with NTFS; other USB drives get GPT with exFAT.";
+
+    /// <summary>The format differs from the one recommended for the ticked drive.</summary>
+    public bool IsCustomFormat => _recommended is { } f && (f.Gpt != Gpt || f.FileSystem != FileSystem);
+
+    public ICommand UseRecommendedCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand WipeCommand { get; }
     public ICommand CancelCommand { get; }

@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.112 Dev] - 2026-10-24
+
+### Drive Wiper
+- A notice above the format choices now says which format is recommended for each drive type, and once you tick a drive, which drive it was picked for and why. The recommended Partition Style and File System are tagged Recommended.
+- If you change the format, the notice says your own choice will be used, and Use Recommended puts it back.
+
 ## [0.8.111 Dev] - 2026-10-24
 
 ### Drive Wiper
