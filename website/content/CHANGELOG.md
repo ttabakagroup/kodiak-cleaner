@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.118 Dev] - 2026-10-24
+
+### Drive Wiper
+- The progress card has a small X in its upper-right corner once a wipe or drive check has finished, stopped or failed. It hides the card and the divider below it; the card comes back with the next wipe or check. While a wipe or check is running, the X is hidden and Stop stays.
+- New in Step 2: Giving This Drive Away or Selling It? A short tip says which Wipe Type to choose for the drives you ticked: Secure (DoD 3 Passes is plenty) or at least Thorough for hard drives, Thorough or Secure for SSDs and NVMe SSDs (both run the drive's Built-In Secure Erase), and Secure for flash drives and memory cards (for top-secret data, physically destroy them instead). Quick is only for drives you're keeping. Use Recommended for Giving Away picks that Wipe Type for you.
+- When the Wipe Type is Quick, the first confirmation adds: "Giving this drive away or selling it? Quick leaves old files recoverable: choose Thorough or Secure."
+
+### Support
+- Gentler wording for the support reminder: it no longer says "donate". The startup pop-up is now Support Kodiak Cleaner, its button and the banner's are Support on Ko-fi, the banner reads "Kodiak Cleaner is free. If it helps you, you can support it on Ko-fi.", and the setting in Settings > General is now Remind Me to Support Kodiak Cleaner at Startup. When it shows and how it's turned off haven't changed.
+
 ## [0.8.117 Dev] - 2026-10-24
 
 ### Drive Wiper

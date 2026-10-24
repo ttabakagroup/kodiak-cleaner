@@ -177,14 +177,15 @@ test("launch video: homepage only, muted, never autoplays from markup, can be cl
   assert.match(js, /localStorage/);
 });
 
-test("Donate is in the main menu and footer on every page, and its page links to Ko-fi", () => {
+test("Support is in the main menu and footer on every page, and its page (still at /donate/) links to Ko-fi", () => {
   for (const p of pages) {
     const nav = p.html.match(/<nav class="nav"[^>]*>([\s\S]*?)<\/nav>/)[1];
-    assert.match(nav, /<a href="\/donate\/" class="nav-donate"[^>]*>Donate<\/a>/, p.file);
+    assert.match(nav, /<a href="\/donate\/" class="nav-donate"[^>]*>Support<\/a>/, p.file);
     assert.match(p.html, /<footer[\s\S]*href="\/donate\/"/, p.file);
   }
   const d = pages.find((p) => p.file === "/donate/index.html").html;
-  assert.ok(d.includes(`href="${cfg.kofi}"`), "Donate page links Ko-fi");
+  assert.ok(d.includes(`href="${cfg.kofi}"`), "Support page links Ko-fi");
+  assert.match(d, /<h1>Support Kodiak Cleaner<\/h1>/);
 });
 
 test("Full Feature List marks every feature Free or Supporter, sorted A to Z, and only themes and the badge are Supporter", async () => {

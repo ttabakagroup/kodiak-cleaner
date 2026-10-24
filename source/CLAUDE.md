@@ -76,6 +76,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   "firmware erase" (people read it as erasing the firmware); say it wipes the data and the drive keeps working. Open Reports opens
   Reports\Integrity Check (progress card after a check, Step 3, and Integrity Check's details card). A PaneRows divider ("wiper")
   sits between the progress card and the settings; it and the card hide together and the settings then span all rows.
+  Ted, 0.8.118: the progress card has an X (only when nothing is running) that hides the card and the divider; Step 2 has a
+  "Giving This Drive Away or Selling It?" tip per drive type, and a Quick confirmation ends with the give-away warning.
   Ted, 0.8.116: defaults (nothing on the page is saved) are Wipe Type Quick, Leave It Uninitialized off, Check the Drive Afterwards off,
   Name the Drive off (0.8.117; was on). The drive name follows the ticked drive's type (`WipeMethods.DefaultLabel`: Flash Drive, Hard Drive, USB Drive, SSD,
   USB SSD; 11 characters at most) until typed over, never "Wiped"; unticking Name the Drive blanks the box and diskpart gets no label=.
@@ -368,6 +370,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
 - Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Updates come from the website since 0.8.40; release downloads stay on GitHub releases; source and Star on GitHub stay on the repo.
 - The repository (ttabakagroup/kodiakcleaner) is private for now (2026-10-06). Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
+- Never say "donate" or "donation" (or "tip") in text users see (Ted, 0.8.118): Supporter perks make it a purchase, so it's
+  "Support on Ko-fi" / "support Kodiak Cleaner". Internal names (Donation class, ini keys) stay. Why It Was Made is Ted's own text.
 - Never offer anything in return for a rating. Support link: https://ko-fi.com/s/aabd61b988 (the Kodiak Cleaner supporter item in Ted's Ko-fi Shop; every donate button uses AppInfo.KoFiUrl). The only donation asks are the ones Ted asked for in 0.8.55
   (`Donation`): the startup pop-up (`DonationWindow`, `[General] ShowDonationPrompt`, can't be turned off before 10 launches counted in
   `[General] LaunchCount`, never stacked on Getting Started/What's New) and the banner on every 10th launch. Supporters see neither.

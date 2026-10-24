@@ -95,6 +95,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -133,15 +134,22 @@
                             <TextBlock Text="Open Reports" />
                         </StackPanel>
                     </Button>
-                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="4" Height="10" Margin="0,16,0,0" Minimum="0" Maximum="100"
+                    <!-- The X (Ted, 0.8.118): once the wipe or check has finished (or for a status message), hides the card and the divider until the
+                         next wipe or check. Hidden while one runs, so a running wipe's progress (and its Stop) can't be put out of sight. -->
+                    <Button Grid.Column="4" Style="{StaticResource SidebarIconButton}" Width="28" Height="28" Margin="10,-6,-6,0" VerticalAlignment="Top"
+                            Command="{Binding CloseCardCommand}" ToolTip="Hide this card" AutomationProperties.Name="Close"
+                            Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="&#xE711;" Style="{StaticResource Icon}" FontSize="12" />
+                    </Button>
+                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="5" Height="10" Margin="0,16,0,0" Minimum="0" Maximum="100"
                                  Foreground="{DynamicResource Accent}" Background="{DynamicResource AccentTint}"
                                  Value="{Binding WipeTask.PercentValue, Mode=OneWay}" IsIndeterminate="{Binding WipeTask.NoPercent, Mode=OneWay}"
                                  AutomationProperties.Name="Wipe Progress" Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
                     <!-- Elapsed time and the time left, from the wipe's background task (Ted, 2026-10-23). -->
-                    <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Text="{Binding WipeTask.TimeText}" Style="{StaticResource Caption}" Margin="0,8,0,0"
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="5" Text="{Binding WipeTask.TimeText}" Style="{StaticResource Caption}" Margin="0,8,0,0"
                                Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
                     <!-- Afterwards: what happened to each drive and how long it took. -->
-                    <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,10,0,0"
+                    <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Margin="0,10,0,0"
                                 Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding WipeTime}" Style="{StaticResource Caption}" Margin="0,6,0,0" />
@@ -150,7 +158,7 @@
                          Kept while the next drive is checked, so it sits outside the result panel. -->
                     <!-- Its own scrolling (the card sits above the page's scrolling area), so several drives never push the page away.
                          250 px tall at most until the divider is dragged; then it fills the room the divider gives the card. -->
-                    <ScrollViewer x:Name="HealthScroll" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" MaxHeight="250" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"
+                    <ScrollViewer x:Name="HealthScroll" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="4" MaxHeight="250" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"
                                   Padding="0,0,8,0" Visibility="{Binding HasHealthResults, Converter={StaticResource BoolToVis}}">
                     <ItemsControl ItemsSource="{Binding HealthResults}">
                         <ItemsControl.ItemTemplate>
@@ -408,6 +416,23 @@
                                 </ItemsControl>
                             </Border>
                             <TextBlock Text="{Binding MethodHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
+
+                            <!-- Giving it away or selling it (Ted, 0.8.118): Quick is the default, so say which Wipe Type suits a drive that's
+                                 leaving the house, for the ticked drives' types, with a one-click way to choose it. -->
+                            <Border Margin="0,12,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
+                                    Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}">
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="Use Recommended for Giving Away" Command="{Binding UseGiveAwayCommand}"
+                                            VerticalAlignment="Center" Margin="14,0,0,0" ToolTip="Choose the Wipe Type recommended for the ticked drives"
+                                            Visibility="{Binding ShowGiveAwayButton, Converter={StaticResource BoolToVis}}" />
+                                    <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
+                                               VerticalAlignment="Top" Margin="0,1,10,0" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding GiveAwayTitle}" Style="{StaticResource SettingTitle}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding GiveAwayText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
 
                             <DockPanel Margin="0,16,0,0" Visibility="{Binding ShowVerify, Converter={StaticResource BoolToVis}}">
                                 <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Verify}"

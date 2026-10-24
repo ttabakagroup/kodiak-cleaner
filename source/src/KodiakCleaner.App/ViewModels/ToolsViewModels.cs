@@ -482,6 +482,10 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         UseRecommendedCommand = new RelayCommand(UseRecommended, () => !IsBusy && IsCustomFormat);
         // Drive Details (Ted, 0.8.116): the info button on each row; read-only, so it works for every drive, wipeable or not.
         DetailsCommand = new RelayCommand<WipeDiskRow>(row => DriveDetailsWindow.Show(row.Disk));
+        // The progress card's X (Ted, 0.8.118): hides the finished result and the divider; never while a wipe or check runs.
+        CloseCardCommand = new RelayCommand(ClearResult, () => !IsWiping);
+        // Giving a drive away (Ted, 0.8.118): picks the Wipe Type Step 2's tip recommends for the ticked drives.
+        UseGiveAwayCommand = new RelayCommand(UseGiveAway, () => !IsBusy);
         foreach (var (label, value) in new[] { ("Free Space Only", false), ("Entire Drive", true) })
             Modes.Add(new Choice<bool>(label, value, !value, v => { EntireDrive = v; }));
         foreach (var m in new[] { WipeMethod.Zeros, WipeMethod.Dod3, WipeMethod.Dod7, WipeMethod.Pass30 })
@@ -523,8 +527,31 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             OnPropertyChanged(nameof(ShowSecurity));
             OnPropertyChanged(nameof(ShowVerify));
             OnPropertyChanged(nameof(MethodHint));
+            OnPropertyChanged(nameof(ShowGiveAwayButton));
             foreach (var d in Disks) d.Method = MethodFor(d.Disk);
         }
+    }
+
+    // ---------------------------------------------------------------- Giving the drive away or selling it (Ted, 0.8.118)
+
+    private IEnumerable<MediaKind> TickedKinds => Disks.Where(d => d.IsChecked).Select(d => d.Disk.Kind);
+
+    /// <summary>Step 2's tip heading: "Giving This Drive Away or Selling It?" (or These Drives, with several ticked).</summary>
+    public string GiveAwayTitle => WipeMethods.GiveAwayTitle(TickedCount);
+
+    /// <summary>Which Wipe Type to choose for the ticked drives' types (every type before one is ticked).</summary>
+    public string GiveAwayText => WipeMethods.GiveAwayAdvice(TickedKinds);
+
+    /// <summary>Use Recommended for Giving Away shows while the chosen Wipe Type isn't enough for a drive that's given away.</summary>
+    public bool ShowGiveAwayButton => !WipeMethods.SuitsGivingAway(Level, TickedKinds);
+
+    private void UseGiveAway()
+    {
+        var level = WipeMethods.GiveAwayLevel(TickedKinds);
+        // Secure with one pass of zeros would be Thorough again, so it gets the DoD passes the tip names.
+        if (level == WipeLevel.Secure && Method == WipeMethod.Zeros)
+            foreach (var c in MethodChoices) c.IsSelected = c.Value == WipeMethod.Dod3;
+        foreach (var c in LevelChoices) c.IsSelected = c.Value == level;
     }
 
     /// <summary>The pass choice applies to free space, and to Secure entire-drive wipes.</summary>
@@ -643,6 +670,10 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public bool IsCustomFormat => _recommended is { } f && (f.Gpt != Gpt || f.FileSystem != FileSystem);
 
     public ICommand UseRecommendedCommand { get; }
+    /// <summary>The progress card's X: hides the card and the divider until the next wipe or check (Ted, 0.8.118).</summary>
+    public ICommand CloseCardCommand { get; }
+    /// <summary>Use Recommended for Giving Away: the Wipe Type Step 2's tip recommends (Ted, 0.8.118).</summary>
+    public ICommand UseGiveAwayCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand WipeCommand { get; }
     public ICommand CancelCommand { get; }
@@ -830,6 +861,9 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         OnPropertyChanged(nameof(TickedCount));
         OnPropertyChanged(nameof(SelectedWarning));
         OnPropertyChanged(nameof(ShowSelectedWarning));
+        OnPropertyChanged(nameof(GiveAwayTitle));
+        OnPropertyChanged(nameof(GiveAwayText));
+        OnPropertyChanged(nameof(ShowGiveAwayButton));
     }
 
     public bool? AllChecked
@@ -940,7 +974,9 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         var level = WipeMethods.LevelName(Level);
         var list = string.Join("\n", chosen.Select(d => $"•  {d.Disk.Name} ({d.Size}, {d.Disk.KindName}, {d.Disk.Drives}): {d.Method}"));
         if (!Dialogs.Warn($"{level} wipe of {(chosen.Count == 1 ? "this drive" : $"these {chosen.Count} drives")}?\n\n{list}\n\n{AfterText}" +
-                (CheckAfterwards ? "\nThen each drive's health is checked (Check the Drive Afterwards)." : ""),
+                (CheckAfterwards ? "\nThen each drive's health is checked (Check the Drive Afterwards)." : "") +
+                // Quick is the default (Ted, 0.8.118): a reminder for drives that are leaving the house.
+                (Level == WipeLevel.Quick ? "\n\n" + WipeMethods.QuickGiveAwayNote(chosen.Count) : ""),
                 "Check 1 of 3: Erase Entire Drive",
                 "Every file and every partition on them is deleted, and nothing can be recovered afterwards." +
                 (Level == WipeLevel.Quick ? " Quick only removes the partition data, so recovery tools might still find old files." : "")))

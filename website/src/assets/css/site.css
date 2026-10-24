@@ -405,7 +405,7 @@ dialog.thanks .close { position: absolute; top: 12px; right: 12px; }
 /* Accessibility (WCAG 2.1 AA, 2026-10-24 audit) */
 /* Links inside sentences are underlined, so they don't rely on color alone (1.4.1). Buttons, cards and the menus keep their look. */
 main :is(p, li, td, dd, figcaption) a:not(.btn):not(.chip-link):not(.link-card), .site-footer :is(p, .footer-bottom) a:not(.btn) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
-/* The Donate menu entry: the accent text doesn't reach 4.5:1 on the hover tint. */
+/* The Support menu entry: the accent text doesn't reach 4.5:1 on the hover tint. */
 .nav a.nav-donate:hover { color: var(--text); }
 /* Tables that scroll sideways on phones can be reached and scrolled with the keyboard (2.1.1). */
 .table-wrap:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

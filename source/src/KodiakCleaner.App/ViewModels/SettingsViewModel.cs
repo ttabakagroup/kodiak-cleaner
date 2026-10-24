@@ -374,8 +374,8 @@ public sealed class SettingsViewModel : ObservableObject
     public string DonationPromptCaption => Supporter.IsSupporter
         ? "Thank you for being a Supporter! The reminder is off for you."
         : Donation.CanOptOut
-            ? "At startup, a short note asks you to consider donating to keep Kodiak Cleaner free and open source."
-            : $"At startup, a short note asks you to consider donating. It can be turned off after Kodiak Cleaner has started {Donation.LaunchesBeforeOptOut} times ({Donation.LaunchesLeft} more to go).";
+            ? "At startup, a short note mentions that you can support Kodiak Cleaner on Ko-fi. It's always optional."
+            : $"At startup, a short note mentions that you can support Kodiak Cleaner on Ko-fi. It can be turned off after Kodiak Cleaner has started {Donation.LaunchesBeforeOptOut} times ({Donation.LaunchesLeft} more to go).";
 
     public bool NotifyNewStartup
     {

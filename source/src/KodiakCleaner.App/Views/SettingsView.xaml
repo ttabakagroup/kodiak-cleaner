@@ -96,7 +96,7 @@
                         </DockPanel.Style>
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ShowDonationPrompt}" />
                         <StackPanel Margin="0,0,24,0">
-                            <TextBlock Text="Ask Me to Donate at Startup" Style="{StaticResource SettingTitle}" />
+                            <TextBlock Text="Remind Me to Support Kodiak Cleaner at Startup" Style="{StaticResource SettingTitle}" />
                             <TextBlock Text="{Binding DonationPromptCaption}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
@@ -321,7 +321,7 @@
                 <StackPanel>
                     <TextBlock Text="Reset to Default" Style="{StaticResource SectionTitle}" />
                     <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0" TextWrapping="Wrap"
-                               Text="Puts every setting back to how it was when Kodiak Cleaner was first installed, after you confirm, sidebar Favorites included. The start count for the donation reminder starts again, so it can be turned off after 10 more starts (never shown to Supporters). Kept: your Supporter code, update bookkeeping, scheduled cleanings, Cleaner history, and every backup, report and log." />
+                               Text="Puts every setting back to how it was when Kodiak Cleaner was first installed, after you confirm, sidebar Favorites included. The start count for the support reminder starts again, so it can be turned off after 10 more starts (never shown to Supporters). Kept: your Supporter code, update bookkeeping, scheduled cleanings, Cleaner history, and every backup, report and log." />
                     <Button Command="{Binding ResetCommand}" HorizontalAlignment="Left" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />

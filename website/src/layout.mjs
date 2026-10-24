@@ -11,7 +11,7 @@ export const NAV = [
   { id: "changelog", href: "/changelog/", label: "Changelog" },
   { id: "archive", href: "/archive/", label: "Archive" },
   { id: "contact", href: "/contact/", label: "Contact Us" },
-  { id: "donate", href: "/donate/", label: "Donate", cls: "nav-donate" },
+  { id: "donate", href: "/donate/", label: "Support", cls: "nav-donate" },
 ];
 
 export const wordmark = `<span class="wordmark"><span class="w1">Kodiak</span> <span class="w2">Cleaner</span></span>`;
@@ -106,7 +106,7 @@ ${page.body}
       <div><h2>Elsewhere</h2><ul>
         <li><a href="${cfg.repo}" rel="noopener">GitHub</a></li>
         <li><a href="${cfg.repo}/releases" rel="noopener">GitHub Releases</a></li>
-        <li><a href="/donate/">Donate</a></li>
+        <li><a href="/donate/">Support</a></li>
         <li><a href="${cfg.homepage}" rel="noopener">tedtabaka.com</a></li>
       </ul></div>
     </div>
@@ -121,9 +121,9 @@ ${page.body}
   <span class="icon">${icons.heart}</span>
   <h2 id="thanks-title">Thanks for Downloading!</h2>
   <p>Your download is on its way. Kodiak Cleaner is free and open source, with no ads, no tracking and no upsells, and it's built by one person, Ted Tabaka, in his spare time.</p>
-  <p>If it saves you time or space, a small tip on Ko-fi keeps it free and keeps new features coming. As a thank-you, supporting with $10 or more gets you a code that unlocks the Classic, Glacier and Lagoon color schemes.</p>
+  <p>If it helps you, please consider supporting Kodiak Cleaner on Ko-fi. No pressure: every feature stays free either way. As a thank-you, supporting with $10 or more gets you a code that unlocks the Classic, Glacier and Lagoon color schemes.</p>
   <div class="btn-row centered">
-    <a class="btn primary" href="${cfg.kofi}" target="_blank" rel="noopener" data-thanks-close>${icons.heart}Donate on Ko-fi</a>
+    <a class="btn primary" href="${cfg.kofi}" target="_blank" rel="noopener" data-thanks-close>${icons.heart}Support on Ko-fi</a>
     <button class="btn" type="button" data-thanks-close>Maybe Later</button>
   </div>
 </dialog>

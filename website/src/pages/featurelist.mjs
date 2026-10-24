@@ -108,7 +108,7 @@ ${pageHead("Full Feature List", `Every feature in Kodiak Cleaner, and which edit
 </div></nav>
 <section class="tight">
   <div class="wrap">
-    <div class="card plan-note"><span class="icon">${icons.heart}</span><p><strong>There is no paid or Premium version.</strong> Every cleaning feature and tool is free. A supporter code, sent by email as a thank-you for a tip on Ko-fi, unlocks only the extras marked Supporter. <a href="/donate/">Become a supporter</a>.</p></div>
+    <div class="card plan-note"><span class="icon">${icons.heart}</span><p><strong>There is no paid or Premium version.</strong> Every cleaning feature and tool is free. A supporter code, sent by email as a thank-you for supporting Kodiak Cleaner on Ko-fi, unlocks only the extras marked Supporter. <a href="/donate/">Become a supporter</a>.</p></div>
     ${tables}
     <p class="muted mt">A dash means the feature isn't in that edition yet. Windows is the most complete edition, and the Mac edition has Cleaner and Triggers so far.</p>
   </div>

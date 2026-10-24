@@ -164,6 +164,57 @@ public static class WipeMethods
     public static string? SelectedWarning(int ticked) => ticked < 2 ? null
         : $"{ticked} Drives Selected: all {ticked} will be erased, one after another.";
 
+    // ---------------------------------------------------------------- Giving a drive away or selling it (Ted, 0.8.118)
+    // Quick is the default, so Step 2 says which Wipe Type suits a drive that's leaving the house, for the ticked drives' types.
+
+    /// <summary>The heading of Step 2's tip: one drive (or none ticked yet), or several.</summary>
+    public static string GiveAwayTitle(int ticked) => ticked > 1 ? "Giving These Drives Away or Selling Them?" : "Giving This Drive Away or Selling It?";
+
+    /// <summary>
+    /// The Wipe Type to use before a drive is given away or sold: Thorough when every drive is an SSD or NVMe SSD (Thorough and Secure
+    /// both run its Built-In Secure Erase), otherwise Secure (hard drives, flash drives, memory cards and drives of unknown type).
+    /// </summary>
+    public static WipeLevel GiveAwayLevel(IEnumerable<MediaKind> kinds)
+    {
+        var list = kinds.ToList();
+        return list.Count > 0 && list.All(IsSsd) ? WipeLevel.Thorough : WipeLevel.Secure;
+    }
+
+    /// <summary>
+    /// Whether a Wipe Type is good enough for drives that are given away or sold: never Quick (the old files stay recoverable),
+    /// Thorough except for flash drives and memory cards (they get Secure), and Secure always.
+    /// </summary>
+    public static bool SuitsGivingAway(WipeLevel level, IEnumerable<MediaKind> kinds) => level switch
+    {
+        WipeLevel.Quick => false,
+        WipeLevel.Thorough => !kinds.Contains(MediaKind.FlashDrive),
+        _ => true,
+    };
+
+    /// <summary>
+    /// Step 2's tip in plain words, one line per type of drive ticked (every type before a drive is ticked), A to Z, then a line on Quick.
+    /// </summary>
+    public static string GiveAwayAdvice(IEnumerable<MediaKind> kinds)
+    {
+        var ticked = kinds.Select(k => IsSsd(k) ? MediaKind.Ssd : k == MediaKind.Unknown ? MediaKind.HardDrive : k).Distinct().ToList();
+        if (ticked.Count == 0) ticked = [MediaKind.FlashDrive, MediaKind.HardDrive, MediaKind.Ssd];
+        var lines = ticked.Select(k => k switch
+        {
+            MediaKind.FlashDrive => "Flash drives and memory cards: choose Secure. For top-secret data, physically destroy them instead.",
+            MediaKind.Ssd => "SSDs and NVMe SSDs: choose Thorough or Secure; both run the drive's Built-In Secure Erase.",
+            _ => "Hard drives: choose Secure (DoD 3 Passes is plenty), or at least Thorough.",
+        }).Order(StringComparer.Ordinal).ToList();
+        lines.Add("Quick is only for drives you're keeping: it leaves the old files recoverable.");
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>The line added to the first wipe confirmation when the Wipe Type is Quick (Ted, 0.8.118).</summary>
+    public static string QuickGiveAwayNote(int drives) => drives > 1
+        ? "Giving these drives away or selling them? Quick leaves old files recoverable: choose Thorough or Secure."
+        : "Giving this drive away or selling it? Quick leaves old files recoverable: choose Thorough or Secure.";
+
+    private static bool IsSsd(MediaKind k) => k is MediaKind.Ssd or MediaKind.NvmeSsd;
+
     public static string Name(WipeMethod m) => m switch
     {
         WipeMethod.Zeros => "1 Pass (Zeros)",
