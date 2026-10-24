@@ -14,7 +14,7 @@ Kodiak Cleaner for Mac is still beta software. You use it at your own risk. More
 
 ## What Kodiak Cleaner Does
 
-Kodiak Cleaner deletes caches, temporary files, logs, browser data and other items you choose, asks tools such as Homebrew to clear what they keep, and turns launch agents, launch daemons and cron jobs off or on or removes the ones you pick. Some of these actions can't be undone.
+Kodiak Cleaner deletes caches, temporary files, logs, browser data and other items you choose, asks tools such as Homebrew to clear what they keep, turns launch agents, launch daemons and cron jobs off or on or removes the ones you pick, and with Drive Wiper overwrites free space or erases the whole drives you choose. Some of these actions can't be undone; an erased drive can never be recovered.
 
 - Review what Kodiak Cleaner shows you before you clean, turn off or remove anything.
 - Changes on the Triggers page are backed up first and can be restored from Triggers History.

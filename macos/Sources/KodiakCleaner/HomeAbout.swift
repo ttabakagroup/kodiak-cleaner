@@ -7,6 +7,8 @@ let features: [(String, String)] = [
     ("Browser Cleaning", "Cache, cookies, history and sessions for Arc, Brave, Chrome, Chromium, Edge, Firefox, Floorp, Helium, "
         + "LibreWolf, Opera, Safari, Vivaldi and Zen."),
     ("Developer Caches", "Homebrew, npm, pip, Yarn, Go, CocoaPods and Xcode Derived Data."),
+    ("Drive Wiper", "Overwrite a drive's free space, or securely erase whole external drives with three checks first, then "
+        + "format them or leave them uninitialized."),
     ("Private by Design", "No telemetry, no ads, no upsells. Nothing leaves this Mac."),
     ("System Junk", "Crash reports, logs, temporary files, Quick Look thumbnails, saved window state and the Trash."),
     ("Triggers", "Every launch agent, launch daemon, cron job and shell startup file in one list, with notes on anything "

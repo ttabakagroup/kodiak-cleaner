@@ -2,7 +2,7 @@
 
 Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
-Kodiak Cleaner for Mac is a small, honest cleaner by Ted Tabaka. It removes caches, temporary files, logs and browser data, and lists everything that starts by itself on your Mac (Triggers) so you can turn it off or remove it. It has no telemetry, ads, upsells or background services, and it is free and open source under the MIT License.
+Kodiak Cleaner for Mac is a small, honest cleaner by Ted Tabaka. It removes caches, temporary files, logs and browser data, lists everything that starts by itself on your Mac (Triggers) so you can turn it off or remove it, and can wipe a drive's free space or erase whole external drives (Drive Wiper). It has no telemetry, ads, upsells or background services, and it is free and open source under the MIT License.
 
 Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so analyze before you clean, read each caution, and keep your own backups of anything important.
 
@@ -10,7 +10,7 @@ Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so
 
 - macOS 26 Tahoe or macOS 27 Golden Gate
 - A Mac with Apple silicon, or an Intel Mac that runs macOS 26
-- Your administrator password only to turn launch daemons off or on (Kodiak Cleaner asks once per batch)
+- Your administrator password only to turn launch daemons off or on (Kodiak Cleaner asks once per batch), and for Drive Wiper if macOS needs it to erase a drive (once per job)
 
 ## Install
 
