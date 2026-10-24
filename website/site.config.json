@@ -284,9 +284,9 @@
   },
   "mac": {
     "dmg": "KodiakCleanerMac.dmg",
-    "dmgSize": "2.3 MB",
+    "dmgSize": "2.4 MB",
     "zip": "KodiakCleanerMac.zip",
-    "zipSize": "1.8 MB"
+    "zipSize": "1.9 MB"
   },
   "launchVideo": {
     "file": "kodiak-cleaner-launch.mp4",
