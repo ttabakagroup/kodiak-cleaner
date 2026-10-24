@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.101 Dev] - 2026-10-24
+
+### Startup
+- At the normal window size, the Startup lists fit without a sideways scroll bar again. The scroll bar only shows when the window is made narrow.
+
 ## [0.8.100 Dev] - 2026-10-24
 
 ### Sidebar
