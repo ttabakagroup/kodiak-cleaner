@@ -113,6 +113,9 @@ public sealed class Settings
     /// Empty until a divider is moved; Reset to Default empties it.
     /// </summary>
     public string PaneSizes { get; set; } = "";
+    /// <summary>The Scheduled Tasks That Run at Startup card on the Startup page (Ted, 0.8.102). Off hides it and gives the
+    /// startup list the whole page; the tasks are still read, so Startup History keeps tracking them.</summary>
+    public bool ShowStartupTasks { get; set; } = true;
     /// <summary>Off: the sidebar always keeps the default width and the paperclip is hidden (Settings › General, 0.8.12).</summary>
     public bool SidebarAdjustable { get; set; } = true;
     /// <summary>Off hides the paperclip button; the sidebar keeps whatever width and lock it had.</summary>
@@ -250,6 +253,7 @@ public sealed class Settings
         ToolsExpanded = ini.GetBool("General", "ToolsOpen", ToolsExpanded);
         SidebarWidth = Math.Clamp(ini.GetInt("General", "SidebarWidth", SidebarWidth), MinSidebarWidth, MaxSidebarWidth);
         PaneSizes = ini.Get("Layout", "Panes") ?? "";
+        ShowStartupTasks = ini.GetBool("Layout", "ShowStartupTasks", ShowStartupTasks);
         SidebarLocked = ini.GetBool("General", "SidebarLocked", SidebarLocked);
         SidebarCollapsed = ini.GetBool("General", "SidebarCollapsed", SidebarCollapsed);
         SidebarAdjustable = ini.GetBool("General", "SidebarAdjustable", SidebarAdjustable);
@@ -318,6 +322,7 @@ public sealed class Settings
         ini.Set("General", "ToolsOpen", ToolsExpanded);
         ini.Set("General", "SidebarWidth", SidebarWidth);
         ini.Set("Layout", "Panes", PaneSizes);
+        ini.Set("Layout", "ShowStartupTasks", ShowStartupTasks);
         ini.Set("General", "SidebarLocked", SidebarLocked);
         ini.Set("General", "SidebarCollapsed", SidebarCollapsed);
         ini.Set("General", "SidebarAdjustable", SidebarAdjustable);

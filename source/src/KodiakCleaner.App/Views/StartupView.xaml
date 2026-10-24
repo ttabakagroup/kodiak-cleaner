@@ -4,6 +4,13 @@
              xmlns:local="clr-namespace:KodiakCleaner.App.Views">
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+            <!-- Hides the Scheduled Tasks That Run at Startup card so the startup list gets the whole page (Ted, 0.8.102). -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="16,4,0,0" VerticalAlignment="Top"
+                        ToolTip="Show or hide Scheduled Tasks That Run at Startup. Hidden tasks still show in History.">
+                <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ShowTasks}"
+                          AutomationProperties.Name="Show Scheduled Tasks" VerticalAlignment="Center" />
+                <TextBlock Text="Show Scheduled Tasks" VerticalAlignment="Center" Margin="8,0,0,0" />
+            </StackPanel>
             <StackPanel>
                 <TextBlock Text="Startup" Style="{StaticResource PageTitle}" />
                 <TextBlock Style="{StaticResource PageSubtitle}"
@@ -73,8 +80,8 @@
                 <RowDefinition Height="*" MinHeight="150" />
             </Grid.RowDefinitions>
             <!-- Drag the grip between the cards to give either one more room (Ted, 0.8.99). -->
-            <GridSplitter Grid.Row="1" Style="{StaticResource PaneRows}" local:PaneSplitter.Remember="startup" />
-            <Border Grid.Row="2" Style="{StaticResource Card}" Padding="16,12">
+            <GridSplitter x:Name="TasksSplitter" Grid.Row="1" Style="{StaticResource PaneRows}" local:PaneSplitter.Remember="startup" />
+            <Border x:Name="TasksCard" Grid.Row="2" Style="{StaticResource Card}" Padding="16,12">
                 <DockPanel>
                     <!-- The button keeps its size; in a narrow window the title shortens with "..." instead of covering it. -->
                     <DockPanel DockPanel.Dock="Top">
@@ -137,7 +144,7 @@
                 </DockPanel>
             </Border>
 
-            <Border Grid.Row="0" Style="{StaticResource Card}" Padding="8">
+            <Border x:Name="StartupCard" Grid.Row="0" Style="{StaticResource Card}" Padding="8">
                 <DataGrid local:Placeholder.Text="Programs that start with Windows show here. If you searched, none match." RowStyle="{StaticResource DetailsRow}" ItemsSource="{Binding View}" IsSynchronizedWithCurrentItem="False" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown"
                           SelectionMode="Extended" SelectionChanged="Grid_SelectionChanged">
                     <!-- Right-click an entry to turn it on or off, or remove it. Ctrl-click and Shift-click highlight several entries

@@ -120,6 +120,19 @@ public sealed class StartupViewModel : ObservableObject, ILoadOnFirstVisit
     public IReadOnlyList<ScheduledTaskItem> HighlightedTasks { get; set; } = Array.Empty<ScheduledTaskItem>();
 
     private string _tasksSummary = "Reading scheduled tasks...";
+    /// <summary>The Show Scheduled Tasks switch on the toolbar (Ted, 0.8.102); remembered in Settings.</summary>
+    public bool ShowTasks
+    {
+        get => Settings.Current.ShowStartupTasks;
+        set
+        {
+            if (Settings.Current.ShowStartupTasks == value) return;
+            Settings.Current.ShowStartupTasks = value;
+            Settings.Current.Save();
+            OnPropertyChanged();
+        }
+    }
+
     public string TasksSummary { get => _tasksSummary; private set => Set(ref _tasksSummary, value); }
 
     public ICommand TaskOnCommand { get; }

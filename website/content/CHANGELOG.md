@@ -5,6 +5,14 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.103 Dev] - 2026-10-24
+
+### Sidebar
+- Reset Tools Order is now a small centered button with its own Sort icon.
+
+### Startup
+- New Show Scheduled Tasks switch at the top of the Startup page. Turn it off to hide Scheduled Tasks That Run at Startup and give the startup list the whole page. Kodiak Cleaner remembers your choice, and Startup History still keeps track of those tasks.
+
 ## [0.8.102 Dev] - 2026-10-24
 
 ### Interface
