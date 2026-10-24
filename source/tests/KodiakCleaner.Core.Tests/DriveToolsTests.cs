@@ -227,7 +227,7 @@ public sealed class WipeLevelAndFormatTests
     [InlineData(MediaKind.Unknown, false, 100, "NTFS", true)]
     public void Each_kind_of_drive_gets_a_suggested_format(MediaKind kind, bool removable, long gb, string fs, bool gpt)
     {
-        var f = WipeMethods.Recommended(kind, removable, gb * GB, "Wiped");
+        var f = WipeMethods.Recommended(kind, removable, gb * GB, WipeMethods.DefaultLabel(kind, removable));
         Assert.Equal((fs, gpt), (f.FileSystem, f.Gpt));
         Assert.Null(WipeMethods.FormatProblem(gb * GB, f));
         Assert.StartsWith("Recommended for a", WipeMethods.RecommendedWhy(kind, removable, gb * GB));

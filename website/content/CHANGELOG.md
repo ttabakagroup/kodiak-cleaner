@@ -5,6 +5,17 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.116 Dev] - 2026-10-24
+
+### Drive Wiper
+- New: Name the Drive, a tick box next to Drive Name. It's ticked by default and the drive gets the name in the box. Untick it and the box goes blank: the drive is formatted with no name, and Windows shows it as USB Drive or Local Disk.
+- The suggested name is no longer "Wiped". It follows the type of drive you tick: Flash Drive, Hard Drive, USB Drive, SSD or USB SSD, short enough for every file system. Type your own and it's kept. Names on FAT32 drives are shown in capitals, the way Windows stores them.
+- New defaults: Wipe Type is Quick, and Leave It Uninitialized Like a New Drive and Check the Drive Afterwards are off. Turn them on when you need them.
+- The drive list in Step 1 grows to show every drive (up to about ten before it scrolls), and the mouse wheel over it scrolls the whole page instead of getting stuck in the list.
+- Click anywhere on a drive's row to tick or untick it.
+- When two or more drives are ticked, a warning says how many will be erased, in Step 1 and next to the Wipe button.
+- New: Drive Details. The info button at the right of each drive opens a summary: model, serial number, type, connection, size, firmware version, partition style and partitions, the drive's own health report (health and status, temperature, wear, hours powered on, read and write errors, and replaced, pending and unreadable sectors where the drive shares them), and the disk errors Windows logged for it in the last 30 days, with a quick verdict. Copy puts it on the clipboard. It only reads; nothing is written to the drive.
+
 ## [0.8.115 Dev] - 2026-10-24
 
 ### Drive Wiper

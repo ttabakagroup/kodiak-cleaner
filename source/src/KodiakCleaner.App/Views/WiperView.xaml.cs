@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace KodiakCleaner.App.Views;
 
@@ -48,4 +51,65 @@ public partial class WiperView : UserControl
     /// they fill the room the card was given, and a double-click on the divider brings the 250 px back.
     /// </summary>
     private void FitResults() => HealthScroll.MaxHeight = CardRow.Height.IsAuto ? 250 : double.PositiveInfinity;
+
+    // ---------------------------------------------------------------- Step 1's drive list (Ted, 0.8.116)
+
+    /// <summary>
+    /// The mouse wheel over the drive list scrolls the page, unless the list is longer than its ten-or-so rows and still has
+    /// further to go in that direction; then the list scrolls, and once it reaches its end the page carries on.
+    /// </summary>
+    private void DiskGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (e.Handled) return;
+        var inner = Find<ScrollViewer>(DiskGrid);
+        bool listCanScroll = inner is not null && (e.Delta > 0 ? inner.VerticalOffset > 0 : inner.VerticalOffset < inner.ScrollableHeight);
+        if (listCanScroll) return;
+        e.Handled = true;
+        SettingsArea.RaiseEvent(new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) { RoutedEvent = MouseWheelEvent, Source = DiskGrid });
+    }
+
+    private WipeDiskRowPress? _press;
+    private sealed record WipeDiskRowPress(ViewModels.WipeDiskRow Row, Point At);
+
+    /// <summary>Remembers the row a plain click starts on; tick boxes, the details button and drags keep their own handling.</summary>
+    private void DiskGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _press = null;
+        if (e.ClickCount > 1 || Keyboard.Modifiers != ModifierKeys.None || e.OriginalSource is not DependencyObject source) return;
+        if (Up<ButtonBase>(source) is not null || Up<DataGridColumnHeader>(source) is not null || Up<ScrollBar>(source) is not null) return;
+        if (Up<DataGridRow>(source) is { Item: ViewModels.WipeDiskRow row }) _press = new WipeDiskRowPress(row, e.GetPosition(DiskGrid));
+    }
+
+    /// <summary>
+    /// Clicking anywhere on a drive's row ticks or unticks it, like clicking its tick box (Ted, 0.8.116). A drag (which highlights
+    /// or ticks several rows) and drives that can't be wiped are left alone; the box itself (a ButtonBase) ticks on its own.
+    /// </summary>
+    private void DiskGrid_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_press is not { } press) return;
+        _press = null;
+        var at = e.GetPosition(DiskGrid);
+        if (Math.Abs(at.X - press.At.X) >= SystemParameters.MinimumHorizontalDragDistance ||
+            Math.Abs(at.Y - press.At.Y) >= SystemParameters.MinimumVerticalDragDistance) return;
+        if (e.OriginalSource is not DependencyObject source || Up<DataGridRow>(source)?.Item != press.Row) return;
+        if (press.Row.CanWipe) press.Row.IsChecked = !press.Row.IsChecked;
+    }
+
+    private static T? Up<T>(DependencyObject? d) where T : DependencyObject
+    {
+        for (; d is not null; d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+            if (d is T found) return found;
+        return null;
+    }
+
+    private static T? Find<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T found) return found;
+            if (Find<T>(child) is { } deeper) return deeper;
+        }
+        return null;
+    }
 }

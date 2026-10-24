@@ -42,6 +42,12 @@
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
             </Style.Triggers>
         </Style>
+        <!-- The Drive Name box while Name the Drive is unticked: blank and grayed out (Ted, 0.8.116). -->
+        <Style x:Key="GrayTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="GrayCaption" TargetType="TextBlock" BasedOn="{StaticResource Caption}">
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
@@ -275,8 +281,12 @@
                                                Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                 </StackPanel>
                             </DockPanel>
-                            <DataGrid tc:Placeholder.Text="Drives that can be wiped show here. Click Refresh to look again." ItemsSource="{Binding Disks}" MaxHeight="320"
-                                      Margin="0,14,0,0" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                            <!-- Grows to show every drive, up to about ten rows (Ted, 0.8.116); only a longer list scrolls inside, and the mouse
+                                 wheel scrolls the page whenever the list has nothing more to scroll. Clicking a row ticks it (WiperView.xaml.cs). -->
+                            <DataGrid x:Name="DiskGrid" tc:Placeholder.Text="Drives that can be wiped show here. Click Refresh to look again." ItemsSource="{Binding Disks}" MaxHeight="460"
+                                      Margin="0,14,0,0" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}"
+                                      PreviewMouseWheel="DiskGrid_PreviewMouseWheel" PreviewMouseLeftButtonDown="DiskGrid_PreviewMouseLeftButtonDown"
+                                      PreviewMouseLeftButtonUp="DiskGrid_PreviewMouseLeftButtonUp">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
                                         <DataGridTemplateColumn.Header>
@@ -323,9 +333,32 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
+                                    <!-- Drive Details (Ted, 0.8.116): model, serial number, layout, health report and logged errors in a pop-up. -->
+                                    <DataGridTemplateColumn Width="52" CanUserResize="False" CanUserSort="False">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Style="{StaticResource LinkButton}" Margin="0" Padding="6,2" HorizontalAlignment="Center"
+                                                        Command="{Binding DataContext.DetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}" ToolTip="Drive Details: serial number, health and errors"
+                                                        AutomationProperties.Name="Drive Details">
+                                                    <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" FontSize="16" />
+                                                </Button>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                             <TextBlock Text="{Binding ListNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <!-- Two or more drives ticked (Ted, 0.8.116): every one of them is erased. -->
+                            <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"
+                                    CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,10,0,0"
+                                    Visibility="{Binding ShowSelectedWarning, Converter={StaticResource BoolToVis}}">
+                                <DockPanel>
+                                    <TextBlock Text="&#xE7BA;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource WarnText}"
+                                               VerticalAlignment="Top" Margin="0,1,10,0" />
+                                    <TextBlock Text="{Binding SelectedWarning}" Foreground="{DynamicResource WarnText}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </DockPanel>
+                            </Border>
                         </StackPanel>
                     </Border>
 
@@ -453,10 +486,18 @@
                                         </ItemsControl>
                                     </Border>
                                 </StackPanel>
-                                <StackPanel Margin="0,0,0,8">
+                                <!-- Name the Drive (Ted, 0.8.116): ticked, the drive gets the name in the box; unticked, the box is blank and
+                                     the drive gets no name at all. -->
+                                <StackPanel Margin="0,0,0,8" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                                     <TextBlock Text="Drive Name" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
-                                    <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="200" MaxLength="32"
-                                             IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox IsChecked="{Binding NameDrive}" VerticalAlignment="Center" Margin="0,0,10,0" AutomationProperties.Name="Name the Drive"
+                                                  ToolTip="Name the drive. Untick it to leave the drive without a name." />
+                                        <TextBox Text="{Binding LabelBox, UpdateSourceTrigger=PropertyChanged}" Width="200" MaxLength="{Binding LabelLimit}"
+                                                 AutomationProperties.Name="Drive Name" Style="{StaticResource GrayTextBox}" IsEnabled="{Binding NameDrive}" />
+                                    </StackPanel>
+                                    <TextBlock Text="No name: Windows shows it as USB Drive or Local Disk." Style="{StaticResource Caption}" Margin="0,4,0,0"
+                                               Visibility="{Binding NameDrive, Converter={StaticResource NotVis}}" />
                                 </StackPanel>
                             </WrapPanel>
                             <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
@@ -502,7 +543,11 @@
 
                             <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"
                                     CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,18,0,0">
-                                <TextBlock Text="{Binding DriveNote}" Foreground="{DynamicResource WarnText}" TextWrapping="Wrap" />
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedWarning}" Foreground="{DynamicResource WarnText}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                               Margin="0,0,0,4" Visibility="{Binding ShowSelectedWarning, Converter={StaticResource BoolToVis}}" />
+                                    <TextBlock Text="{Binding DriveNote}" Foreground="{DynamicResource WarnText}" TextWrapping="Wrap" />
+                                </StackPanel>
                             </Border>
 
                             <!-- Progress and Stop are in the wipe's own card at the top of the page. -->

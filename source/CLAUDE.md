@@ -64,7 +64,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   Never test it against a real drive (Wine included). Free space wiping uses the same DoD patterns.
   Progress (Ted, 0.8.113) has its own card at the top of the page, above the scrolling area and only for the wipe: drive, pass/step,
   big bar and percent, elapsed and time left (from the wipe's `RunningTask`), Stop; afterwards the result until the next wipe or Refresh.
-  Drive check (Ted, 0.8.114, `DriveHealthCheck`/`SurfaceScan` in Core): Check the Drive Afterwards (default on) after each wipe and
+  Drive check (Ted, 0.8.114, `DriveHealthCheck`/`SurfaceScan` in Core): Check the Drive Afterwards (default off since 0.8.116) after each wipe and
   setup, and Check Drive (ticked drives, no erase), Entire Drive only. Health from `IntegrityCheck.ReadStorageRows` (MSFT_PhysicalDisk +
   StorageReliabilityCounter) plus ATA attributes 5/197/198 and PredictFailure from root\wmi, the disk's own System log events
   (`ParseDriveEvents(xml, disk)`, 30 days), and a read-only scan of \\.\PhysicalDriveN (GenericRead only, 1 MB aligned reads, failed
@@ -76,6 +76,14 @@ privacy first, local first, security paramount, convenient, practical and useful
   "firmware erase" (people read it as erasing the firmware); say it wipes the data and the drive keeps working. Open Reports opens
   Reports\Integrity Check (progress card after a check, Step 3, and Integrity Check's details card). A PaneRows divider ("wiper")
   sits between the progress card and the settings; it and the card hide together and the settings then span all rows.
+  Ted, 0.8.116: defaults (nothing on the page is saved) are Wipe Type Quick, Leave It Uninitialized off, Check the Drive Afterwards off,
+  Name the Drive on. The drive name follows the ticked drive's type (`WipeMethods.DefaultLabel`: Flash Drive, Hard Drive, USB Drive, SSD,
+  USB SSD; 11 characters at most) until typed over, never "Wiped"; unticking Name the Drive blanks the box and diskpart gets no label=.
+  `DiskFormat.SafeLabel`: 32 characters on NTFS, 11 on exFAT/FAT32, capitals on FAT32. Step 1's table grows to ~10 rows (MaxHeight 460)
+  and the wheel scrolls the page unless the table itself still has rows to scroll; a click anywhere on a row ticks it (not on the tick
+  box or a button, not after a drag); two or more ticked shows `WipeMethods.SelectedWarning` in Step 1 and Step 3. Each row's info button
+  opens `DriveDetailsWindow` (`DriveDetails` in Core: MSFT_PhysicalDisk/MSFT_Disk/MSFT_Partition, the Check Drive health report,
+  ParseDriveEvents; queries only, never opens the disk), with Copy.
 - Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
   drives Not Needed. Analyze (/A) only for hard drives. One drive at a time; needs administrator rights.
 - Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several

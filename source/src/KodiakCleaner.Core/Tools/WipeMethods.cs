@@ -50,9 +50,21 @@ public sealed record DiskFormat(string FileSystem, bool Gpt, string Label)
     public static readonly string[] FileSystems = ["exFAT", "FAT32", "NTFS"];
     public string PartitionStyle => Gpt ? "GPT" : "MBR";
 
-    /// <summary>Only letters, digits, spaces, hyphens and underscores, and no longer than the file system allows.</summary>
-    public string SafeLabel => new string(Label.Where(c => char.IsLetterOrDigit(c) || c is ' ' or '-' or '_')
-        .Take(FileSystem.Equals("NTFS", StringComparison.OrdinalIgnoreCase) ? 32 : 11).ToArray()).Trim();
+    /// <summary>
+    /// Only letters, digits, spaces, hyphens and underscores, and no longer than the file system allows (<see cref="LabelLimit"/>).
+    /// FAT32 keeps names in capitals, so it's shown that way too. Empty means the drive gets no name.
+    /// </summary>
+    public string SafeLabel
+    {
+        get
+        {
+            var safe = new string(Label.Where(c => char.IsLetterOrDigit(c) || c is ' ' or '-' or '_').Take(LabelLimit(FileSystem)).ToArray()).Trim();
+            return FileSystem.Equals("FAT32", StringComparison.OrdinalIgnoreCase) ? safe.ToUpperInvariant() : safe;
+        }
+    }
+
+    /// <summary>The longest drive name a file system takes: 32 characters on NTFS, 11 on FAT32 and exFAT.</summary>
+    public static int LabelLimit(string fileSystem) => fileSystem.Equals("NTFS", StringComparison.OrdinalIgnoreCase) ? 32 : 11;
 }
 
 public static class WipeMethods
@@ -135,6 +147,22 @@ public static class WipeMethods
         };
         return $"Recommended for a {name}: {f.PartitionStyle} with {f.FileSystem}, which {why}.";
     }
+
+    /// <summary>
+    /// The drive name suggested when a drive is ticked (Ted, 0.8.116; it used to be "Wiped" for every drive): what the drive is, in
+    /// 11 characters or fewer so FAT32 and exFAT keep all of it.
+    /// </summary>
+    public static string DefaultLabel(MediaKind kind, bool removable) => kind switch
+    {
+        MediaKind.FlashDrive => "Flash Drive",
+        MediaKind.HardDrive => removable ? "USB Drive" : "Hard Drive",
+        MediaKind.Ssd or MediaKind.NvmeSsd => removable ? "USB SSD" : "SSD",
+        _ => removable ? "USB Drive" : "Data Drive",
+    };
+
+    /// <summary>The warning under the drive list once two or more drives are ticked (Ted, 0.8.116); null for none or one.</summary>
+    public static string? SelectedWarning(int ticked) => ticked < 2 ? null
+        : $"{ticked} Drives Selected: all {ticked} will be erased, one after another.";
 
     public static string Name(WipeMethod m) => m switch
     {

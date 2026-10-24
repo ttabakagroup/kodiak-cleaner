@@ -480,6 +480,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         // Open Reports (Ted, 0.8.115): every drive check is saved there; the folder is made if it isn't there yet.
         OpenReportsCommand = new RelayCommand(() => Elevation.OpenFolder(ReportsFolder));
         UseRecommendedCommand = new RelayCommand(UseRecommended, () => !IsBusy && IsCustomFormat);
+        // Drive Details (Ted, 0.8.116): the info button on each row; read-only, so it works for every drive, wipeable or not.
+        DetailsCommand = new RelayCommand<WipeDiskRow>(row => DriveDetailsWindow.Show(row.Disk));
         foreach (var (label, value) in new[] { ("Free Space Only", false), ("Entire Drive", true) })
             Modes.Add(new Choice<bool>(label, value, !value, v => { EntireDrive = v; }));
         foreach (var m in new[] { WipeMethod.Zeros, WipeMethod.Dod3, WipeMethod.Dod7, WipeMethod.Pass30 })
@@ -509,7 +511,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public List<Choice<string>> FileSystemChoices { get; } = new();
     public List<Choice<bool>> StyleChoices { get; } = new();
 
-    private WipeLevel _level = WipeLevel.Secure;
+    // Quick is the default (Ted, 0.8.116); nothing on this page is saved, so every visit starts from these defaults.
+    private WipeLevel _level = WipeLevel.Quick;
     /// <summary>Quick (partition data only), Thorough (one pass or built-in secure erase) or Secure (the chosen passes or built-in secure erase).</summary>
     public WipeLevel Level
     {
@@ -544,15 +547,57 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public bool FormatEnabled => !LeaveUninitialized;
 
     private string _fileSystem = "NTFS";
-    public string FileSystem { get => _fileSystem; private set { Set(ref _fileSystem, value); OnRecommendChanged(); } }
+    public string FileSystem { get => _fileSystem; private set { Set(ref _fileSystem, value); OnRecommendChanged(); OnPropertyChanged(nameof(LabelLimit)); } }
 
     private bool _gpt = true;
     public bool Gpt { get => _gpt; private set { Set(ref _gpt, value); OnRecommendChanged(); } }
 
-    private string _label = "Wiped";
-    public string Label { get => _label; set => Set(ref _label, value); }
+    // The suggested name follows the ticked drive's type until it's typed over (Ted, 0.8.116; it used to be "Wiped").
+    private string _label = WipeMethods.DefaultLabel(MediaKind.Unknown, removable: true);
+    private bool _labelTyped;
+    /// <summary>The drive name as typed (kept while Name the Drive is off, so ticking it again brings it back).</summary>
+    public string Label
+    {
+        get => _label;
+        set
+        {
+            _labelTyped = true;
+            SetLabel(value);
+        }
+    }
 
-    private DiskFormat? Format => LeaveUninitialized ? null : new DiskFormat(FileSystem, Gpt, Label);
+    private void SetLabel(string value)
+    {
+        Set(ref _label, value, nameof(Label));
+        OnPropertyChanged(nameof(LabelBox));
+    }
+
+    /// <summary>What the Drive Name box shows: the name, or nothing while Name the Drive is off.</summary>
+    public string LabelBox
+    {
+        get => NameDrive ? Label : "";
+        set { if (NameDrive) Label = value; }
+    }
+
+    private bool _nameDrive = true;
+    /// <summary>
+    /// Name the Drive (Ted, 0.8.116), on by default: the drive gets the name in the box. Off: the box is blank and the drive gets
+    /// no name, so Windows shows it as "USB Drive" or "Local Disk".
+    /// </summary>
+    public bool NameDrive
+    {
+        get => _nameDrive;
+        set
+        {
+            Set(ref _nameDrive, value);
+            OnPropertyChanged(nameof(LabelBox));
+        }
+    }
+
+    /// <summary>The longest name the chosen file system takes, for the box's MaxLength.</summary>
+    public int LabelLimit => DiskFormat.LabelLimit(FileSystem);
+
+    private DiskFormat? Format => LeaveUninitialized ? null : new DiskFormat(FileSystem, Gpt, NameDrive ? Label : "");
 
     private WipeDisk? _recommendedFor;
     private DiskFormat? _recommended;
@@ -562,6 +607,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     {
         _recommendedFor = d;
         _recommended = WipeMethods.Recommended(d.Kind, d.Removable, d.Size, Label);
+        if (!_labelTyped) SetLabel(WipeMethods.DefaultLabel(d.Kind, d.Removable));
         foreach (var c in StyleChoices) c.IsRecommended = c.Value == _recommended.Gpt;
         foreach (var c in FileSystemChoices) c.IsRecommended = c.Value == _recommended.FileSystem;
         UseRecommended();
@@ -604,6 +650,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public ICommand CheckCommand { get; }
     /// <summary>Opens Reports\Integrity Check in File Explorer, where each drive check's report is saved (Ted, 0.8.115).</summary>
     public ICommand OpenReportsCommand { get; }
+    /// <summary>Opens Drive Details for a row: model, serial number, layout, health report and logged errors (Ted, 0.8.116).</summary>
+    public ICommand DetailsCommand { get; }
 
     private static string ReportsFolder => Path.Combine(Settings.Data.Reports, "Integrity Check");
 
@@ -641,9 +689,9 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     /// <summary>Reads the last pass back and compares every byte (the DoD standard's verification step).</summary>
     public bool Verify { get => _verify; set => Set(ref _verify, value); }
 
-    private bool _checkAfterwards = true;
+    private bool _checkAfterwards; // off by default (Ted, 0.8.116)
     /// <summary>
-    /// Check the Drive Afterwards (Ted, 0.8.114): after the wipe and setup, each drive gets the same health check as Check Drive.
+    /// Check the Drive Afterwards (Ted, 0.8.114; off by default since 0.8.116): after the wipe and setup, each drive gets the same health check as Check Drive.
     /// When the wipe already read its last pass back, that counts as the surface test and the sectors aren't read again.
     /// </summary>
     public bool CheckAfterwards { get => _checkAfterwards; set => Set(ref _checkAfterwards, value); }
@@ -771,6 +819,19 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     private string _listNote = "";
     public string ListNote { get => _listNote; private set => Set(ref _listNote, value); }
 
+    /// <summary>How many drives are ticked; two or more shows <see cref="SelectedWarning"/> (Ted, 0.8.116).</summary>
+    public int TickedCount => Disks.Count(d => d.IsChecked);
+    public string? SelectedWarning => WipeMethods.SelectedWarning(TickedCount);
+    public bool ShowSelectedWarning => SelectedWarning is not null;
+
+    private void OnTickedChanged()
+    {
+        OnPropertyChanged(nameof(AllChecked));
+        OnPropertyChanged(nameof(TickedCount));
+        OnPropertyChanged(nameof(SelectedWarning));
+        OnPropertyChanged(nameof(ShowSelectedWarning));
+    }
+
     public bool? AllChecked
     {
         get => Disks.Any(d => d.CanWipe) && Disks.Where(d => d.CanWipe).All(d => d.IsChecked) ? true : Disks.Any(d => d.IsChecked) ? null : false;
@@ -815,7 +876,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     };
 
     private string AfterText => Format is { } f
-        ? $"Afterwards: one {f.PartitionStyle} partition, formatted {f.FileSystem}" + (f.SafeLabel.Length > 0 ? $" and named {f.SafeLabel}." : ".")
+        ? $"Afterwards: one {f.PartitionStyle} partition, formatted {f.FileSystem}" + (f.SafeLabel.Length > 0 ? $" and named {f.SafeLabel}." : ", with no name.")
         : "Afterwards: no partitions and no MBR or GPT at all. Windows will ask to initialize it, like a new drive.";
 
     private async Task RefreshAsync()
@@ -845,12 +906,12 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                 row.PropertyChanged += (_, e) =>
                 {
                     if (e.PropertyName != nameof(WipeDiskRow.IsChecked)) return;
-                    OnPropertyChanged(nameof(AllChecked));
+                    OnTickedChanged();
                     if (row.IsChecked) Recommend(row.Disk);
                 };
                 Disks.Add(row);
             }
-            OnPropertyChanged(nameof(AllChecked));
+            OnTickedChanged();
             ListNote = problem is not null ? "Drives couldn't be read: " + problem
                 : Disks.Count == 0 ? "No drives found."
                 : Disks.Any(d => d.CanWipe) ? "" : "Only drives Windows or Kodiak Cleaner need are attached. Plug in the drive you want to erase and press Refresh.";
