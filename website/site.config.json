@@ -302,9 +302,9 @@
   },
   "linux": {
     "appimage": "KodiakCleanerLinux-AppImage.zip",
-    "appimageSize": "666 KB",
+    "appimageSize": "688 KB",
     "deb": "KodiakCleanerLinux-DEB.zip",
-    "debSize": "209 KB"
+    "debSize": "226 KB"
   },
   "mac": {
     "dmg": "KodiakCleanerMac.dmg",

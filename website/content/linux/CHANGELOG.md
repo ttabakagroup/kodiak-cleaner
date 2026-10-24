@@ -1,5 +1,15 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.19 Dev] - 2026-10-24
+
+### Drive Wiper
+- New Entire Drive mode beside Free Space Only, like the Windows edition: tick whole drives to erase before you give them away. Each drive shows its type (Hard Drive, SSD, NVMe SSD or Flash Drive), size, mount points, the method it will get and its status. Drives that hold Linux (/, /boot, /boot/efi, /home, /usr, /var), swap, your home folder or Kodiak Cleaner, or that are part of LVM, RAID or an open encrypted drive, can't be ticked, and say why.
+- Wipe Type: Quick removes the partition tables and boot sectors only; Thorough writes zeros over hard drives and flash drives; Secure uses your choice of 1 Pass (Zeros), DoD 3 Passes, DoD 7 Passes or 30 Passes, and Verify the Last Pass reads every byte back. SSD and NVMe drives get their own firmware erase on Thorough and Secure (nvme-cli's crypto or block erase; a secure discard on other SSDs); a drive that offers none is overwritten with random data instead, and Kodiak Cleaner says so.
+- After Wiping: Leave It Uninitialized Like a New Drive, or one partition (GPT or MBR) formatted exFAT, FAT32, NTFS or ext4 (only the ones whose tools are installed) with the name you choose. Ticking a drive picks the recommended format for its type, shown above the choices with why, and marked Recommended: flash drives MBR with FAT32 (32 GB or smaller) or exFAT, other USB drives GPT with exFAT, SSDs and internal hard drives GPT with ext4. Change it and Use Recommended puts it back. The choices stay visible but grayed out while the drive is to be left uninitialized. MBR stops at 2 TB and FAT32 at 32 GB.
+- Three checks before anything is erased: a summary, then each drive's name typed in, then ERASE. One administrator password for the whole batch, and every drive is checked again as administrator right before it's erased (still the same drive, still allowed).
+- Progress shows the pass, the percentage, time elapsed and time left. Stop works, and a stopped drive still has its partition data removed. If setting the drive up afterwards fails, the reason is shown, and a drive that won't take GPT is set up as MBR. Each erase is noted in the activity log.
+- Free Space Only's Cancel is now Stop, like the Windows edition.
+
 ## [0.8.18 Dev] - 2026-10-24
 
 ### Accessibility
