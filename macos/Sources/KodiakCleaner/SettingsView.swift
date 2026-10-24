@@ -23,12 +23,43 @@ struct SettingsView: View {
             (.terms, "Terms of Use", "doc.text"),
         ]
         if AppInfo.hasDeveloperTools { list.append((.developer, "Developer", "hammer")) }
-        return list
+        guard model.settings.settingsSort == "a-z" else { return list }
+        // A to Z sorts the pages under each heading; the headings keep their place.
+        var sorted: [(SettingsPage?, String, String)] = []
+        var group: [(SettingsPage?, String, String)] = []
+        for entry in list {
+            if entry.0 == nil {
+                sorted += group.sorted { $0.1.localizedCaseInsensitiveCompare($1.1) == .orderedAscending }
+                group = []
+                sorted.append(entry)
+            } else {
+                group.append(entry)
+            }
+        }
+        return sorted + group.sorted { $0.1.localizedCaseInsensitiveCompare($1.1) == .orderedAscending }
     }
+
+    /// Sort By (Ted, 2026-10-23, as in the Windows edition): Default keeps General first; A to Z sorts each heading's pages.
+    static let sorts = [("default", "Default"), ("a-z", "A to Z")]
 
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 3) {
+                Menu {
+                    ForEach(SettingsView.sorts, id: \.0) { key, label in
+                        Button {
+                            model.settings.settingsSort = key
+                        } label: {
+                            if model.settings.settingsSort == key { Label(label, systemImage: "checkmark") } else { Text(label) }
+                        }
+                    }
+                } label: {
+                    Text("Sort By: \(SettingsView.sorts.first { $0.0 == model.settings.settingsSort }?.1 ?? "Default")")
+                }
+                .menuStyle(.button)
+                .kcButton(.secondary)
+                .fixedSize()
+                .padding(.bottom, 4)
                 ForEach(Array(entries.enumerated()), id: \.offset) { _, entry in
                     if let page = entry.0 {
                         Button { model.settingsPage = page } label: { Label(entry.1, systemImage: entry.2).labelStyle(SidebarLabelStyle()) }
@@ -192,8 +223,18 @@ private struct AppearanceSettings: View {
             }
         }
         Card(title: "Color Scheme") {
-            HStack(spacing: 10) {
+            // The tiles wrap onto a second line in a narrow window instead of being cut off.
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 240), spacing: 10, alignment: .top)],
+                      alignment: .leading, spacing: 10) {
                 ForEach(Themes.schemeOrder, id: \.self) { key in schemeTile(key) }
+            }
+            // Ted's reasons for each color scheme, as in the Windows edition.
+            Rectangle().fill(theme.line).frame(height: 1).padding(.vertical, 6)
+            Text("Why These Colors").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
+            ForEach(Themes.schemeOrder, id: \.self) { key in
+                Text("\(Text(Themes.schemeNames[key]!).bold()) \(Themes.schemeReasons[key]!)")
+                    .font(theme.body(12)).foregroundStyle(theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         Card(title: "Light or Dark") {
@@ -228,7 +269,7 @@ private struct AppearanceSettings: View {
                 if locked { Chip(text: "Supporter Theme", icon: "lock.fill") }
             }
             .padding(12)
-            .frame(width: 190, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .frame(minHeight: 96, alignment: .topLeading)
             .background(RoundedRectangle(cornerRadius: theme.radius).fill(chosen ? theme.accentTint : theme.surface))
             .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(chosen ? theme.accent : theme.controlBorder, lineWidth: chosen ? 2 : 1))

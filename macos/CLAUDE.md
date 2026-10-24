@@ -58,6 +58,11 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   into `detailFields` (an extension at the end of Triggers.swift, outside the groupNames block the Title Case check reads).
 
 ## Interface
+- Lists (Ted, 2026-10-23/24, same as Windows and Linux): rows with tick boxes take `.tickDragRow` and their LazyVStack
+  `.tickDragOutline` (Components.swift `TickDrag`): drag paints ticks under an accent outline. Ticks change in one step per
+  batch (`AppModel.paint`, `selectAll`, Set operations), never by re-reading every row per tick; new tools do the same.
+  Every list says what it shows while empty or loading. Cmd+F (`findRequest`) focuses the page's search field.
+- Settings Sort By (`settingsSort`): Default or A to Z, sorting each heading's pages.
 - Colors only in `Sources/KodiakCore/Themes.swift` (the standard's exact tokens, same tables as Linux) and turned into SwiftUI
   colors in `Sources/KodiakCleaner/Theme.swift`. Pages use theme names only; `tests/check_source.py` fails on any other color.
 - Accents in the standard's order: scheme's own, macOS (follows the Mac's accent color; the Mac's equivalent of the Windows

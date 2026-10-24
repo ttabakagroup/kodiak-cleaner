@@ -5,6 +5,8 @@ import SwiftUI
 struct TriggersView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.theme) private var theme
+    @FocusState private var searchFocused: Bool
+    @StateObject private var drag = TickDrag()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -13,6 +15,7 @@ struct TriggersView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "magnifyingglass").foregroundStyle(theme.muted)
                     TextField("Search", text: $model.triggerSearch, prompt: Text("Search")).textFieldStyle(.plain).foregroundStyle(theme.text)
+                        .focused($searchFocused)
                 }
                 .padding(.horizontal, 10).padding(.vertical, 6)
                 .frame(width: 220)
@@ -45,6 +48,7 @@ struct TriggersView: View {
         .padding(.top, 28)
         .padding(.bottom, 18)
         .onAppear { if !model.triggersLoaded { model.loadTriggers() } }
+        .onChange(of: model.findRequest) { searchFocused = true }
         .onChange(of: model.settings.hideProtected) { model.loadTriggers() }
         .onChange(of: model.settings.showSystemTriggers) { model.loadTriggers() }
     }
@@ -90,12 +94,23 @@ struct TriggersView: View {
                         .overlay(alignment: .bottom) { Rectangle().fill(theme.rowLine).frame(height: 1) }
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                             TriggerRow(item: item, alternate: index % 2 == 1)
+                                .tickDragRow(item.id, drag: drag, isTicked: { model.triggerSelection.contains($0) },
+                                             apply: { ids, on in
+                                                 let allowed = ids.filter { id in
+                                                     model.triggers.contains { $0.id == id && $0.canToggle && !$0.isProtected }
+                                                 }
+                                                 if on { model.triggerSelection.formUnion(allowed) }
+                                                 else { model.triggerSelection.subtract(allowed) }
+                                             })
                         }
                     }
-                    if model.triggersLoaded && shown.isEmpty {
+                    if !model.triggersLoaded {
+                        Caption("Looking for triggers…").padding(24)
+                    } else if shown.isEmpty {
                         Caption(model.triggerFilter == "look" ? "Nothing needs a look right now." : "Nothing matches.").padding(24)
                     }
                 }
+                .tickDragOutline(drag, theme: theme)
             }
             .scrollContentBackground(.hidden)
         }

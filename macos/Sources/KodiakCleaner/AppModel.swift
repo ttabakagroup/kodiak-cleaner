@@ -41,6 +41,7 @@ final class AppModel: ObservableObject {
         didSet {
             // A Supporter (a code just entered, or the Developer page's preview) never gets the donation reminder.
             if settings.showDonationPrompt && plan.isSupporter { settings.showDonationPrompt = false }
+            if settings.selected != oldValue.selected { selectedCache = nil }
             if settings != oldValue { settings.save() }
         }
     }
@@ -61,6 +62,8 @@ final class AppModel: ObservableObject {
     @Published var working: String?
     @Published var showAdvanced = false
     @Published var cleanerSearch = ""
+    /// Goes up each time Find (Cmd+F) is picked; the page on screen moves to its search box.
+    @Published var findRequest = 0
     @Published var summary = ""
 
     // Triggers
@@ -189,8 +192,15 @@ final class AppModel: ObservableObject {
 
     // MARK: Cleaner
 
+    /// Built once per change, not for every row each time the list is drawn (Ted, 2026-10-24: ticking never re-reads
+    /// the whole list; Select All and Select None change it in one step).
+    private var selectedCache: Set<String>?
+
     var selected: Set<String> {
-        Set(settings.selected ?? Cleaner.catalog().filter(\.enabledByDefault).map(\.id))
+        if let selectedCache { return selectedCache }
+        let set = Set(settings.selected ?? Cleaner.catalog().filter(\.enabledByDefault).map(\.id))
+        selectedCache = set
+        return set
     }
 
     func setSelected(_ id: String, _ on: Bool) {
@@ -222,6 +232,18 @@ final class AppModel: ObservableObject {
     @Published var sortSnapshot: Set<String>?
 
     func resortTicked() { sortSnapshot = selected }
+
+    /// Ticks or unticks several rows in one step (a drag over the tick boxes). Like Select All, items with a caution
+    /// are never ticked this way: they ask first, one at a time.
+    func paint(_ ids: [String], _ on: Bool) {
+        var set = selected
+        for id in ids {
+            guard let target = targets.first(where: { $0.id == id }) else { continue }
+            if on && !target.warning.isEmpty { continue }
+            if on { set.insert(id) } else { set.remove(id) }
+        }
+        if set != selected { settings.selected = set.sorted() }
+    }
 
     func selectAll(_ on: Bool) {
         var set = selected
