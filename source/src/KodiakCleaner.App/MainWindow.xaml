@@ -187,16 +187,18 @@
                 </DockPanel>
                 <!-- Favorites stay put at the top (Ted, 2026-10-23); only the Tools list below them scrolls. -->
                 <StackPanel x:Name="FavoritesZone" DockPanel.Dock="Top" Background="Transparent">
-                    <TextBlock Text="Favorites" Style="{StaticResource GroupHeading}" Margin="24,0,0,6"
+                    <!-- Same size as the Tools heading below it (Ted, 0.8.110): the Tools label is the toggle's own content, so it takes the
+                         window's 14 rather than the template's 12. -->
+                    <TextBlock Text="Favorites" Style="{StaticResource GroupHeading}" FontSize="14" Margin="24,0,0,6"
                                Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}" />
                     <ItemsControl x:Name="FavoritesList" ItemsSource="{Binding FavoritePages}" ItemTemplate="{StaticResource NavItem}" KeyboardNavigation.TabNavigation="Once" />
                     <!-- Everything unpinned: say how to pin something (a drop here pins too). -->
                     <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="24,0,22,4"
                                Text="Right-click a tool and pick Pin to Favorites, or drag it here."
                                Visibility="{Binding ShowFavoritesHint, Converter={StaticResource BoolToVis}}" />
-                    <!-- Tools start open (Ted, 0.8.11); click the heading to fold them away. Collapsed, a line stands in for it. -->
-                    <Border Height="1" Margin="22,10,22,8" Background="{DynamicResource Line}"
-                            Visibility="{Binding SidebarCollapsed, Converter={StaticResource BoolToVis}}" />
+                    <!-- Tools start open (Ted, 0.8.11); click the heading to fold them away. A line always separates Favorites from Tools
+                         (Ted, 0.8.110); collapsed, it stands in for the heading. -->
+                    <Border Height="1" Margin="22,10,22,2" Background="{DynamicResource Line}" />
                     <ToggleButton Style="{StaticResource GroupToggle}" IsChecked="{Binding ToolsExpanded}"
                                   Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}"
                                   ToolTip="Show or hide the tools" AutomationProperties.Name="Tools">

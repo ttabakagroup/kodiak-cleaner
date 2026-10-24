@@ -23,12 +23,13 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!-- The same ring for sidebar items, drawn around the highlight (NavButton's Bd, inset 10,1) rather than the item's full width (Ted, 0.8.35). -->
+    <!-- The same ring for sidebar items, drawn around the highlight (NavButton's Bd, inset 10,1) rather than the item's full width (Ted, 0.8.35). It stays inside the
+         item's own height, so the edge of the scrolling Tools list or the line above Settings never cuts it off (Ted, 0.8.110). -->
     <Style x:Key="NavFocusVisual">
         <Setter Property="Control.Template">
             <Setter.Value>
                 <ControlTemplate>
-                    <Border Margin="6,-3" BorderThickness="2" BorderBrush="{DynamicResource FocusRing}" CornerRadius="{DynamicResource Radius}"
+                    <Border Margin="8,0" BorderThickness="2" BorderBrush="{DynamicResource FocusRing}" CornerRadius="{DynamicResource Radius}"
                             SnapsToDevicePixels="True" />
                 </ControlTemplate>
             </Setter.Value>

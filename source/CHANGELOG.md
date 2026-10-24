@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.110 Dev] - 2026-10-24
+
+### Sidebar
+- A line now separates Favorites from Tools, and the Favorites heading is the same size as the Tools heading.
+- The keyboard focus ring on a sidebar page now fits inside its row, so it's no longer cut off at the bottom of the scrolling Tools list or by the line above Settings.
+
 ## [0.8.109 Dev] - 2026-10-24
 
 ### Settings
