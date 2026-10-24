@@ -1,5 +1,36 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.16 Dev] - 2026-10-24
+
+### All Lists
+- Drag to select: hold the mouse button anywhere on a list and drag to highlight every row you pass. An outline in your accent color follows the mouse the whole time, and dragging past the top or bottom keeps scrolling. Ctrl-click and Shift-click highlight several rows too.
+- Drag over tick boxes: press a tick box and drag across the others, and every box you pass gets the same tick. Space ticks or unticks every highlighted row at once.
+- Right-click menus and buttons act on every highlighted row when nothing is ticked (for example Large Files' Move to Trash, Triggers' Turn Off, and Restore in Triggers History).
+- Every list says what it shows while it's empty.
+- Ticking is instant on long lists: Select All, Clear, Check All and Keep Newest or Oldest no longer freeze Duplicate Finder, Large Files or Empty Folders with thousands of rows (Select All on 15,000 rows went from about two minutes to a tenth of a second). The ticked count and size update as a running total.
+
+### Everywhere
+- Ctrl+F jumps to the search box on any page that has one.
+- Draggable dividers: where a page has two areas side by side or one above the other, the grip between them can be dragged to give either more room. It's between the Cleaner's items and results, Disk Analyzer's folders and largest files, the Triggers and Programs lists and their details, Duplicate Finder's options and results, Hash Checker's hashes and files, and the Settings list and its pages. The grip turns your accent color under the mouse, Kodiak Cleaner remembers where you left it, a double-click puts it back, and Reset All Settings puts them all back.
+- Hover details now use your color scheme, so their text is always readable.
+
+### Sidebar
+- The Cleaning heading is now Favorites, which stays put while the tools scroll. Pin any page to Favorites by right-clicking it or dragging it there, and drag or right-click to reorder or unpin. Reset Tools Order under the tools puts everything back A to Z.
+- Settings > General > Sidebar: Favorites Order (Default Order or A to Z) and Restore Default Order (Cleaner, Triggers, Programs and Scheduled Cleaning back at the top).
+
+### Settings
+- Sort By at the top of the Settings list: Default (General first) or A to Z.
+- Appearance: Why These Colors, Ted's reasons for Honey, Classic, Glacier and Lagoon, under the color schemes. The scheme tiles now wrap in a narrow window instead of pushing the page sideways.
+
+### Tools
+- New Hash Checker: add or drop files (or folders) to see their MD5, SHA-1, SHA-256, SHA-384 and SHA-512, worked out in one read. Paste hashes from a download page or load a checksum file (.sha256, .md5, SHA256SUMS and others): every file shows Verified, Doesn't Match or Not in the List, and a loaded list adds the files it names. Find a file by name or any part of a hash, copy any hash, open a file's details (double-click, or straight away when you drop one file), Create Hash File saves name.sha256 beside a file, and Save Checksum File writes a list sha256sum can check.
+
+### Duplicate Finder
+- New Check All button: ticks every copy except one in each set, keeping the copy without "Copy" or (1) in its name, outside Downloads, and the oldest. Nothing is removed until you click Remove Selected.
+- Remove To: send removed copies to the Trash or move them to a folder you choose. Each move gets its own dated folder, sorted by the files' old folders, with Duplicate Report.csv listing the copy that stayed and where each duplicate was.
+- Restore puts any moved duplicate back where it was.
+- Clearer layout: Summary, Actions and Results each have their own place.
+
 ## [0.8.15 Dev] - 2026-10-23
 
 ### Interface

@@ -1,18 +1,5 @@
 # Kodiak Cleaner for Mac Changelog
 
-## [0.8.11 Dev] - 2026-10-24
-
-### Added
-- **Lists:** drag over tick boxes. Press on a row in the Cleaner or Triggers list and drag up or down: an outline in your accent color follows the mouse, and every row it passes gets the same tick. Items with a caution still ask first, one at a time.
-- **Find:** Cmd+F (Edit > Find) jumps to the search box on the Cleaner and Triggers pages.
-- **Settings:** Sort By at the top of the Settings list: Default (General first) or A to Z.
-- **Appearance:** Why These Colors, Ted's reasons for Honey, Classic, Glacier and Lagoon, under the color schemes.
-
-### Changed
-- **Appearance:** the color scheme tiles wrap in a narrow window instead of running off the side.
-- **Triggers:** the list says "Looking for triggers…" while it loads.
-- **Lists:** ticking never re-reads the whole list, so Select All, Select None and long drags stay instant.
-
 ## [0.8.10 Dev] - 2026-10-23
 
 ### Changed
