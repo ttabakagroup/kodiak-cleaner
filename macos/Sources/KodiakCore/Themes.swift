@@ -104,6 +104,13 @@ public enum Themes {
     public static let schemeBlurbs = ["honey": "Warm cream and gold", "classic": "Crisp white and blue", "glacier": "Calm blue-grey",
                                       "lagoon": "Deep blue and clear water"]
     public static let supporterSchemes: Set<String> = ["classic", "glacier", "lagoon"]
+    /// Ted's reasons for each scheme (Settings > Appearance > Why These Colors), word for word as in the Windows edition.
+    public static let schemeReasons = [
+        "honey": "is inspired by the bear behind Kodiak Cleaner. Its warm golds and creams are part of the Kodiak Cleaner brand.",
+        "classic": "is a timeless choice for supporters: crisp white and blue that show a little class without getting in the way.",
+        "glacier": "is my thank-you to supporters, with cool, calm blues inspired by the quiet beauty of glacier ice.",
+        "lagoon": "is another thank-you to supporters: fresh and clear like shallow water, with ocean blues and aqua, and deep water at night in dark mode.",
+    ]
 
     /// Accent colors for everyone, in the standard's fixed order after the scheme's own accent (""). "macOS" follows
     /// the accent color chosen in System Settings, the Mac's equivalent of the standard's Windows swatch.

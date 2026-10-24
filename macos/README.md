@@ -24,6 +24,7 @@ Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a sma
 - **Apps and developer tools:** Mail downloads, CocoaPods, Discord, Go, Homebrew, npm, pip, Slack, Spotify, Visual Studio Code, Xcode and Yarn.
 - **Advanced Cleaning:** the entire cache folder, Xcode archives and device support files, behind a warning and never ticked for you.
 - Only apps found on the Mac are listed, and apps that are open are skipped. Analyze shows what is there before Clean removes anything.
+- Drag over the tick boxes to tick or untick many rows at once, and press Cmd+F to jump to the search box.
 - Sort By: Default (macOS first, apps A to Z, Advanced Cleaning last, ticked items first), A to Z, Largest Found, Last Cleaned, Most Space Freed.
 
 ### Triggers

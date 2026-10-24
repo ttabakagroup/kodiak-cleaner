@@ -11,6 +11,8 @@ public struct AppSettings: Codable, Equatable {
     public var launchCount = 0
     /// The donation reminder at startup. It can be turned off after 10 starts; Supporters never see it.
     public var showDonationPrompt = true
+    /// The Settings list's Sort By: "default" (General first, as listed) or "a-z" (Ted, 2026-10-23).
+    public var settingsSort = "default"
     // Cleaning
     public var confirmBeforeCleaning = true
     public var skipOpenPrograms = true
@@ -48,6 +50,8 @@ public struct AppSettings: Codable, Equatable {
         lastVersionRun = get(.lastVersionRun, d.lastVersionRun)
         launchCount = max(0, get(.launchCount, d.launchCount))
         showDonationPrompt = get(.showDonationPrompt, d.showDonationPrompt)
+        settingsSort = get(.settingsSort, d.settingsSort)
+        if !["default", "a-z"].contains(settingsSort) { settingsSort = "default" }
         confirmBeforeCleaning = get(.confirmBeforeCleaning, d.confirmBeforeCleaning)
         skipOpenPrograms = get(.skipOpenPrograms, d.skipOpenPrograms)
         keepRecentTempFiles = get(.keepRecentTempFiles, d.keepRecentTempFiles)

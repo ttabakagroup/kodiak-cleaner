@@ -25,6 +25,8 @@ struct AppIcon: View {
 struct CleanerView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.theme) private var theme
+    @FocusState private var searchFocused: Bool
+    @StateObject private var drag = TickDrag()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -44,6 +46,7 @@ struct CleanerView: View {
         .padding(.top, 28)
         .padding(.bottom, 18)
         .onAppear { model.resortTicked() }
+        .onChange(of: model.findRequest) { searchFocused = true }
     }
 
     private var toolbar: some View {
@@ -51,7 +54,7 @@ struct CleanerView: View {
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme.muted)
                 TextField("Search", text: $model.cleanerSearch, prompt: Text("Search"))
-                    .textFieldStyle(.plain).foregroundStyle(theme.text)
+                    .textFieldStyle(.plain).foregroundStyle(theme.text).focused($searchFocused)
             }
             .padding(.horizontal, 10).padding(.vertical, 6)
             .frame(width: 220)
@@ -115,12 +118,15 @@ struct CleanerView: View {
                         if grouped { GroupHeader(name: group.0, targets: group.1) }
                         ForEach(Array(group.1.enumerated()), id: \.element.id) { index, target in
                             CleanerRow(target: target, alternate: index % 2 == 1, showGroup: !grouped)
+                                .tickDragRow(target.id, drag: drag, isTicked: { model.selected.contains($0) },
+                                             apply: { model.paint($0, $1) })
                         }
                     }
                     if model.visibleTargets.isEmpty {
                         Caption("Nothing matches. Clear the search to see every item.").padding(24)
                     }
                 }
+                .tickDragOutline(drag, theme: theme)
             }
             .scrollContentBackground(.hidden)
         }

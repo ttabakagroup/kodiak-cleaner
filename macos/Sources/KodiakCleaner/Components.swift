@@ -370,3 +370,69 @@ func openLink(_ url: URL?) {
 func formatBytes(_ bytes: Int64) -> String {
     ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
 }
+
+/// Drag over tick boxes (Ted, 2026-10-23, as in the Windows and Linux editions): press on a row and drag up or down,
+/// and every row the accent outline passes gets the same tick, the opposite of the row the drag started on. Rows report
+/// where they are with `tickDragRow`; the list shows the outline with `tickDragOutline`. Ticks are applied in one step
+/// for each new row reached, never by re-reading the whole list.
+@MainActor
+final class TickDrag: ObservableObject {
+    static let space = "tick-rows"
+    /// Each drawn row's place in the list (not published: moving rows never redraws the page).
+    var frames: [String: CGRect] = [:]
+    @Published var outline: CGRect?
+    private var value = true
+    private var painted: Set<String> = []
+
+    func changed(from id: String, start: CGPoint, to point: CGPoint, isTicked: (String) -> Bool,
+                 apply: ([String], Bool) -> Void) {
+        if outline == nil {
+            value = !isTicked(id)
+            painted = []
+        }
+        let width = frames[id]?.width ?? 0
+        let top = min(start.y, point.y), bottom = max(start.y, point.y)
+        outline = CGRect(x: 4, y: top, width: max(width - 8, 0), height: max(bottom - top, 1))
+        let reached = frames.filter { $0.value.maxY > top && $0.value.minY < bottom && !painted.contains($0.key) }
+            .sorted { $0.value.minY < $1.value.minY }.map(\.key)
+        guard !reached.isEmpty else { return }
+        painted.formUnion(reached)
+        apply(reached, value)
+    }
+
+    func ended() {
+        outline = nil
+        painted = []
+    }
+}
+
+extension View {
+    /// A row the drag can tick: remembers where it is and starts a drag when pressed.
+    func tickDragRow(_ id: String, drag: TickDrag, isTicked: @escaping (String) -> Bool,
+                     apply: @escaping ([String], Bool) -> Void) -> some View {
+        self
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+            .onDisappear { drag.frames[id] = nil }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 6, coordinateSpace: .named(TickDrag.space))
+                    .onChanged { gesture in
+                        drag.changed(from: id, start: gesture.startLocation, to: gesture.location, isTicked: isTicked, apply: apply)
+                    }
+                    .onEnded { _ in drag.ended() })
+    }
+
+    /// The list the rows sit in: names the space they measure in and draws the accent outline above them.
+    func tickDragOutline(_ drag: TickDrag, theme: Theme) -> some View {
+        self
+            .coordinateSpace(.named(TickDrag.space))
+            .overlay(alignment: .topLeading) {
+                if let box = drag.outline {
+                    RoundedRectangle(cornerRadius: 3).fill(theme.accentTint)
+                        .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(theme.accent, lineWidth: 1))
+                        .frame(width: box.width, height: box.height)
+                        .offset(x: box.minX, y: box.minY)
+                        .allowsHitTesting(false)
+                }
+            }
+    }
+}

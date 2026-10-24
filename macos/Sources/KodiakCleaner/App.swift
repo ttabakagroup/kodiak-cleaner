@@ -32,6 +32,10 @@ struct KodiakCleanerApp: App {
                 Button("Settings…") { model.page = .settings }.keyboardShortcut(",")
             }
             CommandGroup(replacing: .newItem) {}
+            // Cmd+F jumps to the page's search box (Ted, 2026-10-23, as Ctrl+F in the Windows edition).
+            CommandGroup(after: .pasteboard) {
+                Button("Find") { model.findRequest += 1 }.keyboardShortcut("f")
+            }
             CommandGroup(replacing: .help) {
                 Button("Getting Started") { model.page = .home }
                 Button("Changelog") { model.showSettings(.changelog) }
