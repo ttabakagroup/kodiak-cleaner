@@ -308,6 +308,7 @@ final class DiskEraserTests: XCTestCase {
         XCTAssertNil(DiskEraser.errorLine("\n\n"))
         XCTAssertTrue(DiskEraser.needsAdministrator("Error: -69877: Couldn't open device"))
         XCTAssertTrue(DiskEraser.needsAdministrator("zeroDisk must be run as root"))
+        XCTAssertTrue(DiskEraser.needsAdministrator("Ownership of the affected disk is required"))
         XCTAssertFalse(DiskEraser.needsAdministrator("Error: -69888: Couldn't unmount disk"))
     }
 

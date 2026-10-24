@@ -104,7 +104,7 @@ public enum DiskEraser {
     public static func needsAdministrator(_ output: String) -> Bool {
         let text = output.lowercased()
         return ["must be run as root", "requires root", "root privileges", "not privileged", "permission denied",
-                "operation not permitted", "-69877", "couldn't open device", "could not open device"].contains { text.contains($0) }
+                "operation not permitted", "ownership", "-69877", "couldn't open device", "could not open device"].contains { text.contains($0) }
     }
 
     /// The line where diskutil says what went wrong.

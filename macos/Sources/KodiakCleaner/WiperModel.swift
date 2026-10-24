@@ -132,7 +132,7 @@ final class WiperModel: ObservableObject {
     var isCustomFormat: Bool { recommended.map { $0.gpt != gpt || $0.fileSystem != fileSystem } ?? false }
 
     var recommendTitle: String {
-        if let disk = recommendedFor { return "Recommended for \(disk.name) (\(disk.kindName), \(formatBytes(disk.size)))" }
+        if let disk = recommendedFor { return "Recommended for \(disk.mediaName) (\(disk.id), \(disk.kindName), \(formatBytes(disk.size)))" }
         return "Recommended Format for Each Drive Type"
     }
 

@@ -47,9 +47,7 @@ struct WiperView: View {
         .onAppear { if !wiper.loaded { wiper.refresh() } }
     }
 
-    private func label(_ text: String) -> some View {
-        Text(text).font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text).padding(.top, 10)
-    }
+    private func label(_ text: String) -> some View { FieldLabel(text: text) }
 
     // MARK: Free Space Only
 
@@ -116,6 +114,7 @@ struct WiperView: View {
         .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.accentTint))
         .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(theme.accent, lineWidth: 1))
         .opacity(wiper.leaveUninitialized ? 0.45 : 1)
+        .allowsHitTesting(!wiper.leaveUninitialized)
         .padding(.top, 6)
         // The format choices stay on screen, grayed out, while the drive is to be left uninitialized (Ted).
         VStack(alignment: .leading, spacing: 6) {
@@ -130,10 +129,10 @@ struct WiperView: View {
                                                   set: { wiper.fileSystem = WipeFileSystem(rawValue: $0) ?? .exfat }))
             label("Drive Name")
             TextField("Drive Name", text: $wiper.label, prompt: Text("Wiped")).kcField().frame(width: 220)
+                .opacity(wiper.leaveUninitialized ? 0.45 : 1)
             Caption("GPT suits drives over 2 TB and every Mac and modern PC; MBR suits older PCs and devices. APFS for Macs only, Mac OS Extended for older Macs, exFAT to share with Windows PCs, TVs and cameras, FAT32 for old devices (drives up to 32 GB).")
         }
         .disabled(wiper.leaveUninitialized || wiper.busy)
-        .opacity(wiper.leaveUninitialized ? 0.45 : 1)
     }
 
     // MARK: Progress
@@ -192,6 +191,17 @@ struct WiperView: View {
                 }
             }
         }
+    }
+}
+
+/// A field's name above its choices, greyed out with them.
+private struct FieldLabel: View {
+    var text: String
+    @Environment(\.theme) private var theme
+    @Environment(\.isEnabled) private var enabled
+
+    var body: some View {
+        Text(text).font(theme.body(13, weight: .semibold)).foregroundStyle(enabled ? theme.text : theme.muted).padding(.top, 10)
     }
 }
 
@@ -322,7 +332,7 @@ struct TypedCheckView: View {
             }
             Text(check.message).font(theme.body(13)).foregroundStyle(theme.text).fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
-            TextField(check.expected, text: $typed, prompt: Text(check.expected)).kcField().focused($focused)
+            TextField("", text: $typed).kcField().focused($focused)
                 .accessibilityLabel("Type \(check.expected)")
             HStack(spacing: 8) {
                 Spacer()
