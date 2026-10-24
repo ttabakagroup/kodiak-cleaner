@@ -214,6 +214,15 @@ td .chip { margin: 2px 4px 2px 0; }
 .dl-card ul { padding-left: 1.2em; margin: 0 0 22px; }
 .dl-card .btn { margin-top: auto; }
 .dl-card .file { margin-top: 12px; font-size: .86rem; color: var(--muted); overflow-wrap: anywhere; }
+/* The SmartScreen note under the Windows downloads: calm, not a warning. */
+.smartscreen-note { display: flex; gap: 16px; align-items: flex-start; margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--radius-card); padding: 20px 24px; }
+.smartscreen-note > svg { width: 24px; height: 24px; flex: none; margin-top: 3px; color: var(--accent-text); }
+.smartscreen-note > div { min-width: 0; }
+.smartscreen-note h3 { font-size: 1.15rem; margin: 0 0 8px; }
+.smartscreen-note p { margin: 0 0 10px; }
+.smartscreen-note p:last-child { margin-bottom: 0; }
+.smartscreen-note .hash code { display: inline-block; max-width: 100%; padding: .3em .55em; }
+@media (max-width: 560px) { .smartscreen-note { padding: 18px 16px; gap: 12px; } }
 
 /* Changelog */
 .log-layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; align-items: start; }

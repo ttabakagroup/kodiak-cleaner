@@ -449,7 +449,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
 
     public WiperViewModel()
     {
-        RefreshCommand = new RelayCommand(RefreshAsync, () => !IsBusy);
+        RefreshCommand = new RelayCommand(() => { ClearResult(); return RefreshAsync(); }, () => !IsBusy);
         WipeCommand = new RelayCommand(WipeAsync, () => !IsBusy && (EntireDrive ? Disks.Any(d => d.IsChecked) : SelectedDrive is not null));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
         UseRecommendedCommand = new RelayCommand(UseRecommended, () => !IsBusy && IsCustomFormat);
@@ -615,7 +615,94 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public double Percent { get => _percent; private set => Set(ref _percent, value); }
 
     private string _status = "";
+    /// <summary>The finished wipe's summary, shown in the progress card until the next wipe or Refresh.</summary>
     public string Status { get => _status; private set => Set(ref _status, value); }
+
+    // The wipe's own card at the top of the page (Ted, 0.8.113): only wipe progress, shown while wiping and, afterwards,
+    // with the result until the next wipe or Refresh. Reading the drives (IsBusy too) never shows it.
+    private bool _isWiping;
+    public bool IsWiping
+    {
+        get => _isWiping;
+        private set
+        {
+            Set(ref _isWiping, value);
+            OnPropertyChanged(nameof(ShowWipeCard));
+            OnPropertyChanged(nameof(HasResult));
+        }
+    }
+
+    private bool _hasResult;
+    /// <summary>A wipe has finished (or stopped) and its summary is still shown.</summary>
+    public bool HasResult
+    {
+        get => _hasResult && !IsWiping;
+        private set
+        {
+            Set(ref _hasResult, value);
+            OnPropertyChanged(nameof(ShowWipeCard));
+        }
+    }
+
+    public bool ShowWipeCard => IsWiping || HasResult;
+
+    private RunningTask? _wipeTask;
+    /// <summary>The running wipe's task: its percentage, and elapsed time and time left (the same as the corner card shows).</summary>
+    public RunningTask? WipeTask { get => _wipeTask; private set => Set(ref _wipeTask, value); }
+
+    private string _wipeTitle = "";
+    /// <summary>"Wiping Free Space", "Erasing Entire Drive"; afterwards "Wipe Finished", "Wipe Stopped" or "Wipe Failed".</summary>
+    public string WipeTitle { get => _wipeTitle; private set => Set(ref _wipeTitle, value); }
+
+    private string _wipeDrive = "";
+    /// <summary>The drive being wiped now: letter or disk, size, type, and "Drive 1 of 2" when several are erased.</summary>
+    public string WipeDrive { get => _wipeDrive; private set => Set(ref _wipeDrive, value); }
+
+    private string _wipeStep = "";
+    /// <summary>Where the wipe is: "Pass 2 of 3 (Ones): 12.0 GB of 40.0 GB", "Checking the last pass", "Dismounting volumes".</summary>
+    public string WipeStep { get => _wipeStep; private set => Set(ref _wipeStep, value); }
+
+    private string _wipeTime = "";
+    /// <summary>After the wipe: how long it took.</summary>
+    public string WipeTime { get => _wipeTime; private set => Set(ref _wipeTime, value); }
+
+    private string _wipeGlyph = "\uE74D";
+    public string WipeGlyph { get => _wipeGlyph; private set => Set(ref _wipeGlyph, value); }
+
+    /// <summary>Starts the card for a new wipe; the summary of the one before goes away.</summary>
+    private void BeginWipe(RunningTask task, string title, string drive)
+    {
+        Status = "";
+        WipeTime = "";
+        WipeStep = "Starting…";
+        WipeDrive = drive;
+        WipeTitle = title;
+        WipeGlyph = "\uE74D";
+        WipeTask = task;
+        HasResult = false;
+        IsWiping = true;
+    }
+
+    /// <summary>Turns the card into the result: what happened, the summary in <see cref="Status"/> and how long it took.</summary>
+    private void EndWipe(string title, string glyph)
+    {
+        if (WipeTask is { } t) WipeTime = "Took " + ProgressClock.FormatElapsed(DateTime.UtcNow - t.Started);
+        WipeTitle = title;
+        WipeGlyph = glyph;
+        WipeStep = "";
+        WipeTask = null;
+        HasResult = true;
+        IsWiping = false;
+    }
+
+    private void ClearResult()
+    {
+        if (IsWiping) return;
+        HasResult = false;
+        Status = "";
+    }
+
+    private const string GlyphDone = "\uE73E", GlyphStopped = "\uE711", GlyphFailed = "\uE783";
 
     private string _listNote = "";
     public string ListNote { get => _listNote; private set => Set(ref _listNote, value); }
@@ -740,8 +827,10 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
 
         IsBusy = true;
         using var task = BackgroundTasks.Start(this, chosen.Count == 1 ? "Erasing a Drive" : "Erasing Drives");
+        BeginWipe(task, chosen.Count == 1 ? $"Erasing Entire Drive ({level})" : $"Erasing Entire Drives ({level})", "");
         _cts = new CancellationTokenSource();
         var done = new List<string>();
+        int stopped = 0, failed = 0;
         try
         {
             foreach (var row in chosen)
@@ -753,15 +842,17 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                 task.Percent = chosen.Count > 1 ? 100.0 * index / chosen.Count : null;
                 Percent = 0;
                 row.Status = "Erasing…";
-                var status = new Progress<string>(s => Status = $"{d.Name}: {s}");
+                WipeDrive = $"{d.Name} · {row.Size} · {d.KindName} · {row.Method}" + (chosen.Count > 1 ? $" · Drive {index + 1} of {chosen.Count}" : "");
+                WipeStep = "Starting…";
+                var status = new Progress<string>(s => WipeStep = s);
                 var progress = new Progress<OverwriteProgress>(p =>
                 {
                     int steps = p.Passes + (Verify ? 1 : 0);
                     double fraction = p.Total > 0 ? (double)p.Done / p.Total : 0;
                     Percent = 100.0 * ((p.Verifying ? p.Passes : p.Pass - 1) + fraction) / steps;
-                    Status = p.Verifying
-                        ? $"{d.Name}: checking the last pass, {fraction:P0}"
-                        : $"{d.Name}: pass {p.Pass} of {p.Passes} ({p.PassName}), {fraction:P0}";
+                    WipeStep = p.Verifying
+                        ? $"Checking the last pass: {ByteSize.Format(p.Done)} of {ByteSize.Format(p.Total)}"
+                        : $"Pass {p.Pass} of {p.Passes} ({p.PassName}): {ByteSize.Format(p.Done)} of {ByteSize.Format(p.Total)}";
                     row.Status = $"{Percent:0}%";
                     task.Percent = (index + Percent / 100) * 100 / chosen.Count;
                 });
@@ -782,11 +873,13 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                 }
                 catch (OperationCanceledException)
                 {
+                    stopped++;
                     row.Status = "Stopped";
                     done.Add($"{d.Name} was stopped part way. It's only partly erased; erase it again before giving it away.");
                 }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
                 {
+                    failed++;
                     row.Status = "Not Erased";
                     done.Add($"{d.Name} wasn't erased: {e.Message}");
                 }
@@ -795,6 +888,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         }
         finally
         {
+            EndWipe(stopped > 0 ? "Wipe Stopped" : failed == 0 ? "Wipe Finished" : failed < done.Count ? "Some Drives Weren't Erased" : "Wipe Failed",
+                stopped > 0 ? GlyphStopped : failed > 0 ? GlyphFailed : GlyphDone);
             IsBusy = false;
             await RefreshAsync();
         }
@@ -812,32 +907,42 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
 
         IsBusy = true;
         using var task = BackgroundTasks.Start(this, "Wiping Free Space");
+        var method = Method;
+        var patterns = WipeMethods.Passes(method);
+        BeginWipe(task, "Wiping Free Space", $"{d.Display} · {ByteSize.Format(d.Free)} free · {d.KindName} · {WipeMethods.Name(method)}");
         Percent = 0;
+        task.Percent = 0;
         _cts = new CancellationTokenSource();
+        string title = "Wipe Finished", glyph = GlyphDone;
         try
         {
             var progress = new Progress<WipeProgress>(p =>
             {
                 Percent = p.BytesTotal > 0 ? 100.0 * ((p.Pass - 1) + (double)p.BytesWritten / p.BytesTotal) / p.Passes : 0;
                 task.Percent = Percent;
-                Status = $"Pass {p.Pass} of {p.Passes}: {ByteSize.Format(p.BytesWritten)} of {ByteSize.Format(p.BytesTotal)}";
+                var name = p.Pass >= 1 && p.Pass <= patterns.Count ? $" ({patterns[p.Pass - 1].Name})" : "";
+                WipeStep = $"Pass {p.Pass} of {p.Passes}{name}: {ByteSize.Format(p.BytesWritten)} of {ByteSize.Format(p.BytesTotal)}";
             });
             var root = d.Root;
             await Task.Run(() => FreeSpaceWiper.Wipe(root, passes, () => new DriveInfo(root).AvailableFreeSpace, progress, _cts.Token));
             Percent = 100;
-            Status = $"Free space on {d.Letter}: has been wiped with {WipeMethods.Name(Method)}.";
-            ActivityLog.Write("Drive Wiper", $"Wiped free space on {d.Letter}: with {WipeMethods.Name(Method)}");
+            task.Percent = 100;
+            Status = $"Free space on {d.Letter}: has been wiped with {WipeMethods.Name(method)}.";
+            ActivityLog.Write("Drive Wiper", $"Wiped free space on {d.Letter}: with {WipeMethods.Name(method)}");
         }
         catch (OperationCanceledException)
         {
+            (title, glyph) = ("Wipe Stopped", GlyphStopped);
             Status = "Stopped. Temporary filler files were removed.";
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
+            (title, glyph) = ("Wipe Failed", GlyphFailed);
             Status = "Wipe failed: " + e.Message;
         }
         finally
         {
+            EndWipe(title, glyph);
             IsBusy = false;
             await RefreshAsync();
         }

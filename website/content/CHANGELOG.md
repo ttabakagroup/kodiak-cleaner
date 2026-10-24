@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.113 Dev] - 2026-10-24
+
+### Drive Wiper
+- The wipe's progress now has its own section at the top of the page, so it's easy to see and stays in view while you scroll. It shows the drive being wiped, the pass (for example Pass 2 of 3, Ones) and how much is done, a large progress bar with the percentage, the time elapsed and the time left, and the Stop button.
+- When the wipe finishes or is stopped, the section shows what happened and how long it took, until the next wipe or Refresh.
+- The progress bar and status that sat under the Wipe button are gone, so progress shows in one place only. This works for both Free Space Only and Entire Drive.
+
 ## [0.8.112 Dev] - 2026-10-24
 
 ### Drive Wiper

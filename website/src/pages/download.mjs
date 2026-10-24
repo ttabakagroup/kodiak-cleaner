@@ -48,6 +48,16 @@ ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for ever
         <p class="file">${esc(d.portableFile)}</p>
       </div>
     </div>
+    <div class="smartscreen-note" id="smartscreen">
+      ${icons.shield}
+      <div>
+        <h3>If Windows SmartScreen Warns You</h3>
+        <p>Kodiak Cleaner is a free project, and its installer isn't code-signed yet. Until it is, Windows may show <strong>Windows protected your PC</strong> the first time you open the MSI. That's expected: click <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+        ${d.sha256 ? `<p>To check that your copy is the real one, open PowerShell in the folder you saved it to and run <code>Get-FileHash .\\${esc(d.installerFile)}</code>. The value under Hash should match the SHA-256 of version ${esc(latest.name)} (capital letters or not doesn't matter):</p>
+        <p class="hash"><code>${esc(d.sha256)}</code></p>` : ""}
+        <p class="muted">If ${d.sha256 ? "the hash doesn't match, or " : ""}Windows shows a different warning, please don't run it. <a href="/contact/">Contact us</a> and we'll help.</p>
+      </div>
+    </div>
     <p class="center muted mt">Both are a single self-contained program, so there's nothing else to install. Looking for an older version? See the <a href="/archive/">Archive</a> or <a href="${cfg.repo}/releases" rel="noopener">all releases on GitHub</a>.</p>
   </div>
 </section>
@@ -61,8 +71,8 @@ ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for ever
         <li>About 100 MB of free disk space</li>
         <li>Administrator rights only for system-wide items</li>
       </ul></div>
-      <div class="card reveal"><span class="icon">${icons.shield}</span><h3>Windows SmartScreen</h3><p>The installer isn't code-signed yet, so Windows may warn you the first time. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</p><p class="muted">You can read the source on GitHub and build it yourself.</p></div>
-      <div class="card reveal"><span class="icon">${icons.check}</span><h3>Check Your Download</h3><p>GitHub lists a SHA-256 checksum beside each file on the release page. To compare, run <code>Get-FileHash</code> on the file in PowerShell, or <code>sha256sum</code> on Linux.</p></div>
+      <div class="card reveal"><span class="icon">${icons.shield}</span><h3>Windows SmartScreen</h3><p>The installer isn't code-signed yet, so Windows may warn you the first time. Click <strong>More info</strong>, then <strong>Run anyway</strong>. <a href="#smartscreen">More about this warning</a>.</p><p class="muted">You can read the source on GitHub and build it yourself.</p></div>
+      <div class="card reveal"><span class="icon">${icons.check}</span><h3>Check Your Download</h3><p>${d.sha256 ? `The newest installer's SHA-256 is shown <a href="#smartscreen">under the downloads</a>. ` : ""}GitHub lists a SHA-256 checksum beside each file on the release page. To compare, run <code>Get-FileHash</code> on the file in PowerShell, or <code>sha256sum</code> on Linux.</p></div>
     </div>
   </div>
 </section>

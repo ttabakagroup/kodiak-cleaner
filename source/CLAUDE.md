@@ -62,6 +62,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   `DiskFormat` (GPT/MBR, NTFS/exFAT/FAT32, label; `FormatProblem` refuses MBR over 2 TB and FAT32 over 32 GB). Three checks:
   summary Warn, type each drive's disk number, type ERASE.
   Never test it against a real drive (Wine included). Free space wiping uses the same DoD patterns.
+  Progress (Ted, 0.8.113) has its own card at the top of the page, above the scrolling area and only for the wipe: drive, pass/step,
+  big bar and percent, elapsed and time left (from the wipe's `RunningTask`), Stop; afterwards the result until the next wipe or Refresh.
 - Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
   drives Not Needed. Analyze (/A) only for hard drives. One drive at a time; needs administrator rights.
 - Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several

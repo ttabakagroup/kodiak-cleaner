@@ -46,6 +46,8 @@ if (process.argv.includes("--sync")) {
 }
 
 const cfg = JSON.parse(read("site.config.json"));
+// The update file Kodiak Cleaner for Windows reads; its SHA-256 is shown on the Download page for checking the installer.
+const updateFile = existsSync(at("src", "static", "updates", "dev.json")) ? JSON.parse(read("src", "static", "updates", "dev.json")) : null;
 const releases = parseChangelog(read("content", "CHANGELOG.md"));
 if (!releases.length) throw new Error("No versions found in content/CHANGELOG.md");
 const latest = releases[0];
@@ -114,7 +116,12 @@ const ctx = {
     // website (/download/<file>, served from Cloudflare R2) instead of GitHub.
     const hosted = r === releases[0] && cfg.hostedDownloads;
     if (hosted) {
+      // Only when the update file is for this same version and this same file, so a stale checksum is never shown.
+      const msi = updateFile?.msi;
+      const sha256 = updateFile?.version === r.version && hosted.installer.endsWith(".msi") && msi?.url?.endsWith("/" + hosted.installer)
+        && /^[0-9a-f]{64}$/i.test(msi.sha256 || "") ? msi.sha256.toLowerCase() : null;
       return {
+        sha256,
         tag, installerFile: hosted.installer, portableFile: hosted.portable,
         installer: `/download/${hosted.installer}`,
         portable: `/download/${hosted.portable}`,
