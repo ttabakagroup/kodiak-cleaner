@@ -5,6 +5,16 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.114 Dev] - 2026-10-24
+
+### Drive Wiper
+- New: Check the Drive Afterwards (on by default, Entire Drive only). After the wipe and setup, each drive gets a health check, so you know whether it can be trusted with data again.
+- New: Check Drive button next to Wipe. It checks the ticked drives without erasing anything: the drive is only read, never written.
+- The check reads the drive's own health report through Windows (health and status, read and write errors it corrected and couldn't correct, wear on SSDs, temperature, hours powered on, and replaced, pending and unreadable sectors where the drive shares them), the disk errors Windows logged for that drive in the last 30 days, and then every sector of the drive, noting areas that can't be read or read unusually slowly.
+- When the wipe already read its last pass back (Verify the Last Pass), that write-and-read-back counts as the surface test and the drive isn't read a second time; the result says so.
+- Each drive gets a plain verdict, Healthy, Warning or Failing, with the reasons ("3 unreadable areas: this drive is failing; don't trust it with data") and the values behind them. Progress, the time left and Stop show in the progress section at the top of the page.
+- Each check is written to the activity log and saved as a report in Reports\Integrity Check. Checking needs administrator rights; without them Kodiak Cleaner offers to restart as administrator.
+
 ## [0.8.113 Dev] - 2026-10-24
 
 ### Drive Wiper

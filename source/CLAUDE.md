@@ -64,6 +64,13 @@ privacy first, local first, security paramount, convenient, practical and useful
   Never test it against a real drive (Wine included). Free space wiping uses the same DoD patterns.
   Progress (Ted, 0.8.113) has its own card at the top of the page, above the scrolling area and only for the wipe: drive, pass/step,
   big bar and percent, elapsed and time left (from the wipe's `RunningTask`), Stop; afterwards the result until the next wipe or Refresh.
+  Drive check (Ted, 0.8.114, `DriveHealthCheck`/`SurfaceScan` in Core): Check the Drive Afterwards (default on) after each wipe and
+  setup, and Check Drive (ticked drives, no erase), Entire Drive only. Health from `IntegrityCheck.ReadStorageRows` (MSFT_PhysicalDisk +
+  StorageReliabilityCounter) plus ATA attributes 5/197/198 and PredictFailure from root\wmi, the disk's own System log events
+  (`ParseDriveEvents(xml, disk)`, 30 days), and a read-only scan of \\.\PhysicalDriveN (GenericRead only, 1 MB aligned reads, failed
+  blocks re-read in 64 KB pieces, slow = 1 s or 10x typical and 200 ms, gives up at 100 areas or 64 MB). A wipe that verified its last
+  pass skips the scan (the read-back counts). Verdict Healthy/Warning/Failing with plain reasons, shown in the progress card, logged and
+  saved to Reports\Integrity Check. Never write during a check; a test keeps GenericWrite and writes out of DriveHealthCheck.cs.
 - Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
   drives Not Needed. Analyze (/A) only for hard drives. One drive at a time; needs administrator rights.
 - Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several

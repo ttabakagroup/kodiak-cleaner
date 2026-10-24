@@ -328,13 +328,7 @@ public static partial class IntegrityCheck
     [SupportedOSPlatform("windows")]
     public static List<DiskHealth> ReadDiskHealth()
     {
-        const string scope = @"root\Microsoft\Windows\Storage";
-        var disks = SystemDetails.Query("SELECT DeviceId, FriendlyName, MediaType, BusType, Size, HealthStatus FROM MSFT_PhysicalDisk", scope);
-        var counters = new Dictionary<string, Dictionary<string, object?>>();
-        foreach (var r in SystemDetails.Query(
-                     "SELECT DeviceId, Temperature, Wear, ReadErrorsUncorrected, WriteErrorsUncorrected, PowerOnHours FROM MSFT_StorageReliabilityCounter", scope))
-            if (SystemDetails.Text(r, "DeviceId") is { } id) counters[id] = r;
-
+        var (disks, counters) = ReadStorageRows();
         var list = new List<DiskHealth>();
         foreach (var d in disks.OrderBy(d => int.TryParse(SystemDetails.Text(d, "DeviceId"), out var n) ? n : int.MaxValue))
         {
@@ -356,6 +350,23 @@ public static partial class IntegrityCheck
                 SystemDetails.Health(health) ?? "Unknown", temp, wear, errors, hours, result, note));
         }
         return list;
+    }
+
+    /// <summary>
+    /// MSFT_PhysicalDisk rows and each disk's MSFT_StorageReliabilityCounter row by DeviceId (the counters need administrator
+    /// rights). Shared by Drive Health here and Drive Wiper's drive check (<see cref="DriveHealthCheck"/>).
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    internal static (List<Dictionary<string, object?>> Disks, Dictionary<string, Dictionary<string, object?>> Counters) ReadStorageRows()
+    {
+        const string scope = @"root\Microsoft\Windows\Storage";
+        var disks = SystemDetails.Query("SELECT DeviceId, FriendlyName, SerialNumber, MediaType, BusType, Size, HealthStatus, OperationalStatus FROM MSFT_PhysicalDisk", scope);
+        var counters = new Dictionary<string, Dictionary<string, object?>>();
+        foreach (var r in SystemDetails.Query(
+                     "SELECT DeviceId, Temperature, TemperatureMax, Wear, ReadErrorsUncorrected, WriteErrorsUncorrected, ReadErrorsCorrected, " +
+                     "WriteErrorsCorrected, PowerOnHours FROM MSFT_StorageReliabilityCounter", scope))
+            if (SystemDetails.Text(r, "DeviceId") is { } id) counters[id] = r;
+        return (disks, counters);
     }
 
     /// <summary>The same names Defrag and TRIM and Drive Wiper use: Hard Drive, SSD, NVMe SSD, Flash Drive.</summary>
@@ -420,11 +431,18 @@ public static partial class IntegrityCheck
     };
 
     /// <summary>Groups wevtutil's events (printed one after another, without a root) by source and event number, newest first.</summary>
-    public static List<DriveEventGroup> ParseDriveEvents(string xml)
+    public static List<DriveEventGroup> ParseDriveEvents(string xml) => ParseDriveEvents(xml, null);
+
+    /// <summary>
+    /// The same, keeping only events that name physical disk <paramref name="disk"/> (\Device\Harddisk1\DR1 in the message or
+    /// event data) when it's given. Controller and file system events that don't name a disk are left out then.
+    /// </summary>
+    public static List<DriveEventGroup> ParseDriveEvents(string xml, int? disk)
     {
         var groups = new Dictionary<(string, int), (int Count, DateTime Last, string Message)>();
-        foreach (var (provider, id, when, message) in Events(xml))
+        foreach (var (provider, id, when, message, data) in Events(xml))
         {
+            if (disk is { } n && !NamesDisk(message + " " + data, n)) continue;
             var key = (provider, id);
             if (groups.TryGetValue(key, out var g))
                 groups[key] = (g.Count + 1, when > g.Last ? when : g.Last, when > g.Last ? message : g.Message);
@@ -455,12 +473,16 @@ public static partial class IntegrityCheck
     /// <summary>Event 1201 = no errors, 1202 = errors found (other results are ignored).</summary>
     public static MemoryTestResult? ParseMemoryResult(string xml)
     {
-        foreach (var (_, id, when, _) in Events(xml))
+        foreach (var (_, id, when, _, _) in Events(xml))
             if (id is 1201 or 1202) return new MemoryTestResult(when, id == 1202);
         return null;
     }
 
-    private static IEnumerable<(string Provider, int Id, DateTime When, string Message)> Events(string xml)
+    /// <summary>"\Device\Harddisk1\DR1" or "Harddisk1" names disk 1 (and not disk 10).</summary>
+    public static bool NamesDisk(string text, int disk) =>
+        Regex.IsMatch(text, $@"\bHarddisk{disk}(?!\d)", RegexOptions.IgnoreCase) || Regex.IsMatch(text, $@"\bPhysicalDrive{disk}(?!\d)", RegexOptions.IgnoreCase);
+
+    private static IEnumerable<(string Provider, int Id, DateTime When, string Message, string Data)> Events(string xml)
     {
         XElement root;
         try { root = XElement.Parse("<Events>" + xml + "</Events>"); }
@@ -476,7 +498,8 @@ public static partial class IntegrityCheck
             var message = ev.Element(ns + "RenderingInfo")?.Element(ns + "Message")?.Value ?? "";
             message = Regex.Replace(message, @"\s+", " ").Trim();
             if (message.Length > 400) message = message[..400] + "…";
-            yield return (provider, id, DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime(), message);
+            var data = string.Join(" ", ev.Element(ns + "EventData")?.Elements().Select(e => e.Value) ?? []);
+            yield return (provider, id, DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime(), message, data);
         }
     }
 

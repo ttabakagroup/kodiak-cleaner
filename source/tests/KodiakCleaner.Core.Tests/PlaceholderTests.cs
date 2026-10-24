@@ -37,6 +37,7 @@ public class PlaceholderTests
         ["SettingsView.xaml: {Binding Palettes}"] = "Fixed color schemes.",
         ["SettingsView.xaml: {Binding Themes}"] = "Fixed Light, Dark and Match Device choices.",
         ["SettingsView.xaml: {Binding Source={StaticResource GroupedSections}}"] = "Fixed Settings sections.",
+        ["WiperView.xaml: {Binding HealthResults}"] = "Drive check verdicts in the progress card, hidden while empty.",
         ["WiperView.xaml: {Binding Modes}"] = "Fixed wipe types.",
         ["WiperView.xaml: {Binding LevelChoices}"] = "Fixed choices.",
         ["WiperView.xaml: {Binding MethodChoices}"] = "Fixed choices.",

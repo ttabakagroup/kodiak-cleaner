@@ -443,6 +443,15 @@ public sealed class WipeDiskRow : ObservableObject
     public string Status { get => _status; set => Set(ref _status, value); }
 }
 
+/// <summary>One drive's check result in the progress card: the drive, its verdict chip, the reasons and the facts behind them.</summary>
+public sealed class DriveCheckRow(string drive, DriveCheckResult result)
+{
+    public string Drive { get; } = drive;
+    public DriveCheckResult Result { get; } = result;
+    public string Tone => Result.Tone;
+    public bool HasReasons => Result.Reasons.Count > 0;
+}
+
 public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
 {
     private CancellationTokenSource? _cts;
@@ -452,6 +461,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         RefreshCommand = new RelayCommand(() => { ClearResult(); return RefreshAsync(); }, () => !IsBusy);
         WipeCommand = new RelayCommand(WipeAsync, () => !IsBusy && (EntireDrive ? Disks.Any(d => d.IsChecked) : SelectedDrive is not null));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
+        CheckCommand = new RelayCommand(CheckDisksAsync, () => !IsBusy && EntireDrive && Disks.Any(d => d.IsChecked));
         UseRecommendedCommand = new RelayCommand(UseRecommended, () => !IsBusy && IsCustomFormat);
         foreach (var (label, value) in new[] { ("Free Space Only", false), ("Entire Drive", true) })
             Modes.Add(new Choice<bool>(label, value, !value, v => { EntireDrive = v; }));
@@ -573,6 +583,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public ICommand RefreshCommand { get; }
     public ICommand WipeCommand { get; }
     public ICommand CancelCommand { get; }
+    /// <summary>Check Drive: the ticked drives' health check, without erasing anything (Ted, 0.8.114).</summary>
+    public ICommand CheckCommand { get; }
 
     private WipeableDrive? _selectedDrive;
     public WipeableDrive? SelectedDrive { get => _selectedDrive; set { Set(ref _selectedDrive, value); OnPropertyChanged(nameof(DriveNote)); } }
@@ -607,6 +619,21 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     private bool _verify = true;
     /// <summary>Reads the last pass back and compares every byte (the DoD standard's verification step).</summary>
     public bool Verify { get => _verify; set => Set(ref _verify, value); }
+
+    private bool _checkAfterwards = true;
+    /// <summary>
+    /// Check the Drive Afterwards (Ted, 0.8.114): after the wipe and setup, each drive gets the same health check as Check Drive.
+    /// When the wipe already read its last pass back, that counts as the surface test and the sectors aren't read again.
+    /// </summary>
+    public bool CheckAfterwards { get => _checkAfterwards; set => Set(ref _checkAfterwards, value); }
+
+    /// <summary>Each checked drive's verdict, shown in the progress card with the result until the next wipe, check or Refresh.</summary>
+    public ObservableCollection<DriveCheckRow> HealthResults { get; } = new();
+    public bool HasHealthResults => HealthResults.Count > 0;
+
+    private string _stopName = "Stop the Wipe";
+    /// <summary>The Stop button's name for screen readers: it stops a wipe or a check.</summary>
+    public string StopName { get => _stopName; private set => Set(ref _stopName, value); }
 
     private bool _isBusy;
     public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
@@ -673,6 +700,9 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     private void BeginWipe(RunningTask task, string title, string drive)
     {
         Status = "";
+        HealthResults.Clear();
+        OnPropertyChanged(nameof(HasHealthResults));
+        StopName = "Stop the Wipe";
         WipeTime = "";
         WipeStep = "Starting…";
         WipeDrive = drive;
@@ -700,9 +730,11 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         if (IsWiping) return;
         HasResult = false;
         Status = "";
+        HealthResults.Clear();
+        OnPropertyChanged(nameof(HasHealthResults));
     }
 
-    private const string GlyphDone = "\uE73E", GlyphStopped = "\uE711", GlyphFailed = "\uE783";
+    private const string GlyphDone = "\uE73E", GlyphStopped = "\uE711", GlyphFailed = "\uE783", GlyphWarning = "\uE7BA", GlyphCheck = "\uE9D9";
 
     private string _listNote = "";
     public string ListNote { get => _listNote; private set => Set(ref _listNote, value); }
@@ -808,7 +840,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         // Three checks (Ted): the summary, then each drive by its number, then the word ERASE.
         var level = WipeMethods.LevelName(Level);
         var list = string.Join("\n", chosen.Select(d => $"•  {d.Disk.Name} ({d.Size}, {d.Disk.KindName}, {d.Disk.Drives}): {d.Method}"));
-        if (!Dialogs.Warn($"{level} wipe of {(chosen.Count == 1 ? "this drive" : $"these {chosen.Count} drives")}?\n\n{list}\n\n{AfterText}",
+        if (!Dialogs.Warn($"{level} wipe of {(chosen.Count == 1 ? "this drive" : $"these {chosen.Count} drives")}?\n\n{list}\n\n{AfterText}" +
+                (CheckAfterwards ? "\nThen each drive's health is checked (Check the Drive Afterwards)." : ""),
                 "Check 1 of 3: Erase Entire Drive",
                 "Every file and every partition on them is deleted, and nothing can be recovered afterwards." +
                 (Level == WipeLevel.Quick ? " Quick only removes the partition data, so recovery tools might still find old files." : "")))
@@ -827,10 +860,12 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
 
         IsBusy = true;
         using var task = BackgroundTasks.Start(this, chosen.Count == 1 ? "Erasing a Drive" : "Erasing Drives");
-        BeginWipe(task, chosen.Count == 1 ? $"Erasing Entire Drive ({level})" : $"Erasing Entire Drives ({level})", "");
+        var wipeTitle = chosen.Count == 1 ? $"Erasing Entire Drive ({level})" : $"Erasing Entire Drives ({level})";
+        BeginWipe(task, wipeTitle, "");
         _cts = new CancellationTokenSource();
         var done = new List<string>();
-        int stopped = 0, failed = 0;
+        int stopped = 0, failed = 0, checkStopped = 0;
+        var verdicts = new List<DriveVerdict>();
         try
         {
             foreach (var row in chosen)
@@ -841,6 +876,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                 // A Quick wipe or a firmware erase doesn't say how far along it is; with several drives, each finished one counts.
                 task.Percent = chosen.Count > 1 ? 100.0 * index / chosen.Count : null;
                 Percent = 0;
+                (WipeTitle, WipeGlyph, StopName) = (wipeTitle, "\uE74D", "Stop the Wipe"); // the previous drive's check may have changed them
                 row.Status = "Erasing…";
                 WipeDrive = $"{d.Name} · {row.Size} · {d.KindName} · {row.Method}" + (chosen.Count > 1 ? $" · Drive {index + 1} of {chosen.Count}" : "");
                 WipeStep = "Starting…";
@@ -870,6 +906,22 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                             ? $". It's now an empty {f.PartitionStyle} drive formatted {f.FileSystem}{(r.NewLetter is { } l ? $" ({l})" : "")}."
                             : ". It has no partitions or MBR/GPT left; Windows will ask to initialize it, like a new drive.";
                     done.Add($"{d.Name} was {how}" + (r.Verified == true ? " and verified" : r.Verified == false ? $", but {r.Mismatches:N0} bytes didn't verify (the drive may be failing)" : "") + after);
+                    if (CheckAfterwards && !_cts.IsCancellationRequested)
+                    {
+                        // The wipe's read-back already wrote and read every sector, so it stands in for the surface scan.
+                        WipeTitle = $"Checking {d.Name}";
+                        var check = await RunCheckAsync(row, r.Verified is null ? null : new WipeReadBack(r.Mismatches), index, chosen.Count, task, _cts.Token);
+                        if (check is null)
+                        {
+                            checkStopped++;
+                            done[^1] += " Its check was stopped.";
+                        }
+                        else
+                        {
+                            verdicts.Add(check.Verdict);
+                            done[^1] += $" Drive check: {check.VerdictName}. {check.Summary}";
+                        }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -888,12 +940,113 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         }
         finally
         {
-            EndWipe(stopped > 0 ? "Wipe Stopped" : failed == 0 ? "Wipe Finished" : failed < done.Count ? "Some Drives Weren't Erased" : "Wipe Failed",
-                stopped > 0 ? GlyphStopped : failed > 0 ? GlyphFailed : GlyphDone);
+            EndWipe(stopped > 0 ? "Wipe Stopped" : checkStopped > 0 ? "Wipe Finished, Check Stopped"
+                    : failed == 0 ? "Wipe Finished" : failed < done.Count ? "Some Drives Weren't Erased" : "Wipe Failed",
+                stopped > 0 || checkStopped > 0 ? GlyphStopped : failed > 0 || verdicts.Contains(DriveVerdict.Failing) ? GlyphFailed
+                    : verdicts.Contains(DriveVerdict.Warning) ? GlyphWarning : GlyphDone);
             IsBusy = false;
             await RefreshAsync();
         }
         if (done.Count > 0) Dialogs.Info(string.Join("\n\n", done), "Drive Wiper");
+    }
+
+    /// <summary>Check Drive: the ticked drives' health report, logged errors and a read-only scan of every sector. Never writes.</summary>
+    private async Task CheckDisksAsync()
+    {
+        var chosen = Disks.Where(d => d.IsChecked && d.CanWipe).ToList();
+        if (chosen.Count == 0) return;
+        if (!Elevation.IsAdministrator)
+        {
+            Elevation.OfferRestart("Checking a drive reads every sector straight from the disk and asks it for its error counts, which needs administrator rights.");
+            return;
+        }
+
+        IsBusy = true;
+        using var task = BackgroundTasks.Start(this, chosen.Count == 1 ? "Checking a Drive" : "Checking Drives");
+        BeginWipe(task, chosen.Count == 1 ? "Checking Drive Health" : $"Checking Drive Health ({chosen.Count} Drives)", "");
+        StopName = "Stop the Check";
+        _cts = new CancellationTokenSource();
+        var verdicts = new List<DriveVerdict>();
+        bool stopped = false;
+        try
+        {
+            foreach (var row in chosen)
+            {
+                if (_cts.IsCancellationRequested) break;
+                var check = await RunCheckAsync(row, null, chosen.IndexOf(row), chosen.Count, task, _cts.Token);
+                if (check is null)
+                {
+                    stopped = true;
+                    break;
+                }
+                verdicts.Add(check.Verdict);
+            }
+            Status = verdicts.Count == 0 ? "The check was stopped before any drive was finished. Nothing was written."
+                : $"Checked {verdicts.Count} {(verdicts.Count == 1 ? "drive" : "drives")}" + (stopped ? " before the check was stopped" : "") +
+                  $". Nothing was written to {(verdicts.Count == 1 ? "it" : "them")}; a report is saved in Reports\\Integrity Check.";
+        }
+        finally
+        {
+            EndWipe(stopped ? "Check Stopped" : verdicts.Contains(DriveVerdict.Failing) ? "Check Finished: Problems Found"
+                    : verdicts.Contains(DriveVerdict.Warning) ? "Check Finished: Worth Watching" : "Check Finished",
+                stopped ? GlyphStopped : verdicts.Contains(DriveVerdict.Failing) ? GlyphFailed
+                    : verdicts.Contains(DriveVerdict.Warning) ? GlyphWarning : GlyphDone);
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// Checks one drive with the progress card showing the scan; adds its verdict to <see cref="HealthResults"/>, logs it and saves a
+    /// report under Reports\Integrity Check. Null when it was stopped.
+    /// </summary>
+    private async Task<DriveCheckResult?> RunCheckAsync(WipeDiskRow row, WipeReadBack? readBack, int index, int count, RunningTask task, CancellationToken ct)
+    {
+        var d = row.Disk;
+        row.Status = "Checking…";
+        WipeGlyph = GlyphCheck;
+        StopName = "Stop the Check";
+        WipeDrive = $"{d.Name} · {row.Size} · {d.KindName}" + (count > 1 ? $" · Drive {index + 1} of {count}" : "");
+        WipeStep = "Starting the check…";
+        Percent = 0;
+        // With the wipe's read-back standing in for the scan there's nothing to measure, so the bar just moves.
+        task.Percent = count > 1 ? 100.0 * index / count : readBack is null ? 0 : null;
+        var status = new Progress<string>(s => WipeStep = s);
+        var progress = new Progress<SurfaceProgress>(p =>
+        {
+            Percent = p.Total > 0 ? 100.0 * p.Done / p.Total : 0;
+            var found = (p.UnreadableAreas, p.SlowAreas) switch
+            {
+                (0, 0) => "",
+                var (bad, slow) => $" · {bad} unreadable, {slow} slow so far",
+            };
+            WipeStep = $"Reading every sector (nothing is written): {ByteSize.Format(p.Done)} of {ByteSize.Format(p.Total)}{found}";
+            task.Percent = (index + Percent / 100) * 100 / count;
+        });
+        try
+        {
+            var result = await DriveHealthCheck.CheckAsync(d.Number, readBack, status, progress, ct);
+            var name = $"{d.Name} ({row.Size}, {d.KindName})";
+            HealthResults.Add(new DriveCheckRow(name, result));
+            OnPropertyChanged(nameof(HasHealthResults));
+            row.Status = result.VerdictName;
+            ActivityLog.Write("Drive Wiper", $"Checked {name}: {result.VerdictName}" +
+                (result.Reasons.Count > 0 ? " (" + string.Join(" ", result.Reasons) + ")" : "") + (readBack is null ? "" : ", surface from the wipe's read-back"));
+            var verdict = result.Verdict switch
+            {
+                DriveVerdict.Healthy => IntegrityResult.Healthy,
+                DriveVerdict.Warning => IntegrityResult.Attention,
+                DriveVerdict.Failing => IntegrityResult.ProblemsFound,
+                _ => IntegrityResult.CouldNotCheck,
+            };
+            try { IntegrityCheck.SaveReport(Settings.Data.Reports, $"Drive Check Disk {d.Number}", name, DriveHealthCheck.ReportLines(name, result), verdict, DateTime.Now); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            row.Status = "Check Stopped";
+            return null;
+        }
     }
 
     private async Task WipeFreeSpaceAsync()

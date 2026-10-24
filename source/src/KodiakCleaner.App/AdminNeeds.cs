@@ -42,7 +42,7 @@ public sealed record AdminNeed(string[] Needs, string[] Faster)
         [typeof(ScheduledTasksViewModel)] = Need("Turning on, turning off, deleting and restoring Windows' tasks and tasks that run for all users."),
         [typeof(StartupViewModel)] = Need("Changing or removing startup entries and tasks for all users."),
         [typeof(SystemInfoViewModel)] = Need("A few details Windows shows only to administrators, such as the TPM and temperatures."),
-        [typeof(WiperViewModel)] = Need("Wiping an entire drive."),
+        [typeof(WiperViewModel)] = Need("Wiping an entire drive, and checking a drive's health (reading every sector, and its error counts)."),
     };
 
     /// <summary>The page's entry, or null when it works the same either way.</summary>
