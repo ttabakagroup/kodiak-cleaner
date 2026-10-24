@@ -51,4 +51,15 @@ public sealed class SidebarFavoritesTests
         Assert.Equal(new[] { "Registry", "Cleaner", "Hash Checker", "Disk Analyzer" }, SidebarFavorites.Arrange(saved, names, n => n, aToZ: false));
         Assert.Equal(new[] { "Cleaner", "Disk Analyzer", "Hash Checker", "Registry" }, SidebarFavorites.Arrange(saved, names, n => n, aToZ: true));
     }
+
+    [Fact]
+    public void Tools_are_A_to_Z_until_dragged_and_new_ones_go_last()
+    {
+        var titles = new Dictionary<string, string> { ["cleaner"] = "Cleaner", ["hash"] = "Hash Checker", ["disk"] = "Disk Analyzer", ["wiper"] = "Drive Wiper" };
+        var all = titles.Keys.ToList();
+        var favorites = new[] { "cleaner" };
+        Assert.Equal(new[] { "disk", "wiper", "hash" }, SidebarFavorites.ArrangeTools(all, favorites, null, k => titles[k]));
+        Assert.Equal(new[] { "hash", "disk", "wiper" }, SidebarFavorites.ArrangeTools(all, favorites, new[] { "hash", "cleaner", "gone" }, k => titles[k]));
+        Assert.Equal(new[] { "cleaner", "disk", "hash" }, SidebarFavorites.AToZ(new[] { "hash", "cleaner", "disk" }, k => titles[k]));
+    }
 }

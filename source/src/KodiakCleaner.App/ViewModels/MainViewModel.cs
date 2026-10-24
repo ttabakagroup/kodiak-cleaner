@@ -69,6 +69,7 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(SidebarCollapsed));
             OnPropertyChanged(nameof(ToolsExpanded));
             OnPropertyChanged(nameof(ToolsVisible));
+            OnPropertyChanged(nameof(ShowResetToolsOrder));
             OnPropertyChanged(nameof(SidebarLocked)); // re-sizes the sidebar (MainWindow.ApplySidebar)
             ArrangeSidebar(); // Favorites Order, Restore Default Order and Reset to Default
         };
@@ -123,7 +124,7 @@ public sealed class MainViewModel : ObservableObject
     private List<NavPage> Pinnable { get; } = new();
     /// <summary>Pinned at the top of the sidebar; they don't scroll (Ted, 2026-10-23).</summary>
     public ObservableCollection<NavPage> FavoritePages { get; } = new();
-    /// <summary>Everything not in Favorites, A to Z, in the scrolling list.</summary>
+    /// <summary>Everything not in Favorites, in the scrolling list: A to Z until tools are dragged into an order of their own.</summary>
     public ObservableCollection<NavPage> ToolPages { get; } = new();
     public ObservableCollection<NavPage> FooterPages { get; } = new();
     private IEnumerable<NavPage> AllPages => Pinnable.Concat(FooterPages);
@@ -131,6 +132,8 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>With nothing pinned, Favorites says how to pin something (not when collapsed to icons).</summary>
     public bool ShowFavoritesHint => FavoritePages.Count == 0 && !SidebarCollapsed;
     public bool FavoritesAToZ => Settings.Current.FavoritesAToZ;
+    /// <summary>Reset Tools Order shows under the open Tools list (not when collapsed to icons).</summary>
+    public bool ShowResetToolsOrder => ToolsExpanded && !SidebarCollapsed;
 
     private List<string> SavedFavorites() =>
         SidebarFavorites.Normalize(Settings.Current.Favorites, Pinnable.Select(p => p.Key).ToList());
@@ -141,7 +144,8 @@ public sealed class MainViewModel : ObservableObject
         var favorites = SavedFavorites();
         var byKey = Pinnable.ToDictionary(p => p.Key);
         Refill(FavoritePages, SidebarFavorites.Arrange(favorites, byKey, p => p.Title, Settings.Current.FavoritesAToZ));
-        Refill(ToolPages, Pinnable.Where(p => !favorites.Contains(p.Key)).OrderBy(p => p.Title, StringComparer.CurrentCultureIgnoreCase).ToList());
+        Refill(ToolPages, SidebarFavorites.ArrangeTools(byKey.Keys, favorites, Settings.Current.ToolsOrder, k => byKey[k].Title)
+            .Select(k => byKey[k]).ToList());
         foreach (var p in Pinnable) p.IsFavorite = favorites.Contains(p.Key);
         OnPropertyChanged(nameof(ShowFavoritesHint));
         OnPropertyChanged(nameof(FavoritesAToZ));
@@ -174,11 +178,48 @@ public sealed class MainViewModel : ObservableObject
         if (SidebarFavorites.Pin(favorites, page.Key, index)) SaveFavorites(favorites);
     }
 
-    public void Unpin(NavPage page)
+    /// <summary>Right-click › Unpin from Favorites, or a favorite dropped on Tools (at the place it was dropped, which gives Tools
+    /// an order of its own).</summary>
+    public void Unpin(NavPage page, int index = -1)
     {
         var favorites = SavedFavorites();
-        if (SidebarFavorites.Unpin(favorites, page.Key)) SaveFavorites(favorites);
+        if (!SidebarFavorites.Unpin(favorites, page.Key)) return;
+        if (index >= 0)
+        {
+            var tools = ToolPages.Select(p => p.Key).ToList();
+            tools.Insert(Math.Clamp(index, 0, tools.Count), page.Key);
+            Settings.Current.ToolsOrder = tools;
+        }
+        SaveFavorites(favorites);
     }
+
+    /// <summary>Move Up and Move Down on a tool, or a drag inside Tools (Ted, 2026-10-23): Tools keep that order from then on.</summary>
+    public void MoveTool(NavPage page, int index)
+    {
+        var tools = ToolPages.Select(p => p.Key).ToList();
+        if (!SidebarFavorites.Move(tools, page.Key, index)) return;
+        Settings.Current.ToolsOrder = tools;
+        Settings.Current.Save();
+        ArrangeSidebar();
+    }
+
+    public bool CanMoveTool(NavPage page, int by)
+    {
+        var at = ToolPages.IndexOf(page);
+        return at >= 0 && at + by >= 0 && at + by < ToolPages.Count;
+    }
+
+    /// <summary>Reset Tools Order, under the Tools list (Ted, 2026-10-23): Favorites and Tools back to A to Z. What's pinned stays pinned.</summary>
+    public ICommand ResetToolsOrderCommand => _resetToolsOrder ??= new RelayCommand(() =>
+    {
+        if (!Dialogs.Confirm("Put your Favorites and Tools back in A to Z order? Pinned tools stay in Favorites.")) return;
+        var byKey = Pinnable.ToDictionary(p => p.Key);
+        Settings.Current.Favorites = SidebarFavorites.AToZ(SavedFavorites(), k => byKey[k].Title);
+        Settings.Current.ToolsOrder = null;
+        Settings.Current.Save();
+        ArrangeSidebar();
+    });
+    private ICommand? _resetToolsOrder;
 
     /// <summary>Move Up and Move Down, or a drag inside Favorites. Only in the saved order; A to Z has no order to change.</summary>
     public void MoveFavorite(NavPage page, int index)
@@ -213,6 +254,7 @@ public sealed class MainViewModel : ObservableObject
             Settings.Current.Save();
             OnPropertyChanged();
             OnPropertyChanged(nameof(ToolsVisible));
+            OnPropertyChanged(nameof(ShowResetToolsOrder));
         }
     }
 
@@ -230,8 +272,10 @@ public sealed class MainViewModel : ObservableObject
             Settings.Current.Save();
             OnPropertyChanged();
             OnPropertyChanged(nameof(ToolsVisible));
+            OnPropertyChanged(nameof(ShowResetToolsOrder));
             OnPropertyChanged(nameof(ShowPaperclip));
             OnPropertyChanged(nameof(ShowFavoritesHint));
+            OnPropertyChanged(nameof(ShowResetToolsOrder));
         }
     }
 

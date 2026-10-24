@@ -176,11 +176,18 @@ public partial class MainWindow : Window
         else
         {
             menu.Items.Add(MenuEntry("Pin to Favorites", "\uE718", true, () => _vm.Pin(page)));
+            menu.Items.Add(new System.Windows.Controls.Separator());
+            menu.Items.Add(MenuEntry("Move Up", "\uE74A", _vm.CanMoveTool(page, -1), () => Move(page, -1)));
+            menu.Items.Add(MenuEntry("Move Down", "\uE74B", _vm.CanMoveTool(page, 1), () => Move(page, 1)));
         }
         menu.IsOpen = true;
     }
 
-    private void Move(NavPage page, int by) => _vm.MoveFavorite(page, _vm.FavoritePages.IndexOf(page) + by);
+    private void Move(NavPage page, int by)
+    {
+        if (page.IsFavorite) _vm.MoveFavorite(page, _vm.FavoritePages.IndexOf(page) + by);
+        else _vm.MoveTool(page, _vm.ToolPages.IndexOf(page) + by);
+    }
 
     private System.Windows.Controls.MenuItem MenuEntry(string header, string glyph, bool enabled, Action click, string? tip = null)
     {
@@ -199,68 +206,119 @@ public partial class MainWindow : Window
         return item;
     }
 
+    // Dragging in the sidebar follows the mouse itself instead of using Windows drag and drop: run as administrator, the window's
+    // drop target is handed to Explorer file drops (ElevatedFileDrop), which left the sidebar unable to drag (fixed 2026-10-23).
     private Point _dragStart;
-    private NavPage? _dragPage;
+    private NavPage? _pressed, _dragging;
 
     private void Nav_PreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
-        _dragPage = PageOf(sender) is { CanPin: true } page ? page : null;
+        _pressed = PageOf(sender) is { CanPin: true } page ? page : null;
         _dragStart = e.GetPosition(this);
     }
 
     private void Nav_PreviewMouseMove(object sender, MouseEventArgs e)
     {
-        if (_dragPage is null || e.LeftButton != MouseButtonState.Pressed || sender is not DependencyObject source) return;
+        if (_pressed is null || _dragging is not null || e.LeftButton != MouseButtonState.Pressed) return;
         var moved = e.GetPosition(this) - _dragStart;
         if (Math.Abs(moved.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(moved.Y) < SystemParameters.MinimumVerticalDragDistance) return;
-        var page = _dragPage;
-        _dragPage = null;
-        DragDrop.DoDragDrop(source, new DataObject(typeof(NavPage), page), DragDropEffects.Move | DragDropEffects.Copy);
+        _dragging = _pressed;
+        _pressed = null;
+        _dragging.IsDragging = true; // outlined in the accent color while it moves
+        Mouse.OverrideCursor = Cursors.SizeAll;
+        // The window takes the mouse until the button is let go, so the entry's own click never fires.
+        PreviewMouseMove += Drag_Move;
+        PreviewMouseLeftButtonUp += Drag_Up;
+        CaptureMouse();
+        LostMouseCapture += Drag_Lost; // after taking it, since the entry losing the mouse to the window bubbles up here too
+        e.Handled = true;
     }
 
-    private static NavPage? Dragged(DragEventArgs e) => e.Data.GetData(typeof(NavPage)) as NavPage;
+    private static bool IsOver(FrameworkElement zone) =>
+        zone.IsVisible && new Rect(0, 0, zone.ActualWidth, zone.ActualHeight).Contains(Mouse.GetPosition(zone));
 
-    /// <summary>Where a drop at the mouse would land in Favorites: before the first entry whose middle is below the mouse.</summary>
-    private int FavoriteIndexAt(DragEventArgs e)
+    /// <summary>Where a drop at the mouse would land in a list: before the first entry whose middle is below the mouse.</summary>
+    private static int IndexAt(System.Windows.Controls.ItemsControl list, int count)
     {
-        for (var i = 0; i < _vm.FavoritePages.Count; i++)
-            if (FavoritesList.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement row &&
-                e.GetPosition(row).Y < row.ActualHeight / 2)
+        for (var i = 0; i < count; i++)
+            if (list.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement row && row.IsVisible &&
+                Mouse.GetPosition(row).Y < row.ActualHeight / 2)
                 return i;
-        return _vm.FavoritePages.Count;
+        return count;
     }
 
-    // A favorite moves as it's dragged; a tool is pinned where it's dropped.
-    private void Favorites_DragOver(object sender, DragEventArgs e)
+    /// <summary>Tints Favorites or Tools while something from the other one is dragged over it (null clears both).</summary>
+    private void ShowDropZone(Panel? zone)
     {
-        e.Handled = true;
-        if (Dragged(e) is not { } page) { e.Effects = DragDropEffects.None; return; }
-        if (!page.IsFavorite) { e.Effects = DragDropEffects.Copy; return; }
-        e.Effects = _vm.FavoritesAToZ ? DragDropEffects.None : DragDropEffects.Move;
-        if (_vm.FavoritesAToZ) return;
-        var at = FavoriteIndexAt(e);
-        var from = _vm.FavoritePages.IndexOf(page);
-        _vm.MoveFavorite(page, at > from ? at - 1 : at);
+        var tint = (System.Windows.Media.Brush)FindResource("AccentTint");
+        FavoritesZone.Background = zone == FavoritesZone ? tint : System.Windows.Media.Brushes.Transparent;
+        ToolsDropArea.Background = zone == ToolsDropArea ? tint : System.Windows.Media.Brushes.Transparent;
     }
 
-    private void Favorites_Drop(object sender, DragEventArgs e)
+    // Within Favorites or Tools the entry moves as it's dragged; into the other list, the target list is tinted until it's let go.
+    private void Drag_Move(object sender, MouseEventArgs e)
     {
+        if (_dragging is not { } page) return;
         e.Handled = true;
-        if (Dragged(e) is { IsFavorite: false } page) _vm.Pin(page, FavoriteIndexAt(e));
+        if (IsOver(FavoritesZone))
+        {
+            ShowDropZone(page.IsFavorite ? null : FavoritesZone);
+            if (!page.IsFavorite || _vm.FavoritesAToZ) return;
+            var at = IndexAt(FavoritesList, _vm.FavoritePages.Count);
+            var from = _vm.FavoritePages.IndexOf(page);
+            _vm.MoveFavorite(page, at > from ? at - 1 : at);
+        }
+        else if (IsOver(ToolsZone))
+        {
+            ShowDropZone(page.IsFavorite ? ToolsDropArea : null);
+            ScrollNearEdge();
+            if (page.IsFavorite || !_vm.ToolsVisible) return;
+            var at = IndexAt(ToolsList, _vm.ToolPages.Count);
+            var from = _vm.ToolPages.IndexOf(page);
+            _vm.MoveTool(page, at > from ? at - 1 : at);
+        }
+        else ShowDropZone(null);
     }
 
-    // A favorite dragged down into the Tools list is unpinned.
-    private void Tools_DragOver(object sender, DragEventArgs e)
+    /// <summary>Dragging near the top or bottom of the Tools list scrolls it, so a tool can go anywhere in a long list.</summary>
+    private void ScrollNearEdge()
     {
-        e.Handled = true;
-        e.Effects = Dragged(e) is { IsFavorite: true } ? DragDropEffects.Move : DragDropEffects.None;
+        const double edge = 28, step = 12;
+        var y = Mouse.GetPosition(ToolsZone).Y;
+        if (y < edge) ToolsZone.ScrollToVerticalOffset(ToolsZone.VerticalOffset - step);
+        else if (y > ToolsZone.ActualHeight - edge) ToolsZone.ScrollToVerticalOffset(ToolsZone.VerticalOffset + step);
     }
 
-    private void Tools_Drop(object sender, DragEventArgs e)
+    // A tool let go over Favorites is pinned there; a favorite let go over Tools is unpinned there.
+    private void Drag_Up(object sender, MouseButtonEventArgs e)
     {
+        if (_dragging is not { } page) return;
         e.Handled = true;
-        if (Dragged(e) is { IsFavorite: true } page) _vm.Unpin(page);
+        if (!page.IsFavorite && IsOver(FavoritesZone))
+            _vm.Pin(page, IndexAt(FavoritesList, _vm.FavoritePages.Count));
+        else if (page.IsFavorite && IsOver(ToolsZone))
+            _vm.Unpin(page, _vm.ToolsVisible ? IndexAt(ToolsList, _vm.ToolPages.Count) : -1);
+        EndDrag();
+    }
+
+    /// <summary>The window lost the mouse (another program, a pop-up): the drag ends where it is.</summary>
+    private void Drag_Lost(object sender, MouseEventArgs e)
+    {
+        if (e.OriginalSource == this) EndDrag();
+    }
+
+    private void EndDrag()
+    {
+        if (_dragging is not { } page) return;
+        _dragging = null;
+        page.IsDragging = false;
+        PreviewMouseMove -= Drag_Move;
+        PreviewMouseLeftButtonUp -= Drag_Up;
+        LostMouseCapture -= Drag_Lost;
+        if (IsMouseCaptured) ReleaseMouseCapture();
+        Mouse.OverrideCursor = null;
+        ShowDropZone(null);
     }
 
     /// <summary>Command-line / jump list arguments, e.g. --page=registry.</summary>

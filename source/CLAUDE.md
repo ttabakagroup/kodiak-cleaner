@@ -33,7 +33,9 @@ privacy first, local first, security paramount, convenient, practical and useful
   The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
   Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.
 - About is its own sidebar entry under Settings (Ted's choice), not a page inside the Settings sidebar.
-- Settings sidebar (2026-10-23 review): pages A to Z under each heading ("", Personalize, Protect, Help, Developer); Settings opens on General.
+- Settings sidebar (2026-10-23 review; Sort By, Ted 2026-10-23): headings "", Personalize, Protect, Help, Developer. Its Sort By dropdown
+  is Default (General first, then the most used pages, the order of the `Add` calls) or A to Z under each heading (`SettingsSort` in the ini);
+  Settings opens on General.
   Help has FAQ (`faq.md`, questions A to Z): keep its answers true to the code whenever a feature changes. The Developer page is titled
   Developer Tools. A test (`StaysCurrentTests`) checks the order, that Getting Started lists every sidebar page, and that every
   Backups folder is a `DataFolders.BackupKinds` entry named in both privacy policies (never `Path.Combine(Settings.Data.Backups, "...")`).
@@ -70,8 +72,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   labels set in code (prompts, folder pickers, Sort By, table values like All Users). Getting Started's Features list stays A to Z and current.
 - Main sidebar: Favorites at the top (Ted, 2026-10-23; was the Cleaning heading), fixed, with only the Tools list below scrolling. Default
   favorites, always in this order: Cleaner, Registry, Startup, Programs (`SidebarFavorites.Default`). Any page in Favorites or Tools can be
-  pinned or unpinned (right-click, or drag in or out of Favorites) and moved (Move Up/Down, or drag); pinned pages leave Tools, which stays
-  A to Z. Saved as `[General] Favorites=<page keys>` and `FavoritesOrder=Default|AToZ`; Settings > General > Sidebar has Favorites Order
+  pinned or unpinned (right-click, or drag in or out of Favorites) and moved (Move Up/Down, or drag); pinned pages leave Tools, which is
+  A to Z until a tool is dragged (`ToolsOrder=<page keys>`; Reset Tools Order under the last tool sorts Favorites and Tools A to Z, Ted
+  2026-10-23). Sidebar dragging tracks the mouse itself, never OLE drag and drop: as administrator `ElevatedFileDrop` revokes the window's
+  drop target. Saved as `[General] Favorites=<page keys>` and `FavoritesOrder=Default|AToZ`; Settings > General > Sidebar has Favorites Order
   (Default Order or A to Z) and Restore Default Order; Reset to Default resets them. Tools open by default (Ted, 0.8.11; folding is remembered as `ToolsOpen`).
   Bottom right of the sidebar: the paperclip (on its side = locked at the default 310 width, upright = drag the edge, 240 to 480)
   above the collapse button (icons only, 84 wide, bigger centered icons; every nav entry has its name as a tooltip).

@@ -5,6 +5,15 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.100 Dev] - 2026-10-24
+
+### Sidebar
+- Drag tools to reorder them, into Favorites, or out of Favorites back to Tools; the row you drag is highlighted. Reset Tools Order under the tools puts everything back A to Z.
+- Fixed: dragging in the sidebar didn't work when Kodiak Cleaner was running as administrator.
+
+### Settings
+- Sort By dropdown at the top of the Settings list: Default (General first, then the pages you use most) or A to Z.
+
 ## [0.8.99 Dev] - 2026-10-23
 
 ### Everywhere

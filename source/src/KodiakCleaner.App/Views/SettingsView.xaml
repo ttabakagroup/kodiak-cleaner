@@ -590,6 +590,12 @@
                                  PreviewKeyDown="Search_PreviewKeyDown" AutomationProperties.Name="Search Settings" />
                 <TextBlock Text="No settings match." Style="{StaticResource Caption}" Margin="4,8,0,0"
                            Visibility="{Binding NoMatches, Converter={StaticResource BoolToVis}}" />
+                <!-- Sort By (Ted, 2026-10-23): Default puts General first, then the most used pages; A to Z sorts each heading. -->
+                <DockPanel Margin="4,10,0,0">
+                    <TextBlock Text="Sort By" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <ComboBox ItemsSource="{Binding SectionSorts}" SelectedItem="{Binding SectionSort}" HorizontalAlignment="Left" MinWidth="120"
+                              AutomationProperties.Name="Sort Settings By" />
+                </DockPanel>
             </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Source={StaticResource GroupedSections}}" Focusable="False">

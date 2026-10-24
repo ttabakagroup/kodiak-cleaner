@@ -59,7 +59,8 @@ public sealed class SettingsSection : ObservableObject
 /// <summary>
 /// Options &amp; Settings: the app's own pages (Advanced, Cleaning, General, Updates), then Personalize
 /// (Appearance, Supporter), Protect (Application, Registry), Help (Contact &amp; Feedback, FAQ, Privacy Policy, Terms of Use,
-/// Why It Was Made) and, in development builds only, Developer Tools. Pages are A to Z under each heading. About has its own sidebar entry under Settings in the main window.
+/// Why It Was Made) and, in development builds only, Developer Tools. Pages are in the Default order (General first, then the
+/// most used) or A to Z under each heading, as picked in the sidebar's Sort By dropdown. About has its own sidebar entry under Settings in the main window.
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
 {
@@ -90,25 +91,28 @@ public sealed class SettingsViewModel : ObservableObject
         InstallUpdateCommand = new RelayCommand(InstallUpdateAsync, () => _available is not null && !IsCheckingUpdates);
         BuildChoices();
 
-        // Each heading's pages are A to Z (Ted's rule; a test checks). Settings still opens on General.
-        Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need, and Reset to Default.", this);
-        Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
+        // Default order (Ted, 2026-10-23): General first, then the pages people open most, under each heading. Sort By › A to Z
+        // shows each heading's pages alphabetically instead (SortSections). Settings still opens on General.
         Add("general", "General", "\uE713", "", "How Kodiak Cleaner fits into Windows.", this);
+        Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
         Add("updates", "Updates", "\uE895", "", "Get new versions of Kodiak Cleaner.", this);
+        Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need, and Reset to Default.", this);
         Add("appearance", "Appearance", "\uE790", "Personalize", "Color scheme, accent color and light or dark mode.", this);
         Add("supporter", "Supporter", "\uEB51", "Personalize", "Say thanks and unlock a few extras.", SupporterPage);
-        Add("application", "Application", "\uE74C", "Protect", "Kodiak Cleaner's settings file, backups and activity log.", this);
         Add("backups", "Registry", "\uE8F1", "Protect", "Registry backups: made before every fix, or whenever you choose.", this);
-        Add("feedback", "Contact & Feedback", "\uE8BD", "Help", "Tell us what's working and what isn't.", Feedback);
+        Add("application", "Application", "\uE74C", "Protect", "Kodiak Cleaner's settings file, backups and activity log.", this);
         Add("faq", "FAQ", "\uE897", "Help", "Plain answers to common questions about Kodiak Cleaner.", Faq);
+        Add("feedback", "Contact & Feedback", "\uE8BD", "Help", "Tell us what's working and what isn't.", Feedback);
+        Add("story", "Why It Was Made", "\uE736", "Help", "The story behind Kodiak Cleaner, in Ted's words.", Story);
         Add("privacy", "Privacy Policy", "\uE72E", "Help", "What Kodiak Cleaner does with information: everything stays on this PC.", Privacy);
         Add("terms", "Terms of Use", "\uE8A5", "Help", "The terms for using Kodiak Cleaner.", Terms);
-        Add("story", "Why It Was Made", "\uE736", "Help", "The story behind Kodiak Cleaner, in Ted's words.", Story);
 #if DEVTOOLS
         // Development builds only; release builds leave this page (and its code) out.
         Add("developer", "Developer Tools", "\uEC7A", "Developer", "Test plans and check how this build is set up.",
             new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel() });
 #endif
+        _defaultOrder = Sections.ToList();
+        SortSections();
         Sections.First(s => s.Key == "general").IsSelected = true;
 
         Supporter.Changed += () =>
@@ -191,6 +195,41 @@ public sealed class SettingsViewModel : ObservableObject
         if (section is null) return;
         section.IsSelected = true;
         ShowRequested?.Invoke();
+    }
+
+    /// <summary>The Settings sidebar's Sort By dropdown (Ted, 2026-10-23): Default (General, then the most used) or A to Z.</summary>
+    public IReadOnlyList<SectionSortOption> SectionSorts { get; } =
+        [new SectionSortOption(false, "Default"), new SectionSortOption(true, "A to Z")];
+
+    public SectionSortOption SectionSort
+    {
+        get => SectionSorts[S.SettingsAToZ ? 1 : 0];
+        set
+        {
+            if (value is null || S.SettingsAToZ == value.AToZ) return;
+            S.SettingsAToZ = value.AToZ;
+            S.Save();
+            SortSections();
+            OnPropertyChanged();
+        }
+    }
+
+    private readonly List<SettingsSection> _defaultOrder;
+
+    /// <summary>Puts the sidebar in the chosen order. Headings keep their place; only the pages under each one move.</summary>
+    private void SortSections()
+    {
+        var groups = _defaultOrder.Select(x => x.Group).Distinct().ToList();
+        var wanted = _defaultOrder
+            .OrderBy(x => groups.IndexOf(x.Group))
+            .ThenBy(x => S.SettingsAToZ ? 0 : _defaultOrder.IndexOf(x))
+            .ThenBy(x => x.Title, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+        for (var i = 0; i < wanted.Count; i++)
+        {
+            var at = Sections.IndexOf(wanted[i]);
+            if (at != i) Sections.Move(at, i);
+        }
     }
 
     private void Add(string key, string title, string glyph, string group, string description, object context) =>
@@ -633,10 +672,17 @@ public sealed class SettingsViewModel : ObservableObject
         ThemeManager.Apply();
         Motion.Instance.Refresh();
         MainViewModel.NotifySidebarSettingsChanged(); // the sidebar's width, lock and collapse follow the reset
+        SortSections();
         BuildChoices();
         _cleanerOptionsChanged();
         OnPropertyChanged(string.Empty);
     }
+}
+
+/// <summary>One choice in the Settings sidebar's Sort By dropdown.</summary>
+public sealed record SectionSortOption(bool AToZ, string Label)
+{
+    public override string ToString() => Label;
 }
 
 /// <summary>One choice in Settings > Updates' Check for Updates dropdown.</summary>

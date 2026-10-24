@@ -122,6 +122,10 @@ public sealed class Settings
     public List<string>? Favorites { get; set; }
     /// <summary>Settings › General › Favorites Order: A to Z instead of the order set by dragging or Move Up and Move Down.</summary>
     public bool FavoritesAToZ { get; set; }
+    /// <summary>Tools in the order set by dragging (Ted, 2026-10-23); null until changed, which means A to Z. Reset Tools Order clears it.</summary>
+    public List<string>? ToolsOrder { get; set; }
+    /// <summary>Settings' Sort By dropdown: A to Z instead of the Default order (General, then the most used).</summary>
+    public bool SettingsAToZ { get; set; }
     public bool ShowBetaNotice { get; set; } = true;
 
     // [Appearance]
@@ -252,6 +256,8 @@ public sealed class Settings
         ShowSidebarLock = ini.GetBool("General", "ShowSidebarLock", ShowSidebarLock);
         Favorites = ini.Get("General", "Favorites")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         FavoritesAToZ = string.Equals(ini.Get("General", "FavoritesOrder"), "AToZ", StringComparison.OrdinalIgnoreCase);
+        ToolsOrder = ini.Get("General", "ToolsOrder")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        SettingsAToZ = string.Equals(ini.Get("General", "SettingsSort"), "AToZ", StringComparison.OrdinalIgnoreCase);
         ShowBetaNotice = ini.GetBool("General", "ShowBetaNotice", ShowBetaNotice);
 
         Theme = Enum.TryParse<AppTheme>(ini.Get("Appearance", "Theme"), ignoreCase: true, out var t) ? t : Theme;
@@ -318,6 +324,8 @@ public sealed class Settings
         ini.Set("General", "ShowSidebarLock", ShowSidebarLock);
         if (Favorites is not null) ini.Set("General", "Favorites", string.Join(",", Favorites));
         ini.Set("General", "FavoritesOrder", FavoritesAToZ ? "AToZ" : "Default");
+        if (ToolsOrder is not null) ini.Set("General", "ToolsOrder", string.Join(",", ToolsOrder));
+        ini.Set("General", "SettingsSort", SettingsAToZ ? "AToZ" : "Default");
         ini.Set("General", "ShowBetaNotice", ShowBetaNotice);
 
         ini.Set("Appearance", "Theme", Theme.ToString());

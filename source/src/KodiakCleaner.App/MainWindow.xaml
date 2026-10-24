@@ -35,7 +35,12 @@
 
         <DataTemplate x:Key="NavItem" DataType="{x:Type vm:NavPage}">
             <!-- Hovering any entry shows its name, which matters most when the sidebar is collapsed to icons. -->
-            <!-- Right-click (or the menu key) pins, unpins and moves; dragging moves favorites or drops a tool into Favorites. -->
+            <!-- Right-click (or the menu key) pins, unpins and moves. Dragging moves an entry within Favorites or Tools, or between them;
+                 the entry being dragged is outlined in the accent color (Ted, 2026-10-23). -->
+            <Grid>
+            <!-- Behind the entry, so it never changes the row's size; shown only while dragging. -->
+            <Border x:Name="DragFrame" CornerRadius="{DynamicResource Radius}" BorderThickness="1.5" Margin="10,1"
+                    BorderBrush="{DynamicResource Accent}" Background="{DynamicResource AccentTint}" Visibility="Collapsed" IsHitTestVisible="False" />
             <RadioButton GroupName="Nav" Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
                          ToolTip="{Binding Title}" AutomationProperties.Name="{Binding Title}"
                          ContextMenuOpening="Nav_ContextMenuOpening" PreviewMouseLeftButtonDown="Nav_PreviewMouseDown" PreviewMouseMove="Nav_PreviewMouseMove">
@@ -50,7 +55,11 @@
                     <TextBlock x:Name="Label" Text="{Binding Title}" VerticalAlignment="Center" />
                 </StackPanel>
             </RadioButton>
+            </Grid>
             <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsDragging}" Value="True">
+                    <Setter TargetName="DragFrame" Property="Visibility" Value="Visible" />
+                </DataTrigger>
                 <!-- Collapsed: bigger icons, centered, no names. -->
                 <DataTrigger Binding="{Binding DataContext.SidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                     <Setter TargetName="Row" Property="HorizontalAlignment" Value="Center" />
@@ -176,8 +185,7 @@
                     <ItemsControl ItemsSource="{Binding FooterPages}" ItemTemplate="{StaticResource NavItem}" VerticalAlignment="Bottom" />
                 </DockPanel>
                 <!-- Favorites stay put at the top (Ted, 2026-10-23); only the Tools list below them scrolls. -->
-                <StackPanel x:Name="FavoritesZone" DockPanel.Dock="Top" Background="Transparent" AllowDrop="True"
-                            DragOver="Favorites_DragOver" Drop="Favorites_Drop">
+                <StackPanel x:Name="FavoritesZone" DockPanel.Dock="Top" Background="Transparent">
                     <TextBlock Text="Favorites" Style="{StaticResource GroupHeading}" Margin="24,0,0,6"
                                Visibility="{Binding SidebarCollapsed, Converter={StaticResource NotVis}}" />
                     <ItemsControl x:Name="FavoritesList" ItemsSource="{Binding FavoritePages}" ItemTemplate="{StaticResource NavItem}" />
@@ -194,7 +202,8 @@
                         <TextBlock Text="Tools" />
                     </ToggleButton>
                 </StackPanel>
-                <ScrollViewer x:Name="ToolsZone" Focusable="False" AllowDrop="True" DragOver="Tools_DragOver" Drop="Tools_Drop">
+                <!-- While a favorite is dragged over Tools (or a tool over Favorites), the area it would land in is tinted. -->
+                <ScrollViewer x:Name="ToolsZone" Focusable="False">
                     <!-- Collapsed, the scroll bar would push the icons off center, so it hides (the wheel still scrolls). -->
                     <ScrollViewer.Style>
                         <Style TargetType="ScrollViewer">
@@ -206,9 +215,19 @@
                             </Style.Triggers>
                         </Style>
                     </ScrollViewer.Style>
-                    <!-- A favorite dropped anywhere here is unpinned, so the empty space under the list takes drops too. -->
-                    <ItemsControl ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}" Background="Transparent"
-                                  Visibility="{Binding ToolsVisible, Converter={StaticResource BoolToVis}}" />
+                    <StackPanel x:Name="ToolsDropArea" Background="Transparent">
+                        <ItemsControl x:Name="ToolsList" ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}"
+                                      Visibility="{Binding ToolsVisible, Converter={StaticResource BoolToVis}}" />
+                        <!-- Reset Tools Order (Ted, 2026-10-23): last thing under the tools; Favorites and Tools back to A to Z. -->
+                        <Button Style="{StaticResource LinkButton}" Command="{Binding ResetToolsOrderCommand}" HorizontalAlignment="Left" Margin="22,10,0,12"
+                                ToolTip="Put Favorites and Tools back in A to Z order"
+                                Visibility="{Binding ShowResetToolsOrder, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0" />
+                                <TextBlock Text="Reset Tools Order" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </ScrollViewer>
             </DockPanel>
         </Border>

@@ -497,18 +497,18 @@ public class BackgroundTaskTests
 public class StaysCurrentTests
 {
     [Fact]
-    public void Settings_pages_are_A_to_Z_under_each_heading_and_open_on_general()
+    public void Settings_pages_start_with_general_and_open_on_it()
     {
         var src = Repo.Read("src", "KodiakCleaner.App", "ViewModels", "SettingsViewModel.cs");
         var pages = Regex.Matches(src, @"Add\(""(\w+)"", ""([^""]+)"", ""[^""]*"", ""([^""]*)""")
             .Select(m => (Key: m.Groups[1].Value, Title: m.Groups[2].Value, Group: m.Groups[3].Value)).ToList();
         Assert.Contains(pages, p => p.Key == "faq" && p.Group == "Help");
         Assert.Contains(pages, p => p.Key == "developer" && p.Title == "Developer Tools");
-        foreach (var group in pages.GroupBy(p => p.Group))
-        {
-            var titles = group.Select(p => p.Title).ToList();
-            Assert.Equal(titles.OrderBy(t => t, StringComparer.OrdinalIgnoreCase), titles);
-        }
+        // Default order (Ted, 2026-10-23): General first, each heading's pages together; Sort By › A to Z sorts them at run time.
+        Assert.Equal("general", pages[0].Key);
+        var groups = pages.Select(p => p.Group).ToList();
+        Assert.Equal(groups.Distinct().Count(), groups.Where((g, i) => i == 0 || groups[i - 1] != g).Count());
+        Assert.Contains("SortSections();", src);
         Assert.Contains("Sections.First(s => s.Key == \"general\").IsSelected = true;", src);
     }
 

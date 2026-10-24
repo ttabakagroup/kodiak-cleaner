@@ -23,6 +23,10 @@ public sealed class NavPage : ObservableObject
     /// <summary>Pinned to Favorites at the top of the sidebar.</summary>
     public bool IsFavorite { get => _isFavorite; set => Set(ref _isFavorite, value); }
 
+    private bool _isDragging;
+    /// <summary>Being dragged in the sidebar: the row is outlined so it's clear what is moving.</summary>
+    public bool IsDragging { get => _isDragging; set => Set(ref _isDragging, value); }
+
     public string Title { get; }
     public string Glyph { get; }
     /// <summary>A small second icon drawn over the bottom right of <see cref="Glyph"/> (Drive Wiper: a drive with a bin).</summary>

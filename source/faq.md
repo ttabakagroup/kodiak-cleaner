@@ -14,7 +14,7 @@ Under Settings, Application, click Back Up Settings. It saves a dated copy of yo
 
 ## How Do I Pin a Tool to Favorites?
 
-Right-click any page in the sidebar and pick Pin to Favorites, or drag it up into Favorites. Favorites stay at the top of the sidebar while the Tools list below them scrolls. Right-click a favorite to unpin it or to move it up or down, or drag it to a new place (drag it down into Tools to unpin it). Under Settings, General, Favorites Order shows them in your own order or A to Z, and Restore Default Order puts Cleaner, Registry, Startup and Programs back at the top.
+Right-click any page in the sidebar and pick Pin to Favorites, or drag it up into Favorites. Favorites stay at the top of the sidebar while the Tools list below them scrolls. Drag a favorite or a tool to a new place in its list, or right-click it and pick Move Up or Move Down; drag a favorite down into Tools to unpin it. The entry you drag is outlined, and the list it will land in is tinted. Reset Tools Order, under the last tool, puts Favorites and Tools back in A to Z order (pinned tools stay pinned). Under Settings, General, Favorites Order shows favorites in your own order or A to Z, and Restore Default Order puts Cleaner, Registry, Startup and Programs back at the top.
 
 ## How Do I Select Many Items at Once?
 

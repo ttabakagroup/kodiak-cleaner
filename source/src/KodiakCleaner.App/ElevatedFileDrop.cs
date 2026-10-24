@@ -29,7 +29,7 @@ public static class ElevatedFileDrop
         try
         {
             // WPF's own drop target would take the drop first and then refuse it, so it is taken off; Explorer then falls back
-            // to WM_DROPFILES. Kodiak Cleaner has no other drag and drop that needs it.
+            // to WM_DROPFILES. Kodiak Cleaner's own dragging (the sidebar) tracks the mouse itself, so it doesn't need it.
             RevokeDragDrop(hwnd);
             DragAcceptFiles(hwnd, true);
             foreach (var msg in new[] { WM_DROPFILES, WM_COPYDATA, WM_COPYGLOBALDATA })

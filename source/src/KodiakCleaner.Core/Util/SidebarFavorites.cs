@@ -62,4 +62,20 @@ public static class SidebarFavorites
         var shown = favorites.Where(pages.ContainsKey).Select(k => pages[k]);
         return (aToZ ? shown.OrderBy(title, StringComparer.CurrentCultureIgnoreCase) : shown).ToList();
     }
+
+    /// <summary>
+    /// The Tools list: every page not in Favorites, in the order set by dragging (Ted, 2026-10-23), or A to Z when none was set
+    /// (<paramref name="toolsOrder"/> null). Pages missing from a saved order (new tools, ones just unpinned) go at the end, A to Z.
+    /// </summary>
+    public static List<string> ArrangeTools(IEnumerable<string> all, ICollection<string> favorites, IList<string>? toolsOrder, Func<string, string> title)
+    {
+        var tools = all.Where(k => !favorites.Contains(k)).OrderBy(title, StringComparer.CurrentCultureIgnoreCase).ToList();
+        if (toolsOrder is null) return tools;
+        var listed = toolsOrder.Select(k => k.Trim().ToLowerInvariant()).Where(tools.Contains).Distinct().ToList();
+        return listed.Concat(tools.Where(k => !listed.Contains(k))).ToList();
+    }
+
+    /// <summary>Reset Tools Order: Favorites (which stay pinned) and Tools both go back to A to Z.</summary>
+    public static List<string> AToZ(IEnumerable<string> keys, Func<string, string> title) =>
+        keys.OrderBy(title, StringComparer.CurrentCultureIgnoreCase).ToList();
 }
