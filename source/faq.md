@@ -8,6 +8,10 @@ No. Kodiak Cleaner sends no usage data, shows no ads and has no tracking. It onl
 
 Open Hash Checker under Tools and drop the file on the page (or click Add Files). Copy the hash the download page lists into Expected Hashes, or drop the .sha256, .md5 or SHA256SUMS file that came with the download. Each file then shows Verified when it matches, or Doesn't Match when it differs from the one listed, which means it is damaged, changed or a different version. Press Ctrl+F to find a file by its name or any part of a hash. To let someone check a file you send or export, click it and choose Create Hash File: a small .sha256 file is saved beside it, and dropping that file here later shows Verified if the file hasn't changed. Hash Checker only reads your files and never sends them anywhere.
 
+## How Do I Make the Text Bigger?
+
+Under Settings, Appearance, move the Text Size slider. It makes text, icons and buttons bigger or smaller in every Kodiak Cleaner window, from 80% to 200% of the normal size, and the new size is used when you let go (or straight away with the arrow keys). It adds to the display scaling set in Windows, which Kodiak Cleaner already follows. On a small screen, a window grows only as far as it still fits on the screen. Click Default Size to go back to 100%.
+
 ## How Do I Move Kodiak Cleaner to a New PC?
 
 Under Settings, Application, click Back Up Settings. It saves a dated copy of your settings and your Programs and Startup histories in Backups\Settings. Install Kodiak Cleaner on the new PC, close it, then copy those files over KodiakCleaner.ini, Backups\Programs History\history.json and Backups\Startup History\history.json. A Supporter code is part of the settings, so it moves with them.

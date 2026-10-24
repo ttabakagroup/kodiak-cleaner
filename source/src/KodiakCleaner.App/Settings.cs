@@ -138,6 +138,8 @@ public sealed class Settings
     /// <summary>Logo dance and moving busy bars; off stops every animation (Ted, 0.8.10).</summary>
     public bool Animations { get; set; } = true;
     public string Accent { get; set; } = "";
+    /// <summary>Text Size in percent (Ted, 2026-10-24): every window scaled by it, on top of Windows' display scaling. See <see cref="TextScale"/>.</summary>
+    public int TextSize { get; set; } = KodiakCleaner.Core.Util.TextSize.Default;
 
     // [Cleaner]
     public List<string>? CheckedTargets { get; set; }
@@ -268,6 +270,7 @@ public sealed class Settings
         Palette = Enum.TryParse<Palette>(ini.Get("Appearance", "Palette"), ignoreCase: true, out var pal) ? pal : Palette;
         Accent = AccentColors.Migrate(ini.Get("Appearance", "Accent") ?? Accent);
         Animations = ini.GetBool("Appearance", "Animations", Animations);
+        TextSize = KodiakCleaner.Core.Util.TextSize.Normalize(ini.GetInt("Appearance", "TextSize", TextSize));
 
         RemovedExtensions = (ini.Get("Extensions", "Removed") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         var targets = ini.Get("Cleaner", "CheckedTargets");
@@ -337,6 +340,7 @@ public sealed class Settings
         ini.Set("Appearance", "Palette", Palette.ToString());
         ini.Set("Appearance", "Accent", Accent);
         ini.Set("Appearance", "Animations", Animations);
+        ini.Set("Appearance", "TextSize", TextSize);
 
         if (CheckedTargets is not null) ini.Set("Cleaner", "CheckedTargets", string.Join(",", CheckedTargets));
         if (RemovedExtensions.Count > 0) ini.Set("Extensions", "Removed", string.Join(",", RemovedExtensions));

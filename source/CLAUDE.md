@@ -262,6 +262,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   text), "Select <row>" for table tick boxes, or its tooltip; set `AutomationProperties.Name` where that guess is wrong. Icon-only
   buttons need a ToolTip. Keyboard focus always shows (table cells `CellFocusVisual`, dividers light up); text boxes and drop-downs
   use `ControlBorder` (3:1); each sidebar list is one Tab stop (arrow keys inside). `AccessibilityTests` checks these.
+- Text Size (Settings > Appearance, Ted 2026-10-24): `TextScale` (registered in App.Start) puts a `LayoutTransform` on every window's
+  content (80-200%, `[Appearance] TextSize`, `Core/Util/TextSize`), grows the window's size and minimum size with it (capped to the
+  screen) and keeps it centered. New windows get it automatically; fonts stay fixed in the styles. The slider sends its value on
+  release (`UpdateSourceTrigger=Explicit`), never mid-drag.
 - Duplicate Finder (Ted, 2026-10-12): searches folders and whole drives (Fixed and Removable, each given 5 s to answer). It never searches Windows,
   program folders, ProgramData, AppData (any user's), Temp\.net, its own folder, or a drive's Recycle Bin/System Volume Information/Recovery,
   as a starting point or inside one (`DuplicateSearchOptions.Protected` + `DuplicateFinder.AlwaysSkipped`). In-Depth (`SimilarFinder`) lists

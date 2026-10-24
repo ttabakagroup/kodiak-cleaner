@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -92,5 +93,18 @@ public partial class SettingsView : UserControl
         if (e.OriginalSource is RadioButton swatch &&
             (Keyboard.IsKeyDown(Key.Left) || Keyboard.IsKeyDown(Key.Right) || Keyboard.IsKeyDown(Key.Up) || Keyboard.IsKeyDown(Key.Down)))
             swatch.IsChecked = true;
+    }
+
+    /// <summary>Text Size: let go of the slider, and the new size is used.</summary>
+    private void TextSizeDragCompleted(object sender, DragCompletedEventArgs e) =>
+        (sender as Slider)?.GetBindingExpression(RangeBase.ValueProperty)?.UpdateSource();
+
+    /// <summary>Text Size moved by the arrow keys or a click on the track: used straight away. While the thumb is dragged it waits
+    /// for <see cref="TextSizeDragCompleted"/>, so the window doesn't rescale under the pointer.</summary>
+    private void TextSizeChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (sender is not Slider slider || !slider.IsLoaded) return;
+        if (slider.Template?.FindName("Thumb", slider) is Thumb { IsDragging: true }) return;
+        slider.GetBindingExpression(RangeBase.ValueProperty)?.UpdateSource();
     }
 }

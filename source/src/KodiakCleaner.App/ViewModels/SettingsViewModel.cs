@@ -84,6 +84,7 @@ public sealed class SettingsViewModel : ObservableObject
         OpenSettingsFolderCommand = new RelayCommand(() => Elevation.ShowInExplorer(Settings.FilePath));
         OpenDataFolderCommand = new RelayCommand(() => Elevation.OpenFolder(Settings.Data.Root));
         ResetCommand = new RelayCommand(Reset);
+        DefaultTextSizeCommand = new RelayCommand(() => TextSize = KodiakCleaner.Core.Util.TextSize.Default, () => !IsDefaultTextSize);
         RestoreFavoritesOrderCommand = new RelayCommand(RestoreFavoritesOrder);
         BackUpRegistryCommand = new RelayCommand(BackUpRegistryAsync, () => !IsBackingUp);
         BackUpSettingsCommand = new RelayCommand(BackUpSettings);
@@ -97,7 +98,7 @@ public sealed class SettingsViewModel : ObservableObject
         Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
         Add("updates", "Updates", "\uE895", "", "Get new versions of Kodiak Cleaner.", this);
         Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need, and Reset to Default.", this);
-        Add("appearance", "Appearance", "\uE790", "Personalize", "Color scheme, accent color and light or dark mode.", this);
+        Add("appearance", "Appearance", "\uE790", "Personalize", "Color scheme, accent color, light or dark mode and text size.", this);
         Add("supporter", "Supporter", "\uEB51", "Personalize", "Say thanks and unlock a few extras.", SupporterPage);
         Add("backups", "Registry", "\uE8F1", "Protect", "Registry backups: made before every fix, or whenever you choose.", this);
         Add("application", "Application", "\uE74C", "Protect", "Kodiak Cleaner's settings file, backups and activity log.", this);
@@ -480,6 +481,32 @@ public sealed class SettingsViewModel : ObservableObject
         set => Apply(value, v => { S.Animations = v; Motion.Instance.Refresh(); });
     }
 
+    /// <summary>Text Size in percent. The slider sends it when let go (or on each arrow key), not while dragging: the window
+    /// rescaling under the pointer would move the slider away from it.</summary>
+    public int TextSize
+    {
+        get => S.TextSize;
+        set
+        {
+            var size = KodiakCleaner.Core.Util.TextSize.Normalize(value);
+            if (size == S.TextSize) return;
+            S.TextSize = size;
+            try { S.Save(); }
+            catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or InvalidOperationException or System.IO.IOException)
+            {
+                Dialogs.Error(e.Message);
+            }
+            TextScale.Refresh();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsDefaultTextSize));
+            OnPropertyChanged(nameof(SaveError));
+            OnPropertyChanged(nameof(HasSaveError));
+        }
+    }
+
+    public bool IsDefaultTextSize => S.TextSize == KodiakCleaner.Core.Util.TextSize.Default;
+    public ICommand DefaultTextSizeCommand { get; }
+
     public bool SidebarAdjustable
     {
         get => S.SidebarAdjustable;
@@ -676,6 +703,7 @@ public sealed class SettingsViewModel : ObservableObject
         Donation.SupporterTurnsPromptOff(); // the reminder comes back with the count at 0, but never for Supporters
         ThemeManager.Apply();
         Motion.Instance.Refresh();
+        TextScale.Refresh();
         MainViewModel.NotifySidebarSettingsChanged(); // the sidebar's width, lock and collapse follow the reset
         SortSections();
         BuildChoices();

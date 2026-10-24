@@ -464,6 +464,26 @@
                         </DockPanel>
                     </StackPanel>
                 </Border>
+                <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Text Size" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Makes text, icons and buttons bigger or smaller in every Kodiak Cleaner window. It adds to the display scaling set in Windows, which Kodiak Cleaner already follows. The new size is used when you let go of the slider. On a small screen, a window grows only as far as it still fits."
+                                   Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <!-- The size is sent when the slider is let go or moved with the keyboard (TextSizeDragCompleted, TextSizeChanged):
+                             the window rescaling while dragging would pull the slider out from under the pointer. -->
+                        <DockPanel Margin="0,12,0,0">
+                            <Button DockPanel.Dock="Right" Content="Default Size" Command="{Binding DefaultTextSizeCommand}" Margin="16,0,0,0" />
+                            <TextBlock DockPanel.Dock="Right" Width="48" Margin="12,0,0,0" VerticalAlignment="Center" TextAlignment="Right" FontWeight="SemiBold"
+                                       Text="{Binding Value, ElementName=TextSizeSlider, StringFormat={}{0:0}%}" />
+                            <TextBlock DockPanel.Dock="Left" Text="A" FontSize="12" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" />
+                            <TextBlock DockPanel.Dock="Right" Text="A" FontSize="20" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" />
+                            <Slider x:Name="TextSizeSlider" Minimum="80" Maximum="200" TickFrequency="10" SmallChange="10" LargeChange="20"
+                                    Value="{Binding TextSize, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
+                                    AutomationProperties.Name="Text Size" AutomationProperties.HelpText="Percent of the normal size, from 80 to 200."
+                                    Thumb.DragCompleted="TextSizeDragCompleted" ValueChanged="TextSizeChanged" />
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </DataTemplate>
 

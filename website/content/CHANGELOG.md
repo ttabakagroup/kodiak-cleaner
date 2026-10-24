@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.109 Dev] - 2026-10-24
+
+### Settings
+- New Text Size slider under Appearance (80% to 200%): makes text, icons and buttons bigger or smaller in every Kodiak Cleaner window, on top of Windows' display scaling. Default Size puts it back to 100%.
+
 ## [0.8.108 Dev] - 2026-10-24
 
 ### Accessibility

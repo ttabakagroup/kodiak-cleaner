@@ -260,7 +260,7 @@ Every setting is a switch and is saved straight away. Pages are A to Z under eac
 | Area | What's there |
 |------|--------------|
 | **Advanced** | Always start as administrator, and skip the User Account Control prompt (installed copies only). |
-| **Appearance** | Honey, Classic, Glacier or Lagoon color scheme, an optional accent color, Match Device, Light or Dark, and an Animations switch. |
+| **Appearance** | Honey, Classic, Glacier or Lagoon color scheme, an optional accent color, Match Device, Light or Dark, an Animations switch, and a Text Size slider (80% to 200%, on top of Windows' display scaling). |
 | **Cleaning** | Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours. |
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on the website in your browser with the topic picked. |
 | **FAQ** | Plain answers about going online, moving to a new PC, undoing a change, Supporter codes, updates, safety, Reset to Default and where backups are. Works offline. |
