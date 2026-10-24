@@ -5,6 +5,18 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.115 Dev] - 2026-10-24
+
+### Drive Wiper
+- Entire Drive is now laid out in three numbered steps: 1. Select the Drive (the drive list and Refresh), 2. Wipe and Format (Wipe Type, Security, Verify the Last Pass, and the format with its recommendation), 3. After the Wipe (Leave It Uninitialized Like a New Drive, Check the Drive Afterwards), then the warning and the Wipe and Check Drive buttons. Free Space Only keeps its simple layout.
+- "Firmware Erase" is now called "Built-In Secure Erase", because it's the drive's own erase command: it wipes the data, not the drive's firmware, and the drive keeps working afterwards. The Method column, progress, results and activity log use the new name, and hovering a drive's method says what it does.
+- How Each Drive Type Is Erased is rewritten in plain words, with a note that every drive keeps working afterwards and is set up again as chosen in Step 3. It shows with Entire Drive, the only mode that erases whole drives.
+- New: Open Reports opens the Reports\Integrity Check folder, where every drive check is saved. It's in the progress section once a check finishes, and next to Check Drive.
+- New: a draggable divider between the progress section and the settings, like the one on the Startup page. Drag it to give the drive check results or the settings more room; it's remembered, and a double-click puts it back.
+
+### Integrity Check
+- New: Open Reports beside the last run's details, so a check's full report is one click away. The button at the top is now called Open Reports too.
+
 ## [0.8.114 Dev] - 2026-10-24
 
 ### Drive Wiper

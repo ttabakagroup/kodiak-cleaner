@@ -43,6 +43,28 @@ public sealed class WipeMethodTests
     [InlineData(MediaKind.NvmeSsd, WipeMethod.Dod7, WipeMethod.Firmware)]
     public void Flash_gets_a_firmware_erase_and_everything_else_the_chosen_passes(MediaKind kind, WipeMethod chosen, WipeMethod expected) =>
         Assert.Equal(expected, WipeMethods.Recommended(kind, chosen));
+
+    /// <summary>
+    /// Ted (0.8.115): "Firmware Erase" made people think the drive's firmware is erased and the drive stops working. Users see
+    /// "Built-In Secure Erase" instead, and no text Drive Wiper shows calls it a firmware erase.
+    /// </summary>
+    [Fact]
+    public void The_drives_own_erase_is_called_built_in_secure_erase_never_firmware_erase()
+    {
+        Assert.Equal("Built-In Secure Erase", WipeMethods.Name(WipeMethod.Firmware));
+        var files = new[]
+        {
+            Repo.File("src", "KodiakCleaner.App", "Views", "WiperView.xaml"),
+            Repo.File("src", "KodiakCleaner.App", "ViewModels", "ToolsViewModels.cs"),
+            Repo.File("src", "KodiakCleaner.App", "WelcomeWindow.xaml.cs"),
+            Repo.File("src", "KodiakCleaner.Core", "Tools", "DriveWiper.cs"),
+            Repo.File("src", "KodiakCleaner.Core", "Tools", "WipeMethods.cs"),
+        };
+        foreach (var file in files)
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(file), "\"[^\"\n]*\""))
+                Assert.False(System.Text.RegularExpressions.Regex.IsMatch(m.Value, @"firmware (secure )?erase|erased by its firmware|drive's firmware is erasing",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase), $"{Path.GetFileName(file)}: {m.Value}");
+    }
 }
 
 public sealed class OverwriterTests : IDisposable

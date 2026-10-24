@@ -19,7 +19,10 @@ public enum WipeMethod
     /// want the most passes. No modern drive needs more than one.
     /// </summary>
     Pass30,
-    /// <summary>The drive's own firmware erase (NVMe crypto or block erase), the only way to reach every flash cell.</summary>
+    /// <summary>
+    /// The drive's own built-in secure erase (crypto or block erase), the only way to reach every flash cell. Shown to users as
+    /// "Built-In Secure Erase" (Ted, 0.8.115): it erases the data, not the drive's firmware, and the drive keeps working.
+    /// </summary>
     Firmware,
 }
 
@@ -35,9 +38,9 @@ public enum WipeLevel
 {
     /// <summary>Removes the partition tables (MBR or GPT) and boot sectors only: the drive looks empty, but the data is still on it.</summary>
     Quick,
-    /// <summary>Every sector once with zeros (NIST SP 800-88 Clear); SSD and NVMe use their firmware erase.</summary>
+    /// <summary>Every sector once with zeros (NIST SP 800-88 Clear); SSD and NVMe use their built-in secure erase.</summary>
     Thorough,
-    /// <summary>The chosen security method (DoD 3, DoD 7 or 30 passes) with the read-back check; SSD and NVMe use their firmware erase.</summary>
+    /// <summary>The chosen security method (DoD 3, DoD 7 or 30 passes) with the read-back check; SSD and NVMe use their built-in secure erase.</summary>
     Secure,
 }
 
@@ -139,7 +142,7 @@ public static class WipeMethods
         WipeMethod.Dod3 => "DoD 3 Passes",
         WipeMethod.Dod7 => "DoD 7 Passes",
         WipeMethod.Pass30 => "30 Passes",
-        _ => "Firmware Secure Erase",
+        _ => "Built-In Secure Erase",
     };
 
     public static string Standard(WipeMethod m) => m switch
@@ -153,7 +156,7 @@ public static class WipeMethods
 
     private static readonly WipePass Zero = new(0x00), One = new(0xFF), Random = new(null);
 
-    /// <summary>The overwrite passes for a method. Firmware erase has none (the drive does the work).</summary>
+    /// <summary>The overwrite passes for a method. A built-in secure erase has none (the drive does the work).</summary>
     public static IReadOnlyList<WipePass> Passes(WipeMethod m) => m switch
     {
         WipeMethod.Zeros => [Zero],
@@ -176,7 +179,7 @@ public static class WipeMethods
     };
 
     /// <summary>
-    /// The method that suits a drive: flash (SSD, NVMe) is erased by its firmware, because overwriting can't reach the spare
+    /// The method that suits a drive: flash (SSD, NVMe) runs its own built-in secure erase, because overwriting can't reach the spare
     /// cells it keeps hidden; hard drives and flash drives are overwritten with the chosen pattern.
     /// </summary>
     public static WipeMethod Recommended(MediaKind kind, WipeMethod overwrite) =>

@@ -57,7 +57,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   (HKLM\SYSTEM\Setup SystemPartition) or a volume spanning disks. Every volume on it is locked and dismounted, then hard drives and flash
   drives get `Overwriter` passes (1 Pass (Zeros), DoD 5220.22-M 3, ECE 7; last pass read back) and SSD/NVMe get IOCTL_STORAGE_REINITIALIZE_MEDIA
   (crypto, then block, then default; random overwrite if refused). Wipe Type (Ted, 2026-10-12): Quick = partition data only, Thorough =
-  zeros (firmware erase on SSD/NVMe), Secure = the Security choice incl. 30 Passes (DoD pattern x10, labelled "not a standard").
+  zeros (built-in secure erase on SSD/NVMe), Secure = the Security choice incl. 30 Passes (DoD pattern x10, labelled "not a standard").
   diskpart clean always removes MBR/GPT and boot sectors; Leave It Uninitialized Like a New Drive stops there, otherwise
   `DiskFormat` (GPT/MBR, NTFS/exFAT/FAT32, label; `FormatProblem` refuses MBR over 2 TB and FAT32 over 32 GB). Three checks:
   summary Warn, type each drive's disk number, type ERASE.
@@ -71,6 +71,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   blocks re-read in 64 KB pieces, slow = 1 s or 10x typical and 200 ms, gives up at 100 areas or 64 MB). A wipe that verified its last
   pass skips the scan (the read-back counts). Verdict Healthy/Warning/Failing with plain reasons, shown in the progress card, logged and
   saved to Reports\Integrity Check. Never write during a check; a test keeps GenericWrite and writes out of DriveHealthCheck.cs.
+  Layout (Ted, 0.8.115): Entire Drive is three numbered step cards (1 Select the Drive, 2 Wipe and Format, 3 After the Wipe + warning,
+  Wipe, Check Drive, Open Reports); Free Space Only keeps one card. Users see `WipeMethod.Firmware` as "Built-In Secure Erase", never
+  "firmware erase" (people read it as erasing the firmware); say it wipes the data and the drive keeps working. Open Reports opens
+  Reports\Integrity Check (progress card after a check, Step 3, and Integrity Check's details card). A PaneRows divider ("wiper")
+  sits between the progress card and the settings; it and the card hide together and the settings then span all rows.
 - Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
   drives Not Needed. Analyze (/A) only for hard drives. One drive at a time; needs administrator rights.
 - Every setting is a toggle switch; checkmarks only for batch selections (pick items, then act). One-of-several

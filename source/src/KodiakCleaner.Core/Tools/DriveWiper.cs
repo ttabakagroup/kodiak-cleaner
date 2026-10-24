@@ -96,7 +96,7 @@ public static class DriveWiper
     /// <summary>
     /// Erases a whole disk at the given level, always removes its partition tables (MBR/GPT) and boot sectors, then either leaves it
     /// uninitialized like a new drive (<paramref name="format"/> null) or gives it one formatted partition. On Thorough and Secure,
-    /// SSDs and NVMe drives get their own firmware erase (a random overwrite when the drive doesn't offer one); hard drives and flash
+    /// SSDs and NVMe drives get their own built-in secure erase (a random overwrite when the drive doesn't offer one); hard drives and flash
     /// drives get zeros (Thorough) or the passes of <paramref name="secure"/>. Needs administrator rights.
     /// </summary>
     public static Task<DiskEraseResult> EraseAsync(WipeDisk disk, WipeLevel level, WipeMethod secure, bool verify, DiskFormat? format,
@@ -132,11 +132,11 @@ public static class DriveWiper
                 }
                 else if (method == WipeMethod.Firmware)
                 {
-                    status.Report("The drive's firmware is erasing every cell. This usually takes seconds to a few minutes…");
+                    status.Report("The drive is running its own built-in secure erase, which wipes every memory cell. This usually takes seconds to a few minutes…");
                     if (!FirmwareErase(h))
                     {
                         fellBack = true;
-                        status.Report("This drive doesn't offer a firmware erase, so it's being overwritten with random data instead…");
+                        status.Report("This drive doesn't offer a built-in secure erase, so it's being overwritten with random data instead…");
                         Overwriter.Run(h, length, [new WipePass(null)], verify, progress, ct);
                     }
                 }
@@ -160,7 +160,7 @@ public static class DriveWiper
         status.Report(format is null ? "Removing the partition tables and boot sectors…" : $"Removing the partition data, then making a {format.PartitionStyle} drive with {format.FileSystem}…");
         var (ok, letter, used, error) = Repartition(disk, format, status);
         ActivityLog.Write("Drive Wiper", $"{(cancelled ? "Stopped erasing" : "Erased")} {disk.Name} ({ByteSize.Format(disk.Size)}, {disk.KindName}): " +
-            $"{WipeMethods.LevelName(level)}" + (chosen is null ? ", partition data only" : $" with {(fellBack ? "a random overwrite (no firmware erase offered)" : WipeMethods.Name(method))}") +
+            $"{WipeMethods.LevelName(level)}" + (chosen is null ? ", partition data only" : $" with {(fellBack ? "a random overwrite (no built-in secure erase offered)" : WipeMethods.Name(method))}") +
             (verify && chosen is not null && method != WipeMethod.Firmware && !cancelled ? (mismatches == 0 ? ", verified" : $", {mismatches} bytes didn't verify") : "") +
             (used is null ? ", left uninitialized" : $", formatted {used.PartitionStyle} {used.FileSystem}") + (ok ? "" : $" (diskpart failed: {error ?? "no reason given"})"));
         if (cancelled) throw new OperationCanceledException(ct);

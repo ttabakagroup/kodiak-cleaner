@@ -27,7 +27,7 @@ public partial class WelcomeWindow : Window
         new("Cleaner", ": temporary files, browser caches, logs and the Recycle Bin"),
         new("Defrag and TRIM", ": defragment hard drives and trim SSDs, chosen per drive"),
         new("Disk Analyzer", ": a map of what fills your drives or a folder, colored by kind of file"),
-        new("Drive Wiper", ": DoD wipes and firmware erase, matched to each drive type"),
+        new("Drive Wiper", ": DoD wipes and built-in secure erase, matched to each drive type"),
         new("Driver Cleaner", ": remove old graphics drivers completely before a fresh install"),
         new("Duplicate Finder", ": spot copies of the same file on any drive, and files that are alike"),
         new("Empty Folders", ": find and remove empty folders on whole drives or in folders"),

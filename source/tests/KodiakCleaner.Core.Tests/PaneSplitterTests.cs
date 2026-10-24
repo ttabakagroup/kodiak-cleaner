@@ -25,6 +25,8 @@ public class PaneSplitterTests
         // The main window's sidebar edge has its own style and keeps its width in [General] SidebarWidth.
         var pages = Splitters().Where(s => s.File != "MainWindow.xaml").ToList();
         Assert.Contains(pages, s => s.File == "StartupView.xaml");
+        // Drive Wiper (Ted, 0.8.115): between the progress card and the settings, one above the other like Startup's.
+        Assert.Contains(pages, s => s.File == "WiperView.xaml" && Remember(s.Element) == "wiper" && (string?)s.Element.Attribute("Style") == "{StaticResource PaneRows}");
         foreach (var (file, e) in pages)
         {
             Assert.True((string?)e.Attribute("Style") is "{StaticResource PaneRows}" or "{StaticResource PaneColumns}", $"{file}: use PaneRows or PaneColumns");

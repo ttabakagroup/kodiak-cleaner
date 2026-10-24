@@ -437,7 +437,22 @@ public sealed class WipeDiskRow : ObservableObject
     public bool IsChecked { get => _isChecked; set => Set(ref _isChecked, value && CanWipe); }
 
     private string _method = "";
-    public string Method { get => _method; set => Set(ref _method, value); }
+    public string Method
+    {
+        get => _method;
+        set
+        {
+            Set(ref _method, value);
+            OnPropertyChanged(nameof(MethodTip));
+        }
+    }
+
+    /// <summary>The Method column's tooltip: what that method does to this drive, in plain words (Ted, 0.8.115).</summary>
+    public string MethodTip => Method == WiperViewModel.QuickName
+        ? "Only the partition data is removed. The drive looks empty, but the old files could still be recovered."
+        : Method == WiperViewModel.SecureEraseName
+        ? "The drive runs its own built-in secure erase. It wipes the data, not the drive's firmware, so the drive keeps working. If the drive doesn't offer one, it's overwritten with random data instead."
+        : $"Every part of the drive is overwritten ({Method}).";
 
     private string _status = "";
     public string Status { get => _status; set => Set(ref _status, value); }
@@ -462,6 +477,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         WipeCommand = new RelayCommand(WipeAsync, () => !IsBusy && (EntireDrive ? Disks.Any(d => d.IsChecked) : SelectedDrive is not null));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
         CheckCommand = new RelayCommand(CheckDisksAsync, () => !IsBusy && EntireDrive && Disks.Any(d => d.IsChecked));
+        // Open Reports (Ted, 0.8.115): every drive check is saved there; the folder is made if it isn't there yet.
+        OpenReportsCommand = new RelayCommand(() => Elevation.OpenFolder(ReportsFolder));
         UseRecommendedCommand = new RelayCommand(UseRecommended, () => !IsBusy && IsCustomFormat);
         foreach (var (label, value) in new[] { ("Free Space Only", false), ("Entire Drive", true) })
             Modes.Add(new Choice<bool>(label, value, !value, v => { EntireDrive = v; }));
@@ -493,7 +510,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public List<Choice<bool>> StyleChoices { get; } = new();
 
     private WipeLevel _level = WipeLevel.Secure;
-    /// <summary>Quick (partition data only), Thorough (one pass or firmware erase) or Secure (the chosen passes or firmware erase).</summary>
+    /// <summary>Quick (partition data only), Thorough (one pass or built-in secure erase) or Secure (the chosen passes or built-in secure erase).</summary>
     public WipeLevel Level
     {
         get => _level;
@@ -585,6 +602,10 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public ICommand CancelCommand { get; }
     /// <summary>Check Drive: the ticked drives' health check, without erasing anything (Ted, 0.8.114).</summary>
     public ICommand CheckCommand { get; }
+    /// <summary>Opens Reports\Integrity Check in File Explorer, where each drive check's report is saved (Ted, 0.8.115).</summary>
+    public ICommand OpenReportsCommand { get; }
+
+    private static string ReportsFolder => Path.Combine(Settings.Data.Reports, "Integrity Check");
 
     private WipeableDrive? _selectedDrive;
     public WipeableDrive? SelectedDrive { get => _selectedDrive; set { Set(ref _selectedDrive, value); OnPropertyChanged(nameof(DriveNote)); } }
@@ -631,6 +652,15 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     public ObservableCollection<DriveCheckRow> HealthResults { get; } = new();
     public bool HasHealthResults => HealthResults.Count > 0;
 
+    /// <summary>Open Reports shows in the progress card once a drive check has finished and its report is saved.</summary>
+    public bool ShowOpenReports => HasResult && HasHealthResults;
+
+    private void OnHealthResultsChanged()
+    {
+        OnPropertyChanged(nameof(HasHealthResults));
+        OnPropertyChanged(nameof(ShowOpenReports));
+    }
+
     private string _stopName = "Stop the Wipe";
     /// <summary>The Stop button's name for screen readers: it stops a wipe or a check.</summary>
     public string StopName { get => _stopName; private set => Set(ref _stopName, value); }
@@ -656,6 +686,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             Set(ref _isWiping, value);
             OnPropertyChanged(nameof(ShowWipeCard));
             OnPropertyChanged(nameof(HasResult));
+            OnPropertyChanged(nameof(ShowOpenReports));
         }
     }
 
@@ -668,6 +699,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         {
             Set(ref _hasResult, value);
             OnPropertyChanged(nameof(ShowWipeCard));
+            OnPropertyChanged(nameof(ShowOpenReports));
         }
     }
 
@@ -701,7 +733,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     {
         Status = "";
         HealthResults.Clear();
-        OnPropertyChanged(nameof(HasHealthResults));
+        OnHealthResultsChanged();
         StopName = "Stop the Wipe";
         WipeTime = "";
         WipeStep = "Starting…";
@@ -731,7 +763,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         HasResult = false;
         Status = "";
         HealthResults.Clear();
-        OnPropertyChanged(nameof(HasHealthResults));
+        OnHealthResultsChanged();
     }
 
     private const string GlyphDone = "\uE73E", GlyphStopped = "\uE711", GlyphFailed = "\uE783", GlyphWarning = "\uE7BA", GlyphCheck = "\uE9D9";
@@ -749,17 +781,20 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         }
     }
 
+    // Plain words (Ted, 0.8.115): a built-in secure erase wipes the data, never the drive's firmware, and the drive keeps working.
+    private const string SsdNote = " SSDs and NVMe drives run their own built-in secure erase instead: it wipes the data, not the drive, which keeps working and is set up again in Step 3.";
+
     public string MethodHint => EntireDrive && Level == WipeLevel.Quick
-        ? "Quick removes the partition tables (MBR or GPT) and boot sectors in seconds. The drive looks empty, but recovery tools could still find the old files. Use it to reuse a drive you keep."
+        ? "Quick only removes the partition tables (MBR or GPT) and boot sectors, in seconds. The drive looks empty, but recovery tools could still find the old files, so use it only for a drive you're keeping."
         : EntireDrive && Level == WipeLevel.Thorough
-        ? "Thorough writes zeros over every sector of hard drives and flash drives (NIST SP 800-88 Clear), enough for any modern drive. SSD and NVMe drives get their firmware erase."
+        ? "Thorough writes zeros once over every sector of hard drives and flash drives (NIST SP 800-88 Clear), which is enough for any modern drive." + SsdNote
         : Method switch
         {
             WipeMethod.Zeros => "One pass of zeros (NIST SP 800-88 Clear) is enough for any modern hard drive and is the quickest.",
             WipeMethod.Dod3 => "DoD 5220.22-M: zeros, then ones, then random data, and the last pass is read back to check it.",
             WipeMethod.Dod7 => "DoD 5220.22-M ECE: the three DoD passes, a random pass, then the three DoD passes again. Takes about seven times as long.",
             _ => "30 passes: the DoD pattern (zeros, ones, random) ten times over. It isn't a published standard and no modern drive needs it; it takes about 30 times as long as one pass.",
-        } + (EntireDrive ? " SSD and NVMe drives always get their firmware erase instead." : "");
+        } + (EntireDrive ? SsdNote : "");
 
     public string DriveNote => EntireDrive
         ? "Everything on the ticked drives is destroyed and can't be recovered. Drives that hold Windows, Kodiak Cleaner, your user folder or programs can't be ticked."
@@ -769,10 +804,13 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
               ? " This is an SSD: Windows already clears deleted data on it in the background, so overwriting free space mostly adds wear."
               : "");
 
+    internal const string QuickName = "Partition Data Only";
+    /// <summary>What users see for <see cref="WipeMethod.Firmware"/> (Ted, 0.8.115: the old name, Firmware Erase, read as if the firmware itself were erased).</summary>
+    internal static readonly string SecureEraseName = WipeMethods.Name(WipeMethod.Firmware);
+
     private string MethodFor(WipeDisk d) => WipeMethods.ForLevel(Level, d.Kind, Method) switch
     {
-        null => "Partition Data Only",
-        WipeMethod.Firmware => "Firmware Erase",
+        null => QuickName,
         WipeMethod m => WipeMethods.Name(m),
     };
 
@@ -873,7 +911,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                 if (_cts.IsCancellationRequested) break;
                 var d = row.Disk;
                 int index = chosen.IndexOf(row);
-                // A Quick wipe or a firmware erase doesn't say how far along it is; with several drives, each finished one counts.
+                // A Quick wipe or a built-in secure erase doesn't say how far along it is; with several drives, each finished one counts.
                 task.Percent = chosen.Count > 1 ? 100.0 * index / chosen.Count : null;
                 Percent = 0;
                 (WipeTitle, WipeGlyph, StopName) = (wipeTitle, "\uE74D", "Stop the Wipe"); // the previous drive's check may have changed them
@@ -898,8 +936,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                     Percent = 100;
                     row.Status = r.Verified == false ? $"Erased, {r.Mismatches:N0} Bytes Didn't Verify" : "Erased";
                     var how = r.Level == WipeLevel.Quick ? "cleared of its partition data (Quick)"
-                        : r.FirmwareFellBack ? "overwritten with random data (it offers no firmware erase)"
-                        : r.Method == WipeMethod.Firmware ? "erased by its firmware" : $"erased with {WipeMethods.Name(r.Method)}";
+                        : r.FirmwareFellBack ? "overwritten with random data (it doesn't offer a built-in secure erase)"
+                        : r.Method == WipeMethod.Firmware ? "erased with its own built-in secure erase" : $"erased with {WipeMethods.Name(r.Method)}";
                     var after = !r.Reformatted
                         ? ". Windows couldn't finish setting it up afterwards" + (r.SetupError is { } why ? $" ({why})" : "") + "; open Disk Management to initialize and format it."
                         : r.Format is { } f
@@ -1027,7 +1065,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
             var result = await DriveHealthCheck.CheckAsync(d.Number, readBack, status, progress, ct);
             var name = $"{d.Name} ({row.Size}, {d.KindName})";
             HealthResults.Add(new DriveCheckRow(name, result));
-            OnPropertyChanged(nameof(HasHealthResults));
+            OnHealthResultsChanged();
             row.Status = result.VerdictName;
             ActivityLog.Write("Drive Wiper", $"Checked {name}: {result.VerdictName}" +
                 (result.Reasons.Count > 0 ? " (" + string.Join(" ", result.Reasons) + ")" : "") + (readBack is null ? "" : ", surface from the wipe's read-back"));

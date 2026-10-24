@@ -20,10 +20,39 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <!-- Entire Drive's numbered steps (Ted, 0.8.115): the step number in a round badge beside the step's heading. -->
+        <Style x:Key="StepBadge" TargetType="Border">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="15" />
+            <Setter Property="Background" Value="{DynamicResource AccentTint}" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style x:Key="StepNumber" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <!-- Format choices gray out while the drive is to be left uninitialized (Ted, 0.8.112). -->
+        <Style x:Key="GrayWhenOff" TargetType="FrameworkElement">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="GrayCaption" TargetType="TextBlock" BasedOn="{StaticResource Caption}">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+            <!-- Entire Drive has its Refresh in Step 1, next to the drive list. -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom"
+                        Visibility="{Binding EntireDrive, Converter={StaticResource NotVis}}">
                 <Button Command="{Binding RefreshCommand}" Margin="0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE72C;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
@@ -38,132 +67,216 @@
             </StackPanel>
         </DockPanel>
 
-        <!-- The wipe's own section at the top (Ted, 0.8.113): only the wipe's progress, outside the scrolling area so it stays in
-             view. Shown while wiping, then with the result until the next wipe or Refresh. Same width as the cards below. -->
-        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16" HorizontalAlignment="Left"
-                Width="{Binding ActualWidth, ElementName=WipeColumn}"
-                Visibility="{Binding ShowWipeCard, Converter={StaticResource BoolToVis}}">
-            <Grid>
+        <!-- The progress card on top and the settings below, with a draggable divider between them (Ted, 0.8.115), like the
+             one between Startup's list and its scheduled tasks. While the card is hidden, the divider is too and the settings
+             span all three rows, so where the divider was dragged to is kept for the next wipe or check. -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="CardRow" Height="Auto" MinHeight="90" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="*" MinHeight="160" />
+            </Grid.RowDefinitions>
+
+            <!-- The wipe's own section at the top (Ted, 0.8.113): only the wipe's progress, outside the scrolling area so it stays in
+                 view. Shown while wiping, then with the result until the next wipe or Refresh. Same width as the cards below.
+                 Top-aligned, so it's only as tall as what it shows; dragging the divider down gives the drive results more room. -->
+            <Border x:Name="WipeCard" Grid.Row="0" Style="{StaticResource Card}" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Width="{Binding ActualWidth, ElementName=WipeColumn}"
+                    Visibility="{Binding ShowWipeCard, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Width="40" Height="40" CornerRadius="20" Background="{DynamicResource AccentTint}" Margin="0,0,14,0" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding WipeGlyph}" Style="{StaticResource Icon}" FontSize="18" Foreground="{DynamicResource AccentText}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding WipeTitle}" Style="{StaticResource SectionTitle}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding WipeDrive}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Text="{Binding WipeStep}" Style="{StaticResource Caption}" FontSize="13" Margin="0,2,0,0"
+                                   Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                    <!-- The big percentage, like the Cleaner page's total; a Quick wipe or built-in secure erase can't tell, so the bar just moves. -->
+                    <TextBlock Grid.Column="2" Text="{Binding WipeTask.PercentText}" FontSize="30" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
+                               VerticalAlignment="Center" Margin="16,0,0,0"
+                               Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
+                    <Button Grid.Column="3" Command="{Binding CancelCommand}" VerticalAlignment="Center" Margin="16,0,0,0"
+                            AutomationProperties.Name="{Binding StopName}" Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE711;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Stop" />
+                        </StackPanel>
+                    </Button>
+                    <!-- Open Reports (Ted, 0.8.115): once a drive check has finished, its saved report is one click away. -->
+                    <Button Grid.Column="3" Command="{Binding OpenReportsCommand}" VerticalAlignment="Top" Margin="16,0,0,0"
+                            ToolTip="Open the Reports\Integrity Check folder, where every drive check is saved"
+                            Visibility="{Binding ShowOpenReports, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE838;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Open Reports" />
+                        </StackPanel>
+                    </Button>
+                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="4" Height="10" Margin="0,16,0,0" Minimum="0" Maximum="100"
+                                 Foreground="{DynamicResource Accent}" Background="{DynamicResource AccentTint}"
+                                 Value="{Binding WipeTask.PercentValue, Mode=OneWay}" IsIndeterminate="{Binding WipeTask.NoPercent, Mode=OneWay}"
+                                 AutomationProperties.Name="Wipe Progress" Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
+                    <!-- Elapsed time and the time left, from the wipe's background task (Ted, 2026-10-23). -->
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Text="{Binding WipeTask.TimeText}" Style="{StaticResource Caption}" Margin="0,8,0,0"
+                               Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
+                    <!-- Afterwards: what happened to each drive and how long it took. -->
+                    <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,10,0,0"
+                                Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding WipeTime}" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+                    </StackPanel>
+                    <!-- Each checked drive's verdict (Ted, 0.8.114): Healthy, Warning or Failing, why, and the values behind it.
+                         Kept while the next drive is checked, so it sits outside the result panel. -->
+                    <!-- Its own scrolling (the card sits above the page's scrolling area), so several drives never push the page away.
+                         250 px tall at most until the divider is dragged; then it fills the room the divider gives the card. -->
+                    <ScrollViewer x:Name="HealthScroll" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" MaxHeight="250" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"
+                                  Padding="0,0,8,0" Visibility="{Binding HasHealthResults, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding HealthResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,10,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
+                                        BorderBrush="{DynamicResource Line}" Background="{DynamicResource SurfaceAlt}">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <Border DockPanel.Dock="Right" Style="{StaticResource VerdictChip}" VerticalAlignment="Top" Margin="12,0,0,0">
+                                                <TextBlock Text="{Binding Result.VerdictName}" />
+                                            </Border>
+                                            <TextBlock Text="{Binding Drive}" Style="{StaticResource SettingTitle}" TextWrapping="Wrap" />
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding Result.Summary}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        <TextBlock Text="{Binding Result.ReasonsText}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                                   Visibility="{Binding HasReasons, Converter={StaticResource BoolToVis}}" />
+                                        <TextBlock Text="{Binding Result.FactsText}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Drag the grip to give the progress card or the settings more room; double-click puts it back (Ted, 0.8.115). -->
+            <GridSplitter x:Name="CardSplitter" Grid.Row="1" Style="{StaticResource PaneRows}" tc:PaneSplitter.Remember="wiper" />
+
+            <ScrollViewer x:Name="SettingsArea" Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
+                <!-- The cards fill the width up to 1100 px in both modes, whatever is shown in them. -->
+                <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" MaxWidth="1100" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Border Width="40" Height="40" CornerRadius="20" Background="{DynamicResource AccentTint}" Margin="0,0,14,0" VerticalAlignment="Top">
-                    <TextBlock Text="{Binding WipeGlyph}" Style="{StaticResource Icon}" FontSize="18" Foreground="{DynamicResource AccentText}"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding WipeTitle}" Style="{StaticResource SectionTitle}" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding WipeDrive}" TextWrapping="Wrap" Margin="0,4,0,0"
-                               Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
-                    <TextBlock Text="{Binding WipeStep}" Style="{StaticResource Caption}" FontSize="13" Margin="0,2,0,0"
-                               Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
-                </StackPanel>
-                <!-- The big percentage, like the Cleaner page's total; a Quick wipe or firmware erase can't tell, so the bar just moves. -->
-                <TextBlock Grid.Column="2" Text="{Binding WipeTask.PercentText}" FontSize="30" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
-                           VerticalAlignment="Center" Margin="16,0,0,0"
-                           Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
-                <Button Grid.Column="3" Command="{Binding CancelCommand}" VerticalAlignment="Center" Margin="16,0,0,0"
-                        AutomationProperties.Name="{Binding StopName}" Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE711;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                        <TextBlock Text="Stop" />
-                    </StackPanel>
-                </Button>
-                <ProgressBar Grid.Row="1" Grid.ColumnSpan="4" Height="10" Margin="0,16,0,0" Minimum="0" Maximum="100"
-                             Foreground="{DynamicResource Accent}" Background="{DynamicResource AccentTint}"
-                             Value="{Binding WipeTask.PercentValue, Mode=OneWay}" IsIndeterminate="{Binding WipeTask.NoPercent, Mode=OneWay}"
-                             AutomationProperties.Name="Wipe Progress" Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
-                <!-- Elapsed time and the time left, from the wipe's background task (Ted, 2026-10-23). -->
-                <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Text="{Binding WipeTask.TimeText}" Style="{StaticResource Caption}" Margin="0,8,0,0"
-                           Visibility="{Binding IsWiping, Converter={StaticResource BoolToVis}}" />
-                <!-- Afterwards: what happened to each drive and how long it took. -->
-                <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,10,0,0"
-                            Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
-                    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding WipeTime}" Style="{StaticResource Caption}" Margin="0,6,0,0" />
-                </StackPanel>
-                <!-- Each checked drive's verdict (Ted, 0.8.114): Healthy, Warning or Failing, why, and the values behind it.
-                     Kept while the next drive is checked, so it sits outside the result panel. -->
-                <!-- Its own scrolling (the card sits above the page's scrolling area), so several drives never push the page away. -->
-                <ScrollViewer Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" MaxHeight="250" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"
-                              Padding="0,0,8,0" Visibility="{Binding HasHealthResults, Converter={StaticResource BoolToVis}}">
-                <ItemsControl ItemsSource="{Binding HealthResults}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Margin="0,10,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
-                                    BorderBrush="{DynamicResource Line}" Background="{DynamicResource SurfaceAlt}">
-                                <StackPanel>
-                                    <DockPanel>
-                                        <Border DockPanel.Dock="Right" Style="{StaticResource VerdictChip}" VerticalAlignment="Top" Margin="12,0,0,0">
-                                            <TextBlock Text="{Binding Result.VerdictName}" />
-                                        </Border>
-                                        <TextBlock Text="{Binding Drive}" Style="{StaticResource SettingTitle}" TextWrapping="Wrap" />
-                                    </DockPanel>
-                                    <TextBlock Text="{Binding Result.Summary}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                    <TextBlock Text="{Binding Result.ReasonsText}" TextWrapping="Wrap" Margin="0,6,0,0"
-                                               Visibility="{Binding HasReasons, Converter={StaticResource BoolToVis}}" />
-                                    <TextBlock Text="{Binding Result.FactsText}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                </ScrollViewer>
-            </Grid>
-        </Border>
+                <StackPanel x:Name="WipeColumn">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border DockPanel.Dock="Right" Style="{StaticResource SegmentHost}" VerticalAlignment="Center">
+                                    <ItemsControl ItemsSource="{Binding Modes}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <RadioButton GroupName="WipeMode" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                             IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                                <TextBlock Text="Wipe" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                            </DockPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
-            <StackPanel x:Name="WipeColumn" MaxWidth="1100" HorizontalAlignment="Left">
-                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-                    <StackPanel>
-                        <DockPanel>
-                            <Border DockPanel.Dock="Right" Style="{StaticResource SegmentHost}" VerticalAlignment="Center">
-                                <ItemsControl ItemsSource="{Binding Modes}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
+                            <!-- Entire Drive: the three steps follow in their own cards. -->
+                            <TextBlock Text="Erase whole drives in three steps: pick the drive, choose how it's wiped and formatted, then choose what happens afterwards."
+                                       Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,0"
+                                       Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}" />
+
+                            <!-- Free Space Only keeps its simple layout: one drive letter, the passes, Wipe. -->
+                            <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource NotVis}}">
+                                <TextBlock Text="Drive" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
+                                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" Width="360" HorizontalAlignment="Left"
+                                          IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                    <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <RadioButton GroupName="WipeMode" Style="{StaticResource Segment}" Content="{Binding Label}"
-                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                            <TextBlock>
+                                                <Run Text="{Binding Display, Mode=OneWay}" />
+                                                <Run Text="{Binding Format, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
+                                                <Run Text="·" Foreground="{DynamicResource Muted}" />
+                                                <Run Text="{Binding KindName, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
+                                            </TextBlock>
                                         </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Border>
-                            <TextBlock Text="Wipe" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
-                        </DockPanel>
-
-                        <!-- Free Space Only: one drive letter. -->
-                        <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource NotVis}}">
-                            <TextBlock Text="Drive" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
-                            <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" Width="360" HorizontalAlignment="Left"
-                                      IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                            <Run Text="{Binding Display, Mode=OneWay}" />
-                                            <Run Text="{Binding Format, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
-                                            <Run Text="·" Foreground="{DynamicResource Muted}" />
-                                            <Run Text="{Binding KindName, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="Security" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
+                                <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
+                                    <!-- The same choices as Step 2's Security, in a group of their own (only one of the two is shown). -->
+                                    <ItemsControl ItemsSource="{Binding MethodChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <RadioButton GroupName="FreeSpaceMethod" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                             IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                                <TextBlock Text="{Binding MethodHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"
+                                        CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,18,0,0">
+                                    <TextBlock Text="{Binding DriveNote}" Foreground="{DynamicResource WarnText}" TextWrapping="Wrap" />
+                                </Border>
+                                <!-- Progress and Stop are in the wipe's own card at the top of the page. -->
+                                <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                                    <Button Command="{Binding WipeCommand}" Style="{StaticResource AccentButton}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                            <TextBlock Text="Wipe" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
+                    </Border>
 
-                        <!-- Entire Drive: every attached disk, tick the ones to erase. -->
-                        <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="Drives" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
-                            <DataGrid tc:Placeholder.Text="Drives that can be wiped show here. Click Refresh to look again." ItemsSource="{Binding Disks}" MaxHeight="320" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                    <!-- Entire Drive, Step 1: every attached disk, tick the ones to erase. -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Command="{Binding RefreshCommand}" Margin="12,0,0,0" VerticalAlignment="Top"
+                                        ToolTip="Read the drive list again">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE72C;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Refresh" />
+                                    </StackPanel>
+                                </Button>
+                                <Border Style="{StaticResource StepBadge}">
+                                    <TextBlock Text="1" Style="{StaticResource StepNumber}" AutomationProperties.Name="Step 1" />
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="Select the Drive" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Tick the drive or drives to erase. Drives Windows or Kodiak Cleaner need can't be ticked."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <DataGrid tc:Placeholder.Text="Drives that can be wiped show here. Click Refresh to look again." ItemsSource="{Binding Disks}" MaxHeight="320"
+                                      Margin="0,14,0,0" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Width="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
                                         <DataGridTemplateColumn.Header>
@@ -195,7 +308,14 @@
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="Disk.Size" Width="90" IsReadOnly="True" />
                                     <DataGridTextColumn Header="Letters" Binding="{Binding Disk.Drives}" Width="80" IsReadOnly="True" />
-                                    <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="130" IsReadOnly="True" />
+                                    <!-- How this drive will be erased; the tooltip says it in plain words (Ted, 0.8.115). -->
+                                    <DataGridTemplateColumn Header="Method" Width="160" SortMemberPath="Method">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Method}" ToolTip="{Binding MethodTip}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="Status" Width="2*" SortMemberPath="Status">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -207,8 +327,22 @@
                             </DataGrid>
                             <TextBlock Text="{Binding ListNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
                         </StackPanel>
+                    </Border>
 
-                        <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                    <!-- Entire Drive, Step 2: how the drive is wiped, and the format it's set up with afterwards. -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Style="{StaticResource StepBadge}">
+                                    <TextBlock Text="2" Style="{StaticResource StepNumber}" AutomationProperties.Name="Step 2" />
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="Wipe and Format" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Choose how thoroughly the drive is wiped, then the format it gets afterwards."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+
                             <TextBlock Text="Wipe Type" Style="{StaticResource SettingTitle}" Margin="0,18,0,6" />
                             <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
                                 <ItemsControl ItemsSource="{Binding LevelChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
@@ -223,67 +357,42 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </Border>
-                        </StackPanel>
-                        <TextBlock Text="Security" Style="{StaticResource SettingTitle}" Margin="0,18,0,6"
-                                   Visibility="{Binding ShowSecurity, Converter={StaticResource BoolToVis}}" />
-                        <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left"
-                                Visibility="{Binding ShowSecurity, Converter={StaticResource BoolToVis}}">
-                            <ItemsControl ItemsSource="{Binding MethodChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <RadioButton GroupName="WipeMethod" Style="{StaticResource Segment}" Content="{Binding Label}"
-                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-                        <TextBlock Text="{Binding MethodHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock Text="Security" Style="{StaticResource SettingTitle}" Margin="0,18,0,6"
+                                       Visibility="{Binding ShowSecurity, Converter={StaticResource BoolToVis}}" />
+                            <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left"
+                                    Visibility="{Binding ShowSecurity, Converter={StaticResource BoolToVis}}">
+                                <ItemsControl ItemsSource="{Binding MethodChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <RadioButton GroupName="WipeMethod" Style="{StaticResource Segment}" Content="{Binding Label}"
+                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                            <TextBlock Text="{Binding MethodHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0" />
 
-                        <DockPanel Margin="0,16,0,0" Visibility="{Binding ShowVerify, Converter={StaticResource BoolToVis}}">
-                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Verify}"
-                                      IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Verify the Last Pass" />
-                            <StackPanel Margin="0,0,24,0">
-                                <TextBlock Text="Verify the Last Pass" Style="{StaticResource SettingTitle}" />
-                                <TextBlock Text="Reads every byte back after the last pass to prove it landed. Adds one more pass of time."
-                                           Style="{StaticResource Caption}" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </DockPanel>
-
-                        <!-- Check the Drive Afterwards (Ted, 0.8.114): a health check after the wipe and setup. -->
-                        <DockPanel Margin="0,16,0,0" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
-                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding CheckAfterwards}"
-                                      IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Check the Drive Afterwards" />
-                            <StackPanel Margin="0,0,24,0">
-                                <TextBlock Text="Check the Drive Afterwards" Style="{StaticResource SettingTitle}" />
-                                <TextBlock Text="After the wipe and setup, each drive is checked: its own health report (errors, wear, temperature), the disk errors Windows logged for it, and a read of every sector to find areas that are unreadable or unusually slow. When Verify the Last Pass ran, that read-back already tested every sector, so it isn't read again. Check Drive below runs the same check now, without erasing anything."
-                                           Style="{StaticResource Caption}" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </DockPanel>
-
-                        <!-- After wiping: leave it uninitialized like a new drive, or format it. -->
-                        <StackPanel Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
-                            <DockPanel Margin="0,16,0,0">
-                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding LeaveUninitialized}"
-                                          IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Leave It Uninitialized Like a New Drive" />
+                            <DockPanel Margin="0,16,0,0" Visibility="{Binding ShowVerify, Converter={StaticResource BoolToVis}}">
+                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Verify}"
+                                          IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Verify the Last Pass" />
                                 <StackPanel Margin="0,0,24,0">
-                                    <TextBlock Text="Leave It Uninitialized Like a New Drive" Style="{StaticResource SettingTitle}" />
-                                    <TextBlock Text="Every wipe removes all partitions, the MBR or GPT and the boot sectors. On: nothing is put back, so Windows asks to initialize the drive, just like one fresh from the factory. Off: it's set up with the format below."
+                                    <TextBlock Text="Verify the Last Pass" Style="{StaticResource SettingTitle}" />
+                                    <TextBlock Text="Reads every byte back after the last pass to prove it landed. Adds one more pass of time. A built-in secure erase has no passes to read back."
                                                Style="{StaticResource Caption}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </DockPanel>
+
                             <!-- Which format is recommended for the ticked drive's type, and why (Ted). -->
-                            <Border Margin="0,14,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
-                                    Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}" IsEnabled="{Binding FormatEnabled}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+                            <TextBlock Text="Format" Style="{StaticResource SettingTitle}" Margin="0,22,0,0" />
+                            <TextBlock Text="Leave It Uninitialized Like a New Drive is on in Step 3, so the drive won't be formatted and these choices aren't used."
+                                       Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                       Visibility="{Binding LeaveUninitialized, Converter={StaticResource BoolToVis}}" />
+                            <Border Margin="0,10,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
+                                    Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}" IsEnabled="{Binding FormatEnabled}"
+                                    Style="{StaticResource GrayWhenOff}">
                                 <DockPanel>
                                     <Button DockPanel.Dock="Right" Content="Use Recommended" Command="{Binding UseRecommendedCommand}" VerticalAlignment="Center"
                                             Margin="14,0,0,0" Visibility="{Binding IsCustomFormat, Converter={StaticResource BoolToVis}}" />
@@ -295,61 +404,54 @@
                                     </StackPanel>
                                 </DockPanel>
                             </Border>
-                            <WrapPanel Margin="0,14,0,0" IsEnabled="{Binding FormatEnabled}">
-                                <WrapPanel.Style>
-                                    <Style TargetType="WrapPanel">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </WrapPanel.Style>
+                            <WrapPanel Margin="0,14,0,0" IsEnabled="{Binding FormatEnabled}" Style="{StaticResource GrayWhenOff}">
                                 <StackPanel Margin="0,0,28,8">
                                     <TextBlock Text="Partition Style" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
                                     <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
-                                <ItemsControl ItemsSource="{Binding StyleChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <RadioButton GroupName="PartitionStyle" Style="{StaticResource Segment}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                         AutomationProperties.Name="{Binding Label}">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
-                                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0" VerticalAlignment="Center"
-                                                            Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock Text="Recommended" FontSize="11" FontWeight="Normal" />
-                                                    </Border>
-                                                </StackPanel>
-                                            </RadioButton>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Border>
+                                        <ItemsControl ItemsSource="{Binding StyleChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <RadioButton GroupName="PartitionStyle" Style="{StaticResource Segment}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                 AutomationProperties.Name="{Binding Label}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                                            <Border Style="{StaticResource Chip}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                                    Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock Text="Recommended" FontSize="11" FontWeight="Normal" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </RadioButton>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Border>
                                 </StackPanel>
                                 <StackPanel Margin="0,0,28,8">
                                     <TextBlock Text="File System" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
                                     <Border Style="{StaticResource SegmentHost}" HorizontalAlignment="Left">
-                                <ItemsControl ItemsSource="{Binding FileSystemChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <RadioButton GroupName="FileSystem" Style="{StaticResource Segment}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                         AutomationProperties.Name="{Binding Label}">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
-                                                    <Border Style="{StaticResource Chip}" Margin="8,0,0,0" VerticalAlignment="Center"
-                                                            Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock Text="Recommended" FontSize="11" FontWeight="Normal" />
-                                                    </Border>
-                                                </StackPanel>
-                                            </RadioButton>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Border>
+                                        <ItemsControl ItemsSource="{Binding FileSystemChoices}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <RadioButton GroupName="FileSystem" Style="{StaticResource Segment}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                 AutomationProperties.Name="{Binding Label}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                                            <Border Style="{StaticResource Chip}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                                    Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock Text="Recommended" FontSize="11" FontWeight="Normal" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </RadioButton>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Border>
                                 </StackPanel>
                                 <StackPanel Margin="0,0,0,8">
                                     <TextBlock Text="Drive Name" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
@@ -357,84 +459,136 @@
                                              IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
                                 </StackPanel>
                             </WrapPanel>
-                            <StackPanel IsEnabled="{Binding FormatEnabled}">
-                                <StackPanel.Style>
-                                    <Style TargetType="StackPanel">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Style>
-                                <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
-                                           Style="{StaticResource Caption}" TextWrapping="Wrap" />
-                            </StackPanel>
+                            <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."
+                                       Style="{StaticResource GrayCaption}" TextWrapping="Wrap" IsEnabled="{Binding FormatEnabled}" />
                         </StackPanel>
+                    </Border>
 
-                        <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"
-                                CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,18,0,0">
-                            <TextBlock Text="{Binding DriveNote}" Foreground="{DynamicResource WarnText}" TextWrapping="Wrap" />
-                        </Border>
+                    <!-- Entire Drive, Step 3: what happens once the wipe is done, then the warning and Wipe. -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Style="{StaticResource StepBadge}">
+                                    <TextBlock Text="3" Style="{StaticResource StepNumber}" AutomationProperties.Name="Step 3" />
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="After the Wipe" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Choose whether the drive is set up again and checked once it's wiped, then start."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
 
-                        <!-- Progress and Stop are in the wipe's own card at the top of the page. -->
-                        <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
-                            <Button Command="{Binding WipeCommand}" Style="{StaticResource AccentButton}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                                    <TextBlock Text="Wipe" />
+                            <!-- Leave it uninitialized like a new drive, or format it with Step 2's choices. -->
+                            <DockPanel Margin="0,18,0,0">
+                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding LeaveUninitialized}"
+                                          IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Leave It Uninitialized Like a New Drive" />
+                                <StackPanel Margin="0,0,24,0">
+                                    <TextBlock Text="Leave It Uninitialized Like a New Drive" Style="{StaticResource SettingTitle}" />
+                                    <TextBlock Text="Every wipe removes all partitions, the MBR or GPT and the boot sectors. On: nothing is put back, so Windows asks to initialize the drive, just like one fresh from the factory. Off: it's set up with the format in Step 2, ready to use."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" />
                                 </StackPanel>
-                            </Button>
-                            <!-- Read-only: checks the ticked drives' health and reads every sector, nothing is written. -->
-                            <Button Command="{Binding CheckCommand}" Margin="10,0,0,0" AutomationProperties.Name="Check Drive"
-                                    ToolTip="Check the ticked drives for errors without erasing them"
-                                    Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE9D9;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
-                                    <TextBlock Text="Check Drive" />
+                            </DockPanel>
+
+                            <!-- Check the Drive Afterwards (Ted, 0.8.114): a health check after the wipe and setup. -->
+                            <DockPanel Margin="0,16,0,0">
+                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding CheckAfterwards}"
+                                          IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Check the Drive Afterwards" />
+                                <StackPanel Margin="0,0,24,0">
+                                    <TextBlock Text="Check the Drive Afterwards" Style="{StaticResource SettingTitle}" />
+                                    <TextBlock Text="After the wipe and setup, each drive is checked: its own health report (errors, wear, temperature), the disk errors Windows logged for it, and a read of every sector to find areas that are unreadable or unusually slow. When Verify the Last Pass ran, that read-back already tested every sector, so it isn't read again. Check Drive below runs the same check now, without erasing anything, and Open Reports shows the saved reports."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" />
                                 </StackPanel>
-                            </Button>
+                            </DockPanel>
+
+                            <Border Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1"
+                                    CornerRadius="{DynamicResource Radius}" Padding="12,10" Margin="0,18,0,0">
+                                <TextBlock Text="{Binding DriveNote}" Foreground="{DynamicResource WarnText}" TextWrapping="Wrap" />
+                            </Border>
+
+                            <!-- Progress and Stop are in the wipe's own card at the top of the page. -->
+                            <WrapPanel Margin="0,18,0,0">
+                                <Button Command="{Binding WipeCommand}" Style="{StaticResource AccentButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE74D;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Wipe" />
+                                    </StackPanel>
+                                </Button>
+                                <!-- Read-only: checks the ticked drives' health and reads every sector, nothing is written. -->
+                                <Button Command="{Binding CheckCommand}" Margin="10,0,0,0" AutomationProperties.Name="Check Drive"
+                                        ToolTip="Check the ticked drives for errors without erasing them">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE9D9;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Check Drive" />
+                                    </StackPanel>
+                                </Button>
+                                <!-- Open Reports (Ted, 0.8.115): the drive check reports, saved in Reports\Integrity Check. -->
+                                <Button Command="{Binding OpenReportsCommand}" Margin="10,0,0,0"
+                                        ToolTip="Open the Reports\Integrity Check folder, where every drive check is saved">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE838;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Open Reports" />
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
+                    </Border>
 
-                <!-- How each drive type is erased, A to Z. -->
-                <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="How Each Drive Type Is Erased" Style="{StaticResource SectionTitle}" />
-                        <Grid Margin="0,12,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Border Grid.Row="0" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,12">
-                                <TextBlock Text="Flash Drive" />
+                    <!-- How each drive type is erased, A to Z, in plain words (Ted, 0.8.115): only Entire Drive erases whole drives. -->
+                    <Border Style="{StaticResource Card}" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="How Each Drive Type Is Erased" Style="{StaticResource SectionTitle}" />
+                            <TextBlock Text="Kodiak Cleaner picks the method that works best for each type of drive. Thorough and Secure use these; Quick only removes the partition data."
+                                       Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Border Grid.Row="0" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,12">
+                                    <TextBlock Text="Flash Drive" />
+                                </Border>
+                                <TextBlock Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,12"
+                                           Text="USB sticks and memory cards are overwritten with the passes you choose, like a hard drive. They have no built-in erase Windows can start, and they keep a few spare memory cells that can't be reached, so for top-secret data, physically destroy the stick instead." />
+                                <Border Grid.Row="1" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,12">
+                                    <TextBlock Text="Hard Drive" />
+                                </Border>
+                                <TextBlock Grid.Row="1" TextWrapping="Wrap" Grid.Column="1" Margin="0,0,0,12"
+                                           Text="Every sector is overwritten with the passes you choose (for example zeros, then ones, then random data), and with Verify the Last Pass on, the last pass is read back to prove it landed. Once overwritten, the old files can't be recovered." />
+                                <Border Grid.Row="2" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,12">
+                                    <TextBlock Text="NVMe SSD" />
+                                </Border>
+                                <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,12"
+                                           Text="Kodiak Cleaner asks the drive to run its own built-in secure erase (NIST SP 800-88 Purge). The drive either throws away the hidden key all its data was stored with, which makes the data unreadable at once, or clears every memory cell, including the spare cells overwriting can't reach. It takes seconds to a few minutes." />
+                                <Border Grid.Row="3" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,0">
+                                    <TextBlock Text="SSD" />
+                                </Border>
+                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap"
+                                           Text="The same built-in secure erase, when the drive offers it to Windows. If it doesn't, every part of it is overwritten with random data instead, and formatting it afterwards tells it all the space is free again (TRIM)." />
+                            </Grid>
+                            <!-- Ted (0.8.115): people shouldn't think a built-in secure erase breaks the drive. -->
+                            <Border Margin="0,16,0,0" Padding="14,12" CornerRadius="{DynamicResource Radius}" BorderThickness="1"
+                                    Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}">
+                                <DockPanel>
+                                    <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" FontSize="16" Foreground="{DynamicResource AccentText}"
+                                               VerticalAlignment="Top" Margin="0,1,10,0" />
+                                    <StackPanel>
+                                        <TextBlock Text="Every Drive Keeps Working Afterwards" Style="{StaticResource SettingTitle}" TextWrapping="Wrap" />
+                                        <TextBlock TextWrapping="Wrap" Margin="0,4,0,0"
+                                                   Text="Erasing removes your files, not the drive itself. A built-in secure erase is a command the drive has for this job: it wipes the data stored on the drive, not its firmware (the software that runs the drive), so the drive works normally afterwards. Every drive is then set up again as chosen in Step 3: formatted and ready to use, or left uninitialized like a new drive so Windows asks to set it up." />
+                                    </StackPanel>
+                                </DockPanel>
                             </Border>
-                            <TextBlock Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,12"
-                                       Text="USB sticks and memory cards are overwritten with the passes you choose. They can't run a firmware erase from Windows, so for top-secret data, destroy the stick." />
-                            <Border Grid.Row="1" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,12">
-                                <TextBlock Text="Hard Drive" />
-                            </Border>
-                            <TextBlock Grid.Row="1" TextWrapping="Wrap" Grid.Column="1" Margin="0,0,0,12"
-                                       Text="Every sector is overwritten with the passes you choose (DoD 5220.22-M), then the last pass is read back and checked." />
-                            <Border Grid.Row="2" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,12">
-                                <TextBlock Text="NVMe SSD" />
-                            </Border>
-                            <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,12"
-                                       Text="The drive's own firmware erase (NIST SP 800-88 Purge): a crypto erase throws away the key every cell was written with, then a block erase if needed. Takes seconds and reaches the spare cells overwriting can't." />
-                            <Border Grid.Row="3" Style="{StaticResource Chip}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,14,0">
-                                <TextBlock Text="SSD" />
-                            </Border>
-                            <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap"
-                                       Text="The firmware erase too, when the drive offers it to Windows. If it doesn't, the drive is overwritten with random data and then trimmed, the most Windows can do for it." />
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
     </DockPanel>
 </UserControl>
