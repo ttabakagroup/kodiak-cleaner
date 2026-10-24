@@ -1,8 +1,9 @@
 import Foundation
 
-/// The donation reminder (Ted, 2026-10-10; the same as Windows 0.8.55): a pop-up at startup asking for a donation on
-/// Ko-fi, which can be turned off once Kodiak Cleaner has started 10 times, and a small banner on every 10th start.
-/// Supporters see neither. A start counts only when the main window opens.
+/// The support reminder (Ted, 2026-10-10; the same as Windows 0.8.55; softer wording 0.8.13): a pop-up at startup inviting
+/// the person to support Kodiak Cleaner on Ko-fi, which can be turned off once Kodiak Cleaner has started 10 times, and a small banner on every 10th start.
+/// Supporters see neither. A start counts only when the main window opens. User-facing text never says "donate":
+/// Supporter perks make it a purchase, not a gift (Ted, 2026-10-24).
 public enum Donation {
     /// The reminder can be turned off after this many starts.
     public static let optOutAfter = 10
@@ -26,13 +27,13 @@ public enum Donation {
 
     // MARK: Wording (the same as Windows)
 
-    public static let title = "Help Keep Kodiak Cleaner Free"
+    public static let title = "Support Kodiak Cleaner"
     public static let paragraphs = [
         "Kodiak Cleaner is free and open source, with no ads, no tracking and nothing held back behind a paywall. It's built in spare time by one person.",
-        "If it has saved you time or space, please consider a small donation. Even the price of a coffee keeps it free for everyone and pays for the next round of features.",
-        "Donations are made on Ko-fi and open in your browser. Supporters get a few extras as a thank-you, and this reminder turns off for good.",
+        "If it helps you, please consider supporting Kodiak Cleaner on Ko-fi. It helps pay for the next round of features. No pressure, and thank you for using it.",
+        "Ko-fi opens in your browser. Supporters get a few extras as a thank-you, and this reminder turns off for good.",
     ]
-    public static let bannerText = "Kodiak Cleaner is made for free in spare time. A donation, however small, really keeps the work going."
+    public static let bannerText = "Kodiak Cleaner is free. If it helps you, you can support it on Ko-fi."
 
     /// The caption under the pop-up's Don't Show This Again at Startup switch.
     public static func promptCaption(launchCount: Int, isSupporter: Bool) -> String {
@@ -42,13 +43,13 @@ public enum Donation {
         return "You can turn this reminder off after Kodiak Cleaner has started \(optOutAfter) times (\(launchesLeft(launchCount)) more to go)."
     }
 
-    /// The caption under Settings > General > Ask Me to Donate at Startup.
+    /// The caption under Settings > General > Remind Me to Support Kodiak Cleaner at Startup.
     public static func settingsCaption(launchCount: Int, isSupporter: Bool) -> String {
         if isSupporter { return "Thank you for being a Supporter! The reminder is off for you." }
         if canOptOut(launchCount: launchCount, isSupporter: false) {
-            return "At startup, a short note asks you to consider donating to keep Kodiak Cleaner free and open source."
+            return "At startup, a short note invites you to support Kodiak Cleaner on Ko-fi. Every feature stays free either way."
         }
-        return "At startup, a short note asks you to consider donating. It can be turned off after Kodiak Cleaner has started \(optOutAfter) times (\(launchesLeft(launchCount)) more to go)."
+        return "At startup, a short note invites you to support Kodiak Cleaner on Ko-fi. It can be turned off after Kodiak Cleaner has started \(optOutAfter) times (\(launchesLeft(launchCount)) more to go)."
     }
 }
 

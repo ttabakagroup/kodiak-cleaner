@@ -1,5 +1,11 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.13 Dev] - 2026-10-24
+
+### Changed
+- **Supporting Kodiak Cleaner:** friendlier wording, with no more talk of donations. The startup pop-up is now called Support Kodiak Cleaner, its button and the every-10th-start banner's button say Support on Ko-fi, and the banner reads "Kodiak Cleaner is free. If it helps you, you can support it on Ko-fi."
+- **Settings > General:** Ask Me to Donate at Startup is now Remind Me to Support Kodiak Cleaner at Startup. It works just as before.
+
 ## [0.8.12 Dev] - 2026-10-24
 
 ### Added

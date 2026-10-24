@@ -9,7 +9,7 @@ Kodiak Cleaner for Mac is made by Ted Tabaka, an independent developer. This pol
 - Your settings are saved in `~/Library/Application Support/Kodiak Cleaner/Settings.json`.
 - Triggers History and its backup copies are saved in `~/Library/Application Support/Kodiak Cleaner/Backups`.
 - The Cleaner's history (when each item was last cleaned and how much it freed) is saved with your settings.
-- How many times Kodiak Cleaner has started is saved with your settings, for the donation reminder. It is never sent anywhere.
+- How many times Kodiak Cleaner has started is saved with your settings, for the support reminder. It is never sent anywhere.
 - What the Cleaner and Triggers pages find is shown to you and never saved anywhere else.
 
 ## What Is Never Collected

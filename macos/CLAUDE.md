@@ -19,7 +19,7 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
 ## Privacy and Safety
 - No telemetry, analytics, crash reporting, ads, upsells, accounts or background services. No network code at all
   (`tests/check_source.py` fails on URLSession and friends). Links open in the person's own browser.
-- The one exception to "no nags" is the donation reminder (Ted, 2026-10-10; same as Windows 0.8.55): see Interface.
+- The one exception to "no nags" is the support reminder (Ted, 2026-10-10; same as Windows 0.8.55): see Interface.
   Nothing else may ask for money or nag.
 - No remote resources. Fredoka is bundled and registered for this process only; icons are SF Symbols or the apps' own icons.
 - Settings: `~/Library/Application Support/Kodiak Cleaner/Settings.json`. Backups and Triggers History: `.../Backups`.
@@ -102,12 +102,12 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
 - Slogan (Ted's exact words): "Not a Crap Cleaner. A Cleaner App, Built Around What Matters."
 - Dev and Beta builds show the Beta Software notice at each start until Don't Show This Again at Startup is on. What's New opens
   after an update.
-- Donation reminder (Ted, 2026-10-10, the only nag allowed; logic in `Sources/KodiakCore/Donation.swift`, tested): `launchCount`
+- Support reminder (Ted, 2026-10-10, the only nag allowed; logic in `Sources/KodiakCore/Donation.swift`, tested): `launchCount`
   goes up each time the main window opens (not `--screenshots` or `--self-test`). The startup pop-up (`SheetKind.donation`,
   `DonationView`) shows while `showDonationPrompt` is on, never for Supporters, never with What's New, and after the
-  Beta notice closes when that shows (never stacked). Its Don't Show This Again switch and Settings > General > Ask Me to Donate at Startup stay greyed
+  Beta notice closes when that shows (never stacked). Its Don't Show This Again switch and Settings > General > Remind Me to Support Kodiak Cleaner at Startup stay greyed
   until 10 starts. A banner (`DonationBanner`) shows on every 10th start. Supporters see neither, and a code turns the reminder
-  off. Reset All Settings starts `launchCount` again (Ted, 0.8.2); Supporters stay off. Keep the wording identical to Windows and Linux. Getting Started's features list (`features` in HomeAbout.swift) stays A to Z and current.
+  off. Reset All Settings starts `launchCount` again (Ted, 0.8.2); Supporters stay off. Keep the wording identical to Windows and Linux. Never say "donate" or "donation" in user-facing text (Ted, 2026-10-24, 0.8.13): Supporter perks make it a purchase, not a gift; say "Support on Ko-fi", "please consider supporting Kodiak Cleaner". Internal names (`Donation`, `showDonationPrompt`) stay. Getting Started's features list (`features` in HomeAbout.swift) stays A to Z and current.
 
 ## Feedback and Support
 - Contact & Feedback: four accent buttons (Send Feedback, Report a Bug, Request a Feature, Security) open the website's
