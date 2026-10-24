@@ -25,7 +25,7 @@
             </StackPanel>
         </Border>
 
-        <!-- BitLocker on the Windows drive: save the recovery key and suspend protection before Safe Mode. Shown only when it's on. -->
+        <!-- BitLocker on the Windows drive: save the recovery key and suspend protection before Safe Mode. Shown when it's on, suspended, encrypting or turning off. -->
         <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,16"
                 Visibility="{Binding HasBitLocker, Converter={StaticResource BoolToVis}}">
             <StackPanel>

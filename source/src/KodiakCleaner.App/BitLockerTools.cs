@@ -17,6 +17,10 @@ public enum BitLockerState
     On,
     /// <summary>Encrypted, but protection is suspended, so Windows starts without asking for the key.</summary>
     Suspended,
+    /// <summary>Windows is still encrypting the drive (or paused part way); protection turns on when it finishes.</summary>
+    Encrypting,
+    /// <summary>Windows is decrypting the drive because BitLocker is being turned off.</summary>
+    Decrypting,
 }
 
 /// <summary>
@@ -46,8 +50,9 @@ public static class BitLockerTools
     }
 
     /// <summary>
-    /// Reads the Windows drive's state. ConversionStatus 0 means fully decrypted; ProtectionStatus 1 means protection is on,
-    /// so an encrypted drive with protection off is suspended.
+    /// Reads the Windows drive's state. ConversionStatus 0 means fully decrypted, 2 and 4 encrypting (4 paused), 3 and 5 decrypting;
+    /// ProtectionStatus 1 means protection is on, so a fully encrypted drive with protection off is suspended. While Windows is still
+    /// encrypting, protection reads off too, which is not a suspend (Ted saw "Suspended" mid-encryption, 2026-10-24).
     /// </summary>
     public static BitLockerState State()
     {
@@ -58,10 +63,26 @@ public static class BitLockerTools
             var conversion = Convert.ToUInt32(v["ConversionStatus"] ?? 0u);
             var protection = Convert.ToUInt32(v["ProtectionStatus"] ?? 0u);
             if (conversion == 0 && protection == 0) return BitLockerState.Off;
+            if (conversion is 2 or 4) return BitLockerState.Encrypting;
+            if (conversion is 3 or 5) return BitLockerState.Decrypting;
             // 1 is on and 2 is "can't tell" (a locked drive), so only 0 counts as suspended.
             return protection == 0 ? BitLockerState.Suspended : BitLockerState.On;
         }
         catch (Exception e) when (Expected(e) || e is InvalidCastException or FormatException) { return BitLockerState.Unknown; }
+    }
+
+    /// <summary>How far Windows has got encrypting or decrypting the drive, 0 to 100, or null when it can't be read.</summary>
+    public static int? Percent()
+    {
+        try
+        {
+            using var v = Volume();
+            if (v is null) return null;
+            using var result = v.InvokeMethod("GetConversionStatus", null, null);
+            if (Convert.ToUInt32(result["ReturnValue"]) != 0) return null;
+            return (int)Math.Clamp(Convert.ToUInt32(result["EncryptionPercentage"] ?? 0u), 0u, 100u);
+        }
+        catch (Exception e) when (Expected(e) || e is InvalidCastException or FormatException) { return null; }
     }
 
     /// <summary>

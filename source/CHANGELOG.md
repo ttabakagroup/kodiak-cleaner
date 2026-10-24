@@ -5,6 +5,12 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.107 Dev] - 2026-10-24
+
+### Driver Cleaner
+- While Windows is still encrypting the drive, the BitLocker card says BitLocker Is Encrypting with how far it has got (it used to say Suspended), and keeps the percentage up to date. Turning BitLocker off shows BitLocker Is Turning Off the same way.
+- Restart in Safe Mode suggests waiting while BitLocker is still encrypting or decrypting the drive.
+
 ## [0.8.106 Dev] - 2026-10-24
 
 ### All Lists

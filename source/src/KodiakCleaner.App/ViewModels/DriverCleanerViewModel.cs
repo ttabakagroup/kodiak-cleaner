@@ -102,17 +102,61 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
             OnPropertyChanged(nameof(BitLockerText));
             OnPropertyChanged(nameof(IsBitLockerOn));
             OnPropertyChanged(nameof(IsBitLockerSuspended));
+            if (IsBitLockerConverting) WatchConversion();
         }
     }
-    public bool HasBitLocker => BitLocker is BitLockerState.On or BitLockerState.Suspended;
+    // Encrypting or decrypting: how far along, refreshed every 15 seconds while the page is open.
+    private int? _bitLockerPercent;
+    public int? BitLockerPercent
+    {
+        get => _bitLockerPercent;
+        private set { Set(ref _bitLockerPercent, value); OnPropertyChanged(nameof(BitLockerTitle)); OnPropertyChanged(nameof(BitLockerText)); }
+    }
+    public bool HasBitLocker => BitLocker is BitLockerState.On or BitLockerState.Suspended or BitLockerState.Encrypting or BitLockerState.Decrypting;
     public bool IsBitLockerOn => BitLocker == BitLockerState.On;
     public bool IsBitLockerSuspended => BitLocker == BitLockerState.Suspended;
-    public string BitLockerTitle => IsBitLockerSuspended ? "BitLocker Is Suspended" : "BitLocker Is On";
-    public string BitLockerText => IsBitLockerSuspended
-        ? $"Drive {BitLockerTools.WindowsDrive} is still encrypted, but Windows starts without asking for the recovery key until its restarts run out. Then protection turns back on by itself."
-        : $"Drive {BitLockerTools.WindowsDrive} is encrypted. Driver changes and Safe Mode can make Windows ask for the 48-digit recovery key at start-up. " +
-          "Save the key first. Suspend keeps the drive encrypted and only skips the key for the next two restarts (Safe Mode and back), " +
-          "then turns itself back on. Turning BitLocker off decrypts the whole drive, takes a long time and isn't needed for drivers.";
+    private bool IsBitLockerConverting => BitLocker is BitLockerState.Encrypting or BitLockerState.Decrypting;
+    private string PercentText => BitLockerPercent is int p ? $" ({p}%)" : "";
+    public string BitLockerTitle => BitLocker switch
+    {
+        BitLockerState.Suspended => "BitLocker Is Suspended",
+        BitLockerState.Encrypting => "BitLocker Is Encrypting" + PercentText,
+        BitLockerState.Decrypting => "BitLocker Is Turning Off" + PercentText,
+        _ => "BitLocker Is On",
+    };
+    public string BitLockerText => BitLocker switch
+    {
+        BitLockerState.Suspended =>
+            $"Drive {BitLockerTools.WindowsDrive} is still encrypted, but Windows starts without asking for the recovery key until its restarts run out. Then protection turns back on by itself.",
+        BitLockerState.Encrypting =>
+            $"Windows is encrypting drive {BitLockerTools.WindowsDrive} in the background{(BitLockerPercent is int p ? $" ({p}% done)" : "")}, and protection turns on when it finishes. " +
+            "You can keep using the PC. Save the recovery key now, and wait until encrypting finishes before you restart in Safe Mode.",
+        BitLockerState.Decrypting =>
+            $"Windows is decrypting drive {BitLockerTools.WindowsDrive} because BitLocker is being turned off{(BitLockerPercent is int p ? $" ({p}% done)" : "")}. " +
+            "You can keep using the PC. Wait until it finishes before you restart in Safe Mode.",
+        _ => $"Drive {BitLockerTools.WindowsDrive} is encrypted. Driver changes and Safe Mode can make Windows ask for the 48-digit recovery key at start-up. " +
+             "Save the key first. Suspend keeps the drive encrypted and only skips the key for the next two restarts (Safe Mode and back), " +
+             "then turns itself back on. Turning BitLocker off decrypts the whole drive, takes a long time and isn't needed for drivers.",
+    };
+
+    private bool _watching;
+    private async void WatchConversion()
+    {
+        if (_watching) return;
+        _watching = true;
+        try
+        {
+            BitLockerPercent = await Task.Run(BitLockerTools.Percent);
+            while (IsBitLockerConverting)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(15));
+                var (state, percent) = await Task.Run(() => (BitLockerTools.State(), BitLockerTools.Percent()));
+                BitLockerPercent = percent;
+                if (state != BitLockerState.Unknown) { _watching = state is BitLockerState.Encrypting or BitLockerState.Decrypting; BitLocker = state; }
+            }
+        }
+        finally { _watching = false; }
+    }
 
     public bool IsSafeMode { get; } = DriverTools.IsSafeMode;
     public string SafeModeTitle => IsSafeMode ? "Running in Safe Mode" : "Safe Mode";
@@ -288,6 +332,15 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
                 new[] { "Cancel", "Restart Without Suspending", "Suspend and Restart" }, 2, 0);
             if (choice == 0) return;
             if (choice == 2 && !await SuspendAsync()) return;
+        }
+        else if (IsBitLockerConverting)
+        {
+            string doing = BitLocker == BitLockerState.Encrypting ? "encrypting" : "decrypting";
+            if (Dialogs.Choose(MessageKind.Warning, "BitLocker Is Busy",
+                    $"Windows is still {doing} drive {BitLockerTools.WindowsDrive}{PercentText}. It carries on after a restart, but it's safer to wait until it finishes before you restart in Safe Mode.",
+                    "No saved recovery key yet? Click Wait, then Show Recovery Key on this page.",
+                    new[] { "Wait", "Restart Anyway" }, 0, 0) == 0)
+                return;
         }
         else if (!Dialogs.Warn($"Restart in Safe Mode now? Kodiak Cleaner opens on the Driver Cleaner there so you can remove the {VendorName} driver.",
                 "Restart in Safe Mode",

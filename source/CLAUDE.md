@@ -143,6 +143,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   DisableKeyProtectors with DisableCount 2 (into Safe Mode and back), never full decryption: turning it off is left to Windows' own page
   (control /name Microsoft.BitLockerDriveEncryption, or ms-settings:deviceencryption on Home). Show Recovery Key reads the numerical
   passwords and only shows, copies or saves them (warns when saving to the Windows drive); never log or store a key.
+  While ConversionStatus is 2/4 (encrypting) or 3/5 (decrypting), ProtectionStatus reads 0 but that is NOT a suspend: the card shows
+  Encrypting or Turning Off with GetConversionStatus EncryptionPercentage (polled every 15 s), and Safe Mode suggests waiting.
   Never name or reference any third-party driver removal tool in the app, docs or replies.
 - Advanced Cleaning tasks (0.8.18, `CleanTargetKind.Task`, `SystemTasks`): only Windows' own tools from System32 (DISM, powercfg, compact,
   vssadmin, wevtutil, netsh, cleanmgr, DnsFlushResolverCache); registry changes backed up first; event logs exported and checked before clearing;
