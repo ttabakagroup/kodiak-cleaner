@@ -357,14 +357,15 @@ final class WiperModel: ObservableObject {
                         : (result.stopped ? "Stopped" : (result.setUp ? "Erased" : "Erased, Not Set Up"))
                 }
             }
+            let report = lines
             await MainActor.run {
                 let model = WiperModel.shared
-                model.status = lines.joined(separator: "\n")
+                model.status = report.joined(separator: "\n")
                 model.percent = nil
                 model.end()
                 model.ticked = []
                 model.refresh()
-                if !lines.isEmpty { AppModel.shared.tell("Drive Wiper", lines.joined(separator: "\n\n")) }
+                if !report.isEmpty { AppModel.shared.tell("Drive Wiper", report.joined(separator: "\n\n")) }
             }
         }
     }
