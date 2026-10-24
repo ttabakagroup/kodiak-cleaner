@@ -209,15 +209,18 @@ public sealed class MainViewModel : ObservableObject
         return at >= 0 && at + by >= 0 && at + by < ToolPages.Count;
     }
 
-    /// <summary>Reset Tools Order, under the Tools list (Ted, 2026-10-23): Favorites and Tools back to A to Z. What's pinned stays pinned.</summary>
+    /// <summary>
+    /// Reset Tools Order, under the Tools list (Ted, 2026-10-23; 2026-10-24: Favorites too): Favorites go back to the default
+    /// (Cleaner, Registry, Startup, Programs, in that order, anything else unpinned), Favorites Order to Default Order, Tools to A to Z.
+    /// </summary>
     public ICommand ResetToolsOrderCommand => _resetToolsOrder ??= new RelayCommand(() =>
     {
-        if (!Dialogs.Confirm("Put your Favorites and Tools back in A to Z order? Pinned tools stay in Favorites.")) return;
-        var byKey = Pinnable.ToDictionary(p => p.Key);
-        Settings.Current.Favorites = SidebarFavorites.AToZ(SavedFavorites(), k => byKey[k].Title);
+        if (!Dialogs.Confirm("Put Favorites back to Cleaner, Registry, Startup and Programs, and the tools back in A to Z order? Any other tools you pinned go back to Tools.")) return;
+        Settings.Current.Favorites = null;
+        Settings.Current.FavoritesAToZ = false;
         Settings.Current.ToolsOrder = null;
         Settings.Current.Save();
-        ArrangeSidebar();
+        NotifySidebarSettingsChanged(); // the sidebar, and Favorites Order in Settings
     });
     private ICommand? _resetToolsOrder;
 

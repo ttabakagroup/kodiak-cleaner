@@ -60,6 +60,5 @@ public sealed class SidebarFavoritesTests
         var favorites = new[] { "cleaner" };
         Assert.Equal(new[] { "disk", "wiper", "hash" }, SidebarFavorites.ArrangeTools(all, favorites, null, k => titles[k]));
         Assert.Equal(new[] { "hash", "disk", "wiper" }, SidebarFavorites.ArrangeTools(all, favorites, new[] { "hash", "cleaner", "gone" }, k => titles[k]));
-        Assert.Equal(new[] { "cleaner", "disk", "hash" }, SidebarFavorites.AToZ(new[] { "hash", "cleaner", "disk" }, k => titles[k]));
     }
 }

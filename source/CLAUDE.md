@@ -73,7 +73,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Main sidebar: Favorites at the top (Ted, 2026-10-23; was the Cleaning heading), fixed, with only the Tools list below scrolling. Default
   favorites, always in this order: Cleaner, Registry, Startup, Programs (`SidebarFavorites.Default`). Any page in Favorites or Tools can be
   pinned or unpinned (right-click, or drag in or out of Favorites) and moved (Move Up/Down, or drag); pinned pages leave Tools, which is
-  A to Z until a tool is dragged (`ToolsOrder=<page keys>`; Reset Tools Order under the last tool sorts Favorites and Tools A to Z, Ted
+  A to Z until a tool is dragged (`ToolsOrder=<page keys>`; Reset Tools Order under the last tool puts Favorites back to the default four in order, Favorites Order to Default, and Tools A to Z (Ted 2026-10-24), Ted
   2026-10-23). Sidebar dragging tracks the mouse itself, never OLE drag and drop: as administrator `ElevatedFileDrop` revokes the window's
   drop target. Saved as `[General] Favorites=<page keys>` and `FavoritesOrder=Default|AToZ`; Settings > General > Sidebar has Favorites Order
   (Default Order or A to Z) and Restore Default Order; Reset to Default resets them. Tools open by default (Ted, 0.8.11; folding is remembered as `ToolsOpen`).

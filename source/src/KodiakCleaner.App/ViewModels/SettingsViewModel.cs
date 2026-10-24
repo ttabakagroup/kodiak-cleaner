@@ -112,6 +112,11 @@ public sealed class SettingsViewModel : ObservableObject
             new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel() });
 #endif
         _defaultOrder = Sections.ToList();
+        // Reset Tools Order in the sidebar can switch Favorites Order back to Default Order; keep the choice here in step.
+        MainViewModel.SidebarSettingsChanged += () =>
+        {
+            foreach (var c in FavoriteOrders) c.IsSelected = c.Value == S.FavoritesAToZ;
+        };
         SortSections();
         Sections.First(s => s.Key == "general").IsSelected = true;
 

@@ -74,8 +74,4 @@ public static class SidebarFavorites
         var listed = toolsOrder.Select(k => k.Trim().ToLowerInvariant()).Where(tools.Contains).Distinct().ToList();
         return listed.Concat(tools.Where(k => !listed.Contains(k))).ToList();
     }
-
-    /// <summary>Reset Tools Order: Favorites (which stay pinned) and Tools both go back to A to Z.</summary>
-    public static List<string> AToZ(IEnumerable<string> keys, Func<string, string> title) =>
-        keys.OrderBy(title, StringComparer.CurrentCultureIgnoreCase).ToList();
 }

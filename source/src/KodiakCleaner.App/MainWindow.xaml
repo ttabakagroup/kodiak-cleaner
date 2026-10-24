@@ -218,10 +218,10 @@
                     <StackPanel x:Name="ToolsDropArea" Background="Transparent">
                         <ItemsControl x:Name="ToolsList" ItemsSource="{Binding ToolPages}" ItemTemplate="{StaticResource NavItem}"
                                       Visibility="{Binding ToolsVisible, Converter={StaticResource BoolToVis}}" />
-                        <!-- Reset Tools Order (Ted, 2026-10-23): last thing under the tools; Favorites and Tools back to A to Z. A small
+                        <!-- Reset Tools Order (Ted, 2026-10-23): last thing under the tools; Favorites back to the default four and Tools to A to Z. A small
                              centered button with the Sort icon, so it doesn't look like System Restore above it (Ted, 2026-10-24). -->
                         <Button Command="{Binding ResetToolsOrderCommand}" HorizontalAlignment="Center" Margin="0,10,0,12" Padding="10,4"
-                                FontSize="12.5" ToolTip="Put Favorites and Tools back in A to Z order"
+                                FontSize="12.5" ToolTip="Put Favorites back to Cleaner, Registry, Startup and Programs, and Tools in A to Z order"
                                 Visibility="{Binding ShowResetToolsOrder, Converter={StaticResource BoolToVis}}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8CB;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center" />

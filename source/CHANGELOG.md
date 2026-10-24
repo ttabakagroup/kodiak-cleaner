@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.105 Dev] - 2026-10-24
+
+### Sidebar
+- Reset Tools Order also puts Favorites back to Cleaner, Registry, Startup and Programs.
+
 ## [0.8.104 Dev] - 2026-10-24
 
 ### Duplicate Finder

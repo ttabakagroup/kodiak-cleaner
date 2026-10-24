@@ -125,7 +125,7 @@ public sealed class Settings
     public List<string>? Favorites { get; set; }
     /// <summary>Settings › General › Favorites Order: A to Z instead of the order set by dragging or Move Up and Move Down.</summary>
     public bool FavoritesAToZ { get; set; }
-    /// <summary>Tools in the order set by dragging (Ted, 2026-10-23); null until changed, which means A to Z. Reset Tools Order clears it.</summary>
+    /// <summary>Tools in the order set by dragging (Ted, 2026-10-23); null until changed, which means A to Z. Reset Tools Order clears it (and puts Favorites back to the default).</summary>
     public List<string>? ToolsOrder { get; set; }
     /// <summary>Settings' Sort By dropdown: A to Z instead of the Default order (General, then the most used).</summary>
     public bool SettingsAToZ { get; set; }
