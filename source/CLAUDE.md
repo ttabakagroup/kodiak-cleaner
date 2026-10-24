@@ -109,6 +109,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   highlight whole rows on hover and when ticked via an adorner, and a click anywhere on a row ticks it; Space ticks highlighted rows). Only `ListSelectTests.SingleRowTables` may say `SelectionMode="Single"`; a table or list never gets
   its own Style (it would lose ListSelect). Tables with a right-click menu pass their highlighted rows to the view model's `Highlighted`. Right-click actions act on every highlighted row (`GridRightClick` keeps a
   selection when the clicked row is in it); the buttons act on ticked rows, else the highlighted ones. Repair and Rename need exactly one row.
+- Ticking (Ted, 2026-10-24): a table's Select All box reads a running total (`ViewModels/CheckTally.cs`), never `Rows.All(r => r.IsChecked)`;
+  re-reading every row on each tick froze the app on long lists. Ticking many rows at once goes inside `Tally.Bulk(...)` so the page updates once.
+  Registry, Programs, Large Files, Scheduled Tasks, Hash Checker and Mass Rename use it; Duplicate Finder keeps its own totals (`Ticked`, `Bulk`).
+  Short fixed lists (drives, restore points, startup entries) may still count directly, listed in `TickTotalsTests.ShortLists` with why;
+  TickTotalsTests fails for any other Select All box that doesn't read `Tally.State`, so every new tool follows this.
 - Empty lists (Ted, 2026-10-23): every DataGrid and ItemsControl sets `views:Placeholder.Text` (Views/Placeholder.cs), a full sentence saying
   what shows there and how to fill it ("… show here after you click Search."), drawn faintly in the middle while the list is empty.
   `PlaceholderTests.NeverEmpty` lists the exceptions (fixed choices, lists hidden or explained when empty) with a reason; new lists need one or the other.

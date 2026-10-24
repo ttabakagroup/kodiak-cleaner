@@ -65,6 +65,7 @@ public sealed class MassRenameViewModel : ObservableObject
 
     public MassRenameViewModel()
     {
+        _ = Tally; // started now, as ticks also renumber the preview
         var saved = Settings.Current.MassRename;
         _pattern = saved.Pattern;
         _find = saved.Find;
@@ -198,13 +199,21 @@ public sealed class MassRenameViewModel : ObservableObject
     private RenameOrder _order;
     public RenameOrder Order { get => _order; set { if (Set(ref _order, value)) RulesChanged(); } }
 
+    private CheckTally<RenameRow>? _tally;
+    /// <summary>Running count of ticked rows (Ted, 2026-10-24), so ticking doesn't re-read the whole list.</summary>
+    private CheckTally<RenameRow> Tally => _tally ??= new(Rows, r => r.IsChecked, nameof(RenameRow.IsChecked), () =>
+    {
+        OnPropertyChanged(nameof(AllChecked));
+        RulesChanged(); // numbering only counts ticked files
+    });
+
     public bool? AllChecked
     {
-        get => Rows.Count > 0 && Rows.All(r => r.IsChecked) ? true : Rows.Any(r => r.IsChecked) ? null : false;
+        get => Tally.State;
         set
         {
             var on = value != false;
-            foreach (var r in Rows) r.IsChecked = on;
+            Tally.Bulk(() => { foreach (var r in Rows) r.IsChecked = on; });
         }
     }
 
@@ -232,7 +241,7 @@ public sealed class MassRenameViewModel : ObservableObject
     private void SetChecked(bool on)
     {
         var rows = Highlighted.Count > 0 ? Highlighted : Selected is { } s ? new[] { s } : Array.Empty<RenameRow>();
-        foreach (var r in rows.ToList()) r.IsChecked = on;
+        Tally.Bulk(() => { foreach (var r in rows.ToList()) r.IsChecked = on; });
     }
 
     private void ResetRules()
@@ -306,14 +315,7 @@ public sealed class MassRenameViewModel : ObservableObject
             Rows.Clear();
             foreach (var f in files)
             {
-                var row = new RenameRow(f) { Subfolder = Path.GetRelativePath(root, f.Folder) is var rel && rel != "." ? rel : "" };
-                row.PropertyChanged += (_, e) =>
-                {
-                    if (e.PropertyName != nameof(RenameRow.IsChecked)) return;
-                    OnPropertyChanged(nameof(AllChecked));
-                    RulesChanged(); // numbering only counts ticked files
-                };
-                Rows.Add(row);
+                Rows.Add(new RenameRow(f) { Subfolder = Path.GetRelativePath(root, f.Folder) is var rel && rel != "." ? rel : "" });
             }
             OnPropertyChanged(nameof(AllChecked));
             OnPropertyChanged(nameof(ShowSubfolder));

@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.106 Dev] - 2026-10-24
+
+### All Lists
+- Select All and Clear no longer freeze on long lists in Registry, Programs, Large Files, Scheduled Tasks, Hash Checker and Mass Rename.
+
 ## [0.8.105 Dev] - 2026-10-24
 
 ### Sidebar

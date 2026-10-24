@@ -101,13 +101,17 @@ public sealed class RegistryViewModel : ObservableObject
     }
 
     /// <summary>The header checkbox: true when every issue is ticked, null when some are.</summary>
+    private CheckTally<IssueItem>? _tally;
+    /// <summary>Running count of ticked rows (Ted, 2026-10-24), so ticking doesn't re-read the whole list.</summary>
+    private CheckTally<IssueItem> Tally => _tally ??= new(Issues, r => r.IsChecked, nameof(IssueItem.IsChecked), () => OnPropertyChanged(nameof(AllChecked)));
+
     public bool? AllChecked
     {
-        get => Issues.Count > 0 && Issues.All(i => i.IsChecked) ? true : Issues.Any(i => i.IsChecked) ? null : false;
+        get => Tally.State;
         set
         {
             var on = value != false;
-            foreach (var i in Issues) i.IsChecked = on;
+            Tally.Bulk(() => { foreach (var i in Issues) i.IsChecked = on; });
         }
     }
 
@@ -116,9 +120,7 @@ public sealed class RegistryViewModel : ObservableObject
         Issues.Clear();
         foreach (var issue in found)
         {
-            var item = new IssueItem(issue);
-            item.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(IssueItem.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
-            Issues.Add(item);
+            Issues.Add(new IssueItem(issue));
         }
         OnPropertyChanged(nameof(AllChecked));
     }

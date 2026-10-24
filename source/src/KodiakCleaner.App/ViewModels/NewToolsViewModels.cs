@@ -70,13 +70,17 @@ public sealed class LargeFilesViewModel : ObservableObject
     private string _summary = "Finds the biggest files in a folder. Windows, program folders, and hidden or system files are skipped.";
     public string Summary { get => _summary; private set => Set(ref _summary, value); }
 
+    private CheckTally<LargeFileItem>? _tally;
+    /// <summary>Running count of ticked rows (Ted, 2026-10-24), so ticking doesn't re-read the whole list.</summary>
+    private CheckTally<LargeFileItem> Tally => _tally ??= new(Found, r => r.IsChecked, nameof(LargeFileItem.IsChecked), () => OnPropertyChanged(nameof(AllChecked)));
+
     public bool? AllChecked
     {
-        get => Found.Count > 0 && Found.All(f => f.IsChecked) ? true : Found.Any(f => f.IsChecked) ? null : false;
+        get => Tally.State;
         set
         {
             var on = value != false;
-            foreach (var f in Found) f.IsChecked = on;
+            Tally.Bulk(() => { foreach (var f in Found) f.IsChecked = on; });
         }
     }
 
@@ -99,9 +103,7 @@ public sealed class LargeFilesViewModel : ObservableObject
         Found.Clear();
         foreach (var f in files)
         {
-            var item = new LargeFileItem(f);
-            item.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(LargeFileItem.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
-            Found.Add(item);
+            Found.Add(new LargeFileItem(f));
         }
         OnPropertyChanged(nameof(AllChecked));
     }
@@ -770,13 +772,17 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
     private string _summary = "";
     public string Summary { get => _summary; private set => Set(ref _summary, value); }
 
+    private CheckTally<ScheduledTaskItem>? _tally;
+    /// <summary>Running count of ticked rows (Ted, 2026-10-24), so ticking doesn't re-read the whole list.</summary>
+    private CheckTally<ScheduledTaskItem> Tally => _tally ??= new(Items, r => r.IsChecked, nameof(ScheduledTaskItem.IsChecked), () => OnPropertyChanged(nameof(AllChecked)));
+
     public bool? AllChecked
     {
-        get => Items.Count > 0 && Items.All(i => i.IsChecked) ? true : Items.Any(i => i.IsChecked) ? null : false;
+        get => Tally.State;
         set
         {
             var on = value != false;
-            foreach (var i in Items) i.IsChecked = on;
+            Tally.Bulk(() => { foreach (var i in Items) i.IsChecked = on; });
         }
     }
 
@@ -804,12 +810,7 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
     private void Filter(bool keepSummary = false)
     {
         Items.Clear();
-        foreach (var t in _all.Where(t => ShowWindowsTasks || !t.IsWindowsTask))
-        {
-            t.PropertyChanged -= Item_PropertyChanged;
-            t.PropertyChanged += Item_PropertyChanged;
-            Items.Add(t);
-        }
+        foreach (var t in _all.Where(t => ShowWindowsTasks || !t.IsWindowsTask)) Items.Add(t);
         OnPropertyChanged(nameof(AllChecked));
         FileIcons.LoadInto(Items.Where(i => i.NoIcon && i.HasProgram).ToList(), i => i.ProgramPath, (i, icon) => i.Icon = icon);
         if (keepSummary) return;
@@ -817,11 +818,6 @@ public sealed class ScheduledTasksViewModel : ObservableObject, ILoadOnFirstVisi
         Summary = Items.Count == 0 && hidden == 0 ? "No scheduled tasks found." :
             $"{Items.Count} task(s) shown" + (hidden > 0 ? $"; {hidden} Windows task(s) hidden." : ".") +
             " Turning a task off is reversible. Deleted tasks are backed up first and can be put back with Restore.";
-    }
-
-    private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(ScheduledTaskItem.IsChecked)) OnPropertyChanged(nameof(AllChecked));
     }
 
     private void SetPicked(bool enabled) => SetRows(Items.Where(i => i.IsChecked).ToList(), enabled);

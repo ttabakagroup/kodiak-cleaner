@@ -163,14 +163,21 @@ public sealed class HashCheckerViewModel : ObservableObject, IFileDropTarget
     public bool HasCurrent => Current is not null;
 
     /// <summary>The header box: true when every shown file is ticked, null when some are.</summary>
+    private CheckTally<HashFileRow>? _tally;
+    /// <summary>Running count of ticked rows (Ted, 2026-10-24), so ticking doesn't re-read the whole list.</summary>
+    private CheckTally<HashFileRow> Tally => _tally ??= new(Files, r => r.IsChecked, nameof(HashFileRow.IsChecked), () => OnPropertyChanged(nameof(AllChecked)));
+
     public bool? AllChecked
     {
-        get => Files.Count > 0 && Files.All(f => f.IsChecked) ? true : Files.Any(f => f.IsChecked) ? null : false;
+        get => Tally.State;
         set
         {
             var on = value != false;
-            foreach (var f in View.Cast<HashFileRow>()) f.IsChecked = on;
-            if (!on) foreach (var f in Files) f.IsChecked = false;
+            Tally.Bulk(() =>
+            {
+                foreach (var f in View.Cast<HashFileRow>()) f.IsChecked = on;
+                if (!on) foreach (var f in Files) f.IsChecked = false;
+            });
         }
     }
 
@@ -276,7 +283,6 @@ public sealed class HashCheckerViewModel : ObservableObject, IFileDropTarget
                 continue;
             }
             var row = new HashFileRow(path, ShownKind);
-            row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(HashFileRow.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
             Files.Add(row);
             first ??= row;
         }

@@ -112,15 +112,22 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
     public string Summary { get => _summary; private set => Set(ref _summary, value); }
 
     /// <summary>The header box: true when every program is ticked, null when some are.</summary>
+    private CheckTally<ProgramItem>? _tally;
+    /// <summary>Running count of ticked rows (Ted, 2026-10-24), so ticking doesn't re-read the whole list.</summary>
+    private CheckTally<ProgramItem> Tally => _tally ??= new(Programs, r => r.IsChecked, nameof(ProgramItem.IsChecked), () => OnPropertyChanged(nameof(AllChecked)));
+
     public bool? AllChecked
     {
-        get => Programs.Count > 0 && Programs.All(p => p.IsChecked) ? true : Programs.Any(p => p.IsChecked) ? null : false;
+        get => Tally.State;
         set
         {
             var on = value != false;
             // Select All ticks only what the search shows, so a filtered list can be uninstalled as a group.
-            foreach (var p in View.Cast<ProgramItem>()) p.IsChecked = on;
-            if (!on) foreach (var p in Programs) p.IsChecked = false;
+            Tally.Bulk(() =>
+            {
+                foreach (var p in View.Cast<ProgramItem>()) p.IsChecked = on;
+                if (!on) foreach (var p in Programs) p.IsChecked = false;
+            });
         }
     }
 
@@ -132,9 +139,7 @@ public sealed class ProgramsViewModel : ObservableObject, ILoadOnFirstVisit
         Programs.Clear();
         foreach (var p in list)
         {
-            var item = new ProgramItem(p) { IsChecked = ticked.Contains(p.Location) };
-            item.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ProgramItem.IsChecked)) OnPropertyChanged(nameof(AllChecked)); };
-            Programs.Add(item);
+            Programs.Add(new ProgramItem(p) { IsChecked = ticked.Contains(p.Location) });
         }
         OnPropertyChanged(nameof(AllChecked));
         Summary = $"{Programs.Count} programs installed, {ByteSize.Format(Programs.Sum(p => p.SizeBytes))} reported size.";
