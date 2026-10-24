@@ -5,6 +5,13 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.104 Dev] - 2026-10-24
+
+### Duplicate Finder
+- Duplicate Finder no longer freezes when ticking thousands of copies with Keep Original, Keep Newest or Keep Oldest.
+- Duplicate Finder results are now a table: one row per copy with name, folder, size and date, under a heading for each set. The sets that free the most space come first, and the likely original is listed first in each set.
+- Duplicate Finder's Check All is now called Keep Original.
+
 ## [0.8.103 Dev] - 2026-10-24
 
 ### Sidebar

@@ -258,8 +258,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   matches another can be ticked (Ted, 2026-10-23, `DuplicateFileItem.CanTick`): identical sets until Verify Hashes finds a copy changed,
   and in similar sets only files Verify Hashes found identical; one copy of each hash always stays. Verify Hashes re-reads the shown
   files in full and compares SHA-256; changed copies are unticked and locked.
-  Check All ticks every copy but `DuplicateFinder.SuggestKeep` (no copy mark, outside Downloads/Temp, oldest, shortest path); Keep
-  Newest/Oldest only tick too, nothing is removed before Remove Selected. Remove To: Recycle Bin, or A Folder (`DuplicateMover`): a dated
+  Keep Original (was Check All, renamed 2026-10-24) ticks every copy but `DuplicateFinder.SuggestKeep` (no copy mark, outside
+  Downloads/Temp, oldest, shortest path), which is listed first in its set as "Likely the original"; Keep Newest/Oldest only tick too,
+  nothing is removed before Remove Selected. Results are one DataGrid (`ShownFiles`, grouped by set, sets by most space gained, one
+  row per copy: tick, Name, Folder, Size, Modified, Notes, Show). Ticks keep running totals (`Ticked`), and bulk ticking goes through
+  `Bulk` so the summary updates once (Ted, 2026-10-24: a full recount on every tick froze the app with tens of thousands of copies). Remove To: Recycle Bin, or A Folder (`DuplicateMover`): a dated
   "Duplicates yyyy-MM-dd HHmmss" folder per move with files under their old drive and folders, Duplicate Report.csv (kept copy, old place,
   new place) and moves.json for Restore (`DuplicateRestoreWindow`, never overwrites a file at the old place). The folder is never searched.
   The page is three cards: Summary, Actions, Results. The faster-as-administrator note is its AdminNeeds entry (the bar at the top).

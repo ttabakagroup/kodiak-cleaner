@@ -29,6 +29,17 @@ public sealed class DuplicateFileItem : ObservableObject
     /// <summary>The line under the name: why it's similar (similar sets), size and date.</summary>
     public string Details => string.Join(" · ", new[] { Why, Size, Modified }.Where(s => s.Length > 0));
 
+    /// <summary>Identical sets: the copy Keep Original keeps (no copy mark, outside Downloads, oldest). Listed first in its set.</summary>
+    public bool IsLikelyOriginal { get; internal set; }
+
+    /// <summary>
+    /// The table's Notes column: the hash check once Verify Hashes has run, else how alike it is and why (similar sets),
+    /// or "Likely the original" for the copy Keep Original keeps.
+    /// </summary>
+    public string Note => Hash.Length > 0 ? Hash
+        : Group.IsSimilar ? string.Join(" · ", new[] { LikenessText, Why }.Where(s => s.Length > 0))
+        : IsLikelyOriginal ? "Likely the original" : "";
+
     /// <summary>Similar sets only: how alike this file is to its closest match (0 to 100), and why.</summary>
     public double Likeness { get; }
     public string LikenessText { get; } = "";
@@ -52,6 +63,7 @@ public sealed class DuplicateFileItem : ObservableObject
         HashTip = hash is null ? note : $"SHA-256: {hash}";
         HashMismatch = mismatch;
         _sameAsAnother = sameAsAnother;
+        OnPropertyChanged(nameof(Note));
         if (!CanTick) IsChecked = false;
         OnPropertyChanged(nameof(CanTick));
         OnPropertyChanged(nameof(TickTip));
@@ -71,7 +83,11 @@ public sealed class DuplicateFileItem : ObservableObject
     public bool IsChecked
     {
         get => _isChecked;
-        set { if (Set(ref _isChecked, value && CanTick)) Group.Owner.UpdateSelection(); }
+        set
+        {
+            var was = _isChecked;
+            if (Set(ref _isChecked, value && CanTick)) Group.Owner.Ticked(this, was);
+        }
     }
 }
 
@@ -82,8 +98,11 @@ public sealed class DuplicateGroupItem : ObservableObject
     {
         Owner = owner;
         Hash = group.Hash;
-        Header = $"{group.Files.Count} copies of {System.IO.Path.GetFileName(group.Files[0].Path)} · {ByteSize.Format(group.Size)} each";
-        Files = group.Files.Select(f => new DuplicateFileItem(f, this)).ToList();
+        Header = $"{group.Files.Count} copies of {System.IO.Path.GetFileName(group.Files[0].Path)} · {ByteSize.Format(group.Size)} each · {ByteSize.Format(group.WastedBytes)} extra";
+        // The likely original first, then the copies A to Z by folder, so each set reads "keep this, these are the copies".
+        var keep = DuplicateFinder.SuggestKeep(group.Files);
+        Files = group.Files.OrderBy(f => f != keep).ThenBy(f => f.Path, StringComparer.CurrentCultureIgnoreCase)
+            .Select(f => new DuplicateFileItem(f, this) { IsLikelyOriginal = f == keep }).ToList();
         _badge = "SHA-256 Match";
         BadgeTip = $"Every copy has the same SHA-256: {group.Hash}";
     }
@@ -183,27 +202,40 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         AddFolderCommand = new RelayCommand(AddFolder, () => !IsBusy);
         SearchCommand = new RelayCommand(SearchAsync, () => !IsBusy && (Folders.Any(f => f.IsChecked) || Drives.Any(d => d.IsChecked)));
         CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsBusy);
-        CheckAllCommand = new RelayCommand(CheckAll, () => !IsBusy && AllFiles.Any(f => f.CanTick));
+        KeepOriginalCommand = new RelayCommand(KeepOriginal, () => !IsBusy && ShownGroups.Count > 0);
         SelectAllButNewestCommand = new RelayCommand(() => AutoSelect(keepNewest: true), () => !IsBusy && !ShowSimilar && Groups.Count > 0);
         SelectAllButOldestCommand = new RelayCommand(() => AutoSelect(keepNewest: false), () => !IsBusy && !ShowSimilar && Groups.Count > 0);
         ChooseMoveFolderCommand = new RelayCommand(ChooseMoveFolder, () => !IsBusy);
         RestoreCommand = new RelayCommand(() => { if (DuplicateRestoreWindow.Show(null, MoveFolder)) Summary = "Restored files are back where they were. Search again to see them in the results."; }, () => !IsBusy);
-        ClearSelectionCommand = new RelayCommand(() => { foreach (var f in AllFiles) f.IsChecked = false; }, () => AllFiles.Any(f => f.IsChecked));
+        ClearSelectionCommand = new RelayCommand(() => Bulk(() => { foreach (var f in AllFiles) f.IsChecked = false; }), () => _checkedCount > 0);
         VerifyCommand = new RelayCommand(VerifyAsync, () => !IsBusy && ShownGroups.Count > 0);
-        DeleteCommand = new RelayCommand(DeleteAsync, () => !IsBusy && AllFiles.Any(f => f.IsChecked));
+        DeleteCommand = new RelayCommand(DeleteAsync, () => !IsBusy && _checkedCount > 0);
         OpenFolderCommand = new RelayCommand<DuplicateFileItem>(f => Elevation.ShowInExplorer(f.File.Path));
     }
 
     public ObservableCollection<DriveChoice> Drives { get; } = new();
     public ObservableCollection<CheckItem> Folders { get; } = new();
-    public ObservableCollection<DuplicateGroupItem> Groups { get; } = new();
-    public ObservableCollection<DuplicateGroupItem> SimilarGroups { get; } = new();
+    public ObservableCollection<DuplicateGroupItem> Groups { get; private set; } = new();
+    public ObservableCollection<DuplicateGroupItem> SimilarGroups { get; private set; } = new();
+
+    private System.ComponentModel.ICollectionView _shownFiles = new System.Windows.Data.ListCollectionView(new List<DuplicateFileItem>());
+    /// <summary>The results table (Ted, 2026-10-24): every file of the shown sets, one row each, grouped under its set.</summary>
+    public System.ComponentModel.ICollectionView ShownFiles { get => _shownFiles; private set => Set(ref _shownFiles, value); }
+
+    /// <summary>Rebuilds the table from the shown sets, keeping their order (most space to gain first).</summary>
+    private void RefreshTable()
+    {
+        var view = new System.Windows.Data.ListCollectionView(ShownGroups.SelectMany(g => g.Files).ToList());
+        view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(DuplicateFileItem.Group)));
+        ShownFiles = view;
+        OnPropertyChanged(nameof(ShownGroups));
+    }
     private IEnumerable<DuplicateFileItem> AllFiles => Groups.Concat(SimilarGroups).SelectMany(g => g.Files);
 
     public ICommand AddFolderCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand CancelCommand { get; }
-    public ICommand CheckAllCommand { get; }
+    public ICommand KeepOriginalCommand { get; }
     public ICommand SelectAllButNewestCommand { get; }
     public ICommand SelectAllButOldestCommand { get; }
     public ICommand ClearSelectionCommand { get; }
@@ -327,7 +359,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         {
             if (!Set(ref _showSimilar, value)) return;
             OnPropertyChanged(nameof(ShowIdentical));
-            OnPropertyChanged(nameof(ShownGroups));
+            RefreshTable();
             OnPropertyChanged(nameof(ResultsHint));
         }
     }
@@ -410,11 +442,35 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return null; }
     }
 
-    internal void UpdateSelection()
+    // Ticked files are counted as they change, so ticking stays instant with tens of thousands of files listed (Ted, 2026-10-24:
+    // Keep Newest froze the window when every tick re-counted the whole list).
+    private int _checkedCount;
+    private long _checkedBytes;
+    private bool _bulk;
+
+    internal void Ticked(DuplicateFileItem file, bool was)
     {
-        var chosen = AllFiles.Where(f => f.IsChecked).ToList();
-        Selection = chosen.Count == 0 ? "" : $"{chosen.Count} selected · {ByteSize.Format(chosen.Sum(f => f.File.Size))}";
+        if (was == file.IsChecked) return;
+        _checkedCount += file.IsChecked ? 1 : -1;
+        _checkedBytes += file.IsChecked ? file.File.Size : -file.File.Size;
+        if (!_bulk) UpdateSelection();
     }
+
+    /// <summary>Ticks or unticks many files at once, with one count and one refresh at the end.</summary>
+    private void Bulk(Action change)
+    {
+        _bulk = true;
+        try { change(); }
+        finally
+        {
+            _bulk = false;
+            UpdateSelection();
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    internal void UpdateSelection() =>
+        Selection = _checkedCount == 0 ? "" : $"{_checkedCount:N0} selected · {ByteSize.Format(_checkedBytes)}";
 
     private void AddFolder()
     {
@@ -443,14 +499,15 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
 
     private void ShowResults(IReadOnlyList<DuplicateGroup> identical, IReadOnlyList<SimilarGroup> similar, bool inDepth)
     {
-        Groups.Clear();
-        SimilarGroups.Clear();
-        foreach (var g in identical) Groups.Add(new DuplicateGroupItem(g, this));
-        foreach (var g in similar) SimilarGroups.Add(new DuplicateGroupItem(g, this));
+        // New collections, filled before anyone sees them: adding thousands of sets one by one to a shown list is slow.
+        Groups = new ObservableCollection<DuplicateGroupItem>(identical.Select(g => new DuplicateGroupItem(g, this)));
+        SimilarGroups = new ObservableCollection<DuplicateGroupItem>(similar.Select(g => new DuplicateGroupItem(g, this)));
+        _checkedCount = 0;
+        _checkedBytes = 0;
         HasSimilarResults = inDepth;
         if (!inDepth) ShowSimilar = false;
         else if (Groups.Count == 0 && SimilarGroups.Count > 0) ShowSimilar = true;
-        OnPropertyChanged(nameof(ShownGroups));
+        RefreshTable();
         OnPropertyChanged(nameof(IdenticalLabel));
         OnPropertyChanged(nameof(SimilarLabel));
         UpdateSelection();
@@ -520,7 +577,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             var skipped = found.SkippedRoots > 0 ? $" {found.SkippedRoots} chosen folder(s) were skipped because Windows or a program keeps its own files there." : "";
             var fast = found.FastDrives > 0 ? $" {found.FastDrives} {(found.FastDrives == 1 ? "drive was" : "drives were")} read straight from the drive's file table." : "";
             var slow = found.SlowDrives > 0 && !Elevation.IsAdministrator ? " Restart as Administrator to read whole drives straight from their file table, which is much faster." : "";
-            Summary = $"{identical}{(inDepth ? similar : ".")} Searched {found.FilesScanned:N0} files.{fast} Tick the copies to remove, or click Check All.{skipped}{slow}";
+            Summary = $"{identical}{(inDepth ? similar : ".")} Searched {found.FilesScanned:N0} files.{fast} Tick the copies to remove, or click Keep Original.{skipped}{slow}";
         }
         catch (OperationCanceledException)
         {
@@ -530,28 +587,31 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     }
 
     /// <summary>
-    /// Ticks only what makes sense to remove (Ted, 2026-10-23): in each identical set every copy but the one
-    /// <see cref="DuplicateFinder.SuggestKeep"/> picks, and in similar sets only files Verify Hashes found identical, again
-    /// keeping one of each. Nothing is removed until Remove Selected.
+    /// Keep Original (was Check All; Ted, 2026-10-23/24): in each identical set ticks every copy but the likely original
+    /// (<see cref="DuplicateFinder.SuggestKeep"/>: no copy mark, outside Downloads, the oldest), and in similar sets only files
+    /// Verify Hashes found identical, again keeping one of each. Nothing is removed until Remove Selected.
     /// </summary>
-    private void CheckAll()
+    private void KeepOriginal()
     {
         int ticked = 0, sets = 0;
-        foreach (var g in Groups.Concat(SimilarGroups))
+        Bulk(() =>
         {
-            var tickable = g.Files.Where(f => f.CanTick).ToList();
-            var same = g.IsSimilar ? tickable.GroupBy(f => f.FullHash).Where(h => h.Key is not null && h.Count() > 1).Select(h => h.ToList()).ToList()
-                : tickable.Count > 1 ? new List<List<DuplicateFileItem>> { tickable } : new List<List<DuplicateFileItem>>();
-            foreach (var f in g.Files) f.IsChecked = false;
-            foreach (var copies in same)
+            foreach (var g in Groups.Concat(SimilarGroups))
             {
-                var keep = DuplicateFinder.SuggestKeep(copies.Select(f => f.File).ToList());
-                foreach (var f in copies.Where(f => f.File != keep)) { f.IsChecked = true; ticked++; }
-                sets++;
+                var tickable = g.Files.Where(f => f.CanTick).ToList();
+                var same = g.IsSimilar ? tickable.GroupBy(f => f.FullHash).Where(h => h.Key is not null && h.Count() > 1).Select(h => h.ToList()).ToList()
+                    : tickable.Count > 1 ? new List<List<DuplicateFileItem>> { tickable } : new List<List<DuplicateFileItem>>();
+                foreach (var f in g.Files) f.IsChecked = false;
+                foreach (var copies in same)
+                {
+                    var keep = DuplicateFinder.SuggestKeep(copies.Select(f => f.File).ToList());
+                    foreach (var f in copies.Where(f => f.File != keep)) { f.IsChecked = true; ticked++; }
+                    sets++;
+                }
             }
-        }
+        });
         Summary = ticked == 0 ? "Nothing to tick: no set has two copies with the same SHA-256."
-            : $"Ticked {ticked:N0} {(ticked == 1 ? "copy" : "copies")} in {sets:N0} {(sets == 1 ? "set" : "sets")}, keeping one in each: the one without \"Copy\" or (1) in its name, outside Downloads, and the oldest. " +
+            : $"Ticked {ticked:N0} {(ticked == 1 ? "copy" : "copies")} in {sets:N0} {(sets == 1 ? "set" : "sets")}, keeping the likely original in each: the one without \"Copy\" or (1) in its name, outside Downloads, and the oldest. " +
               $"Nothing is removed until you click {RemoveLabel}.";
     }
 
@@ -559,16 +619,19 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     {
         // Identical sets only: which similar file to keep is always the person's call. Only ticks; nothing is removed here.
         int ticked = 0;
-        foreach (var g in Groups)
+        Bulk(() =>
         {
-            var tickable = g.Files.Where(f => f.CanTick).ToList();
-            var keep = keepNewest ? tickable.MaxBy(f => f.File.LastWriteUtc) : tickable.MinBy(f => f.File.LastWriteUtc);
-            foreach (var f in g.Files)
+            foreach (var g in Groups)
             {
-                f.IsChecked = tickable.Count > 1 && f.CanTick && f != keep;
-                if (f.IsChecked) ticked++;
+                var tickable = g.Files.Where(f => f.CanTick).ToList();
+                var keep = keepNewest ? tickable.MaxBy(f => f.File.LastWriteUtc) : tickable.MinBy(f => f.File.LastWriteUtc);
+                foreach (var f in g.Files)
+                {
+                    f.IsChecked = tickable.Count > 1 && f.CanTick && f != keep;
+                    if (f.IsChecked) ticked++;
+                }
             }
-        }
+        });
         Summary = $"Ticked {ticked:N0} {(ticked == 1 ? "copy" : "copies")}, keeping the {(keepNewest ? "newest" : "oldest")} one in each set. Nothing is removed until you click {RemoveLabel}.";
     }
 
@@ -727,18 +790,17 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
                     }
                 }
             });
-            foreach (var list in new[] { Groups, SimilarGroups })
+            // Files that went are dropped (with their ticks), and sets left with one file leave the list.
+            Bulk(() =>
             {
-                foreach (var g in list.ToList())
-                {
-                    g.Files.RemoveAll(f => !System.IO.File.Exists(f.File.Path));
-                    if (g.Files.Count < 2) list.Remove(g);
-                }
-                // Re-create remaining groups so their lists refresh.
-                var remaining = list.ToList();
-                list.Clear();
-                foreach (var g in remaining) list.Add(g);
-            }
+                foreach (var g in Groups.Concat(SimilarGroups))
+                    foreach (var f in g.Files.Where(f => f.IsChecked && !System.IO.File.Exists(f.File.Path)).ToList())
+                        f.IsChecked = false;
+            });
+            foreach (var g in Groups.Concat(SimilarGroups)) g.Files.RemoveAll(f => !System.IO.File.Exists(f.File.Path));
+            Groups = new ObservableCollection<DuplicateGroupItem>(Groups.Where(g => g.Files.Count >= 2));
+            SimilarGroups = new ObservableCollection<DuplicateGroupItem>(SimilarGroups.Where(g => g.Files.Count >= 2));
+            RefreshTable();
             OnPropertyChanged(nameof(IdenticalLabel));
             OnPropertyChanged(nameof(SimilarLabel));
             UpdateSelection();

@@ -175,7 +175,7 @@ public static class DuplicateFinder
     }
 
     /// <summary>
-    /// Which copy of an identical set Check All keeps (Ted, 2026-10-23): one without a copy mark in its name (Copy of …, … (1)),
+    /// Which copy of an identical set Keep Original keeps (Ted, 2026-10-23): one without a copy mark in its name (Copy of …, … (1)),
     /// then one outside Downloads and temporary folders, then the oldest (most likely the original), then the shortest path.
     /// </summary>
     public static DuplicateFile SuggestKeep(IReadOnlyList<DuplicateFile> files) => files

@@ -24,7 +24,6 @@ public class PlaceholderTests
         ["DriverCleanerView.xaml: {Binding DriverLinks}"] = "Fixed links to the driver makers.",
         ["DriverCleanerView.xaml: {Binding Adapters}"] = "Says \"No graphics driver from AMD, Intel or NVIDIA is installed\" when empty.",
         ["DriverCleanerView.xaml: {Binding Vendors}"] = "Fixed driver maker choices.",
-        ["DuplicatesView.xaml: {Binding Files}"] = "The files in one set; a set always has two or more.",
         ["HashCheckerView.xaml: {Binding ShownKinds}"] = "Fixed hash type choices.",
         ["HashCheckerView.xaml: {Binding Facts}"] = "Details of one file, always filled.",
         ["HashCheckerView.xaml: {Binding Lines}"] = "Details of one file, always filled.",

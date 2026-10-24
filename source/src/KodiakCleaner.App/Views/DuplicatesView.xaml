@@ -178,10 +178,8 @@
                     <StackPanel>
                         <TextBlock Text="Actions" Style="{StaticResource SectionTitle}" />
                         <WrapPanel Margin="0,4,0,0">
-                            <Button Command="{Binding CheckAllCommand}" Margin="0,6,8,0"
-                                    ToolTip="Tick every copy except one in each set of files with the same SHA-256. Kept: the one without &quot;Copy&quot; or (1) in its name, outside Downloads, and the oldest. Nothing is removed yet.">
-                                <TextBlock Text="Check All" />
-                            </Button>
+                            <Button Content="Keep Original" Command="{Binding KeepOriginalCommand}" Margin="0,6,8,0"
+                                    ToolTip="Tick every copy except the likely original in each set (marked Likely the original): the one without &quot;Copy&quot; or (1) in its name, outside Downloads, and the oldest. Nothing is removed yet." />
                             <Button Content="Keep Newest" Command="{Binding SelectAllButNewestCommand}" Margin="0,6,8,0"
                                     ToolTip="Tick every copy except the newest one in each identical set. Nothing is removed yet." />
                             <Button Content="Keep Oldest" Command="{Binding SelectAllButOldestCommand}" Margin="0,6,8,0"
@@ -248,77 +246,92 @@
                                 <TextBlock Text="{Binding ResultsHint}" Style="{StaticResource OptionalCaption}" Margin="0,6,0,0" />
                             </StackPanel>
                         </DockPanel>
-                        <!-- Virtualized: a whole-drive search can list thousands of sets. -->
-                        <ItemsControl views:Placeholder.Text="Sets of duplicate files show here after you click Search." ItemsSource="{Binding ShownGroups}" VirtualizingPanel.IsVirtualizing="True"
-                                      VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
-                            <ItemsControl.Template>
-                                <ControlTemplate TargetType="ItemsControl">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,0" CanContentScroll="True" Focusable="False">
-                                        <ItemsPresenter />
-                                    </ScrollViewer>
-                                </ControlTemplate>
-                            </ItemsControl.Template>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="0,0,0,16">
-                                            <DockPanel Margin="0,0,0,6">
-                                                <Border DockPanel.Dock="Right" ToolTip="{Binding BadgeTip}" Margin="12,0,0,0">
+                        <!-- A table (Ted, 2026-10-24): one row per file under a heading per set, the likely original first. Virtualized while
+                             grouped, as a whole-drive search can list tens of thousands of files. -->
+                        <DataGrid views:Placeholder.Text="Sets of duplicate files show here after you click Search." ItemsSource="{Binding ShownFiles}"
+                                  IsReadOnly="True" IsSynchronizedWithCurrentItem="False" CanUserSortColumns="False"
+                                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                  VirtualizingPanel.ScrollUnit="Pixel" MouseDoubleClick="Grid_MouseDoubleClick">
+                            <DataGrid.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="10,16,12,6">
+                                                <Border DockPanel.Dock="Right" ToolTip="{Binding Name.BadgeTip}" Margin="12,0,0,0">
                                                     <Border.Style>
                                                         <Style TargetType="Border" BasedOn="{StaticResource Chip}">
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding BadgeWarn}" Value="True">
+                                                                <DataTrigger Binding="{Binding Name.BadgeWarn}" Value="True">
                                                                     <Setter Property="Background" Value="{DynamicResource WarnBg}" />
                                                                     <Setter Property="TextElement.Foreground" Value="{DynamicResource WarnText}" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Border.Style>
-                                                    <TextBlock Text="{Binding Badge}" />
+                                                    <TextBlock Text="{Binding Name.Badge}" />
                                                 </Border>
-                                                <ProgressBar DockPanel.Dock="Right" Style="{StaticResource Meter}" Width="90" Value="{Binding Likeness, Mode=OneWay}"
-                                                             Visibility="{Binding ShowMeter, Converter={StaticResource BoolToVis}}" ToolTip="{Binding BadgeTip}" />
-                                                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                <ProgressBar DockPanel.Dock="Right" Style="{StaticResource Meter}" Width="90" Value="{Binding Name.Likeness, Mode=OneWay}"
+                                                             Visibility="{Binding Name.ShowMeter, Converter={StaticResource BoolToVis}}" ToolTip="{Binding Name.BadgeTip}" />
+                                                <TextBlock Text="{Binding Name.Header}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
+                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                             </DockPanel>
-                                            <ItemsControl ItemsSource="{Binding Files}" Padding="8,0">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <DockPanel Margin="0,4">
-                                                            <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Show" VerticalAlignment="Top" Margin="12,0,0,0"
-                                                                    Command="{Binding Group.Owner.OpenFolderCommand}" CommandParameter="{Binding}" />
-                                                            <TextBlock DockPanel.Dock="Right" Text="{Binding LikenessText}" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
-                                                                       VerticalAlignment="Top" Margin="12,0,0,0" ToolTip="How alike this file is to its closest match in the set" />
-                                                            <StackPanel>
-                                                                <CheckBox IsChecked="{Binding IsChecked}" IsEnabled="{Binding CanTick}" VerticalAlignment="Center" ToolTip="{Binding TickTip}"
-                                                                      ToolTipService.ShowOnDisabled="True">
-                                                                    <TextBlock TextTrimming="CharacterEllipsis">
-                                                                        <Run Text="{Binding Name, Mode=OneWay}" />
-                                                                        <Run Text="{Binding Folder, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
-                                                                    </TextBlock>
-                                                                </CheckBox>
-                                                                <TextBlock Text="{Binding Details}" Style="{StaticResource Caption}" Margin="28,1,0,0" ToolTip="{Binding File.Path}" />
-                                                                <TextBlock Text="{Binding Hash}" ToolTip="{Binding HashTip}" Margin="28,1,0,0">
-                                                                    <TextBlock.Style>
-                                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource OptionalCaption}">
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding HashMismatch}" Value="True">
-                                                                                    <Setter Property="Foreground" Value="{DynamicResource WarnText}" />
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </TextBlock.Style>
-                                                                </TextBlock>
-                                                            </StackPanel>
-                                                        </DockPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </DataGrid.GroupStyle>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="48" MinWidth="48" CanUserResize="False" HeaderStyle="{StaticResource CheckColumnHeader}">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanTick}" HorizontalAlignment="Center"
+                                                      ToolTip="{Binding TickTip}" ToolTipService.ShowOnDisabled="True" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=OneWay}" Width="1.6*" MinWidth="120">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="ToolTip" Value="{Binding Name}" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Folder" Binding="{Binding Folder, Mode=OneWay}" Width="2.4*" MinWidth="120">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="ToolTip" Value="{Binding File.Path}" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Size" Binding="{Binding Size, Mode=OneWay}" Width="90" MinWidth="90" />
+                                <DataGridTextColumn Header="Modified" Binding="{Binding Modified, Mode=OneWay}" Width="175" MinWidth="175" />
+                                <DataGridTextColumn Header="Notes" Binding="{Binding Note, Mode=OneWay}" Width="1.6*" MinWidth="100">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="ToolTip" Value="{Binding HashTip}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HashMismatch}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource WarnText}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsLikelyOriginal}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Width="70" MinWidth="70" CanUserResize="False">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource LinkButton}" Content="Show" Margin="0" ToolTip="Show this file in File Explorer"
+                                                    Command="{Binding Group.Owner.OpenFolderCommand}" CommandParameter="{Binding}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </DockPanel>
                 </Border>
             </DockPanel>
