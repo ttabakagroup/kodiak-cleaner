@@ -239,3 +239,14 @@ test("links to other websites open in a new tab", () => {
     }
   }
 });
+
+test("the Accessibility page states the WCAG 2.1 and ADA commitment and is linked from every page", () => {
+  const a11y = pages.find((p) => p.file === "/accessibility/index.html");
+  assert.ok(a11y, "missing /accessibility/");
+  for (const s of ["WCAG", "2.1", "Americans with Disabilities Act", "not a claim", 'href="/contact/?topic=Accessibility"']) assert.ok(a11y.html.includes(s), `Accessibility page is missing: ${s}`);
+  assert.ok(!/@[a-z0-9-]+\.[a-z]/i.test(text(a11y.html.split("<main")[1].split("</main>")[0])), "no email address on the Accessibility page");
+  for (const p of pages) assert.ok(p.html.includes('href="/accessibility/"'), `${p.file} should link the Accessibility page`);
+  const contact = pages.find((p) => p.file === "/contact/index.html").html;
+  assert.match(contact, /value="Accessibility"/);
+  assert.match(contact, /value="General Feedback" checked/);
+});

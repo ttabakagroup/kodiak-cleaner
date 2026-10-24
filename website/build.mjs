@@ -19,6 +19,7 @@ import donate from "./src/pages/donate.mjs";
 import featureList from "./src/pages/featurelist.mjs";
 import openSource from "./src/pages/opensource.mjs";
 import { story, privacy, terms, notFound } from "./src/pages/docs.mjs";
+import accessibility from "./src/pages/accessibility.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const at = (...p) => join(here, ...p);
@@ -163,7 +164,7 @@ function externalLinks(html) {
 }
 
 // Pages
-const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, notFound].map((p) => p(ctx));
+const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, accessibility, notFound].map((p) => p(ctx));
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });

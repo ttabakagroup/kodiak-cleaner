@@ -9,7 +9,7 @@
 //
 // Nothing is stored: each message is checked, emailed, and forgotten.
 
-export const TOPICS = ["Bug Report", "Feature Request", "General Feedback", "Security"];
+export const TOPICS = ["Accessibility", "Bug Report", "Feature Request", "General Feedback", "Security"];
 const DEFAULT_TO = "www.kodiakcleaner.app/contact";
 const DEFAULT_FROM = "Kodiak Cleaner Website <onboarding@resend.dev>";
 const LIMITS = { name: 100, email: 254, message: 5000, minMessage: 10 };

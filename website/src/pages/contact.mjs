@@ -3,6 +3,7 @@ import { pageHead } from "../layout.mjs";
 
 // Topics, A to Z. They match TOPICS in functions/api/contact.js.
 const TOPICS = [
+  ["Accessibility", "Something is hard to use with your setup"],
   ["Bug Report", "Something isn't working"],
   ["Feature Request", "An idea to make it better"],
   ["General Feedback", "Thoughts, questions or thanks"],
@@ -19,7 +20,7 @@ ${pageHead("Contact Us", "Questions, ideas, bug reports or a quick thank-you. Fi
       <fieldset class="topic">
         <legend>Topic</legend>
         <div class="topic-options">
-          ${TOPICS.map(([t, hint], i) => `<label><input type="radio" name="topic" value="${t}"${i === 2 ? " checked" : ""} required><span>${t}<span class="hint">${hint}</span></span></label>`).join("\n          ")}
+          ${TOPICS.map(([t, hint]) => `<label><input type="radio" name="topic" value="${t}"${t === "General Feedback" ? " checked" : ""} required><span>${t}<span class="hint">${hint}</span></span></label>`).join("\n          ")}
         </div>
       </fieldset>
       <div class="grid cols-2 form-row">
