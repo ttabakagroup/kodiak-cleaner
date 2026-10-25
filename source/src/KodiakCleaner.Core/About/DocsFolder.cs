@@ -21,23 +21,25 @@ public static class DocsFolder
     public const string DownloadPage = Homepage + "download/";
 
     /// <summary>
-    /// Where Download.url points. Dev builds come out while the repository is private (Ted makes it public with the first
-    /// Beta, see <see cref="RepositoryIsPublic"/>), so they link the website's download page. Beta and Stable link the
-    /// direct download of the newest installer: GitHub's releases/latest skips pre-releases, so Beta uses a fixed release
-    /// (latest-beta) that each build replaces. It links the bare MSI, the installer every release carries (Ted, 0.8.31).
+    /// Where Download.url points. While the GitHub repository is private (<paramref name="repositoryPublic"/> false, version.json's
+    /// "repositoryPublic"), every channel links the website's download page, since GitHub shows visitors a 404. Once Ted makes it
+    /// public, Stable links the direct download of the newest installer (the bare MSI every release carries, Ted 0.8.31). Dev and
+    /// Beta keep the website's download page: GitHub releases can't be made from the build sessions, so a latest-beta release
+    /// isn't kept up to date (0.9.0).
     /// </summary>
-    public static string DownloadUrl(ReleaseChannel channel) => channel switch
+    public static string DownloadUrl(ReleaseChannel channel, bool repositoryPublic) => (channel, repositoryPublic) switch
     {
-        ReleaseChannel.Dev => DownloadPage,
-        ReleaseChannel.Stable => $"{Repository}/releases/latest/download/KodiakCleaner-{channel}-Setup.msi",
-        _ => $"{Repository}/releases/download/latest-{channel.ToString().ToLowerInvariant()}/KodiakCleaner-{channel}-Setup.msi",
+        (_, false) or (ReleaseChannel.Dev, _) or (ReleaseChannel.Beta, _) => DownloadPage,
+        _ => $"{Repository}/releases/latest/download/KodiakCleaner-{channel}-Setup.msi",
     };
 
     /// <summary>
-    /// The GitHub repository stays private for Dev builds and goes public with the first Beta (Ted, 2026-10-14), so links to it
-    /// (Project Page, Star on GitHub, Download.url) only show from Beta on. Visitors would get GitHub's 404 page before that.
+    /// version.json's "repositoryPublic" flag: false while the GitHub repository is private, and when the field is missing.
+    /// Ted made the repository public at the first Beta (0.9.0, 2026-10-25); while it is false
+    /// links to it (Project Page, Star on GitHub, Download.url) point at the website or are hidden.
     /// </summary>
-    public static bool RepositoryIsPublic(ReleaseChannel channel) => channel != ReleaseChannel.Dev;
+    public static bool RepositoryIsPublic(string versionJson) =>
+        Regex.IsMatch(versionJson, "\"repositoryPublic\"\\s*:\\s*true");
 
     /// <summary>KodiakCleaner-Dev-Setup.msi, KodiakCleaner-Stable-Portable.zip: the same name every release, so links keep working.</summary>
     public static string PackageName(ReleaseChannel channel, string kind) => $"KodiakCleaner-{channel}-{kind}.zip";
@@ -45,12 +47,13 @@ public static class DocsFolder
     /// <summary>Writes the seven files from the repository's sources into <paramref name="outDir"/>.</summary>
     public static void Write(string repo, string outDir, ReleaseChannel channel)
     {
+        var repositoryPublic = RepositoryIsPublic(File.ReadAllText(Path.Combine(repo, "version.json")));
         Directory.CreateDirectory(outDir);
         string Read(params string[] parts) => File.ReadAllText(Path.Combine([repo, .. parts]));
         void Save(string name, string text) => File.WriteAllText(Path.Combine(outDir, name), text.Replace("\r\n", "\n").Replace("\n", "\r\n"), new UTF8Encoding(false));
 
         Save("Changelog.txt", FromMarkdown(Read("CHANGELOG.md")));
-        Save("Download.url", Shortcut(DownloadUrl(channel)));
+        Save("Download.url", Shortcut(DownloadUrl(channel, repositoryPublic)));
         Save("Homepage.url", Shortcut(Homepage));
         Save("License.txt", Read("LICENSE").TrimEnd() + "\n");
         Save("Privacy.txt", FromMarkdown(Read("PRIVACY.md")));

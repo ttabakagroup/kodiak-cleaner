@@ -22,14 +22,6 @@ public enum Palette
     Lagoon,
 }
 
-/// <summary>Developer page only: preview the app as a Free or Supporter user without a code.</summary>
-public enum PlanPreview
-{
-    None,
-    Free,
-    Supporter,
-}
-
 /// <summary>
 /// All preferences, stored in KodiakCleaner.ini next to KodiakCleaner.exe. The MSI grants normal users write access to
 /// that one file, so the program files themselves stay protected. Backups and logs live in <see cref="Data"/>.
@@ -192,10 +184,6 @@ public sealed class Settings
     public string SupporterCode { get; set; } = "";
     public bool ShowSupporterBadge { get; set; } = true;
 
-    // [Developer] (development builds only; release builds ignore these)
-    public PlanPreview DevPreview { get; set; }
-    public string DevPreviewName { get; set; } = "";
-
     public TimeSpan? TempMinAge => TempOlderThan24h ? TimeSpan.FromHours(24) : null;
     public TimeSpan? RecycleBinMinAge => RecycleBinOlderThan24h ? TimeSpan.FromHours(24) : null;
 
@@ -304,12 +292,6 @@ public sealed class Settings
 
         SupporterCode = ini.GetString("Supporter", "Code", SupporterCode);
         ShowSupporterBadge = ini.GetBool("Supporter", "ShowBadge", ShowSupporterBadge);
-
-        if (AppInfo.HasDeveloperTools)
-        {
-            DevPreview = Enum.TryParse<PlanPreview>(ini.Get("Developer", "Preview"), ignoreCase: true, out var pv) ? pv : DevPreview;
-            DevPreviewName = ini.GetString("Developer", "PreviewName", DevPreviewName);
-        }
     }
 
     private IniFile Write()
@@ -372,12 +354,6 @@ public sealed class Settings
 
         History.Write(ini);
         foreach (var schedule in Schedules) schedule.Write(ini);
-
-        if (AppInfo.HasDeveloperTools && (DevPreview != PlanPreview.None || DevPreviewName.Length > 0))
-        {
-            ini.Set("Developer", "Preview", DevPreview.ToString());
-            ini.Set("Developer", "PreviewName", DevPreviewName);
-        }
         return ini;
     }
 

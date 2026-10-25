@@ -14,13 +14,13 @@ export default function home(ctx) {
     ["lock", "Local First", "Settings and backups are plain files on your own PC. Nothing is kept in the cloud."],
     ["shield", "No Ads, No Tracking", "No telemetry, analytics, crash reports or upsells. It only goes online to check for updates, and only when you ask."],
     ["terminal", "Now on Mac and Linux", "Kodiak Cleaner for Mac and Kodiak Cleaner for Linux clean junk, caches and browser data, and show everything that starts by itself."],
-    ["palette", "Your Look", "Honey, Classic and Glacier color schemes, accent colors for everyone, and light or dark mode."],
+    ["palette", "Your Look", "Honey, Classic, Glacier and Lagoon color schemes, accent colors for everyone, and light or dark mode."],
   ];
 
   // Screens people ask about most, A to Z.
   const gallery = [
     ["advanced-cleaning.png", "Advanced Cleaning", "Deeper items with clear cautions, never ticked for you."],
-    ["appearance.png", "Appearance", "Honey, Classic or Glacier, with accent colors and light or dark mode."],
+    ["appearance.png", "Appearance", "Honey, Classic, Glacier or Lagoon, with accent colors and light or dark mode."],
     ["disk-analyzer.png", "Disk Analyzer", "A map of what fills your drives, colored by kind of file."],
     ["large-files.png", "Large Files", "Find the biggest files in any folder, 50 MB and up."],
     ["programs.png", "Programs", "Uninstall several at once, with leftovers cleaned up after."],
@@ -29,7 +29,8 @@ export default function home(ctx) {
     ["startup.png", "Startup", "Turn start-up programs off or on, and restore removed ones from History."],
   ];
 
-  // New and rebuilt tools from 0.8.65 to 0.8.70, A to Z. The last field is the tool's anchor on the Features page.
+  // New and rebuilt tools, A to Z. The last field is the tool's anchor on the Features page.
+  // A screen shows only once its PNG is in src/assets/images/screens/, so new ones can be added by dropping the file in.
   const recent = [
     ["boot-timer.png", "Boot Timer", "See how long a restart takes and what slows it.", "boot-timer"],
     ["browser-extensions.png", "Browser Extensions", "Turn extensions on or off, or remove them.", "browser-extensions"],
@@ -39,12 +40,14 @@ export default function home(ctx) {
     ["driver-cleaner.png", "Driver Cleaner", "Remove an old graphics or audio driver completely.", "driver-cleaner"],
     ["duplicate-finder.png", "Duplicate Finder", "Find copies, look-alikes and similar names across whole drives.", "duplicate-finder"],
     ["empty-folders.png", "Empty Folders", "Search whole drives as well as folders.", "empty-folders"],
+    ["hash-checker.png", "Hash Checker", "Check a download against the hashes from its page.", "hash-checker"],
     ["integrity-check.png", "Integrity Check", "Check and repair Windows, your drives and memory.", "integrity-check"],
     ["mass-rename.png", "Mass Rename", "Rename many files by a pattern, and undo it.", "mass-rename"],
+    ["scheduled-tasks.png", "Scheduled Tasks", "See what Windows runs on a schedule, and turn it off.", "scheduled-tasks"],
     ["system-restore.png", "System Restore", "Restore points plus Point-in-Time Restore snapshots.", "system-restore"],
-  ];
+  ].filter(([f]) => ctx.imageSizes[f]);
 
-  // Color schemes in the standard order: Honey (free), then the Supporter themes Classic and Glacier.
+  // Color schemes in the standard order: Honey (free), then the Supporter themes Classic, Glacier and Lagoon.
   const themes = [
     ["honey-light", "Honey Light", "cleaner.png", "Cleaner in the Honey color scheme, light mode"],
     ["honey-dark", "Honey Dark", "cleaner-dark.png", "Cleaner in the Honey color scheme, dark mode"],
@@ -52,6 +55,8 @@ export default function home(ctx) {
     ["classic-dark", "Classic Dark", "cleaner-classic-dark.png", "Cleaner in the Classic color scheme, dark mode, a supporter theme"],
     ["glacier-light", "Glacier Light", "cleaner-glacier.png", "Cleaner in the Glacier color scheme, light mode, a supporter theme"],
     ["glacier-dark", "Glacier Dark", "cleaner-glacier-dark.png", "Cleaner in the Glacier color scheme, dark mode, a supporter theme"],
+    ["lagoon-light", "Lagoon Light", "cleaner-lagoon.png", "Cleaner in the Lagoon color scheme, light mode, a supporter theme"],
+    ["lagoon-dark", "Lagoon Dark", "cleaner-lagoon-dark.png", "Cleaner in the Lagoon color scheme, dark mode, a supporter theme"],
   ];
   const defaultTheme = "honey-dark";
 
@@ -60,7 +65,7 @@ export default function home(ctx) {
   <div class="wrap">
     <div class="hero-logo"><span class="halo"></span><img src="/images/logo.svg" alt="Kodiak Cleaner logo: a friendly bear in a computer screen" width="230" height="230" fetchpriority="high"></div>
     <h1>${wordmark}</h1>
-    <p class="center"><a class="os-badge" href="/open-source/">${icons.code}Free and Open Source · MIT License</a></p>
+    <p class="center"><a class="os-badge" href="/open-source/">${icons.code}Free and Open Source · MIT License</a>${ctx.channel === "Beta" ? ` <a class="os-badge" href="/download/#windows">${icons.sparkle}Now in Beta · Windows ${esc(latest.version)}</a>` : ""}</p>
     <p class="slogan">Not a Crap Cleaner. A Cleaner App, Built Around What Matters.</p>
     <p class="lead">A small, honest cleaner for Windows, Mac and Linux. Clear out junk files, fix broken registry entries, tame start-up programs and uninstall software cleanly, with no telemetry, no ads, no upsells and no background services.</p>
     <div class="btn-row">
@@ -110,7 +115,7 @@ export default function home(ctx) {
     <div class="section-head center reveal">
       <span class="eyebrow">Recently Added</span>
       <h2>New Tools and Upgrades</h2>
-      <p class="lead">Added or rebuilt in versions 0.8.65 to 0.8.70, and free for everyone like everything else. Click any screenshot to see it full size.</p>
+      <p class="lead">Added or rebuilt on the way to the Beta, and free for everyone like everything else. Click any screenshot to see it full size.</p>
     </div>
     <div class="gallery">
       ${recent.map(([f, t, d, id]) => `<figure class="reveal">${shot(ctx, f, t + " in Kodiak Cleaner")}<figcaption><a href="/features/#${id}">${t}</a><span>${d}</span></figcaption></figure>`).join("\n      ")}
@@ -174,8 +179,8 @@ export default function home(ctx) {
     <div class="showcase reveal">
       <div class="text">
         <span class="eyebrow">Tools</span>
-        <h2>Thirteen Handy Tools, Built In</h2>
-        <p>Boot Timer, Browser Extensions, Defrag and TRIM, Disk Analyzer, Drive Wiper, Driver Cleaner, Duplicate Finder, Empty Folders, Integrity Check, Large Files, Mass Rename, Scheduled Tasks and System Restore. Anything removed goes to the Recycle Bin or a backup first. System Information has its own page, with an Advanced view and reports you can export.</p>
+        <h2>Fourteen Handy Tools, Built In</h2>
+        <p>Boot Timer, Browser Extensions, Defrag and TRIM, Disk Analyzer, Drive Wiper, Driver Cleaner, Duplicate Finder, Empty Folders, Hash Checker, Integrity Check, Large Files, Mass Rename, Scheduled Tasks and System Restore. Anything removed goes to the Recycle Bin or a backup first. System Information has its own page, with an Advanced view and reports you can export.</p>
         <a href="/features/#tools">See all the tools →</a>
       </div>
       ${shot(ctx, "disk-analyzer.png", "Disk Analyzer map of folders and files colored by kind, with the Contents list beside it")}
@@ -215,14 +220,14 @@ export default function home(ctx) {
   <div class="wrap center">
     <div class="section-head reveal">
       <span class="eyebrow">Make It Yours</span>
-      <h2>Honey, Classic and Glacier, Light or Dark</h2>
-      <p class="lead">Three color schemes, accent colors for everyone, and light or dark mode that can follow Windows. Every combination meets the WCAG 2.2 AA contrast standard.</p>
+      <h2>Honey, Classic, Glacier and Lagoon, Light or Dark</h2>
+      <p class="lead">Four color schemes, accent colors for everyone, and light or dark mode that can follow Windows. Every combination meets the WCAG 2.2 AA contrast standard.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Color schemes">
       ${themes.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${id === defaultTheme}" tabindex="${id === defaultTheme ? 0 : -1}">${label}</button>`).join("")}
     </div>
     ${themes.map(([id, label, file, alt]) => `<div class="tab-panel" role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}"${id === defaultTheme ? "" : " hidden"}>${shot(ctx, file, alt)}</div>`).join("\n    ")}
-    <p class="muted mt">Honey is free for everyone. Classic and Glacier are a thank-you for supporters. Every feature is free for everyone.</p>
+    <p class="muted mt">Honey is free for everyone. Classic, Glacier and Lagoon are a thank-you for supporters. Every feature is free for everyone.</p>
   </div>
 </section>
 

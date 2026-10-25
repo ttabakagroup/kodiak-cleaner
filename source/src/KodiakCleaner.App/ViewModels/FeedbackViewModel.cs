@@ -26,10 +26,10 @@ public sealed class FeedbackViewModel : ObservableObject
     public bool IsConfigured => AppInfo.Feedback.IsConfigured;
     public bool IsNotConfigured => !IsConfigured;
 
-    /// <summary>Beta and dev builds say so at the top.</summary>
+    /// <summary>Beta and Dev builds say so at the top.</summary>
     public string BuildNote => AppInfo.Channel switch
     {
-        ReleaseChannel.Beta => "You're using a beta. Your reports shape the next release.",
+        ReleaseChannel.Beta => $"You're using {AppInfo.ShortName} Beta. Your reports help shape the first full release.",
         ReleaseChannel.Dev => "Internal Test Build",
         _ => "",
     };
@@ -39,8 +39,8 @@ public sealed class FeedbackViewModel : ObservableObject
     public string RateTitle => $"Rate {AppInfo.ShortName}";
     public string RateText => AppInfo.RepositoryIsPublic
         ? $"If {AppInfo.ShortName} has earned it, please give it a star on GitHub."
-        : $"If {AppInfo.ShortName} has earned it, you'll be able to give it a star on GitHub once the source code is public with the first Beta.";
-    /// <summary>Star on GitHub shows once the repository is public (Beta on); before that GitHub shows visitors a 404.</summary>
+        : $"If {AppInfo.ShortName} has earned it, you'll be able to give it a star on GitHub once its source code is public.";
+    /// <summary>Star on GitHub shows once the repository is public (version.json "repositoryPublic"); before that GitHub shows visitors a 404.</summary>
     public bool ShowStar => AppInfo.RepositoryIsPublic;
     public string RateNote => "Before leaving a negative review, please contact us first so we can address any issues and meet your needs.";
 

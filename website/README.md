@@ -13,8 +13,9 @@ No trackers, ads, cookies or outside fonts. The only outside script is Cloudflar
 | Linux | `/linux/` | `src/pages/linux.mjs` and `content/linux/CHANGELOG.md` |
 | Mac | `/mac/` | `src/pages/mac.mjs` and `content/mac/CHANGELOG.md` |
 | Download | `/download/` | `src/pages/download.mjs` (Windows, Mac and Linux) |
-| Changelog | `/changelog/` | `content/CHANGELOG.md` |
-| Archive | `/archive/` | `content/CHANGELOG.md` and `site.config.json` |
+| Changelog | `/changelog/` | `content/CHANGELOG.md` (Beta versions only; a small link at the bottom goes to the history) |
+| All Changes Since the Start | `/changelog/history/` | `content/changelog-history.md` (the Dev builds 0.8.0 to 0.8.121; not in the menu or sitemap, `noindex`) |
+| Archive | `/archive/` | `content/CHANGELOG.md` and `site.config.json` (Beta versions only) |
 | Contact Us | `/contact/` | `src/pages/contact.mjs` and `functions/api/contact.js` |
 | Support | `/donate/` | `src/pages/donate.mjs` (Ko-fi link from `site.config.json` "kofi") |
 | Full Feature List | `/features/list/` | `src/pages/featurelist.mjs` (every feature, Free or Supporter, per edition) |
@@ -91,19 +92,25 @@ One-time setup:
 4. Workers & Pages > kodiakcleaner > Settings > Bindings > Add > R2 bucket. Variable name `DOWNLOADS`, bucket `kodiakcleaner-downloads`.
 5. `npm run deploy`.
 
-Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the MSI is `KodiakCleaner-Dev-Setup.msi`, the portable ZIP is `KodiakCleaner-Dev-Portable.zip`, the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`, and the Mac files are `KodiakCleaner-Dev-Mac.dmg` and `KodiakCleaner-Dev-Mac.zip` from `../kodiak-mac/dist`.
+Each new release: upload the new files over the old ones with the same names, update the sizes in `site.config.json`, and deploy. The release folder's `upload-to-r2/` has them ready-renamed: the Windows MSI is `KodiakCleaner-Beta-Setup.msi` (`KodiakCleaner-Dev-Setup.msi` before 0.9.0), the portable ZIP is `KodiakCleaner-Beta-Portable.zip` (was `KodiakCleaner-Dev-Portable.zip`), the Linux ZIPs are `KodiakCleaner-Dev-AppImage.zip` and `KodiakCleaner-Dev-Deb.zip`, and the Mac files are `KodiakCleaner-Dev-Mac.dmg` and `KodiakCleaner-Dev-Mac.zip` from `../kodiak-mac/dist`.
 To go back to GitHub downloads, delete `hostedDownloads` from `site.config.json` and deploy.
 
-## Update File for Kodiak Cleaner for Windows
+## Update Files for Kodiak Cleaner for Windows
 
-From 0.8.40, Kodiak Cleaner for Windows checks `https://www.kodiakcleaner.app/updates/dev.json` for updates and downloads
-`/download/KodiakCleaner-Installer.msi` (spec: `plans/kodiak-update-file.md` in the project files).
+Kodiak Cleaner for Windows checks an update file and downloads `/download/KodiakCleaner-Installer.msi`
+(spec: `plans/kodiak-update-file.md` in the project files):
 
-- The file lives at `src/static/updates/dev.json` and is copied to `public/updates/dev.json` on build. `_headers` serves it with
+- Beta builds (0.9.0 on) read `https://www.kodiakcleaner.app/updates/beta.json`: `{"channel": "beta", "version", "msi": {"url", "sha256"}}`.
+- Dev builds (0.8.40 to 0.8.121) read `/updates/dev.json`. It now names the same Beta build (with `"channel": "dev"`), so
+  existing Dev installs are offered the Beta.
+
+- The files live in `src/static/updates/` and are copied to `public/updates/` on build. `_headers` serves them with
   `Cache-Control: no-cache`, and downloads are served with `no-cache` too, so a new release shows up straight away.
-- Every time `KodiakCleaner-Installer.msi` is replaced in R2, write that build's `version` and `sha256` into this file and deploy,
-  in that order: MSI first, then the site. If the two disagree, the app throws the download away and tries again the next day.
-- The release folder has a ready-made copy at `release-<ver>/updates/dev.json`. A test checks the file's shape.
+- Every time `KodiakCleaner-Installer.msi` is replaced in R2, write that build's `version` and `sha256` into both files and deploy,
+  in that order: MSI first, then the site. If they disagree, the app throws the download away and tries again the next day.
+  The repo's Publish Downloads workflow does this for you.
+- The Download page shows the installer's SHA-256 from `beta.json` (or `dev.json` when there's no `beta.json`), only when it is
+  for the version on the page. Tests check both files' shape, and that `dev.json` offers the same build as `beta.json`.
 - While Cloudflare Access protects the site, the app is sent to the login page and reports that it couldn't check.
 
 ## If Contact Us Says a Message Couldn't Be Sent
@@ -130,6 +137,7 @@ The homepage opens with the launch video over the page when `src/assets/video/` 
 - It plays muted with Turn Sound On, and doesn't start by itself for visitors who prefer reduced motion.
 - The X, Esc, a click outside it and Continue to the Site close it. Closing is remembered in the browser, so it opens by itself once per visitor; change `id` to show a new video to everyone again. Watch the Video, under the download buttons, opens it any time.
 - Use an H.264 MP4 of 25 MiB or less (Cloudflare Pages' file limit). `/video/*` is cached for a week, so give a replacement video a new file name.
+- To replace the video: put the new MP4 (and its poster JPG, if any) in `src/assets/video/` under new names, then in `site.config.json` set `file` and `poster` to them and `id` to a new value (for example `launch-1` to `launch-2`), so everyone sees the new one once. Delete the old files from `src/assets/video/`.
 
 ## Download Thank-You Pop-Up
 
@@ -139,13 +147,20 @@ Every page carries a small pop-up (`#download-thanks` in `src/layout.mjs`, scrip
 
 ## Each New Kodiak Cleaner Release
 
-1. `npm run sync` copies CHANGELOG.md and the other documents from `../ccleaner-alt`, the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
+1. `npm run sync` copies CHANGELOG.md and the other documents from the Windows app folder, plus its `docs/history/dev-changelog.md`
+   (the Dev changelog from before the Beta) into `content/changelog-history.md`, the Linux CHANGELOG.md and version.json from `../kodiak-linux` into `content/linux/`, and the Mac ones from `../kodiak-mac` into `content/mac/` (or copy them by hand).
+   The Windows app folder is `../source` unless `KC_WINDOWS_APP` says otherwise (a path relative to this folder, or absolute).
+   In the project files the Windows app sits in a folder with another name, so there run:
+   `KC_WINDOWS_APP=../<windows app folder> npm run sync` (PowerShell: `$env:KC_WINDOWS_APP="..\<windows app folder>"; npm run sync`).
+   In the GitHub repository the app is in `../source`, so plain `npm run sync` works.
 2. In `site.config.json`, add the version under `releases` with its two file sizes. Only versions listed there get download links; the rest show "Not published".
 3. `npm test`, then `npm run deploy`.
 
 Archive links point at the GitHub release files, for example
-`https://github.com/ttabakagroup/kodiakcleaner/releases/download/v0.8.37-dev/KodiakCleaner-Dev-Setup.msi`
-(0.8.31 to 0.8.36: `KodiakCleaner-Dev-Setup.zip`; 0.8.30 and older: `KodiakCleaner-0.8.27-x64-msi-dev.zip`).
+`https://github.com/ttabakagroup/kodiakcleaner/releases/download/v0.9.0-beta/KodiakCleaner-Beta-Setup.msi`
+(Dev builds: `.../v0.8.37-dev/KodiakCleaner-Dev-Setup.msi`;
+0.8.31 to 0.8.36: `KodiakCleaner-Dev-Setup.zip`; 0.8.30 and older: `KodiakCleaner-0.8.27-x64-msi-dev.zip`).
+The Archive lists the Beta versions only; the Dev builds' notes are on `/changelog/history/` with a link to each GitHub release page.
 They work once that release exists on GitHub. Only the hosted installer and GitHub releases from 0.8.37 on are a bare `.msi`; a test fails if any other bare `.msi` is linked.
 
 ## Commands
@@ -156,7 +171,7 @@ They work once that release exists on GitHub. Only the hosted installer and GitH
 | `npm test` | Builds, then checks links, images, downloads, Title Case, outside resources and the contact function |
 | `npm run preview` | Runs the site and the form locally with Wrangler (put test keys in a `.dev.vars` file) |
 | `npm run deploy` | Builds and uploads to Cloudflare Pages |
-| `npm run sync` | Copies the documents from `../ccleaner-alt`, `../kodiak-linux` and `../kodiak-mac`, then builds |
+| `npm run sync` | Copies the documents from the Windows app (`KC_WINDOWS_APP`, or `../source`), `../kodiak-linux` and `../kodiak-mac`, then builds |
 
 Turnstile's test keys for local runs: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`.
 
@@ -166,6 +181,7 @@ Turnstile's test keys for local runs: site key `1x00000000000000000000AA`, secre
 build.mjs               builds public/ from src/ and content/
 site.config.json        site address, links and published releases
 content/                CHANGELOG.md, PRIVACY.md, terms-of-use.md, why-it-was-made.md, LICENSE, version.json (copied from the app)
+content/changelog-history.md  the Dev changelog from before the Beta (the app's docs/history/dev-changelog.md)
 content/linux/          CHANGELOG.md and version.json (copied from Kodiak Cleaner for Linux)
 content/mac/            CHANGELOG.md and version.json (copied from Kodiak Cleaner for Mac)
 functions/api/contact.js  Contact Us handler (Turnstile check, then email through Resend; nothing stored)
@@ -177,11 +193,13 @@ src/assets/             CSS (theme.css from Ted's build standard, unchanged), sc
 src/static/_headers     security and caching headers for Cloudflare
 functions/download/[file].js  serves the hosted downloads from R2
 src/static/_redirects   short links (/github, /releases)
-src/static/updates/dev.json  update file Kodiak Cleaner for Windows reads (written by the publish workflow)
+src/static/updates/      beta.json and dev.json, the update files Kodiak Cleaner for Windows reads (written by the publish workflow)
 functions/_middleware.js  sends kodiakcleaner.app, pages.dev and preview links to www.kodiakcleaner.app
 tests/                  site checks, contact and Ko-fi function tests
 public/                 the built site (made by npm run build)
 ```
+
+New Windows screenshots go in `src/assets/images/screens/` as PNGs. A tool on the Features page without a screenshot shows `<tool id>.png` as soon as it's there (`hash-checker.png`, `scheduled-tasks.png`), and the home page's New Tools gallery shows each of its tools only once its PNG exists. Keep the same file names when retaking a screen.
 
 Windows screenshots come from the 0.8.36 Dev portable build under Wine with sample programs and startup entries (the Developer item was painted out of the Appearance shots, and the Application shot shows a sample folder path). Linux screenshots (`linux-*.png`) come from Kodiak Cleaner for Linux 0.8.1 Dev via its `tools/screenshots.py`. Mac screenshots (`mac-*.png`) come from Kodiak Cleaner for Mac 0.8.0 Dev (`dist/screenshots`, taken on a GitHub Mac); its Triggers shot shows that build machine's own launch agents. Retake the Windows ones on Windows when convenient; real program icons look better.
 

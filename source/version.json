@@ -1,1 +1,1 @@
-{ "channel": "dev", "version": "0.8.121", "targetStable": "1.0.0" }
+{ "channel": "beta", "version": "0.9.0", "targetStable": "1.0.0", "repositoryPublic": true }

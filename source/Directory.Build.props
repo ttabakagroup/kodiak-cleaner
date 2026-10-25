@@ -5,8 +5,9 @@
     <Version>$([System.Text.RegularExpressions.Regex]::Match($(_VersionJson), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</Version>
     <Channel>$([System.Text.RegularExpressions.Regex]::Match($(_VersionJson), '"channel"\s*:\s*"([^"]+)"').Groups[1].Value)</Channel>
     <TargetStable>$([System.Text.RegularExpressions.Regex]::Match($(_VersionJson), '"targetStable"\s*:\s*"([^"]+)"').Groups[1].Value)</TargetStable>
-    <!-- Release builds (build.ps1 -Release, tagged CI builds) leave out the Developer page. -->
-    <ReleaseBuild Condition="'$(ReleaseBuild)' == ''">false</ReleaseBuild>
+    <!-- "repositoryPublic": true once Ted makes the GitHub repository public. Until then (or when the field is missing)
+         every GitHub link (Project Page, Star on GitHub, Docs\Download.url) points at the website instead. -->
+    <RepositoryPublic>$([System.Text.RegularExpressions.Regex]::IsMatch($(_VersionJson), '"repositoryPublic"\s*:\s*true'))</RepositoryPublic>
 
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

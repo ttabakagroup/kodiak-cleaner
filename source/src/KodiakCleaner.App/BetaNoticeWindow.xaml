@@ -15,11 +15,11 @@
         <Border Style="{StaticResource Card}" Margin="0,16,0,0">
             <StackPanel>
                 <TextBlock TextWrapping="Wrap"
-                           Text="Kodiak Cleaner is still beta software. We are working to improve it every day, and our goal is to reach the first full release soon." />
+                           Text="Kodiak Cleaner is beta software. We are working to improve it every day, and our goal is to reach the first full release soon." />
                 <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" FontWeight="SemiBold"
                            Text="Use Kodiak Cleaner at your own risk. More testing is needed before we can confirm that every feature works as intended." />
                 <TextBlock TextWrapping="Wrap" Margin="0,8,0,0" FontWeight="SemiBold"
-                           Text="Being beta and cleaning software, Kodiak Cleaner may delete information you didn't mean to remove." />
+                           Text="As beta and cleaning software, Kodiak Cleaner may delete information you didn't mean to remove." />
                 <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" Style="{StaticResource Caption}" FontSize="13"
                            Text="Check what's selected before you clean, and keep your own backups of anything important. Removed files go to the Recycle Bin where possible, and registry fixes are backed up first." />
             </StackPanel>

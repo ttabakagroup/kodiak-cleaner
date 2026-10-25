@@ -1,9 +1,11 @@
 # Builds KodiakCleaner.exe, the MSI and the portable ZIP on Windows with the .NET 8 SDK.
 # The version and channel come from version.json.
 #
-#   .\build.ps1            development build: includes the Developer page; packages are named KodiakCleaner-Dev-*
-#   .\build.ps1 -Release   release build: no Developer page; refuses to build with the test supporter key
-#                          or without a CHANGELOG.md entry for this version
+#   .\build.ps1            packages are named after the channel in version.json: KodiakCleaner-Beta-Setup.msi etc.
+#   .\build.ps1 -Release   release build (tagged CI builds): also runs the release checks below
+#
+# Release builds, and every Beta or Stable build, refuse to build with the test supporter key or without a
+# CHANGELOG.md entry for this version.
 param([switch]$Release)
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
@@ -16,11 +18,11 @@ $versionName = if ($channel -eq "stable") { $version } else { "$version $label" 
 if ($channel -ne "stable" -and [version]$info.targetStable -gt [version]"1.0.0") { $versionName += " (for $($info.targetStable))" }
 # Package names keep the same name every release (Ted's standard, 0.8.31), so GitHub download links keep working:
 # KodiakCleaner-Dev-Setup.msi (Docs\Download.url links it) and KodiakCleaner-Dev-Portable.zip. The version is in the
-# release tag. Development builds are always Dev.
+# release tag.
 $product = "KodiakCleaner"
-$branch = if (-not $Release) { "Dev" } else { $label }
+$branch = $label
 
-if ($Release) {
+if ($Release -or $channel -ne "dev") {
     if (-not (Test-Path keys/supporter-public.pem)) {
         Write-Error "Release builds need Ted's supporter public key (keys/supporter-public.pem). Run: dotnet run --project tools/SupporterCodes -- make-key"
     }
@@ -33,11 +35,11 @@ dotnet test tests/KodiakCleaner.Core.Tests -c Release
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 Remove-Item publish -Recurse -Force -ErrorAction SilentlyContinue
-dotnet publish src/KodiakCleaner.App -c Release -r win-x64 -o publish -p:ReleaseBuild=$($Release.IsPresent.ToString().ToLower())
+dotnet publish src/KodiakCleaner.App -c Release -r win-x64 -o publish
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 # The seven Docs files (Changelog.txt, Download.url, ...) go in publish\Docs: the MSI installs them and both ZIPs carry them.
-dotnet run --project tools/MakeDocs -- publish\Docs $branch
+dotnet run --project tools/MakeDocs -- publish\Docs $channel
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 dotnet build installer/KodiakCleaner.Installer.wixproj -c Release -p:PublishDir="$PSScriptRoot\publish\"

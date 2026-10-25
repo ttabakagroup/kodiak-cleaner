@@ -66,6 +66,38 @@ public class ReleaseChannelTests
     }
 }
 
+public class BetaChangelogTests
+{
+    [Fact]
+    public void The_beta_changelog_starts_fresh_and_keeps_the_dev_history_aside()
+    {
+        // Ted (0.9.0 Beta): the changelog starts fresh like a 1.0; the Dev history is kept in docs/history and shown only by
+        // About > All Changes Since the Start.
+        var beta = Changelog.Parse(Repo.Read("CHANGELOG.md"));
+        Assert.Equal(new Version(0, 9, 0), beta.Min(r => r.Version));
+        Assert.All(beta, r => Assert.True(r.Version >= new Version(0, 9, 0)));
+        Assert.Contains(beta, r => r.VersionName == "0.9.0 Beta");
+        // After updating from 0.8.121 Dev, What's New shows only the Beta's entry.
+        Assert.Equal(["0.9.0 Beta"], Changelog.Since(beta, new Version(0, 8, 121), new Version(0, 9, 0)).Select(r => r.VersionName));
+        var history = Changelog.Parse(Repo.Read("docs", "history", "dev-changelog.md"));
+        Assert.Equal(new Version(0, 8, 0), history.Min(r => r.Version));
+        Assert.Equal(new Version(0, 8, 121), history.Max(r => r.Version));
+        Assert.All(history, r => Assert.EndsWith("Dev", r.VersionName));
+        var app = Repo.Read("src", "KodiakCleaner.App", "KodiakCleaner.App.csproj");
+        Assert.Contains(@"docs\history\dev-changelog.md"" LogicalName=""dev-changelog.md""", app);
+        Assert.Contains("ReadResource(\"dev-changelog.md\")", Repo.Read("src", "KodiakCleaner.App", "AppInfo.cs"));
+    }
+
+    [Fact]
+    public void The_beta_changelog_reads_like_release_notes()
+    {
+        // Pre-Beta review item 9: What's New and About show this text, so no "(Ted)" tags and no donate wording.
+        var text = Repo.Read("CHANGELOG.md");
+        Assert.DoesNotMatch(@"\(Ted\b|\bdonat|\btips?\b", text);
+        Assert.DoesNotContain("Developer", text);
+    }
+}
+
 public class SupporterCodeTests
 {
     private static (string Private, string Public) NewKey()
@@ -284,7 +316,7 @@ public class DocumentTests
         var dir = Path.Combine(Path.GetTempPath(), "kc-docs-" + Guid.NewGuid().ToString("N"));
         try
         {
-            DocsFolder.Write(Repo.Root, dir, ReleaseChannel.Dev);
+            DocsFolder.Write(Repo.Root, dir, ReleaseChannels.Parse(Regex.Match(Repo.Read("version.json"), "\"channel\"\\s*:\\s*\"([^\"]+)\"").Groups[1].Value));
             Assert.Equal(DocsFolder.Files, Directory.GetFiles(dir).Select(Path.GetFileName).Order(StringComparer.Ordinal));
             foreach (var file in DocsFolder.Files.Where(f => f.EndsWith(".txt")))
             {
@@ -293,17 +325,29 @@ public class DocumentTests
                 Assert.DoesNotContain("\n", text.Replace("\r\n", ""));
             }
             Assert.Contains("URL=https://www.kodiakcleaner.app/\r\n", File.ReadAllText(Path.Combine(dir, "Homepage.url")));
-            // The repository is private while builds are Dev, so Dev links the website (Ted, 2026-10-14: public with the first Beta).
-            Assert.Contains("URL=https://www.kodiakcleaner.app/download/\r\n",
-                File.ReadAllText(Path.Combine(dir, "Download.url")));
+            // Dev and Beta (and every channel while the repository is private) link the website's download page.
+            Assert.Contains("URL=https://www.kodiakcleaner.app/download/\r\n", File.ReadAllText(Path.Combine(dir, "Download.url")));
         }
         finally { Directory.Delete(dir, true); }
+        foreach (var channel in Enum.GetValues<ReleaseChannel>())
+            Assert.Equal("https://www.kodiakcleaner.app/download/", DocsFolder.DownloadUrl(channel, repositoryPublic: false));
+        Assert.Equal("https://www.kodiakcleaner.app/download/", DocsFolder.DownloadUrl(ReleaseChannel.Dev, repositoryPublic: true));
         Assert.Equal("https://github.com/ttabakagroup/kodiakcleaner/releases/latest/download/KodiakCleaner-Stable-Setup.msi",
-            DocsFolder.DownloadUrl(ReleaseChannel.Stable));
-        Assert.Equal("https://github.com/ttabakagroup/kodiakcleaner/releases/download/latest-beta/KodiakCleaner-Beta-Setup.msi",
-            DocsFolder.DownloadUrl(ReleaseChannel.Beta));
-        Assert.False(DocsFolder.RepositoryIsPublic(ReleaseChannel.Dev));
-        Assert.True(DocsFolder.RepositoryIsPublic(ReleaseChannel.Beta));
+            DocsFolder.DownloadUrl(ReleaseChannel.Stable, repositoryPublic: true));
+        Assert.Equal("https://www.kodiakcleaner.app/download/", DocsFolder.DownloadUrl(ReleaseChannel.Beta, repositoryPublic: true));
+    }
+
+    [Fact]
+    public void The_repository_flag_comes_from_version_json_and_defaults_to_private()
+    {
+        // Ted keeps the repository private past the first Beta (2026-10-25), so the flag, not the channel, decides.
+        Assert.False(DocsFolder.RepositoryIsPublic("""{ "channel": "beta", "version": "0.9.0" }"""));
+        Assert.False(DocsFolder.RepositoryIsPublic("""{ "channel": "stable", "version": "1.0.0", "repositoryPublic": false }"""));
+        Assert.True(DocsFolder.RepositoryIsPublic("""{ "channel": "beta", "version": "0.9.1", "repositoryPublic": true }"""));
+        Assert.Contains("\"repositoryPublic\"", Repo.Read("version.json"));
+        Assert.Contains("RepositoryPublic", Repo.Read("Directory.Build.props"));
+        Assert.Contains("Metadata(\"RepositoryPublic\")", Repo.Read("src", "KodiakCleaner.App", "AppInfo.cs"));
+        Assert.DoesNotContain("RepositoryIsPublic(Channel)", Repo.Read("src", "KodiakCleaner.App", "AppInfo.cs"));
     }
 
     [Fact]
@@ -323,9 +367,14 @@ public class DocumentTests
             Assert.Contains(name, build);
         Assert.DoesNotContain("Compress-Archive -Path \"$stage", build);
         var linux = Repo.Read("installer", "package-linux.sh");
-        foreach (var name in new[] { @"""$OUTDIR/$PRODUCT-Dev-Setup.msi""", @"""$OUTDIR/$PRODUCT-Dev-Portable.zip""" })
+        foreach (var name in new[] { @"""$OUTDIR/$PRODUCT-$BRANCH-Setup.msi""", @"""$OUTDIR/$PRODUCT-$BRANCH-Portable.zip""" })
             Assert.Contains(name, linux);
         Assert.DoesNotContain("Setup.zip", linux);
+        // The channel comes from version.json in both scripts, never a hard-coded Dev (pre-Beta review item 3).
+        Assert.DoesNotContain("-Dev-", linux);
+        Assert.Contains(@"""$STAGE/portable/Docs"" ""$CHANNEL""", linux);
+        Assert.Contains("$branch = $label", build);
+        Assert.DoesNotContain("\"Dev\"", build);
     }
 
     [Fact]
@@ -503,7 +552,10 @@ public class StaysCurrentTests
         var pages = Regex.Matches(src, @"Add\(""(\w+)"", ""([^""]+)"", ""[^""]*"", ""([^""]*)""")
             .Select(m => (Key: m.Groups[1].Value, Title: m.Groups[2].Value, Group: m.Groups[3].Value)).ToList();
         Assert.Contains(pages, p => p.Key == "faq" && p.Group == "Help");
-        Assert.Contains(pages, p => p.Key == "developer" && p.Title == "Developer Tools");
+        // Ted removed the Developer Tools page (0.9.0 Beta): no Developer heading, page or plan preview in any channel.
+        Assert.DoesNotContain(pages, p => p.Key == "developer" || p.Group == "Developer");
+        Assert.False(Directory.Exists(Path.Combine(Repo.Root, "src", "KodiakCleaner.App", "Developer")));
+        Assert.DoesNotContain("PlanPreview", Repo.Read("src", "KodiakCleaner.App", "Supporter.cs"));
         // Default order (Ted, 2026-10-23): General first, each heading's pages together; Sort By › A to Z sorts them at run time.
         Assert.Equal("general", pages[0].Key);
         var groups = pages.Select(p => p.Group).ToList();
@@ -564,5 +616,22 @@ public class StaysCurrentTests
         Assert.DoesNotContain("ItemsSource=\"{Binding Releases}\"", about);
         foreach (var vm in new[] { "StartupViewModel.cs", "ProgramsViewModel.cs" })
             Assert.Contains("await Task.Run(", Repo.Read("src", "KodiakCleaner.App", "ViewModels", vm));
+    }
+}
+
+public sealed class AppInfoStartupTests
+{
+    /// <summary>
+    /// 0.9.0 Beta crashed at start: a static property read the assembly field before it was set (static fields initialize in
+    /// textual order). The assembly field must come before every static initializer that reads build metadata.
+    /// </summary>
+    [Fact]
+    public void The_assembly_field_comes_before_anything_that_reads_metadata()
+    {
+        var source = Repo.Read("src", "KodiakCleaner.App", "AppInfo.cs");
+        int me = source.IndexOf("private static readonly Assembly Me", StringComparison.Ordinal);
+        Assert.True(me > 0);
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(source, @"\{ get; \} = [^\n]*(Metadata\(|Me\.)"))
+            Assert.True(m.Index > me, $"Static initializer at {m.Index} runs before Me is set: {m.Value}");
     }
 }

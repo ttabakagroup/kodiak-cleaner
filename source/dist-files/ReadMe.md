@@ -4,7 +4,7 @@ Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
 Kodiak Cleaner is a small, honest cleaner for Windows by Ted Tabaka. It has no telemetry, ads, upsells, bundled offers or background services. Every cleaning tool is free, and the app is open source under the MIT License.
 
-Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so check what's selected before you clean and keep your own backups of anything important.
+Beta software: use at your own risk. This is Kodiak Cleaner's Beta, the last step before the first full release. It deletes things by design, so check what's selected before you clean and keep your own backups of anything important.
 
 ## What You Need
 
@@ -14,7 +14,7 @@ Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so
 
 ## Install
 
-- Installer: double-click KodiakCleaner-Dev-Setup.msi and follow the steps. Kodiak Cleaner installs to Program Files\Kodiak Cleaner, with these documents in its Docs folder.
+- Installer: double-click KodiakCleaner-Beta-Setup.msi and follow the steps. Kodiak Cleaner installs to Program Files\Kodiak Cleaner, with these documents in its Docs folder.
 - Portable: extract the Portable ZIP to any folder, even a USB drive, and run KodiakCleaner.exe. It keeps its settings, backups, logs and reports in that folder and leaves no trace outside it.
 
 The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click More info, then Run anyway.
@@ -26,7 +26,7 @@ Your settings are in KodiakCleaner.ini next to KodiakCleaner.exe. Backups, the a
 - Installed: click Check for Updates on the About page (or Check Now under Settings > Updates), or run a newer installer over the old one. KodiakCleaner.ini, Backups, Logs and Reports are kept.
 - Portable: replace KodiakCleaner.exe and the Docs folder only. Keep KodiakCleaner.ini and the Backups, Logs and Reports folders.
 
-After an update, What's New shows everything that changed since your previous version. The full history is in Changelog.txt.
+After an update, What's New shows everything that changed since your previous version. Changelog.txt has every change since the first Beta, 0.9.0; About > All Changes Since the Start in Kodiak Cleaner also shows the earlier Dev builds.
 
 ## Uninstall
 
@@ -38,7 +38,7 @@ Everything stays on your PC, and Kodiak Cleaner sends nothing on its own. The on
 
 ## These Documents
 
-- Changelog.txt: every change, newest first
+- Changelog.txt: every change since the first Beta, newest first
 - Download.url: where to get the newest installer
 - Homepage.url: the Kodiak Cleaner website
 - License.txt: the MIT License

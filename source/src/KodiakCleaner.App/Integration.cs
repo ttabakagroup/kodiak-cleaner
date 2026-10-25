@@ -26,7 +26,9 @@ public static class Integration
     // ---- Clean when Windows starts -------------------------------------------------------------
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     // Names include the channel so Dev, Beta and Stable copies never overwrite each other's registrations.
-    private static string RunValue => $"{AppInfo.RegistrationName} AutoClean";
+    private static string RunValue => RunValueFor(AppInfo.Channel);
+    private static string RunValueFor(KodiakCleaner.Core.About.ReleaseChannel channel) =>
+        $"{KodiakCleaner.Core.About.ReleaseChannels.AppName(AppInfo.ShortName, channel)} AutoClean";
     public const string AutoCleanArg = "/autoclean";
 
     public static void SetCleanOnStartup(bool on)
@@ -38,7 +40,8 @@ public static class Integration
 
     // ---- Recycle Bin context menu ---------------------------------------------------------------
     // Per-user registration (HKCU\Software\Classes), so it needs no administrator rights.
-    private static string RecycleBinShell => @"Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}\shell\" + AppInfo.Id;
+    private static string RecycleBinShell => RecycleBinShellFor(AppInfo.Id);
+    private static string RecycleBinShellFor(string id) => @"Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}\shell\" + id;
 
     public static void SetRecycleBinMenu(bool on)
     {
@@ -55,7 +58,8 @@ public static class Integration
     }
 
     // ---- Skip UAC (scheduled task that runs Kodiak Cleaner with highest privileges) --------------------
-    private static string TaskName => $@"{AppInfo.Id}\SkipUAC";
+    private static string TaskName => SkipUacTaskFor(AppInfo.Id);
+    private static string SkipUacTaskFor(string id) => $@"{id}\SkipUAC";
     public const string ElevatedArg = "/elevated";
 
     /// <summary>Only offered for the installed copy: a task pointing at a user-writable exe would let anything elevate.</summary>
@@ -66,6 +70,7 @@ public static class Integration
         if (!on)
         {
             RunSchtasks($"/Delete /TN \"{TaskName}\" /F", ignoreErrors: true);
+            foreach (var c in AppInfo.OtherChannels) RunSchtasks($"/Delete /TN \"{SkipUacTaskFor(AppInfo.IdFor(c))}\" /F", ignoreErrors: true);
             return;
         }
         if (!CanSkipUac) throw new InvalidOperationException("Skipping UAC is only available for the installed version.");
@@ -94,6 +99,8 @@ public static class Integration
         {
             File.WriteAllText(file, xml, Encoding.Unicode);
             RunSchtasks($"/Create /TN \"{TaskName}\" /XML \"{file}\" /F", ignoreErrors: false);
+            // An earlier channel's task (a Dev install updated to Beta) is replaced by this one.
+            foreach (var c in AppInfo.OtherChannels) RunSchtasks($"/Delete /TN \"{SkipUacTaskFor(AppInfo.IdFor(c))}\" /F", ignoreErrors: true);
         }
         finally
         {
@@ -101,8 +108,13 @@ public static class Integration
         }
     }
 
-    /// <summary>Starts the elevated copy through the task. Returns false if the task is missing.</summary>
-    public static bool TryLaunchViaTask() => RunSchtasks($"/Run /TN \"{TaskName}\"", ignoreErrors: true) == 0;
+    /// <summary>
+    /// Starts the elevated copy through the task. Returns false if the task is missing. A Dev install updated to Beta still
+    /// has the Dev build's task (it runs the same exe) until the elevated copy moves it over, so that one is tried too.
+    /// </summary>
+    public static bool TryLaunchViaTask() =>
+        new[] { AppInfo.Id }.Concat(AppInfo.OtherChannels.Select(AppInfo.IdFor))
+            .Any(id => RunSchtasks($"/Run /TN \"{SkipUacTaskFor(id)}\"", ignoreErrors: true) == 0);
 
     internal static int RunSchtasks(string args, bool ignoreErrors)
     {
@@ -151,15 +163,81 @@ public static class Integration
     public static void SyncAll()
     {
         var s = Settings.Current;
+        TryQuietly(MoveFromOtherChannels);
         TryQuietly(() => SetCleanOnStartup(s.CleanOnStartup));
         TryQuietly(() => SetRecycleBinMenu(s.RecycleBinMenu));
         TryQuietly(() => ApplyJumpList(s.JumpList));
         TryQuietly(ScheduledCleaning.SyncTasks);
     }
 
+    /// <summary>
+    /// Every channel installs to Program Files\Kodiak Cleaner and replaces the others (one upgrade code), but Windows
+    /// registrations carry the channel ("Kodiak Cleaner Dev AutoClean", Task Scheduler's \KodiakCleaner.Dev folder). After a
+    /// Dev install is updated to Beta, this removes the Dev build's per-user entries (SyncAll then makes this channel's
+    /// own) and moves its scheduled cleanings and Skip UAC task into this channel's folder, so nothing runs twice, every
+    /// schedule can still be changed or deleted, and uninstalling leaves nothing behind. Tasks that need administrator
+    /// rights to replace stay where they are (they still run this exe) until Kodiak Cleaner runs as administrator.
+    /// </summary>
+    public static void MoveFromOtherChannels()
+    {
+        RemoveOtherChannelEntries();
+        var s = Settings.Current;
+        foreach (var id in AppInfo.OtherChannels.Select(AppInfo.IdFor).Where(TaskFolderExists))
+        {
+            if (s.SkipUac && Elevation.IsAdministrator && CanSkipUac && TaskExists(SkipUacTaskFor(id)))
+                SetSkipUac(true); // makes this channel's task, then deletes the old one
+            foreach (var schedule in s.Schedules)
+            {
+                var old = $@"{id}\Cleaning {schedule.Id}";
+                if (!TaskExists(old) || (schedule.AsAdmin && !ScheduledCleaning.CanRunAsAdmin)) continue;
+                ScheduledCleaning.Register(schedule); // also deletes the old channel's task
+            }
+            s.Save();
+            DeleteTaskFolderIfEmpty(id);
+        }
+    }
+
+    /// <summary>Removes other channels' Clean When Windows Starts value and Recycle Bin menu (per user, no rights needed).</summary>
+    public static void RemoveOtherChannelEntries()
+    {
+        using (var run = Registry.CurrentUser.OpenSubKey(RunKey, writable: true))
+            foreach (var c in AppInfo.OtherChannels) run?.DeleteValue(RunValueFor(c), throwOnMissingValue: false);
+        foreach (var c in AppInfo.OtherChannels) Registry.CurrentUser.DeleteSubKeyTree(RecycleBinShellFor(AppInfo.IdFor(c)), throwOnMissingSubKey: false);
+    }
+
+    private static bool TaskExists(string name) => RunSchtasks($"/Query /TN \"{name}\"", ignoreErrors: true) == 0;
+
+    private static dynamic? TaskService()
+    {
+        var type = Type.GetTypeFromProgID("Schedule.Service");
+        if (type is null) return null;
+        dynamic service = Activator.CreateInstance(type)!;
+        service.Connect();
+        return service;
+    }
+
+    private static bool TaskFolderExists(string id)
+    {
+        try { return TaskService()?.GetFolder("\\" + id) is not null; }
+        catch (System.Runtime.InteropServices.COMException) { return false; }
+    }
+
+    private static void DeleteTaskFolderIfEmpty(string id)
+    {
+        try
+        {
+            var service = TaskService();
+            if (service is null) return;
+            dynamic folder = service.GetFolder("\\" + id);
+            if (folder.GetTasks(1).Count == 0 && folder.GetFolders(0).Count == 0) service.GetFolder("\\").DeleteFolder(id, 0);
+        }
+        catch (System.Runtime.InteropServices.COMException) { }
+    }
+
     private static void TryQuietly(Action a)
     {
         try { a(); }
-        catch (Exception e) when (e is UnauthorizedAccessException or SecurityException or IOException or InvalidOperationException) { }
+        catch (Exception e) when (e is UnauthorizedAccessException or SecurityException or IOException or InvalidOperationException
+            or System.Runtime.InteropServices.COMException or NotImplementedException) { }
     }
 }

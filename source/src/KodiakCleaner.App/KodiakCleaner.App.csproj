@@ -29,6 +29,8 @@
     <Resource Include="Assets\logo.png" />
     <Resource Include="Assets\Fonts\Fredoka-SemiBold.ttf" />
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="CHANGELOG.md" />
+    <!-- Every Dev build's changes (0.8.0 to 0.8.121), for About > All Changes Since the Start. -->
+    <EmbeddedResource Include="..\..\docs\history\dev-changelog.md" LogicalName="dev-changelog.md" />
     <EmbeddedResource Include="..\..\faq.md" LogicalName="faq.md" />
     <EmbeddedResource Include="..\..\terms-of-use.md" LogicalName="terms-of-use.md" />
     <EmbeddedResource Include="..\..\PRIVACY.md" LogicalName="PRIVACY.md" />
@@ -51,15 +53,10 @@
       <_Parameter1>TargetStable</_Parameter1>
       <_Parameter2>$(TargetStable)</_Parameter2>
     </AssemblyAttribute>
-  </ItemGroup>
-
-  <!-- Development builds include the Developer page; release builds leave it out entirely. -->
-  <PropertyGroup Condition="'$(ReleaseBuild)' != 'true'">
-    <DefineConstants>$(DefineConstants);DEVTOOLS</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(ReleaseBuild)' == 'true'">
-    <Compile Remove="Developer\**" />
-    <Page Remove="Developer\**" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepositoryPublic</_Parameter1>
+      <_Parameter2>$(RepositoryPublic)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

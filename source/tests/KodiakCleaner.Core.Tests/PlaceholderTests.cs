@@ -45,7 +45,6 @@ public class PlaceholderTests
         ["WiperView.xaml: {Binding FileSystemChoices}"] = "Fixed choices.",
         ["Controls.xaml: {Binding Sections}"] = "One changelog version's sections, always filled.",
         ["Controls.xaml: {Binding Items}"] = "One changelog section's lines, always filled.",
-        ["DeveloperPage.xaml: {Binding Previews}"] = "Fixed preview choices (development builds only).",
         ["DiskAnalyzerPickWindow.xaml: Places"] = "Your own folders (Documents, Pictures and so on), always there.",
         ["DuplicateRestoreWindow.xaml: Grid"] = "Has its own empty message (Empty).",
         ["MainWindow.xaml: {Binding FooterPages}"] = "The sidebar's pages.",

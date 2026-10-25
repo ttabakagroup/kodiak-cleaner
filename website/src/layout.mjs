@@ -42,7 +42,7 @@ export function layout(page, ctx) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(page.description)}">
-<link rel="canonical" href="${url}">
+${page.noindex ? '<meta name="robots" content="noindex">\n' : ""}<link rel="canonical" href="${url}">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F5EFE6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1E1815" media="(prefers-color-scheme: dark)">

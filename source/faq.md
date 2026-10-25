@@ -52,6 +52,10 @@ Kodiak Cleaner only changes what you pick. Registry fixes, startup entries, sche
 
 Reset to Default, under Settings, Advanced, puts every setting, your sidebar Favorites and your Cleaner selections back to how they were at install. It keeps your Supporter code, your cleaning history, your scheduled cleanings and every backup, log and report.
 
+## What Is Kodiak Cleaner Beta?
+
+Kodiak Cleaner Beta (versions 0.9) is the last step before the first full release, 1.0. Every tool is there, and more people are testing it, so please report anything that doesn't work under Settings, Contact & Feedback. The changelog starts fresh with 0.9.0 Beta: About, See All Changes lists the Beta's changes, and All Changes Since the Start also lists the earlier Dev builds. Updating from a Dev build keeps your settings, backups and Supporter code.
+
 ## Where Are My Backups, Logs and Reports?
 
 An installed copy keeps them in the Kodiak Cleaner folder in your Documents; a portable copy keeps them beside KodiakCleaner.exe. Settings, Application, Backups, Logs and Reports has an Open Folder button. Uninstalling Kodiak Cleaner asks whether to delete them.

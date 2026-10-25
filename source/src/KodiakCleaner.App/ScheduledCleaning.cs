@@ -15,7 +15,11 @@ public static class ScheduledCleaning
 {
     public const string Arg = "/schedule:";
 
-    private static string TaskName(CleaningSchedule s) => $@"{AppInfo.Id}\Cleaning {s.Id}";
+    private static string TaskName(CleaningSchedule s) => TaskName(AppInfo.Id, s);
+    private static string TaskName(string id, CleaningSchedule s) => $@"{id}\Cleaning {s.Id}";
+
+    /// <summary>The same schedule's task under another channel's folder (a Dev install updated to Beta).</summary>
+    private static IEnumerable<string> OtherChannelNames(CleaningSchedule s) => AppInfo.OtherChannels.Select(c => TaskName(AppInfo.IdFor(c), s));
 
     /// <summary>Administrator schedules are only offered to an administrator on the installed copy (a task that runs a
     /// user-writable exe with full rights would let anything elevate).</summary>
@@ -33,6 +37,7 @@ public static class ScheduledCleaning
             File.WriteAllText(file, xml, Encoding.Unicode);
             Integration.RunSchtasks($"/Create /TN \"{TaskName(s)}\" /XML \"{file}\" /F", ignoreErrors: false);
             s.RegisteredFor = Integration.ExePath;
+            foreach (var old in OtherChannelNames(s)) Integration.RunSchtasks($"/Delete /TN \"{old}\" /F", ignoreErrors: true);
         }
         finally
         {
@@ -40,8 +45,11 @@ public static class ScheduledCleaning
         }
     }
 
-    public static void Unregister(CleaningSchedule s) =>
-        Integration.RunSchtasks($"/Delete /TN \"{TaskName(s)}\" /F", ignoreErrors: true);
+    public static void Unregister(CleaningSchedule s)
+    {
+        foreach (var name in OtherChannelNames(s).Prepend(TaskName(s)))
+            Integration.RunSchtasks($"/Delete /TN \"{name}\" /F", ignoreErrors: true);
+    }
 
     /// <summary>At startup: a copy that moved (portable) or was updated to a new folder points its tasks at itself again.</summary>
     public static void SyncTasks()

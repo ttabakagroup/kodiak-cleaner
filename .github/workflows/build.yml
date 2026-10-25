@@ -47,8 +47,8 @@ jobs:
           "label=$label" >> $env:GITHUB_OUTPUT
           "prerelease=$(if ($channel -eq 'stable') { 'false' } else { 'true' })" >> $env:GITHUB_OUTPUT
 
-      # Tagged builds are releases: no Developer page, Ted's supporter key and a changelog entry are required.
-      # Every other build is a development build (artifacts only).
+      # Tagged builds are releases (attached below). Release builds, and every Beta or Stable build, need Ted's supporter
+      # key and a changelog entry; files are named after the channel in version.json.
       - name: Build
         shell: pwsh
         run: |

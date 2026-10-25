@@ -7,6 +7,13 @@ import { macDownloads } from "./mac.mjs";
 export default function download(ctx) {
   const { cfg, latest, linuxLatest, macLatest } = ctx;
   const d = ctx.dl(latest);
+  const label = (r) => r.channel[0].toUpperCase() + r.channel.slice(1);
+  // Kodiak Cleaner for Windows moved from Dev to Beta at 0.9.0; Mac and Linux are still Dev builds.
+  const beta = ctx.channel === "Beta";
+  const channelNote = beta ? " The Beta is feature-complete and ready for wider testing. Dev installs are offered it as an update." : "";
+  const channels = beta
+    ? `Kodiak Cleaner for Windows is in the <strong>Beta</strong> channel (0.9.x), after the early <strong>Dev</strong> builds (0.8.x). <strong>Stable</strong> (1.x) comes next. Every channel installs to <code>Program Files\\Kodiak Cleaner</code>, and installing one replaces another. The Mac and Linux editions are still Dev builds.`
+    : `Kodiak Cleaner is in the <strong>${esc(ctx.channel)}</strong> channel (${esc(latest.version.replace(/\.\d+$/, ".x"))}). <strong>Beta</strong> (0.9.x) comes next, then <strong>Stable</strong> (1.x). Every channel installs to <code>Program Files\\Kodiak Cleaner</code>, and updates stay on their own channel.`;
 
   const body = `
 ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for everyone, with every feature.")}
@@ -20,7 +27,7 @@ ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for ever
 
 <section class="tight" id="windows">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">Windows 10 and 11</span><h2>Kodiak Cleaner for Windows</h2><p class="lead">Version ${esc(latest.name)}, released ${ctx.longDate(latest.date)}.</p></div>
+    <div class="section-head"><span class="eyebrow">Windows 10 and 11 · ${esc(ctx.channel)}</span><h2>Kodiak Cleaner for Windows</h2><p class="lead">Version ${esc(latest.name)}, released ${ctx.longDate(latest.date)}.${channelNote}</p></div>
     <div class="grid cols-2">
       <div class="card dl-card reveal">
         <span class="chip badge">Recommended</span>
@@ -92,7 +99,7 @@ ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for ever
         <li><strong>Portable:</strong> replace <code>KodiakCleaner.exe</code> and keep <code>KodiakCleaner.ini</code> and the <code>Backups</code>, <code>Logs</code> and <code>Reports</code> folders.</li>
       </ul><p class="muted">Your settings and backups are kept either way, and What's New shows what changed.</p></div>
       <div class="card"><h3>Uninstall</h3><p>Uninstall Kodiak Cleaner from Windows Settings &gt; Apps. It removes its scheduled cleanings, start-up entry, Recycle Bin menu item and settings, then asks whether to delete your backups, logs and reports too. Keep them if you might still want to undo a registry fix. For the portable version, just delete its folder.</p></div>
-      <div class="card"><h3>Release Channels</h3><p>Kodiak Cleaner is in the <strong>Dev</strong> channel (0.8.x). <strong>Beta</strong> (0.9.x) comes next, then <strong>Stable</strong> (1.x). Every channel installs to <code>Program Files\\Kodiak Cleaner</code>, and updates stay on their own channel.</p></div>
+      <div class="card"><h3>Release Channels</h3><p>${channels}</p></div>
     </div>
     <div class="btn-row centered mt-xl">
       <a class="btn" href="/changelog/">${icons.file}What's New in ${esc(latest.name)}</a>
@@ -104,14 +111,14 @@ ${pageHead("Download", "Kodiak Cleaner for Windows, Mac and Linux. Free for ever
 
 <section id="mac">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">macOS 26 or Newer</span><h2>Kodiak Cleaner for Mac</h2><p class="lead">Version ${esc(macLatest.name)}, released ${ctx.longDate(macLatest.date)}, for Apple silicon and Intel Macs. This Dev build isn't signed yet, so the first time you open it, use Open Anyway in Privacy &amp; Security. <a href="/mac/">See the steps and learn more →</a></p></div>
+    <div class="section-head"><span class="eyebrow">macOS 26 or Newer · ${esc(label(macLatest))}</span><h2>Kodiak Cleaner for Mac</h2><p class="lead">Version ${esc(macLatest.name)}, released ${ctx.longDate(macLatest.date)}, for Apple silicon and Intel Macs. This Dev build isn't signed yet, so the first time you open it, use Open Anyway in Privacy &amp; Security. <a href="/mac/">See the steps and learn more →</a></p></div>
     ${macDownloads(ctx)}
   </div>
 </section>
 
 <section class="alt" id="linux">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">64-Bit Linux</span><h2>Kodiak Cleaner for Linux</h2><p class="lead">Version ${esc(linuxLatest.name)}, released ${ctx.longDate(linuxLatest.date)}. Cleaner and Triggers, in the same color schemes. <a href="/linux/">Learn more about the Linux edition →</a></p></div>
+    <div class="section-head"><span class="eyebrow">64-Bit Linux · ${esc(label(linuxLatest))}</span><h2>Kodiak Cleaner for Linux</h2><p class="lead">Version ${esc(linuxLatest.name)}, released ${ctx.longDate(linuxLatest.date)}. Cleaner and Triggers, in the same color schemes. <a href="/linux/">Learn more about the Linux edition →</a></p></div>
     ${linuxDownloads(ctx)}
   </div>
 </section>`;

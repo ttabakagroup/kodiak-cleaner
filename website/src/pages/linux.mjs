@@ -132,14 +132,14 @@ ${pageHead("Kodiak Cleaner for Linux", `The Linux edition of Kodiak Cleaner: cle
   <div class="wrap center">
     <div class="section-head reveal">
       <span class="eyebrow">Make It Yours</span>
-      <h2>Honey, Classic and Glacier, Light or Dark</h2>
+      <h2>Honey, Classic, Glacier and Lagoon, Light or Dark</h2>
       <p class="lead">The same color schemes and accent colors as the Windows edition, with light or dark mode that can follow your desktop.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Color schemes for Linux">
       ${themes.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${id === defaultTheme}" tabindex="${id === defaultTheme ? 0 : -1}">${label}</button>`).join("")}
     </div>
     ${themes.map(([id, label, file]) => `<div class="tab-panel" role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}"${id === defaultTheme ? "" : " hidden"}>${shot(ctx, file, `Kodiak Cleaner for Linux in ${label}`, { bar: BAR })}</div>`).join("\n    ")}
-    <p class="muted mt">Honey is free for everyone. Classic and Glacier are a thank-you for supporters, and a supporter code from the Windows edition works here too.</p>
+    <p class="muted mt">Honey is free for everyone. Classic, Glacier and Lagoon are a thank-you for supporters, and a supporter code from the Windows edition works here too.</p>
   </div>
 </section>
 

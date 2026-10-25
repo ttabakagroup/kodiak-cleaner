@@ -137,17 +137,65 @@ test("Linux downloads are linked from the Download and Linux pages, and the Wind
   assert.match(pages.find((p) => p.file === "/index.html").html, /Download for Mac/);
 });
 
-test("the update file for Kodiak Cleaner for Windows is valid and never cached for long", () => {
-  // The app reads /updates/dev.json (spec: plans/kodiak-update-file.md); the publish workflow rewrites it with each MSI.
-  const file = join(root, "updates", "dev.json");
-  assert.ok(existsSync(file), "public/updates/dev.json is missing");
-  const u = JSON.parse(readFileSync(file, "utf8"));
-  assert.equal(u.channel, "dev");
-  assert.match(u.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(u.msi.url, "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi");
-  assert.match(u.msi.sha256, /^[0-9a-f]{64}$/);
+test("the update files for Kodiak Cleaner for Windows are valid and never cached for long", () => {
+  // Dev builds read /updates/dev.json and Beta builds /updates/beta.json (spec: plans/kodiak-update-file.md);
+  // the publish workflow rewrites both with each MSI.
+  const check = (name, channel) => {
+    const u = JSON.parse(readFileSync(join(root, "updates", name), "utf8"));
+    assert.equal(u.channel, channel, name);
+    assert.match(u.version, /^\d+\.\d+\.\d+$/, name);
+    assert.equal(u.msi.url, "https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi", name);
+    assert.match(u.msi.sha256, /^[0-9a-f]{64}$/, name);
+    return u;
+  };
+  assert.ok(existsSync(join(root, "updates", "dev.json")), "public/updates/dev.json is missing");
+  const dev = check("dev.json", "dev");
+  if (existsSync(join(root, "updates", "beta.json"))) {
+    // Dev installs are offered the Beta: dev.json names the same build as beta.json.
+    const beta = check("beta.json", "beta");
+    assert.deepEqual({ version: dev.version, msi: dev.msi }, { version: beta.version, msi: beta.msi }, "dev.json should offer the Beta");
+  }
   const headers = readFileSync(join(root, "_headers"), "utf8");
   assert.match(headers, /\/updates\/\*\n\s+Cache-Control: no-cache/);
+});
+
+test("Windows is labelled with its channel from content/version.json, while Mac and Linux keep theirs", () => {
+  const v = JSON.parse(readFileSync(join(root, "..", "content", "version.json"), "utf8"));
+  const label = v.channel[0].toUpperCase() + v.channel.slice(1).toLowerCase();
+  const name = v.channel === "stable" ? v.version : `${v.version} ${label}`;
+  const dl = pages.find((p) => p.file === "/download/index.html").html;
+  const home = pages.find((p) => p.file === "/index.html").html;
+  const section = (id) => dl.match(new RegExp(`<section[^>]*id="${id}"[\\s\\S]*?</section>`))[0];
+  assert.ok(section("windows").includes(`Version ${name}, released`), "Windows card shows the app's version and channel");
+  assert.ok(home.includes(`Version ${name} · Free`), "home Download for Windows button");
+  for (const p of pages) assert.ok(p.html.includes(`Windows: version ${name},`), `${p.file} footer`);
+  if (v.channel === "beta") {
+    assert.ok(!/\b0\.8\.\d+ Dev\b/.test(section("windows")), "no Dev version on the Windows card");
+    assert.ok(!/Kodiak Cleaner is in the <strong>Dev<\/strong> channel/.test(dl), "Release Channels says Beta");
+    assert.match(home, /class="os-badge"[^>]*>[\s\S]*?Now in Beta · Windows /);
+  }
+  for (const [os, id] of [["mac", "mac"], ["linux", "linux"]]) {
+    const ov = JSON.parse(readFileSync(join(root, "..", "content", os, "version.json"), "utf8"));
+    if (ov.channel === "dev") assert.ok(section(id).includes(`Version ${ov.version} Dev, released`), `${os} card still says Dev`);
+  }
+});
+
+test("the changelog shows the Beta, and the Dev history has its own quiet page", () => {
+  const log = pages.find((p) => p.file === "/changelog/index.html").html;
+  const hist = pages.find((p) => p.file === "/changelog/history/index.html");
+  const names = (html) => [...html.matchAll(/<article class="card release" id="v[^"]+"><header><h2>([^<]+)<\/h2>/g)].map((m) => m[1]);
+  assert.ok(names(log).length >= 1);
+  const v = JSON.parse(readFileSync(join(root, "..", "content", "version.json"), "utf8"));
+  if (v.channel !== "dev") assert.deepEqual(names(log).filter((n) => / Dev$/.test(n)), [], "no Dev versions on the changelog");
+  if (!hist) return;
+  assert.ok(names(hist.html).length >= 1 && names(hist.html).every((n) => / Dev$/.test(n)), "history lists the Dev builds");
+  assert.match(log, /<a href="\/changelog\/history\/">All Changes Since the Start<\/a>/);
+  assert.match(hist.html, /<meta name="robots" content="noindex">/);
+  for (const p of pages) assert.ok(!p.html.match(/<nav class="nav"[\s\S]*?<\/nav>/)[0].includes("/changelog/history/"), `${p.file}: not in the menu`);
+  const others = pages.filter((p) => !["/changelog/index.html", "/changelog/history/index.html"].includes(p.file));
+  for (const p of others) assert.ok(!p.html.includes('href="/changelog/history/"'), `${p.file} shouldn't link the history`);
+  assert.ok(!readFileSync(join(root, "sitemap.xml"), "utf8").includes("/changelog/history/"), "not in the sitemap");
+  for (const p of pages.filter((x) => x !== hist)) assert.ok(!p.html.includes('name="robots"'), `${p.file} stays indexable`);
 });
 
 test("launch video: homepage only, muted, never autoplays from markup, can be closed, small enough for Pages", () => {
@@ -198,7 +246,7 @@ test("Full Feature List marks every feature Free or Supporter, sorted A to Z, an
     for (const f of list) assert.match(f[2], /^W?M?L?$/, `${f[0]} editions`);
   }
   const supporter = featureGroups.flatMap(([, l]) => l).filter((f) => f[3] === "Supporter").map((f) => f[0]).sort();
-  assert.deepEqual(supporter, ["Classic Color Scheme", "Glacier Color Scheme", "Support Link Hidden", "Supporter Badge"]);
+  assert.deepEqual(supporter, ["Classic Color Scheme", "Glacier Color Scheme", "Lagoon Color Scheme", "Support Link Hidden", "Supporter Badge"]);
   const html = pages.find((p) => p.file === "/features/list/index.html").html;
   const rows = (html.match(/<tr><th scope="row">/g) || []).length;
   assert.equal(rows, featureGroups.flatMap(([, l]) => l).length);

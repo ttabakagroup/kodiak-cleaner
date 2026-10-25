@@ -316,7 +316,7 @@
                     </DockPanel>
                 </StackPanel>
             </Border>
-            <!-- Reset to Default (Ted, 0.8.59): moved here from the Developer page, which goes away at public beta. Always the last card. -->
+            <!-- Reset to Default (Ted, 0.8.59): moved here from the old Developer page. Always the last card. -->
             <Border Style="{StaticResource Card}" Margin="0,16,0,0">
                 <StackPanel>
                     <TextBlock Text="Reset to Default" Style="{StaticResource SectionTitle}" />

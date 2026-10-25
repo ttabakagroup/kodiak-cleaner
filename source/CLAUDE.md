@@ -6,7 +6,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 
 ## Privacy and Safety
 - No telemetry, analytics, crash reporting, ads, upsells or background services. Nothing is sent automatically.
-- The only network use is the update check on the website (`UpdateManifest`, https://www.kodiakcleaner.app/updates/<channel>.json, since 0.8.40
+- The only network use is the update check on the website (`UpdateManifest`, https://www.kodiakcleaner.app/updates/<channel>.json, beta.json for the Beta, since 0.8.40
   because the GitHub repo went private; Ted), off by default and only on request. Any new online feature
   must be off until turned on, explained where it's turned on, and added to PRIVACY.md and store-assets/privacy-policy.html.
 - No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
@@ -33,11 +33,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
   Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.
 - About is its own sidebar entry under Settings (Ted's choice), not a page inside the Settings sidebar.
-- Settings sidebar (2026-10-23 review; Sort By, Ted 2026-10-23): headings "", Personalize, Protect, Help, Developer. Its Sort By dropdown
+- Settings sidebar (2026-10-23 review; Sort By, Ted 2026-10-23): headings "", Personalize, Protect, Help (Ted removed the Developer heading and Developer Tools page in 0.9.0 Beta: no plan preview, no dev-only hooks; a test checks). Its Sort By dropdown
   is Default (General first, then the most used pages, the order of the `Add` calls) or A to Z under each heading (`SettingsSort` in the ini);
   Settings opens on General.
-  Help has FAQ (`faq.md`, questions A to Z): keep its answers true to the code whenever a feature changes. The Developer page is titled
-  Developer Tools. A test (`StaysCurrentTests`) checks the order, that Getting Started lists every sidebar page, and that every
+  Help has FAQ (`faq.md`, questions A to Z): keep its answers true to the code whenever a feature changes. A test (`StaysCurrentTests`) checks the order, that Getting Started lists every sidebar page, and that every
   Backups folder is a `DataFolders.BackupKinds` entry named in both privacy policies (never `Path.Combine(Settings.Data.Backups, "...")`).
   Check for Updates is a large button on About right below the version card (Ted, 0.8.41; on the right with the text beside it, 0.8.42), and also stays under Settings > Updates;
   the automatic-updates switch is only in Settings.
@@ -340,8 +339,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   Document any new switch in `Cli.Help` and the README's Command Line section.
 - Kodiak Cleaner never uninstalls itself (Ted, 0.8.54, `SelfGuard`): its own entry (upgrade code's product codes, or "Kodiak Cleaner" by Ted Tabaka,
   or this copy's folder) is left out of Uninstall, batches, Delete Entry and `/uninstall`, with a message pointing to Control Panel.
-- Reset to Default for all settings is the last card in Settings > Advanced (Ted, 0.8.59; was on the Developer page in 0.8.55, which goes
-  away at public beta, and replaces the old Reset Settings row in Application). `Settings.Reset` keeps the supporter code but starts LaunchCount again
+- Reset to Default for all settings is the last card in Settings > Advanced (Ted, 0.8.59; was on the Developer page in 0.8.55, removed
+  in 0.9.0 Beta, and replaces the old Reset Settings row in Application). `Settings.Reset` keeps the supporter code but starts LaunchCount again
   (Ted, 0.8.60), then `Donation.SupporterTurnsPromptOff` keeps Supporters' reminder off.
 - Programs: Product Code column (`ProgramItem.ProductCode`, the uninstall key's GUID) with right-click Copy Product Code and Copy Uninstall
   Command (`msiexec /x {GUID} /qn`, Windows Installer programs only) (Ted, 0.8.53).
@@ -357,7 +356,9 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Automatic updates (0.8.40): read `updates/<channel>.json` ({channel, version, msi: {url, sha256}}) from the website, accept only an
   .msi on https://www.kodiakcleaner.app (no redirects followed), verify its SHA-256 and start msiexec on exit without waiting (so the exe isn't
   locked); a hidden cmd.exe reopens Kodiak Cleaner when msiexec exits with 0 (Ted, 0.8.43). Two switches (Ted, 0.8.51): Check for Updates Automatically (`[Updates] AutoUpdate`) only checks and shows a notice; Download and Install Updates Automatically (`AutoInstall`, greyed out while checking is off; defaults to the old AutoUpdate value so earlier opt-ins keep installing) also downloads and installs. With checking on, the check follows `UpdateSchedule` ([Updates] Interval, Ted 0.8.44: On Startup (default), Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month (15 days), Monthly; listed in that order, not A to Z), checked at start and by a 5-minute timer while open. Every release must refresh the website's update
-  file with the new version and the MSI's SHA-256 (release-<ver>/updates/dev.json).
+  file with the new version and the MSI's SHA-256 (release-<ver>/updates/beta.json). `UpdateManifest.Parse` only accepts a file whose
+  "channel" is the app's own, so Dev 0.8.x installs read updates/dev.json with "channel": "dev"; that file points them at the newest Beta MSI
+  (Dev 0.8.121 shows it as "0.9.0 Dev is available"; the MSI's name doesn't matter, only https://www.kodiakcleaner.app/...msi and its SHA-256).
 - Pop-ups (0.8.19, Ted): always `Dialogs` (Confirm, Warn with a caution box, YesNoCancel, Info, Error), which shows the themed `MessageWindow`;
   never `MessageBox` directly. Yes/No pop-ups show No on the left and Yes on the right as the default (Enter) button (Ted, 0.8.50,
   replacing No as the default); Esc or closing means No. On a warning, Yes is a `DangerButton`.
@@ -373,8 +374,11 @@ privacy first, local first, security paramount, convenient, practical and useful
   signed-in user), so the browser never starts elevated (pre-Beta review, 2026-10-25).
 - Security issues are reported privately, never in public issues. Contact & Feedback has four accent buttons (Ted, 0.8.24):
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
-- Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Updates come from the website since 0.8.40; release downloads stay on GitHub releases; source and Star on GitHub stay on the repo.
-- The repository (ttabakagroup/kodiakcleaner) is private for now (2026-10-06). Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
+- Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help/update links. Updates come from the website since 0.8.40; release files also go on GitHub releases; source and Star on GitHub stay on the repo.
+- The repository (ttabakagroup/kodiakcleaner) was private 2026-10-06 to 0.9.0 Beta; Ted chose to make it public at 0.9.0 (2026-10-25), so "repositoryPublic" is true. version.json's
+  `"repositoryPublic"` (false, and false when missing; `DocsFolder.RepositoryIsPublic(json)`, `AppInfo.RepositoryIsPublic` from the build's
+  RepositoryPublic metadata) is the only switch: while false, Download.url, Project Page (website /open-source/) and the MSI's update link point at the
+  website and Star on GitHub is hidden, in every channel. Ted flips it when the repository goes public. Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.
 - Never say "donate" or "donation" (or "tip") in text users see (Ted, 0.8.118): Supporter perks make it a purchase, so it's
   "Support on Ko-fi" / "support Kodiak Cleaner". Internal names (Donation class, ini keys) stay. Why It Was Made is Ted's own text.
 - Never offer anything in return for a rating. Support link: https://ko-fi.com/s/aabd61b988 (the Kodiak Cleaner supporter item in Ted's Ko-fi Shop; every donate button uses AppInfo.KoFiUrl). The only donation asks are the ones Ted asked for in 0.8.55
@@ -383,42 +387,48 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Supporter tier only (Ted removed Premium). Codes are verified offline; never run `make-key` for Ted or touch his private key.
 
 ## Versions and Channels
-- `version.json` is the single source: `{ "channel": "dev", "version": "0.8.0", "targetStable": "1.0.0" }`.
-- Dev 0.8.x, Beta 0.9.x, Stable 1.x. Never change channel unless Ted says so ("move to beta" = 0.9.0,
-  "move to stable" = 1.0.0, "new minor release" raises the stable minor).
-- Show `AppInfo.VersionName` ("0.8.0 Dev") wherever a version is shown or sent.
-- Release builds (`build.ps1 -Release`, tagged CI builds) strip the Developer page and refuse to build with the
-  test supporter key or without a CHANGELOG entry.
+- `version.json` is the single source: `{ "channel": "beta", "version": "0.9.0", "targetStable": "1.0.0", "repositoryPublic": true }`.
+- Dev 0.8.x (ended at 0.8.121 Dev, 2026-10-25), Beta 0.9.x (current: Ted's "Go beta!", 2026-10-25, Windows only; the Linux and
+  Mac apps stay Dev), Stable 1.x. Never change channel unless Ted says so ("move to stable" = 1.0.0, "new minor release" raises the stable minor).
+- Show `AppInfo.VersionName` ("0.9.0 Beta") wherever a version is shown or sent.
+- There is no Developer page or ReleaseBuild switch any more (Ted, 0.9.0 Beta): every build is the same. `build.ps1 -Release` (tagged CI
+  builds) and every Beta or Stable build refuse to build with the test supporter key or without a CHANGELOG entry.
+- Channel moves: every channel installs to Program Files\Kodiak Cleaner with one upgrade code and product name, so an installed Dev is
+  upgraded in place (MajorUpgrade; KodiakCleaner.ini is kept, NeverOverwrite). Windows registrations still carry the channel (`AppInfo.Id`,
+  e.g. \KodiakCleaner.Beta in Task Scheduler, "Kodiak Cleaner Beta AutoClean"); `Integration.MoveFromOtherChannels` (SyncAll) moves the
+  other channels' entries over and uninstall removes every channel's.
 
 ## Commit Routine
 After each completed, tested change:
 1. Run `dotnet test tests/KodiakCleaner.Core.Tests` (and build the app). Don't commit if anything fails.
 2. Bump the patch number in `version.json` (+0.0.1) unless Ted gave a channel or minor instruction.
-3. Add the entry to `CHANGELOG.md` under `## [version_name] - YYYY-MM-DD`, grouped by area.
+3. Add the entry to `CHANGELOG.md` under `## [version_name] - YYYY-MM-DD`, grouped by area. CHANGELOG.md started fresh with 0.9.0 Beta
+   (Ted): plain user language, no "(Ted)" tags, no internal names. The Dev history is `docs/history/dev-changelog.md` (embedded, shown by
+   About > All Changes Since the Start together with CHANGELOG.md); never edit it.
 4. Update README.md and this file if behavior or rules changed.
 5. Commit as `[version_name]: short summary` with a body listing changes by area.
-6. Tag `v[version]-[channel]` (e.g. `v0.8.1-dev`; stable as `v1.0.2`).
+6. Tag `v[version]-[channel]` (e.g. `v0.9.1-beta`; stable as `v1.0.2`).
 7. Every GitHub release carries `KodiakCleaner-<Branch>-Setup.msi` (bare, so Download.url can link it; Ted, 0.8.31) and
    `KodiakCleaner-<Branch>-Portable.zip`, Branch = Dev, Beta or Stable, the same name every release (standard, 0.8.31; replaces
    Ted's 0.8.10 versioned names). No Setup ZIP since 0.8.37 (Ted): the bare MSI is the installer deliverable everywhere,
    including release folders (Ted gets builds through GitHub and the C:\Projects\KodiakCleaner copy). On Windows `build.ps1`
    makes both; on Linux publish the exe, then run `installer/package-linux.sh publish dist` (WiX under Wine; the same files as
-   build.ps1, a test checks it). Test the MSI installs before shipping.
+   build.ps1, a test checks it). Both take the channel from version.json (KodiakCleaner-Beta-Setup.msi, MakeDocs `beta`). Test the MSI installs before shipping.
 8. Docs (standard): `tools/MakeDocs` writes Changelog.txt, Download.url, Homepage.url, License.txt, Privacy.txt, ReadMe.txt
    (from `dist-files/ReadMe.md`, the user-facing read me) and TermsOfUse.txt as plain text with CRLF. Both ZIPs have a `Docs\` folder and the
-   MSI installs it to `Program Files\Kodiak Cleaner\Docs`. Download.url: Dev = the website's /download/ page (the repository is private
-   until the first Beta, `DocsFolder.RepositoryIsPublic`); Beta: `releases/download/latest-beta/KodiakCleaner-Beta-Setup.msi`; Stable:
+   MSI installs it to `Program Files\Kodiak Cleaner\Docs`. Download.url: the website's /download/ page while "repositoryPublic" is false (and
+   always for Dev and Beta, since build sessions can't make GitHub releases); once it's true, Stable:
    `releases/latest/download/KodiakCleaner-Stable-Setup.msi`. Project Page (About) opens the website's /open-source/ page and Star on GitHub
-   is hidden while `AppInfo.RepositoryIsPublic` is false; both switch to GitHub on their own with the first Beta build.
+   is hidden while `AppInfo.RepositoryIsPublic` is false; both switch to GitHub when Ted sets "repositoryPublic": true.
 9. Deliver the project-folder layout (`C:\Projects\Kodiak Cleaner`, standard's project-folders.md) as one `Kodiak Cleaner.zip` when
    C:\Projects can't be reached: Source (with .git), Website (+ReadMe.txt, no .dev.vars/.wrangler/node_modules), Assets\Design,
    Assets\Logos, Assets\StoreAssets, Assets\Git (mirror clone), Application\Windows, Application\Linux, Docs, ARCHIVE\ChangelogComplete.txt.
    Every release package also carries the newest Linux app ZIPs (Ted, 2026-10-05): KodiakCleaner-Dev-AppImage.zip and
-   KodiakCleaner-Dev-Deb.zip from /mnt/project-files/kodiak-linux/dist (built by the Linux thread), listed in FILE-LIST.md.
-   The changelog resets only when Ted moves to Beta or Stable; ChangelogComplete.txt is the running history.
+   KodiakCleaner-Dev-Deb.zip from /mnt/project-files/kodiak-linux/dist (built by the Linux thread; Linux and Mac stay Dev), listed in FILE-LIST.md.
+   The changelog resets only when Ted moves to Beta or Stable (it reset at 0.9.0 Beta); ChangelogComplete.txt is the running history.
 Push each valid build to the private repo without asking, then have the PC copy synced (Ted, 2026-10-09).
 
 ## Testing on Linux
 The app builds on Linux (WindowsDesktop SDK copied in) and runs under Wine for screenshots: `sudo tools/container/setup.sh` sets up
 the SDK in a fresh container, and `--wine` adds Wine, Xvfb (:97) and stand-in fonts with real icons. Never set TMPDIR for Wine (it crashes). Wine can't check
-supporter codes (no ECDSA in its CNG), so use the Developer page preview there.
+supporter codes (no ECDSA in its CNG); for Supporter-theme screenshots use a throwaway scratch build (the Developer page preview is gone).

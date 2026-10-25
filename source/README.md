@@ -15,7 +15,7 @@ A small, honest cleaner for Windows. No telemetry, no ads, no upsells, no bundle
 [![No telemetry](https://img.shields.io/badge/telemetry-none-5b8a3c)](#privacy)
 
 [**Website**](https://www.kodiakcleaner.app/) ·
-[**Download**](https://github.com/ttabakagroup/kodiakcleaner/releases) ·
+[**Download**](https://www.kodiakcleaner.app/download/) ·
 [Features](#features) ·
 [How to Use](#how-to-use) ·
 [Screenshots](#screenshots) ·
@@ -28,7 +28,7 @@ A small, honest cleaner for Windows. No telemetry, no ads, no upsells, no bundle
 </div>
 
 > [!WARNING]
-> **Beta software: use at your own risk.** Kodiak Cleaner is still in development, and more testing is needed before every feature can be confirmed to work as intended. It deletes things by design, so check what's selected before you clean and keep your own backups of anything important.
+> **Beta software: use at your own risk.** Kodiak Cleaner is in Beta, the last step before the first full release, and more testing is needed before every feature can be confirmed to work as intended. It deletes things by design, so check what's selected before you clean and keep your own backups of anything important.
 
 ## Contents
 
@@ -68,12 +68,12 @@ It is private first, local first, and built with security as a top priority. Rea
 
 ## Download
 
-Get the newest build from the **[Releases page](https://github.com/ttabakagroup/kodiakcleaner/releases)**. Each release has two downloads:
+Get the newest build from the **[download page](https://www.kodiakcleaner.app/download/)** on the website. Each release has two downloads:
 
 | Download | File | Best for |
 |----------|------|----------|
-| **Installer** | `KodiakCleaner-<Channel>-Setup.msi`, for example `KodiakCleaner-Dev-Setup.msi` | Most people. Adds Start menu shortcuts, installs updates for you, and can skip the administrator prompt. |
-| **Portable** | `KodiakCleaner-<Channel>-Portable.zip`, for example `KodiakCleaner-Dev-Portable.zip` | Running without installing, from any folder or a USB drive. Leaves no trace outside its own folder. |
+| **Installer** | `KodiakCleaner-<Channel>-Setup.msi`, for example `KodiakCleaner-Beta-Setup.msi` | Most people. Adds Start menu shortcuts, installs updates for you, and can skip the administrator prompt. |
+| **Portable** | `KodiakCleaner-<Channel>-Portable.zip`, for example `KodiakCleaner-Beta-Portable.zip` | Running without installing, from any folder or a USB drive. Leaves no trace outside its own folder. |
 
 Both are a single self-contained program, so there's nothing else to install. The file names stay the same every release (the version is in the release name), and the Portable ZIP has a `Docs` folder with the changelog, read me, license, privacy policy, Terms of Use and links to the website and the newest download, as plain text. The installer puts the same folder in `Program Files\Kodiak Cleaner\Docs`.
 
@@ -87,17 +87,17 @@ Both are a single self-contained program, so there's nothing else to install. Th
 
 | Channel | Versions | Shown as | Notes |
 |---------|----------|----------|-------|
-| Dev | 0.8.x | 0.8.30 Dev | Early builds, marked as pre-releases. Current channel. |
-| Beta | 0.9.x | 0.9.0 Beta | Feature-complete builds for wider testing, marked as pre-releases. |
+| Dev | 0.8.x | 0.8.121 Dev | Early builds. Ended with 0.8.121 Dev; Dev installs update to the Beta. |
+| Beta | 0.9.x | 0.9.0 Beta | Feature-complete builds for wider testing, marked as pre-releases. Current channel. |
 | Stable | 1.x | 1.0.0 | Full releases. |
 
-Every channel installs to `Program Files\Kodiak Cleaner`, and installing one replaces another. In-app updates stay on their own channel.
+Every channel installs to `Program Files\Kodiak Cleaner`, and installing one replaces another, keeping your settings, backups and Supporter code. In-app updates stay on their own channel.
 
 ## Install, Update and Uninstall
 
 ### Install
 
-1. Download `KodiakCleaner-Dev-Setup.msi` from the [Releases page](https://github.com/ttabakagroup/kodiakcleaner/releases).
+1. Download `KodiakCleaner-Beta-Setup.msi` from the [download page](https://www.kodiakcleaner.app/download/).
 2. Double-click the `.msi` and follow the steps.
 
 The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click **More info**, then **Run anyway**.
@@ -111,7 +111,7 @@ The installer isn't code-signed yet, so Windows SmartScreen may warn you the fir
 
 To be extra safe, use **Settings > Application > Back Up Settings** before updating.
 
-After an update, What's New shows everything that changed since your previous version. The full history is in [CHANGELOG.md](CHANGELOG.md).
+After an update, What's New shows everything that changed since your previous version. [CHANGELOG.md](CHANGELOG.md) starts fresh with the first Beta, 0.9.0; the Dev builds before it (0.8.0 to 0.8.121) are in [docs/history/dev-changelog.md](docs/history/dev-changelog.md), and **About > All Changes Since the Start** shows both.
 
 ### Uninstall
 
@@ -219,20 +219,20 @@ Exit codes: `0` done, `1` done with some failures, `2` wrong switch, nothing fou
 ### Tools
 
 | Tool | What it does |
-| **Boot Timer** | Restarts the PC and times it: shutting down, Windows starting, and the desktop settling after sign-in. Then lists what slowed the start, slowest first (startup programs with their processor time and disk use, plus drivers, services and devices Windows itself found slow when run as administrator), with Show in Startup and Turn Off at Startup. Keeps the last 10 timings as a chart. |
 |------|--------------|
-| **Browser Extensions** | Lists the extensions in Ablaze Floorp, Brave, Google Chrome, Helium, Microsoft Edge, Mozilla Firefox, Mullvad Browser and Vivaldi, with their icons, versions and on or off state. Right-click to turn one off or on, or remove it, or use its On switch. Chrome, Edge and Brave are changed through their own extension policies (needs administrator); Firefox-based add-ons can be removed while the browser is closed |
+| **Boot Timer** | Restarts the PC and times it: shutting down, Windows starting, and the desktop settling after sign-in. Then lists what slowed the start, slowest first (startup programs with their processor time and disk use, plus drivers, services and devices Windows itself found slow when run as administrator), with Show in Startup and Turn Off at Startup. Keeps the last 10 timings as a chart. |
+| **Browser Extensions** | Lists the extensions in Ablaze Floorp, Brave, Google Chrome, Helium, Microsoft Edge, Mozilla Firefox, Mullvad Browser and Vivaldi, with their icons, versions and on or off state. Right-click to turn one off or on, or remove it, or use its On switch. Chrome, Edge and Brave are changed through their own extension policies (needs administrator); Firefox-based add-ons can be removed while the browser is closed. |
 | **Defrag and TRIM** | Lists your drives with their type (Hard Drive, SSD, NVMe SSD, Flash Drive) and gives each the right step with Windows' own optimizer: hard drives are defragmented (Analyze shows how fragmented they are first), SSDs are trimmed, flash drives are left alone. Tick one drive or all of them. Needs administrator rights. |
 | **Disk Analyzer** | Pick one drive, several, all of them or a folder, then explore a map of what's using the space, colored by kind of file. Click any folder to look inside, see which kinds of files fill it, list the largest files, and send a file to the Recycle Bin. Run as administrator, whole NTFS drives are read from the drive's file table in seconds. |
-| **Driver Cleaner** | Removes an old AMD, Intel or NVIDIA graphics driver (or a Realtek audio driver) completely before a fresh install: its driver store packages (with Windows' own `pnputil`), leftover folders (to the Recycle Bin) and registry keys (backed up first). Makes a restore point and backs up each package first, can restart into Safe Mode and open itself there, can stop Windows Update from putting a driver back, checks for BitLocker (shows or saves the recovery key, suspends protection for the Safe Mode restarts, opens Windows' BitLocker page), then offers Restart or Shut Down (to swap the card) and links to the maker's own driver page. |
 | **Drive Wiper** | Overwrites free space, or wipes whole drives (tick one or several). Wipe Type: Quick (the default) removes only the partition data, Thorough writes zeros over every sector, Secure uses DoD 5220.22-M (3 passes), DoD 5220.22-M ECE (7 passes) or 30 passes (the DoD pattern ten times; not a published standard); with Verify the Last Pass on, the last pass is read back and checked. SSDs and NVMe drives run their own Built-In Secure Erase (crypto or block erase, NIST SP 800-88 Purge) on Thorough and Secure: it wipes the data, not the drive's firmware, and the drive keeps working (a random overwrite when the drive doesn't offer one). Every wipe removes all partitions and the MBR or GPT; the drive is then left uninitialized like a new one, or set up as GPT or MBR with NTFS, exFAT or FAT32, named after the drive type (Flash Drive, SSD, Hard Drive, USB Drive) or with no name at all (Name the Drive is unticked by default; names keep to A to Z, numbers, spaces, hyphens and underscores). Three checks before anything starts: a summary, each drive's disk number, then the word ERASE. Refuses any disk that holds Windows, its start-up partition, the page file, Kodiak Cleaner, your user folder or programs, and refuses every disk when Windows doesn't say which disk one of those is on. A wipe that stops partway (a drive unplugged or a write error) says the drive was partly overwritten and needs wiping again. Check the Drive Afterwards (off by default) and Check Drive (read-only) check a drive's health: its own report through Windows, the disk errors Windows logged for it and a read of every sector for unreadable or slow areas (the wipe's read-back counts when Verify the Last Pass ran), with a Healthy, Warning or Failing verdict; Open Reports opens the saved reports. Entire Drive is laid out in four steps (Select the Drive, Wipe and Format, After the Wipe, Actions: the Wipe, Check Drive and Open Reports buttons), and a divider between the progress section and the settings can be dragged; once a wipe or check is done, the X in the progress section's corner hides it and the divider. Step 2 says which Wipe Type to choose for a drive you're giving away or selling (Secure or at least Thorough for hard drives, Thorough or Secure for SSDs, Secure for flash drives and memory cards), with Use Recommended for Giving Away. Click anywhere on a drive's row to tick it; ticking two or more shows a warning. The info button on each row opens Drive Details: model, serial number, type, connection, size, firmware, partition style and partitions, the drive's own health report (SMART values, temperature, wear, error counts) and the disk errors Windows logged, with Copy. |
+| **Driver Cleaner** | Removes an old AMD, Intel or NVIDIA graphics driver (or a Realtek audio driver) completely before a fresh install: its driver store packages (with Windows' own `pnputil`), leftover folders (to the Recycle Bin) and registry keys (backed up first). Makes a restore point and backs up each package first, can restart into Safe Mode and open itself there, can stop Windows Update from putting a driver back, checks for BitLocker (shows or saves the recovery key, suspends protection for the Safe Mode restarts, opens Windows' BitLocker page), then offers Restart or Shut Down (to swap the card) and links to the maker's own driver page. |
 | **Duplicate Finder** | Finds files with identical contents (size, quick hash, then full SHA-256) in folders or on whole drives (one, several or all; Windows, program folders and AppData are skipped). Run as administrator, a whole NTFS drive is listed straight from its file table, which is much faster than opening every folder, and only files of the same size are ever hashed. In-Depth also finds files that are alike (edited copies, re-saved pictures, older drafts), ranked by how alike they are. Name Matching can also list files by similar names alone, leave out copy marks, version words, dates, numbers or your own words, and gather files by name patterns you type (for example `Invoice #.pdf`). Verify Hashes reads the files again and confirms each set by SHA-256. Only files with a matching SHA-256 can be ticked, and Keep Original ticks every copy but the likely original, which is listed first in each set. Results are a table with one row per copy (name, folder, size, modified, notes) under a heading for each set, the sets that free the most space first. Removed copies go to the Recycle Bin or to a folder you choose, sorted by their old folders with a report of where each came from and which copy stayed, and Restore puts any of them back. The last copy is never removed. |
-| **Empty Folders** | Finds folders with nothing inside on whole drives (one, several or all) or in folders you pick, and moves the ones you choose to the Recycle Bin. Windows, program, AppData and hidden folders are never searched, and every account's personal folders are never offered |
+| **Empty Folders** | Finds folders with nothing inside on whole drives (one, several or all) or in folders you pick, and moves the ones you choose to the Recycle Bin. Windows, program, AppData and hidden folders are never searched, and every account's personal folders are never offered. |
 | **Hash Checker** | Works out the MD5, SHA-1, SHA-256, SHA-384 and SHA-512 of any files you add or drop on the page (folders too), in one read per file, and checks them against hashes you paste from a download page or load from a checksum file (.sha256, .md5, SHA256SUMS and the formats sha256sum, macOS, certutil and PowerShell write). Each file shows Verified, Doesn't Match or Not in the List; a loaded list adds the files it names from its folder. Dropping or adding a file opens everything about it (path, size, dates and all five hashes), also when Kodiak Cleaner runs as administrator. Ctrl+F finds a file by name or any part of a hash, the right-click menu copies any hash of the highlighted files, Create Hash File saves name.sha256 (or the shown kind) beside each file so it can be checked later or by whoever receives it, and Save Checksum File writes one list sha256sum can check. Files are only read, never changed or sent anywhere. |
 | **Integrity Check** | Checks and repairs Windows and your drives with Windows' own tools, one card per check (A to Z): Drive Error History (drive and file system errors Windows logged in the last 30 days, explained in plain words), Drive File System (checks ticked drives while you work; Repair fixes them, the Windows drive at the next restart, with an optional Look for Bad Sectors), Drive Health (each drive's own report: failing or not, temperature, wear, uncorrected errors), Memory Test (opens Windows' Memory Diagnostic and shows its last result), Windows Component Store (check, and repair from Windows Update) and Windows System Files (check, and repair damaged or changed Windows files; if that fails it offers to repair the Component Store and try again). Check Everything runs every check without changing anything. Repairs ask first and can't be stopped halfway. Windows' messages show under Details and are saved in Reports\Integrity Check; Open Reports (at the top and beside the details) opens that folder. Most checks need administrator rights. |
 | **Large Files** | Lists the biggest files in a folder (50 MB and up, your choice) and moves the ones you pick to the Recycle Bin. Windows, program folders, and hidden or system files are skipped. |
 | **Mass Rename** | Renames a set of files in a folder (and its subfolders, if you like) by a pattern you set: the old name, a counting number, the folder name, date created, modified or taken, parts of the old name, plus Find and Replace (with regular expressions), letter case, a new or tidied extension and tidy spaces. Every new name is shown next to the old one before anything changes, names Windows wouldn't accept or that two files would share are flagged and skipped, and Undo Last Rename puts the names back. Windows, program folders and AppData are never offered. |
-| **Scheduled Tasks** | Lists the programs Windows runs on a schedule, each with the program it starts and its icon (click to see it in File Explorer), and turns them off or back on. Delete backs each task up first, Back Up saves tasks on request, and Restore puts deleted tasks back. Windows' own tasks are hidden unless you show them |
+| **Scheduled Tasks** | Lists the programs Windows runs on a schedule, each with the program it starts and its icon (click to see it in File Explorer), and turns them off or back on. Delete backs each task up first, Back Up saves tasks on request, and Restore puts deleted tasks back. Windows' own tasks are hidden unless you show them. |
 | **System Restore** | Lists, creates and removes restore points, and opens System Restore to roll back. The newest point can't be removed. Create Restore Point works even when Windows already made one that day, so you can make one right before a big install. The Point-in-Time Restore tab (Windows 11 24H2/25H2, June 2026 update or later) turns that feature on or off, sets how often Windows takes snapshots, how long it keeps them (72 hours at most) and how much space they may use, lists the snapshots, takes one now with Windows' own snapshot task, and restarts into Windows Recovery, where the restore itself happens. |
 
 While a tool works you can open any other page: a small card in the bottom right corner shows what it's doing, how far along it is, how long it has run and about how long is left (click it to go back). Closing Kodiak Cleaner while a task is running asks first, with Keep Open as the default.
@@ -262,7 +262,7 @@ Every setting is a switch and is saved straight away. Pages are A to Z under eac
 | **Cleaning** | Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours. |
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on the website in your browser with the topic picked. |
 | **FAQ** | Plain answers about going online, moving to a new PC, undoing a change, Supporter codes, updates, safety, Reset to Default and where backups are. Works offline. |
-| **General** | What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
+| **General** | What's New after updates, the Beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
 | **Protect** | Back Up Now saves the registry areas Kodiak Cleaner can change into one `.reg` file (the very large ones are backed up with each fix instead), with an optional prompt before each registry fix. Back up, open or reset the settings file. |
 | **Updates** | Check Now (also on the About page as Check for Updates). Check for Updates Automatically (off by default) looks for a new version as often as you pick (On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly) and tells you when one is out. Download and Install Updates Automatically (off by default) also downloads it and installs it when you close Kodiak Cleaner. |
 
@@ -364,18 +364,21 @@ Ideas, guidance and contributions are welcome. Kodiak Cleaner is open source so 
 You need Windows with the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0). WiX v5 comes from NuGet.
 
 ```powershell
-.\build.ps1            # development build: the Setup MSI and Portable ZIP in dist\
-.\build.ps1 -Release   # release build: no Developer page; needs the supporter key and a CHANGELOG entry
+.\build.ps1            # the Setup MSI and Portable ZIP in dist\, named after the channel in version.json
+.\build.ps1 -Release   # release build (tagged CI builds); Beta and Stable builds always need the supporter key and a CHANGELOG entry
 dotnet test tests/KodiakCleaner.Core.Tests   # tests (run on any OS)
 python3 tools/design/check_contrast.py tools/design/theme.css   # WCAG 2.2 AA check for every theme and accent
 ```
 
-GitHub Actions builds every push. For a tag that matches `version.json`, it makes a release build and attaches the Setup MSI and the Portable ZIP to a GitHub release. Dev and Beta builds also replace the files in a fixed `latest-dev` or `latest-beta` release, which `Docs\Download.url` links to.
+GitHub Actions builds every push. For a tag that matches `version.json`, it makes a release build and attaches the Setup MSI and the Portable ZIP to a GitHub release. Beta builds also replace the files in a fixed `latest-beta` release. While the repository's `version.json` says `"repositoryPublic": false`, `Docs\Download.url`, Project Page and Star on GitHub point at the website instead.
+
+On Linux, publish the exe and run `bash installer/package-linux.sh publish dist`: it builds the same MSI under Wine and names both files after the channel.
 
 ### Project Layout
 
 ```
 dist-files/             ReadMe.md, the source of the packages' Docs\ReadMe.txt
+docs/history/           the Dev builds' changelog (0.8.0 to 0.8.121), shown in About
 installer/              WiX v5 MSI project (build-msi-wine.sh and package-linux.sh build on Linux)
 keys/                   supporter public keys and withdrawn code list
 src/KodiakCleaner.App/  WPF app: views, view models and the Honey, Classic, Glacier and Lagoon themes
@@ -387,7 +390,7 @@ tools/design/           the build standard's theme.css, accent.js and check_cont
 tools/MakeDocs/         writes the seven Docs files for the packages (never shipped)
 tools/SupporterCodes/   supporter code tool (never shipped)
 build.ps1               builds the exe, the MSI and the portable ZIP
-CHANGELOG.md            full version history
+CHANGELOG.md            version history since the first Beta
 CLAUDE.md               project rules for development sessions
 Directory.Build.props   reads version.json for every project
 KodiakCleaner.sln       solution file
@@ -397,7 +400,7 @@ README.md               this page
 SECURITY.md             how to report a security problem privately
 faq.md                  FAQ (built into Settings > FAQ)
 terms-of-use.md         Terms of Use
-version.json            version and release channel (single source)
+version.json            version, release channel and repositoryPublic (single source)
 why-it-was-made.md      the story behind Kodiak Cleaner
 ```
 

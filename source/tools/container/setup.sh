@@ -45,4 +45,5 @@ done
 pgrep -f "Xvfb :97" >/dev/null || (Xvfb :97 -screen 0 1500x950x24 >/dev/null 2>&1 &)
 echo "Wine ready: WINEPREFIX=$WINEPREFIX DISPLAY=:97"
 echo "For clean screenshots put this KodiakCleaner.ini beside the exe:"
-echo "  [General] ShowBetaNotice=false, LastSeenVersion=<version>, ShowDonationPrompt=false, LaunchCount=50; [Developer] Preview=Supporter"
+echo "  [General] ShowBetaNotice=false, LastSeenVersion=<version>, ShowDonationPrompt=false, LaunchCount=50"
+echo "  (Supporter themes need a scratch build for screenshots: Wine can't check supporter codes.)"

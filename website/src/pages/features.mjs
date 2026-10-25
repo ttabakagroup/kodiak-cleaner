@@ -37,7 +37,8 @@ export default function features(ctx) {
       text: ul(["Programs that start when you sign in, per user and for all users, each with its icon.", "Turn them off or on one at a time or in a batch, just like Task Manager.", "Add a program or shortcut to your Startup folder.", "Removed entries are backed up first, and History can restore them, on or off as they were."]) },
   ];
 
-  // Tools, A to Z. "isNew" marks the ones added or rebuilt in 0.8.65 to 0.8.70.
+  // Tools, A to Z. "isNew" marks the ones added or rebuilt in 0.8.65 to 0.8.70 (Hash Checker in 0.8.91).
+  // A tool without "img" shows src/assets/images/screens/<id>.png once that file is there.
   const tools = [
     { id: "boot-timer", icon: "clock", title: "Boot Timer", isNew: true, img: ["boot-timer.png", "Boot Timer showing how long a restart took and what slowed it"],
       text: ul(["Restart from Kodiak Cleaner and see how long shutting down, Windows starting and the desktop settling took.", "A timeline and your recent restarts side by side, so you can tell whether a change helped.", "What Slowed the Start lists the startup programs, drivers and services that held things up, slowest first.", "Show in Startup and Turn Off at Startup, right from the list."]) },
@@ -55,6 +56,8 @@ export default function features(ctx) {
       text: ul(["Finds identical files in folders or whole drives (size, quick hash, then full SHA-256). The last copy is never removed.", "In-Depth mode finds files that are alike, such as edited copies, re-saved pictures and older drafts, ranked by how alike they are.", "Match by similar names, leaving out copy marks, version words, dates or your own words, or type a name pattern such as \"Invoice #.pdf\".", "Verify Hashes confirms each set again before you remove anything."]) },
     { id: "empty-folders", icon: "folder", title: "Empty Folders", isNew: true, img: ["empty-folders.png", "Empty Folders after searching drive C, with the empty folders it found"],
       text: ul(["Search whole drives, one or several, or tick All Drives, as well as folders.", "Each drive shows its free space and a bar.", "Windows, program and AppData folders are never searched, and your Desktop, Documents and other Windows folders are never removed.", "Removed folders go to the Recycle Bin."]) },
+    { id: "hash-checker", icon: "check", title: "Hash Checker", isNew: true,
+      text: ul(["Add or drop files, or whole folders, to see their MD5, SHA-1, SHA-256, SHA-384 and SHA-512, worked out in one read per file.", "Paste the hashes from a download page, or load a checksum file such as .sha256, .md5 or SHA256SUMS: every file shows Verified, Doesn't Match or Not in the List.", "Find a file by name or any part of a hash, and copy any hash from the right-click menu.", "Create Hash File saves name.sha256 beside a file, and Save Checksum File writes one list sha256sum can check. Files are only read, never changed or sent anywhere."]) },
     { id: "integrity-check", icon: "shield", title: "Integrity Check", isNew: true, img: ["integrity-check.png", "Integrity Check results for drive health, memory test and the Windows Component Store"],
       text: ul(["Check and repair Windows and your drives with Windows' own tools. Check Everything runs every check without changing anything.", "Windows System Files, the Windows Component Store and Drive File System, each with Repair where Windows can fix it.", "Drive Health and Drive Error History in plain words, and a Memory Test that runs at the next restart.", "Windows' own messages are kept under Details and in Reports."]) },
     { id: "large-files", icon: "file", title: "Large Files", img: ["large-files.png", "Large Files listing the biggest files in a folder"],
@@ -72,7 +75,7 @@ export default function features(ctx) {
   const settings = [
     ["Advanced", "Always start as administrator, and skip the User Account Control prompt (installed copies only)."],
     ["Application", "Shows where your backups, logs and reports are kept, with Open Folder, and the Keep an Activity Log switch."],
-    ["Appearance", "Honey (free), Classic or Glacier (supporter themes) color scheme, an accent color for everyone (the scheme's own, your Windows accent, Blue, Teal, Green, Purple, Pink, Orange or Slate), Match Device, Light or Dark, and an Animations switch. Every combination meets WCAG 2.2 AA contrast."],
+    ["Appearance", "Honey (free), Classic, Glacier or Lagoon (supporter themes) color scheme, an accent color for everyone (the scheme's own, your Windows accent, Blue, Teal, Green, Purple, Pink, Orange or Slate), Match Device, Light or Dark, and an Animations switch. Every combination meets WCAG 2.2 AA contrast."],
     ["Cleaning", "Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours."],
     ["Contact & Feedback", "Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on this website."],
     ["General", "What's New after updates, the beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks."],
@@ -118,9 +121,9 @@ ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning
 
 <section class="alt feature-group" id="tools">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">Tools</span><h2>${tools.length} Built-In Tools</h2><p class="lead">Find what's taking space, spot what doesn't belong and look after Windows and your drives. Anything removed goes to the Recycle Bin or a backup first. Tools marked New were added or rebuilt in versions 0.8.65 to 0.8.70.</p></div>
+    <div class="section-head"><span class="eyebrow">Tools</span><h2>${tools.length} Built-In Tools</h2><p class="lead">Find what's taking space, spot what doesn't belong and look after Windows and your drives. Anything removed goes to the Recycle Bin or a backup first. Tools marked New were added or rebuilt in the Dev builds before the Beta.</p></div>
     <nav class="chips tool-jump" aria-label="Tools">${tools.map((t) => `<a class="chip-link" href="#${t.id}">${t.title}</a>`).join("")}</nav>
-    ${tools.map((t) => `<article class="feature reveal${t.img ? "" : " no-shot"}" id="${t.id}">
+    ${tools.map((t) => ({ ...t, img: t.img || (ctx.imageSizes[`${t.id}.png`] ? [`${t.id}.png`, `${t.title} in Kodiak Cleaner`] : null) })).map((t) => `<article class="feature reveal${t.img ? "" : " no-shot"}" id="${t.id}">
       <div><h3><span class="icon">${icons[t.icon]}</span>${t.title}${t.isNew ? newBadge : ""}</h3>${t.text}</div>
       ${t.img ? shot(ctx, t.img[0], t.img[1]) : ""}
     </article>`).join("\n    ")}
@@ -134,7 +137,7 @@ ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning
       <div class="table-wrap" tabindex="0" role="region" aria-label="Everything in Kodiak Cleaner"><table><thead><tr><th scope="col">Area</th><th scope="col">What's There</th></tr></thead><tbody>
         ${settings.map(([a, d]) => `<tr><td><strong>${a}</strong></td><td>${d}</td></tr>`).join("")}
       </tbody></table></div>
-      <div>${shot(ctx, "appearance.png", "Appearance settings with the Honey, Classic and Glacier color schemes")}<p class="muted mt">The sidebar can be widened, locked with the paperclip, or collapsed to icons only. Getting Started walks you through the basics the first time.</p></div>
+      <div>${shot(ctx, "appearance.png", "Appearance settings with the Honey, Classic, Glacier and Lagoon color schemes")}<p class="muted mt">The sidebar can be widened, locked with the paperclip, or collapsed to icons only. Getting Started walks you through the basics the first time.</p></div>
     </div>
   </div>
 </section>
@@ -181,7 +184,7 @@ ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning
     path: "/features/",
     out: "features/index.html",
     title: "Features",
-    description: "Every Kodiak Cleaner feature: Cleaner, Advanced Cleaning, Registry with fifteen checks, Startup, Programs, Scheduled Cleaning, thirteen built-in tools including Boot Timer, Driver Cleaner, Integrity Check and Mass Rename, settings, safety and privacy. Free and open source.",
+    description: "Every Kodiak Cleaner feature: Cleaner, Advanced Cleaning, Registry with fifteen checks, Startup, Programs, Scheduled Cleaning, fourteen built-in tools including Boot Timer, Driver Cleaner, Hash Checker, Integrity Check and Mass Rename, settings, safety and privacy. Free and open source.",
     body,
   };
 }

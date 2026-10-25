@@ -85,7 +85,13 @@
 
             <!-- What's New -->
             <ContentControl Content="{Binding CurrentRelease}" ContentTemplate="{StaticResource ReleaseTemplate}" Focusable="False" />
-            <Button Content="See All Changes" Command="{Binding SeeAllChangesCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
+            <!-- All Changes Since the Start (0.9.0 Beta): the changelog started fresh with the Beta; this small link also shows the
+                 Dev builds' history, bundled with the app. -->
+            <WrapPanel Margin="0,0,0,16">
+                <Button Content="See All Changes" Command="{Binding SeeAllChangesCommand}" VerticalAlignment="Center" />
+                <Button Content="All Changes Since the Start" Command="{Binding AllChangesSinceStartCommand}" Style="{StaticResource LinkButton}"
+                        FontSize="12" Margin="8,0,0,0" Padding="4,0" VerticalAlignment="Center" />
+            </WrapPanel>
 
             <!-- Privacy -->
             <Border Style="{StaticResource Card}" Margin="0,0,0,16">
@@ -143,6 +149,8 @@
                     <TextBlock Text="Back to About" />
                 </StackPanel>
             </Button>
+            <TextBlock Text="{Binding ChangelogHeading}" Style="{StaticResource SectionTitle}" />
+            <TextBlock Text="{Binding ChangelogNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,12" />
             <ItemsControl ItemsSource="{Binding ShownReleases}" ItemTemplate="{StaticResource ReleaseTemplate}" Focusable="False" />
         </StackPanel>
     </Grid>

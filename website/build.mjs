@@ -1,9 +1,10 @@
 // Builds the Kodiak Cleaner website into public/.
 //   node build.mjs          build the site
-//   node build.mjs --sync   first copy CHANGELOG.md and the other documents from ../source (or ../ccleaner-alt) (Windows)
-//                           ../kodiak-linux (Linux, into content/linux/) and ../kodiak-mac (Mac, into content/mac/)
+//   node build.mjs --sync   first copy CHANGELOG.md and the other documents from the Windows app folder
+//                           (KC_WINDOWS_APP, or ../source when it isn't set), ../kodiak-linux (Linux, into
+//                           content/linux/) and ../kodiak-mac (Mac, into content/mac/)
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseChangelog } from "./src/markdown.mjs";
 import { layout } from "./src/layout.mjs";
@@ -11,7 +12,7 @@ import home from "./src/pages/home.mjs";
 import features from "./src/pages/features.mjs";
 import download from "./src/pages/download.mjs";
 import archive from "./src/pages/archive.mjs";
-import changelog from "./src/pages/changelog.mjs";
+import changelog, { changelogHistory } from "./src/pages/changelog.mjs";
 import contact from "./src/pages/contact.mjs";
 import linux from "./src/pages/linux.mjs";
 import mac from "./src/pages/mac.mjs";
@@ -27,12 +28,23 @@ const read = (...p) => readFileSync(at(...p), "utf8");
 
 // Keep the documents in step with the app when its folder sits beside this one.
 const DOCS = ["CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "why-it-was-made.md", "LICENSE", "version.json"];
+// The Dev changelog from before the Beta, kept in the app as docs/history/dev-changelog.md (shown at /changelog/history/).
+const HISTORY = [join("docs", "history", "dev-changelog.md"), "changelog-history.md"];
 const LINUX_DOCS = ["CHANGELOG.md", "version.json"]; // also what's copied from the Mac app
 if (process.argv.includes("--sync")) {
-  const app = [at("..", "source"), at("..", "ccleaner-alt")].find((p) => existsSync(join(p, "version.json")));
-  if (!app) throw new Error("--sync needs the app folder at ../source (or ../ccleaner-alt)");
+  // The Windows app folder: KC_WINDOWS_APP (relative to this folder, or absolute), otherwise ../source.
+  const app = process.env.KC_WINDOWS_APP ? resolve(here, process.env.KC_WINDOWS_APP) : at("..", "source");
+  if (!existsSync(join(app, "version.json"))) {
+    throw new Error(`--sync needs the Windows app folder at ${app}. Set KC_WINDOWS_APP to it, for example KC_WINDOWS_APP=../my-app-folder npm run sync`);
+  }
   for (const f of DOCS) cpSync(join(app, f), at("content", f));
   console.log(`Synced ${DOCS.length} documents from ${app}`);
+  if (existsSync(join(app, HISTORY[0]))) {
+    cpSync(join(app, HISTORY[0]), at("content", HISTORY[1]));
+    console.log(`Synced ${HISTORY[0]} into content/${HISTORY[1]}`);
+  } else {
+    console.warn(`Note: ${HISTORY[0]} isn't in the app folder, so content/${HISTORY[1]} was left as it was.`);
+  }
   const lin = at("..", "kodiak-linux");
   if (!existsSync(lin)) throw new Error("--sync needs the Linux app folder at ../kodiak-linux");
   mkdirSync(at("content", "linux"), { recursive: true });
@@ -47,10 +59,24 @@ if (process.argv.includes("--sync")) {
 
 const cfg = JSON.parse(read("site.config.json"));
 // The update file Kodiak Cleaner for Windows reads; its SHA-256 is shown on the Download page for checking the installer.
-const updateFile = existsSync(at("src", "static", "updates", "dev.json")) ? JSON.parse(read("src", "static", "updates", "dev.json")) : null;
-const releases = parseChangelog(read("content", "CHANGELOG.md"));
-if (!releases.length) throw new Error("No versions found in content/CHANGELOG.md");
+// Beta builds read beta.json and Dev builds dev.json (the publish workflow writes both); beta.json wins when it's there.
+const updateName = ["beta.json", "dev.json"].find((f) => existsSync(at("src", "static", "updates", f)));
+const updateFile = updateName ? JSON.parse(read("src", "static", "updates", updateName)) : null;
+// The Windows app's channel and version (content/version.json, synced from the app).
+const appVersion = JSON.parse(read("content", "version.json"));
+// content/CHANGELOG.md holds the Beta (and later Stable) versions; the Dev builds from before the Beta are in
+// content/changelog-history.md. Dev entries still in CHANGELOG.md (before the app's changelog was reset) count as history.
+const winAll = parseChangelog(read("content", "CHANGELOG.md"));
+if (!winAll.length) throw new Error("No versions found in content/CHANGELOG.md");
+const pastDev = existsSync(at("content", "changelog-history.md")) ? parseChangelog(read("content", "changelog-history.md")) : [];
+const releases = winAll.some((r) => r.channel !== "dev") ? winAll.filter((r) => r.channel !== "dev") : winAll;
+const history = [...winAll.filter((r) => !releases.includes(r)), ...pastDev]
+  .filter((r, i, all) => all.findIndex((x) => x.version === r.version && x.channel === r.channel) === i);
 const latest = releases[0];
+const channelLabel = (c) => c[0].toUpperCase() + c.slice(1);
+if (appVersion.version !== latest.version || appVersion.channel.toLowerCase() !== latest.channel) {
+  console.warn(`Warning: content/version.json says ${appVersion.version} ${channelLabel(appVersion.channel)}, but the newest version in content/CHANGELOG.md is ${latest.name}.`);
+}
 const linuxReleases = parseChangelog(read("content", "linux", "CHANGELOG.md"));
 if (!linuxReleases.length) throw new Error("No versions found in content/linux/CHANGELOG.md");
 const macReleases = parseChangelog(read("content", "mac", "CHANGELOG.md"));
@@ -84,6 +110,9 @@ const ctx = {
   launchVideo,
   releases,
   latest,
+  history,
+  // "Beta" for 0.9.x, from content/version.json.
+  channel: channelLabel(appVersion.channel.toLowerCase()),
   linuxReleases,
   linuxLatest: linuxReleases[0],
   macReleases,
@@ -98,8 +127,9 @@ const ctx = {
   },
   longDate: (iso) => { if (!iso) return ""; const [y, m, d] = parts(iso); return `${MONTHS[m - 1]} ${d}, ${y}`; },
   shortDate: (iso) => { if (!iso) return ""; const [y, m, d] = parts(iso); return `${MONTHS[m - 1].slice(0, 3)} ${d}, ${y}`; },
-  // Download links for a version. Release assets follow build.ps1 and the GitHub workflow, tag v0.8.35-dev.
-  // Files: KodiakCleaner-Dev-Setup.msi (0.8.37 on) or KodiakCleaner-Dev-Setup.zip (0.8.31 to 0.8.36), and
+  // Download links for a version. Release assets follow build.ps1 and the GitHub workflow, tag v0.9.0-beta
+  // (KodiakCleaner-Beta-Setup.msi and KodiakCleaner-Beta-Portable.zip) or v0.8.35-dev for the Dev builds before it.
+  // Dev files: KodiakCleaner-Dev-Setup.msi (0.8.37 on) or KodiakCleaner-Dev-Setup.zip (0.8.31 to 0.8.36), and
   // KodiakCleaner-Dev-Portable.zip since 0.8.31,
   // KodiakCleaner-0.8.27-x64-msi-dev.zip and KodiakCleaner-0.8.27-x64-portable-dev.zip before that.
   dl(r) {
@@ -171,7 +201,7 @@ function externalLinks(html) {
 }
 
 // Pages
-const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, contact, donate, story, privacy, terms, accessibility, notFound].map((p) => p(ctx));
+const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, changelogHistory, contact, donate, story, privacy, terms, accessibility, notFound].map((p) => p(ctx)).filter(Boolean);
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });
@@ -180,8 +210,8 @@ for (const page of pages) {
 
 // Sitemap and robots
 const site = cfg.siteUrl.replace(/\/$/, "");
-const urls = pages.filter((p) => p.id !== "404").map((p) => `  <url><loc>${site}${p.path}</loc><lastmod>${latest.date}</lastmod></url>`).join("\n");
+const urls = pages.filter((p) => p.id !== "404" && !p.noindex).map((p) => `  <url><loc>${site}${p.path}</loc><lastmod>${latest.date}</lastmod></url>`).join("\n");
 writeFileSync(join(out, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
 writeFileSync(join(out, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${site}/sitemap.xml\n`);
 
-console.log(`Built ${pages.length} pages for Kodiak Cleaner ${latest.name} (${releases.length} versions) Kodiak Cleaner for Linux ${linuxReleases[0].name} and Kodiak Cleaner for Mac ${macReleases[0].name} into public/`);
+console.log(`Built ${pages.length} pages for Kodiak Cleaner ${latest.name} (${releases.length} versions, ${history.length} earlier), Kodiak Cleaner for Linux ${linuxReleases[0].name} and Kodiak Cleaner for Mac ${macReleases[0].name} into public/`);

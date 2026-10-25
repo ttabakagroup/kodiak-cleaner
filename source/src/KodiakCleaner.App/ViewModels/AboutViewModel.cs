@@ -12,7 +12,8 @@ public sealed class AboutViewModel : ObservableObject
     public AboutViewModel(SettingsViewModel settings)
     {
         _settings = settings;
-        SeeAllChangesCommand = new RelayCommand(() => ShowChangelog = true);
+        SeeAllChangesCommand = new RelayCommand(() => { ShowHistory = false; ShowChangelog = true; });
+        AllChangesSinceStartCommand = new RelayCommand(() => { ShowHistory = true; ShowChangelog = true; });
         BackCommand = new RelayCommand(() => ShowChangelog = false);
         OpenSupporterCommand = new RelayCommand(() => _settings.Open("supporter"));
         OpenFeedbackCommand = new RelayCommand(() => _settings.Open("feedback"));
@@ -44,7 +45,7 @@ public sealed class AboutViewModel : ObservableObject
     public string PlanName => Supporter.PlanName;
     public string HowUnlocked => Supporter.HowUnlocked;
     /// <summary>"· unlocked by: Supporter code" after the plan name; nothing at all on the free plan (never "unlocked by: None").</summary>
-    public string UnlockedText => Supporter.IsSupporter || Supporter.Preview != PlanPreview.None ? "· unlocked by: " + HowUnlocked : "";
+    public string UnlockedText => Supporter.IsSupporter ? "· unlocked by: " + HowUnlocked : "";
 
     /// <summary>This version's CHANGELOG.md entry (bundled into the app; no network request).</summary>
     public ChangelogRelease? CurrentRelease => AppInfo.Releases.FirstOrDefault(r => r.Version == AppInfo.Version) ?? AppInfo.Releases.FirstOrDefault();
@@ -54,7 +55,22 @@ public sealed class AboutViewModel : ObservableObject
     /// The full changelog, only while it is open. Built while hidden, its 90-odd releases made About take most of a
     /// second to open every time (Ted, 2026-10-23).
     /// </summary>
-    public List<ChangelogRelease>? ShownReleases => ShowChangelog ? Releases : null;
+    public List<ChangelogRelease>? ShownReleases => ShowChangelog ? (ShowHistory ? AppInfo.History : Releases) : null;
+
+    private bool _showHistory;
+    /// <summary>
+    /// All Changes Since the Start: the changelog started fresh with 0.9.0 Beta (Ted), so this adds the Dev builds' history
+    /// (0.8.0 to 0.8.121, bundled with the app) below it. See All Changes shows only the current changelog.
+    /// </summary>
+    public bool ShowHistory
+    {
+        get => _showHistory;
+        set { if (Set(ref _showHistory, value)) { OnPropertyChanged(nameof(ShownReleases)); OnPropertyChanged(nameof(ChangelogHeading)); OnPropertyChanged(nameof(ChangelogNote)); } }
+    }
+    public string ChangelogHeading => ShowHistory ? "All Changes Since the Start" : "All Changes";
+    public string ChangelogNote => ShowHistory
+        ? $"Every change to {AppInfo.ShortName}, including the Dev builds from 0.8.0 to 0.8.121 that came before the first Beta."
+        : $"Every change to {AppInfo.ShortName} since the first Beta, 0.9.0, newest first.";
 
     public string PrivacySummary =>
         $"{AppInfo.ShortName} works entirely on this PC. It sends no usage data, crash reports or identifiers, and shows no ads. " +
@@ -69,6 +85,7 @@ public sealed class AboutViewModel : ObservableObject
     public bool ShowAbout => !ShowChangelog;
 
     public ICommand SeeAllChangesCommand { get; }
+    public ICommand AllChangesSinceStartCommand { get; }
     public ICommand BackCommand { get; }
     public ICommand OpenSupporterCommand { get; }
     public ICommand OpenFeedbackCommand { get; }

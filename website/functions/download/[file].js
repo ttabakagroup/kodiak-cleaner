@@ -68,7 +68,7 @@ function fileHeaders(name, obj) {
   headers.set("etag", obj.httpEtag);
   headers.set("accept-ranges", "bytes");
   // no-cache: browsers and the app always check the ETag, so a file replaced in R2 is picked up straight away
-  // (the app compares the installer with the SHA-256 in /updates/dev.json).
+  // (the app compares the installer with the SHA-256 in /updates/beta.json, or dev.json for Dev builds).
   headers.set("cache-control", "no-cache");
   return headers;
 }

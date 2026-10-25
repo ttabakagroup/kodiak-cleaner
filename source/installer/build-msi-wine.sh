@@ -7,7 +7,7 @@
 # The publish folder must hold KodiakCleaner.exe from:
 #   dotnet publish src/KodiakCleaner.App -c Release -r win-x64 -o publish
 # and the docs folder (default: publish/Docs) the seven Docs files from:
-#   dotnet run --project tools/MakeDocs -- publish/Docs dev
+#   dotnet run --project tools/MakeDocs -- publish/Docs <dev|beta|stable>
 set -euo pipefail
 cd "$(dirname "$0")/.."
 REPO=$(pwd)

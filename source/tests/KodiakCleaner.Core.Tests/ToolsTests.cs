@@ -590,6 +590,7 @@ public class UpdateManifestTests
     {
         Assert.Equal("https://www.kodiakcleaner.app/updates/dev.json", UpdateManifest.Url(ReleaseChannel.Dev));
         Assert.Equal("https://www.kodiakcleaner.app/updates/stable.json", UpdateManifest.Url(ReleaseChannel.Stable));
+        Assert.Equal("https://www.kodiakcleaner.app/updates/beta.json", UpdateManifest.Url(ReleaseChannel.Beta));
         var info = UpdateManifest.Parse(File(), ReleaseChannel.Dev)!;
         Assert.Equal(new Version(0, 8, 40), info.Version);
         Assert.Equal("https://www.kodiakcleaner.app/download/KodiakCleaner-Installer.msi", info.MsiUrl);

@@ -88,11 +88,13 @@ public static class UninstallCleanup
         Try(() => Integration.SetCleanOnStartup(false));
         Try(() => Integration.SetRecycleBinMenu(false));
         Try(() => BootProbe.SetReopen(false)); // a Boot Timer restart that never happened
-        Try(() =>
-        {
-            var updates = Path.Combine(Path.GetTempPath(), AppInfo.Id + "-Update");
-            if (Directory.Exists(updates)) Directory.Delete(updates, recursive: true);
-        });
+        Try(Integration.RemoveOtherChannelEntries); // an earlier channel's entries (a Dev install updated to Beta) go too
+        foreach (var id in AppInfo.OtherChannels.Select(AppInfo.IdFor).Prepend(AppInfo.Id))
+            Try(() =>
+            {
+                var updates = Path.Combine(Path.GetTempPath(), id + "-Update");
+                if (Directory.Exists(updates)) Directory.Delete(updates, recursive: true);
+            });
 
         Settings.PrepareDataFolders(); // also moves backups out of Program Files first, so a Keep keeps them
         var data = Settings.Data;
@@ -117,8 +119,14 @@ public static class UninstallCleanup
             new[] { "Delete Them", "Keep Them" }, defaultButton: 1, cancelButton: 1) == 0;
     }
 
-    /// <summary>Deletes every task in Task Scheduler's Kodiak Cleaner folder, then the folder.</summary>
+    /// <summary>Deletes every task in Task Scheduler's Kodiak Cleaner folders (this channel's and any earlier channel's), then the folders.</summary>
     private static void DeleteScheduledTasks()
+    {
+        foreach (var id in AppInfo.OtherChannels.Select(AppInfo.IdFor).Prepend(AppInfo.Id))
+            Try(() => DeleteScheduledTasks(id));
+    }
+
+    private static void DeleteScheduledTasks(string id)
     {
         var type = Type.GetTypeFromProgID("Schedule.Service");
         if (type is null) return;
@@ -126,11 +134,11 @@ public static class UninstallCleanup
         service.Connect();
         dynamic root = service.GetFolder("\\");
         dynamic folder;
-        try { folder = service.GetFolder("\\" + AppInfo.Id); }
+        try { folder = service.GetFolder("\\" + id); }
         catch (System.Runtime.InteropServices.COMException) { return; } // no folder: nothing was scheduled
         foreach (dynamic task in folder.GetTasks(1)) // 1 = include hidden tasks
             folder.DeleteTask(task.Name, 0);
-        root.DeleteFolder(AppInfo.Id, 0);
+        root.DeleteFolder(id, 0);
     }
 
     /// <summary>

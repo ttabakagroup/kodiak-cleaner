@@ -4,7 +4,7 @@ namespace KodiakCleaner.App;
 
 /// <summary>
 /// The Free / Supporter plan. Supporter codes are checked offline against the public key built into the app;
-/// nothing is sent anywhere. Development builds can also preview a plan from the Developer page.
+/// nothing is sent anywhere.
 /// </summary>
 public static class Supporter
 {
@@ -21,30 +21,17 @@ public static class Supporter
     public static CodeStatus CodeStatus { get; private set; } = CodeStatus.Empty;
     public static SupporterLicense? License { get; private set; }
 
-    /// <summary>The preview chosen on the Developer page (development builds only).</summary>
-    public static PlanPreview Preview => AppInfo.HasDeveloperTools ? Settings.Current.DevPreview : PlanPreview.None;
-
-    public static bool IsSupporter => Preview switch
-    {
-        PlanPreview.Supporter => true,
-        PlanPreview.Free => false,
-        _ => License is not null,
-    };
+    public static bool IsSupporter => License is not null;
 
     public static string PlanName => IsSupporter ? "Supporter" : "Free";
 
-    /// <summary>How the current plan was unlocked: supporter code, dev preview, or none.</summary>
-    public static string HowUnlocked => Preview != PlanPreview.None
-        ? "Developer preview"
-        : License is not null ? "Supporter code" : "None";
+    /// <summary>How the current plan was unlocked: a supporter code, or none.</summary>
+    public static string HowUnlocked => License is not null ? "Supporter code" : "None";
 
-    /// <summary>Name on the code (or the preview name), for the badge and About.</summary>
-    public static string? SupporterName => Preview != PlanPreview.None
-        ? (string.IsNullOrWhiteSpace(Settings.Current.DevPreviewName) ? null : Settings.Current.DevPreviewName.Trim())
-        : string.IsNullOrWhiteSpace(License?.Name) ? null : License!.Name;
+    /// <summary>Name on the code, for the badge and About.</summary>
+    public static string? SupporterName => string.IsNullOrWhiteSpace(License?.Name) ? null : License!.Name;
 
-    /// <summary>"Supporter" or "Supporter · Dev" while previewing.</summary>
-    public static string BadgeText => Preview == PlanPreview.Supporter ? "Supporter · Dev" : "Supporter";
+    public static string BadgeText => "Supporter";
 
     public static bool ShowBadge => IsSupporter && Settings.Current.ShowSupporterBadge;
 

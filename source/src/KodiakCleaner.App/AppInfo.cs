@@ -13,10 +13,16 @@ public static class AppInfo
     public const string Developer = "Ted Tabaka";
     public const string KoFiUrl = "https://ko-fi.com/s/aabd61b988";
 
+    // First of the static fields: the properties below read build metadata from it while the class initializes, in textual order.
+    private static readonly Assembly Me = Assembly.GetExecutingAssembly();
+
     /// <summary>GitHub "owner/name": source code and Star on GitHub.</summary>
     public const string Repository = "ttabakagroup/kodiakcleaner";
-    /// <summary>False for Dev builds: the repository goes public with the first Beta, and until then GitHub shows visitors a 404.</summary>
-    public static bool RepositoryIsPublic => DocsFolder.RepositoryIsPublic(Channel);
+    /// <summary>
+    /// version.json's "repositoryPublic" (false when missing). Ted made the repository public at 0.9.0 Beta; while the flag is
+    /// false, the GitHub links point at the website or are hidden, in every channel.
+    /// </summary>
+    public static bool RepositoryIsPublic { get; } = string.Equals(Metadata("RepositoryPublic"), "true", StringComparison.OrdinalIgnoreCase);
     /// <summary>The source code on GitHub, or the website's Open Source page while the repository is still private.</summary>
     public static string ProjectUrl => RepositoryIsPublic ? $"https://github.com/{Repository}" : HomepageUrl + "open-source/";
     /// <summary>Kodiak Cleaner's own website (Ted registered it in 0.8.28). Updates come from it since 0.8.40; code stays on the repository.</summary>
@@ -29,8 +35,6 @@ public static class AppInfo
 
     /// <summary>Where Contact &amp; Feedback messages go: the Contact Us form, with the topic picked for each button.</summary>
     public static readonly FeedbackAddresses Feedback = new(Default: ContactUrl);
-
-    private static readonly Assembly Me = Assembly.GetExecutingAssembly();
 
     public static Version Version { get; } = Changelog.Normalize(Me.GetName().Version ?? new Version(0, 8, 0));
     public static ReleaseChannel Channel { get; } = ReleaseChannels.Parse(Metadata("Channel"));
@@ -48,19 +52,28 @@ public static class AppInfo
     public static string ChannelLabel => ReleaseChannels.Label(Channel);
 
     /// <summary>Keeps the Dev, Beta and Stable copies from sharing Windows registrations ("KodiakCleaner", "KodiakCleaner.Dev").</summary>
-    public static string Id => Channel == ReleaseChannel.Stable ? "KodiakCleaner" : $"KodiakCleaner.{ChannelLabel}";
+    public static string Id => IdFor(Channel);
+    public static string IdFor(ReleaseChannel channel) => channel == ReleaseChannel.Stable ? "KodiakCleaner" : $"KodiakCleaner.{ReleaseChannels.Label(channel)}";
 
-    /// <summary>Development builds have the Developer page; release builds leave it (and its settings) out.</summary>
-#if DEVTOOLS
-    public static readonly bool HasDeveloperTools = true;
-#else
-    public static readonly bool HasDeveloperTools = false;
-#endif
+    /// <summary>
+    /// The other channels' ids. The MSI installs every channel in one place, so a Dev install updated to Beta still has the
+    /// Dev build's Windows registrations; <see cref="Integration.MoveFromOtherChannels"/> moves them over (0.9.0 Beta).
+    /// </summary>
+    public static IEnumerable<ReleaseChannel> OtherChannels => Enum.GetValues<ReleaseChannel>().Where(c => c != Channel);
 
     private static List<ChangelogRelease>? _releases;
 
-    /// <summary>CHANGELOG.md, embedded into the exe at build time.</summary>
+    /// <summary>CHANGELOG.md, embedded into the exe at build time. It starts at 0.9.0 Beta (Ted reset it for the Beta).</summary>
     public static List<ChangelogRelease> Releases => _releases ??= Changelog.Parse(ReadResource("CHANGELOG.md") ?? "");
+
+    private static List<ChangelogRelease>? _history;
+
+    /// <summary>
+    /// Every change since the start, for About's All Changes Since the Start: this channel's changelog followed by the Dev
+    /// builds' history (docs/history/dev-changelog.md, 0.8.0 Dev to 0.8.121 Dev), embedded too.
+    /// </summary>
+    public static List<ChangelogRelease> History => _history ??=
+        Releases.Concat(Changelog.Parse(ReadResource("dev-changelog.md") ?? "")).OrderByDescending(r => r.Version).ToList();
 
     /// <summary>Safe facts for bug reports and Copy Version Info. Never file names, folders or user names.</summary>
     public static ReportDetails Details => new(

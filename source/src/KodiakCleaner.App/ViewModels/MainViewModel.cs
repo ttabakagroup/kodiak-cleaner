@@ -387,6 +387,7 @@ public sealed class MainViewModel : ObservableObject
     public void ShowChangelog()
     {
         Navigate("about");
+        SettingsPage.About.ShowHistory = false;
         SettingsPage.About.ShowChangelog = true;
     }
 

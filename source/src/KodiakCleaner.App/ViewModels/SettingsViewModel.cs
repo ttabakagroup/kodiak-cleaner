@@ -32,7 +32,7 @@ public sealed class SettingsSection : ObservableObject
     public string Group { get; }
     /// <summary>One line shown under the page title.</summary>
     public string Description { get; }
-    /// <summary>The page's view model (or, for the Developer page, the page itself).</summary>
+    /// <summary>The page's view model (or, for a page with its own view, the page itself).</summary>
     public object Context { get; }
 
     private bool _isSelected;
@@ -59,7 +59,7 @@ public sealed class SettingsSection : ObservableObject
 /// <summary>
 /// Options &amp; Settings: the app's own pages (Advanced, Cleaning, General, Updates), then Personalize
 /// (Appearance, Supporter), Protect (Application, Registry), Help (Contact &amp; Feedback, FAQ, Privacy Policy, Terms of Use,
-/// Why It Was Made) and, in development builds only, Developer Tools. Pages are in the Default order (General first, then the
+/// Why It Was Made). Pages are in the Default order (General first, then the
 /// most used) or A to Z under each heading, as picked in the sidebar's Sort By dropdown. About has its own sidebar entry under Settings in the main window.
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
@@ -107,11 +107,6 @@ public sealed class SettingsViewModel : ObservableObject
         Add("story", "Why It Was Made", "\uE736", "Help", "The story behind Kodiak Cleaner, in Ted's words.", Story);
         Add("privacy", "Privacy Policy", "\uE72E", "Help", "What Kodiak Cleaner does with information: everything stays on this PC.", Privacy);
         Add("terms", "Terms of Use", "\uE8A5", "Help", "The terms for using Kodiak Cleaner.", Terms);
-#if DEVTOOLS
-        // Development builds only; release builds leave this page (and its code) out.
-        Add("developer", "Developer Tools", "\uEC7A", "Developer", "Test plans and check how this build is set up.",
-            new Developer.DeveloperPage { DataContext = new Developer.DeveloperViewModel() });
-#endif
         _defaultOrder = Sections.ToList();
         // Reset Tools Order in the sidebar can switch Favorites Order back to Default Order; keep the choice here in step.
         MainViewModel.SidebarSettingsChanged += () =>
