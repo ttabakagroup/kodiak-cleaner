@@ -35,6 +35,7 @@ ${pageHead("Contact Us", "Questions, ideas, bug reports or a quick thank-you. Fi
       </div>
       <div class="hp" aria-hidden="true"><label for="website">Leave This Empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
       <div class="turnstile-box" id="turnstile"></div>
+      <p class="form-privacy">Your message is emailed to Ted so he can read and answer it. Nothing is stored on this website. <a href="/privacy/#website">Privacy Policy</a></p>
       <button class="btn primary lg" type="submit">Send Message</button>
       <div class="form-status" id="form-status" role="status" tabindex="-1"></div>
       <noscript><p class="notice mt">This form needs JavaScript for its spam check. Please turn JavaScript on for this site to send a message.</p></noscript>

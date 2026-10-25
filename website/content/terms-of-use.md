@@ -1,6 +1,6 @@
 # Terms of Use
 
-**Effective date:** October 23, 2026
+**Effective date:** October 25, 2026
 
 These terms cover your use of Kodiak Cleaner, a free Windows cleaner made by Ted Tabaka, an independent developer. By using Kodiak Cleaner you agree to them. If you don't agree, please don't use Kodiak Cleaner.
 
@@ -31,11 +31,11 @@ Kodiak Cleaner is provided "as is", without warranty of any kind. To the fullest
 
 ## Privacy
 
-Kodiak Cleaner works on your computer. It collects no personal data, sends no usage data and shows no ads. It only goes online to check for updates: when you click Check Now, or once a day if you turn on automatic updates. The Kodiak Cleaner Privacy Policy explains this in full.
+Kodiak Cleaner works on your computer. It collects no personal data, sends no usage data and shows no ads. It only goes online to check for updates: when you click Check for Updates or Check Now, or on the schedule you pick under Settings, Updates if you turn on automatic updates. The Kodiak Cleaner Privacy Policy explains this in full.
 
 ## Supporting Kodiak Cleaner
 
-Supporting Kodiak Cleaner on Ko-fi is optional and is a one-time thank-you. A supporter code unlocks small extras such as the Classic and Glacier themes. Every cleaning feature works without one. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/.
+Supporting Kodiak Cleaner on Ko-fi is optional and is a one-time thank-you. A supporter code unlocks small extras such as the Classic, Glacier and Lagoon themes. Every cleaning feature works without one. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/.
 
 ## Changes to These Terms
 
