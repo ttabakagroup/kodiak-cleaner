@@ -24,7 +24,7 @@ jobs:
       run:
         working-directory: macos
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Use the newest Xcode
         run: |
@@ -68,7 +68,7 @@ jobs:
 
       - name: Keep the build
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         continue-on-error: true
         with:
           name: KodiakCleaner-Dev-Mac
