@@ -23,7 +23,11 @@ A small, honest cleaner for Windows. No telemetry, no ads, no upsells, no bundle
 [FAQ](#faq) ·
 [Feedback](#feedback-and-support)
 
-<img src="website/github/images/cleaner.png" alt="Kodiak Cleaner's Cleaner page after Analyze, showing 598.8 MB that can be freed" width="900">
+<a href="https://www.kodiakcleaner.app/video/kodiak-cleaner-video.mp4"><img src="website/github/images/video.jpg" alt="Play the one-minute Kodiak Cleaner video: Analyze, Review, Clean" width="720"></a>
+
+**[▶ Watch the one-minute video](https://www.kodiakcleaner.app/video/kodiak-cleaner-video.mp4)**
+
+<img src="website/github/images/cleaner.png" alt="Kodiak Cleaner's Cleaner page after Analyze, showing 6.8 GB that can be freed" width="900">
 
 </div>
 

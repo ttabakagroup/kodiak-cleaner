@@ -29,9 +29,9 @@
     "zipSize": "2.3 MB"
   },
   "launchVideo": {
-    "file": "kodiak-cleaner-beta.mp4",
-    "poster": "kodiak-cleaner-beta.jpg",
-    "id": "launch-2",
-    "title": "Kodiak Cleaner, Now in Beta"
+    "file": "kodiak-cleaner-video.mp4",
+    "poster": "kodiak-cleaner-video.jpg",
+    "id": "launch-3",
+    "title": "Meet Kodiak Cleaner"
   }
 }
