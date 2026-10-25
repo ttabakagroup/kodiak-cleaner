@@ -77,8 +77,7 @@
                         <TextBlock Text="Your Plan" Style="{StaticResource SectionTitle}" />
                         <TextBlock Margin="0,6,0,0">
                             <Run Text="{Binding PlanName, Mode=OneWay}" FontWeight="SemiBold" />
-                            <Run Text="· unlocked by:" Foreground="{DynamicResource Muted}" />
-                            <Run Text="{Binding HowUnlocked, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
+                            <Run Text="{Binding UnlockedText, Mode=OneWay}" Foreground="{DynamicResource Muted}" />
                         </TextBlock>
                     </StackPanel>
                 </DockPanel>

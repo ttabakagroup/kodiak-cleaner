@@ -5,6 +5,31 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.121 Dev] - 2026-10-25
+
+### About
+- Your Plan no longer reads "Free · unlocked by: None". On the free plan it just says Free.
+
+### Drive Wiper
+- Safer drive protection: if Kodiak Cleaner can't tell which disk holds Windows, Kodiak Cleaner itself, your user folder, your programs or a page file, or which disk Windows starts from, no drive can be erased, and each drive in the list says why.
+- A wipe that stops partway because a drive was unplugged or couldn't be written now says so honestly: part of the drive was overwritten and its partitions are gone, so wipe it again to finish. It's written to the activity log too. The drive is set up again only when it's still attached as the same drive.
+- The DoD 3 Passes hint only says the last pass is read back when it really is: on an Entire Drive wipe with Verify the Last Pass on.
+- Drive names keep to the letters A to Z, numbers, spaces, hyphens and underscores, so they come out right on every PC. A line under the name box says so.
+- The tick box next to Drive Name now reads Name the Drive.
+- A drive that doesn't report a model is listed as "Disk 0: Unnamed Drive" instead of "Disk 0: Disk 0".
+- The Letters column is wide enough for No Drive Letter.
+- If reading the drives fails in an unexpected way, the page now shows what went wrong instead of staying on "Reading drives…".
+
+### General
+- When Kodiak Cleaner runs as administrator, links to the website, Ko-fi and Contact & Feedback open your browser normally, without administrator rights.
+- Errors in background tasks are now written to the activity log.
+
+### Getting Started
+- The Hash Checker line now lists SHA-384 too.
+
+### Support
+- The support reminder now says every tool stays free, which is accurate: a few color schemes are a thank-you for Supporters.
+
 ## [0.8.120 Dev] - 2026-10-25
 
 ### Settings

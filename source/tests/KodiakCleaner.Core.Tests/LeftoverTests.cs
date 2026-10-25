@@ -25,7 +25,7 @@ public class LeftoverNamesTests
 
     [Fact]
     public void Publisher_names_drop_company_endings() =>
-        Assert.Equal(new[] { "Piriform Software Ltd", "Piriform Software" }, LeftoverNames.ForPublisher("Piriform Software Ltd."));
+        Assert.Equal(new[] { "Contoso Software Ltd", "Contoso Software" }, LeftoverNames.ForPublisher("Contoso Software Ltd."));
 }
 
 public sealed class LeftoverFinderTests : IDisposable

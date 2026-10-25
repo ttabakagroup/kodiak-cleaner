@@ -1,4 +1,4 @@
-import sys, pathlib
+import re, sys, pathlib
 R = pathlib.Path('.')
 # workflow: previously adapted version must match the app's workflow apart from our changes
 new_app_wf = (R/'.github/workflows/build.yml').read_text()
@@ -28,18 +28,18 @@ t = t.replace("""jobs:
 t = t.replace("path: dist/*", "path: source/dist/*").replace("files: dist/*", "files: source/dist/*")
 assert t.count("source/dist/*") >= 2 and "dist/*" not in t.replace("source/dist/*","") and "working-directory: source" in t and t.count("paths-ignore") == 2, "workflow changed shape"
 (R/'.github/workflows/build.yml').write_text(t)
-# website sync path
+# website sync path: the app folder is ../source in the repo layout (any older folder name is replaced; safe to run again)
 b = R/'website/build.mjs'; t = b.read_text()
-old = """  const app = at("..", "ccleaner-alt");
-  if (!existsSync(app)) throw new Error("--sync needs the app folder at ../ccleaner-alt");"""
-if old in t:
-    t = t.replace(old, """  const app = [at("..", "source"), at("..", "ccleaner-alt")].find((p) => existsSync(join(p, "version.json")));
-  if (!app) throw new Error("--sync needs the app folder at ../source (or ../ccleaner-alt)");""")
-    t = t.replace("documents from ../ccleaner-alt", "documents from ../source (or ../ccleaner-alt)")
+sync = re.compile(r'  const app = [^\n]*\n  if \(![^\n]*\) throw new Error\("--sync needs the app folder at [^"\n]*"\);')
+if sync.search(t):
+    t = sync.sub(lambda _: """  const app = at("..", "source");
+  if (!existsSync(join(app, "version.json"))) throw new Error("--sync needs the app folder at ../source");""", t, count=1)
+    t = re.sub(r'documents from \.\./[^\s()]+(?: \(or \.\./[^\s()]+\))?', 'documents from ../source', t)
     b.write_text(t)
 else:
     print("NOTE: build.mjs sync line changed; check it by hand")
-m = R/'website/README.md'; m.write_text(m.read_text().replace("`../ccleaner-alt`", "`../source` (or `../ccleaner-alt`)"))
+m = R/'website/README.md'
+m.write_text(re.sub(r'(documents from )`\.\./[A-Za-z0-9_-]+`(?: \(or `\.\./[A-Za-z0-9_-]+`\))?', r'\1`../source`', m.read_text()))
 # READMEs
 src = (R/'source/README.md').read_text()
 i = src.index("### Project Layout"); j = src.index("```", src.index("```", i) + 3) + 3

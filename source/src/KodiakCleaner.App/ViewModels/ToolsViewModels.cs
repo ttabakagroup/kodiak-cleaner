@@ -504,7 +504,22 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
     {
         if (_loaded) return;
         _loaded = true;
-        _ = RefreshAsync();
+        _ = FirstReadAsync();
+    }
+
+    /// <summary>
+    /// The first read isn't awaited by anyone, so an unexpected error would leave "Reading drives…" up for good (pre-Beta review):
+    /// show it and log it instead. RefreshAsync's finally has already ended the busy state.
+    /// </summary>
+    private async Task FirstReadAsync()
+    {
+        try { await RefreshAsync(); }
+        catch (Exception e)
+        {
+            IsBusy = false;
+            ListNote = "Drives couldn't be read: " + e.Message + " Press Refresh to try again.";
+            ActivityLog.Error("Drive Wiper", e);
+        }
     }
 
     public ObservableCollection<WipeableDrive> Drives { get; } = new();
@@ -718,7 +733,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
 
     private bool _verify = true;
     /// <summary>Reads the last pass back and compares every byte (the DoD standard's verification step).</summary>
-    public bool Verify { get => _verify; set => Set(ref _verify, value); }
+    public bool Verify { get => _verify; set { Set(ref _verify, value); OnPropertyChanged(nameof(MethodHint)); } }
 
     private bool _checkAfterwards; // off by default (Ted, 0.8.116)
     /// <summary>
@@ -886,7 +901,8 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         : Method switch
         {
             WipeMethod.Zeros => "One pass of zeros (NIST SP 800-88 Clear) is enough for any modern hard drive and is the quickest.",
-            WipeMethod.Dod3 => "DoD 5220.22-M: zeros, then ones, then random data, and the last pass is read back to check it.",
+            // The read-back only happens on an Entire Drive wipe with Verify the Last Pass on; free space is never read back (pre-Beta review).
+            WipeMethod.Dod3 => "DoD 5220.22-M: zeros, then ones, then random data." + (EntireDrive && Verify ? " The last pass is read back to check it." : ""),
             WipeMethod.Dod7 => "DoD 5220.22-M ECE: the three DoD passes, a random pass, then the three DoD passes again. Takes about seven times as long.",
             _ => "30 passes: the DoD pattern (zeros, ones, random) ten times over. It isn't a published standard and no modern drive needs it; it takes about 30 times as long as one pass.",
         } + (EntireDrive ? SsdNote : "");
@@ -999,7 +1015,7 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         BeginWipe(task, wipeTitle, "");
         _cts = new CancellationTokenSource();
         var done = new List<string>();
-        int stopped = 0, failed = 0, checkStopped = 0;
+        int stopped = 0, failed = 0, partial = 0, checkStopped = 0;
         var verdicts = new List<DriveVerdict>();
         try
         {
@@ -1064,6 +1080,13 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
                     row.Status = "Stopped";
                     done.Add($"{d.Name} was stopped part way. It's only partly erased; erase it again before giving it away.");
                 }
+                catch (PartialWipeException e)
+                {
+                    // The overwrite failed part way (pre-Beta review, 2026-10-25): never "Not Erased", its partitions are already gone.
+                    partial++;
+                    row.Status = "Partly Erased";
+                    done.Add($"{d.Name}: {e.Message}" + (e.InnerException is { Message: { Length: > 0 } why } ? $" (Windows said: {why.TrimEnd('.')}.)" : ""));
+                }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
                 {
                     failed++;
@@ -1075,9 +1098,12 @@ public sealed class WiperViewModel : ObservableObject, ILoadOnFirstVisit
         }
         finally
         {
+            int notDone = failed + partial;
             EndWipe(stopped > 0 ? "Wipe Stopped" : checkStopped > 0 ? "Wipe Finished, Check Stopped"
-                    : failed == 0 ? "Wipe Finished" : failed < done.Count ? "Some Drives Weren't Erased" : "Wipe Failed",
-                stopped > 0 || checkStopped > 0 ? GlyphStopped : failed > 0 || verdicts.Contains(DriveVerdict.Failing) ? GlyphFailed
+                    : notDone == 0 ? "Wipe Finished"
+                    : notDone < done.Count ? (partial > 0 ? "Some Drives Weren't Fully Erased" : "Some Drives Weren't Erased")
+                    : partial > 0 ? "Wipe Didn't Finish" : "Wipe Failed",
+                stopped > 0 || checkStopped > 0 ? GlyphStopped : notDone > 0 || verdicts.Contains(DriveVerdict.Failing) ? GlyphFailed
                     : verdicts.Contains(DriveVerdict.Warning) ? GlyphWarning : GlyphDone);
             IsBusy = false;
             await RefreshAsync();

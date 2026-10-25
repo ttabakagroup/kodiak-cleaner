@@ -33,6 +33,12 @@ public sealed record DiskEraseResult(WipeMethod Method, bool FirmwareFellBack, b
     public string? SetupError { get; init; }
 }
 
+/// <summary>
+/// An Entire Drive wipe whose overwrite failed part way (a write error, or the drive was unplugged). The message says so honestly:
+/// the drive was partly overwritten and is not "not erased". The inner exception is what Windows said.
+/// </summary>
+public sealed class PartialWipeException(string message, Exception inner) : IOException(message, inner);
+
 [SupportedOSPlatform("windows")]
 public static class DriveWiper
 {
@@ -74,25 +80,83 @@ public static class DriveWiper
 
     /// <summary>
     /// Every attached physical disk. A disk is refused when any part of it holds Windows, its start-up partition, its page
-    /// file, Kodiak Cleaner, your user folder or programs, or when a volume spans it and another disk.
+    /// file, Kodiak Cleaner, your user folder or programs, or when a volume spans it and another disk. When Windows doesn't say
+    /// which disk one of those is on, every disk is refused (<see cref="DiskGuard"/>: fail closed).
     /// </summary>
     public static List<WipeDisk> ListDisks()
     {
         var volumes = DriveMedia.ListVolumes();
         int? startup = DriveMedia.StartupDisk();
-        var list = new List<WipeDisk>();
-        foreach (var disk in DriveMedia.ListDisks())
+        return DiskGuard.Judge(DriveMedia.ListDisks(), volumes, startup, KeptDrives(), DriveMedia.DisksOf, ProtectedReason);
+    }
+
+    /// <summary>
+    /// The drives whose disks must be found before anything is erased: Windows, Kodiak Cleaner's own drive, your user folder,
+    /// programs and every page file. Network and CD/DVD drives are left out (they aren't on a local disk); a folder Windows
+    /// doesn't place at all gets an empty root, which refuses every disk.
+    /// </summary>
+    internal static List<KeptDrive> KeptDrives()
+    {
+        var kept = new List<KeptDrive>();
+        void Add(string? path, string holds, string reason)
         {
-            var mine = volumes.Where(v => v.Disks.Contains(disk.Number)).ToList();
-            var letters = mine.SelectMany(v => v.Paths).Where(p => p.Length == 3).OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
-            string? reason = null;
-            if (disk.Number == startup) reason = "Windows starts from this drive.";
-            foreach (var letter in letters) reason ??= ProtectedReason(letter);
-            if (reason is null && mine.Any(v => v.Disks.Count > 1)) reason = "A drive on this disk spans another disk.";
-            if (reason is null && disk.Size <= 0) reason = "Windows doesn't report this disk's size.";
-            list.Add(new WipeDisk(disk.Number, disk.Model, disk.Serial, disk.Size, disk.Kind, disk.Removable || disk.IsUsb, letters, reason));
+            if (LocalRoot(path) is { } root) kept.Add(new KeptDrive(root, holds, reason));
         }
-        return list;
+        Add(Environment.SystemDirectory, "Windows", "Windows is installed on this drive.");
+        Add(AppContext.BaseDirectory, "Kodiak Cleaner", "Kodiak Cleaner is running from this drive.");
+        Add(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "your user folder", "Your user folder is on this drive.");
+        Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "your programs", "Programs are installed on this drive.");
+        var x86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        if (x86.Length > 0) Add(x86, "your programs", "Programs are installed on this drive.");
+        foreach (var root in PageFileRoots()) Add(root, "Windows' page file", "Windows uses this drive for its page file.");
+        return kept;
+    }
+
+    /// <summary>The drive root of a path ("C:\"); "" when Windows gave no path; null when it isn't on a local disk (network, CD/DVD).</summary>
+    private static string? LocalRoot(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return "";
+        string? root;
+        try { root = Path.GetPathRoot(Path.GetFullPath(path)); }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or IOException or System.Security.SecurityException) { return ""; }
+        if (string.IsNullOrEmpty(root)) return "";
+        if (root.StartsWith(@"\\", StringComparison.Ordinal) && !root.StartsWith(@"\\?\", StringComparison.Ordinal) && !root.StartsWith(@"\\.\", StringComparison.Ordinal))
+            return null; // \\server\share: not on a disk in this PC
+        if (root.Length != 3 || root[1] != ':') return root;
+        try { if (new DriveInfo(root).DriveType is DriveType.Network or DriveType.CDRom) return null; }
+        catch (Exception e) when (e is ArgumentException or IOException or UnauthorizedAccessException) { }
+        return root.ToUpperInvariant();
+    }
+
+    /// <summary>
+    /// Every drive with a page file: the ones Windows is set to use and has open (Session Manager\Memory Management, "?:" meaning
+    /// the Windows drive) and any ready drive with a pagefile.sys at its root.
+    /// </summary>
+    private static IEnumerable<string> PageFileRoots()
+    {
+        var roots = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management");
+            foreach (var name in new[] { "PagingFiles", "ExistingPageFiles" })
+                if (key?.GetValue(name) is string[] entries)
+                    foreach (var entry in entries)
+                    {
+                        var path = entry.Trim();
+                        if (path.StartsWith(@"\??\", StringComparison.Ordinal)) path = path[4..];
+                        if (path.Length >= 2 && path[1] == ':' && char.IsAsciiLetter(path[0])) roots.Add($"{char.ToUpperInvariant(path[0])}:\\");
+                    }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
+        foreach (var d in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if (d.IsReady && d.DriveType is (DriveType.Fixed or DriveType.Removable) && File.Exists(Path.Combine(d.Name, "pagefile.sys"))) roots.Add(d.Name);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        return roots;
     }
 
     /// <summary>
@@ -116,8 +180,10 @@ public static class DriveWiper
 
         var chosen = WipeMethods.ForLevel(level, disk.Kind, secure);
         var method = chosen ?? WipeMethod.Zeros;
-        bool fellBack = false, cancelled = false;
+        bool fellBack = false, cancelled = false, overwriting = false;
+        Exception? failure = null;
         long mismatches = 0;
+        var watch = new WriteWatch(progress);
         status.Report($"Locking {disk.Drives}…");
         var locks = LockVolumes(disk.Number);
         try
@@ -139,17 +205,25 @@ public static class DriveWiper
                     {
                         fellBack = true;
                         status.Report("This drive doesn't offer a built-in secure erase, so it's being overwritten with random data instead…");
-                        Overwriter.Run(h, length, [new WipePass(null)], verify, progress, ct);
+                        overwriting = true;
+                        Overwriter.Run(h, length, [new WipePass(null)], verify, watch, ct);
                     }
                 }
                 else
                 {
-                    mismatches = Overwriter.Run(h, length, WipeMethods.Passes(method), verify, progress, ct);
+                    overwriting = true;
+                    mismatches = Overwriter.Run(h, length, WipeMethods.Passes(method), verify, watch, ct);
                 }
             }
             catch (OperationCanceledException)
             {
                 cancelled = true; // still give the half-erased disk a fresh partition so Windows can use it
+            }
+            catch (Exception e) when (overwriting && e is not OperationCanceledException)
+            {
+                // A write failed part way (the drive was unplugged, or a sector couldn't be written): the start of the drive,
+                // where its partitions are listed, is already overwritten, so this must not be reported as "not erased".
+                failure = e;
             }
             DriveMedia.Native.Control(h, DriveMedia.Native.IoctlDiskUpdateProperties);
         }
@@ -157,6 +231,8 @@ public static class DriveWiper
         {
             foreach (var l in locks) l.Dispose();
         }
+
+        if (failure is not null) throw StoppedPartway(disk, level, chosen ?? method, fellBack, watch.Wrote, failure, format, status);
 
         // A stopped wipe still loses its partition data, and gets the chosen format so Windows can use it again.
         status.Report(format is null ? "Removing the partition tables and boot sectors…" : $"Removing the partition data, then making a {format.PartitionStyle} drive with {format.FileSystem}…");
@@ -168,6 +244,51 @@ public static class DriveWiper
         if (cancelled) throw new OperationCanceledException(ct);
         bool? verified = !verify || chosen is null || (method == WipeMethod.Firmware && !fellBack) ? null : mismatches == 0;
         return new DiskEraseResult(chosen ?? method, fellBack, verified, mismatches, ok, letter) { Level = level, Format = used, SetupError = error };
+    }
+
+    /// <summary>
+    /// A wipe whose overwrite failed part way: logged, and set up again only when the very same drive is still attached (same number,
+    /// model, serial and size, and still allowed). After a drive is unplugged Windows can give its number to the next drive plugged in,
+    /// so running diskpart on that number blindly could clean the wrong drive; a drive that's still there gets its partition data removed
+    /// (and the chosen format) so Windows can use it, like a stopped wipe.
+    /// </summary>
+    private static PartialWipeException StoppedPartway(WipeDisk disk, WipeLevel level, WipeMethod method, bool fellBack, bool wrote, Exception failure,
+        DiskFormat? format, IProgress<string> status)
+    {
+        bool stillThere;
+        try
+        {
+            stillThere = ListDisks().FirstOrDefault(d => d.Number == disk.Number) is { CanWipe: true } n
+                && n.Size == disk.Size && n.Serial == disk.Serial && n.Model == disk.Model;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or EntryPointNotFoundException or InvalidOperationException) { stillThere = false; }
+
+        bool setUp = false;
+        DiskFormat? used = null;
+        string? error = null;
+        if (stillThere)
+        {
+            status.Report("The wipe stopped partway. Removing the drive's partition data so Windows can use it…");
+            (setUp, _, used, error) = Repartition(disk, format, status);
+        }
+        var text = WipeMethods.PartialWipeText(wrote, stillThere, setUp);
+        ActivityLog.Write("Drive Wiper", $"Wipe of {disk.Name} ({ByteSize.Format(disk.Size)}, {disk.KindName}) stopped partway: {WipeMethods.LevelName(level)} with " +
+            $"{(fellBack ? "a random overwrite (no built-in secure erase offered)" : WipeMethods.Name(method))}; {failure.Message}" +
+            (!stillThere ? "; not set up again (the drive is no longer attached as it was)"
+                : setUp ? (used is null ? "; partition data removed, left uninitialized" : $"; partition data removed, formatted {used.PartitionStyle} {used.FileSystem}")
+                : $"; setting it up again failed (diskpart: {error ?? "no reason given"})"));
+        return new PartialWipeException(text, failure);
+    }
+
+    /// <summary>Notes whether the overwrite reported any progress: the first report comes after the first block was written.</summary>
+    private sealed class WriteWatch(IProgress<OverwriteProgress>? inner) : IProgress<OverwriteProgress>
+    {
+        public bool Wrote { get; private set; }
+        public void Report(OverwriteProgress value)
+        {
+            Wrote = true;
+            inner?.Report(value);
+        }
     }
 
     /// <summary>Locks and dismounts every volume on the disk so nothing else writes while it's erased; disposing unlocks.</summary>
@@ -253,7 +374,7 @@ public static class DriveWiper
         var script = Path.Combine(Path.GetTempPath(), $"KodiakCleaner-Wipe-{Environment.ProcessId}.txt");
         try
         {
-            File.WriteAllLines(script, lines);
+            File.WriteAllLines(script, lines, Encoding.ASCII); // the drive name is ASCII only (DiskFormat.SafeLabel), so every code page reads it the same
             var psi = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "diskpart.exe"), $"/s \"{script}\"")
             {
                 UseShellExecute = false,

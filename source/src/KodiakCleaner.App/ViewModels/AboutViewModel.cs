@@ -29,6 +29,7 @@ public sealed class AboutViewModel : ObservableObject
         {
             OnPropertyChanged(nameof(PlanName));
             OnPropertyChanged(nameof(HowUnlocked));
+            OnPropertyChanged(nameof(UnlockedText));
         };
     }
 
@@ -42,6 +43,8 @@ public sealed class AboutViewModel : ObservableObject
 
     public string PlanName => Supporter.PlanName;
     public string HowUnlocked => Supporter.HowUnlocked;
+    /// <summary>"· unlocked by: Supporter code" after the plan name; nothing at all on the free plan (never "unlocked by: None").</summary>
+    public string UnlockedText => Supporter.IsSupporter || Supporter.Preview != PlanPreview.None ? "· unlocked by: " + HowUnlocked : "";
 
     /// <summary>This version's CHANGELOG.md entry (bundled into the app; no network request).</summary>
     public ChangelogRelease? CurrentRelease => AppInfo.Releases.FirstOrDefault(r => r.Version == AppInfo.Version) ?? AppInfo.Releases.FirstOrDefault();

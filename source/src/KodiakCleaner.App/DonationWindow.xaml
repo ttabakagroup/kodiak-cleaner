@@ -15,9 +15,9 @@
         <Border Style="{StaticResource Card}" Margin="0,16,0,0">
             <StackPanel>
                 <TextBlock TextWrapping="Wrap"
-                           Text="Kodiak Cleaner is free and open source, with no ads, no tracking and nothing held back behind a paywall. It's built in spare time by one person." />
+                           Text="Kodiak Cleaner is free and open source, with no ads and no tracking, and every cleaning tool is free to use. It's built in spare time by one person." />
                 <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" FontWeight="SemiBold"
-                           Text="If it helps you, please consider supporting Kodiak Cleaner on Ko-fi. It's completely optional, and every feature stays free either way." />
+                           Text="If it helps you, please consider supporting Kodiak Cleaner on Ko-fi. It's completely optional, and every tool stays free either way." />
                 <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" Style="{StaticResource Caption}" FontSize="13"
                            Text="Ko-fi opens in your browser. Supporters get a few extras as a thank-you, and this reminder turns off for good." />
             </StackPanel>

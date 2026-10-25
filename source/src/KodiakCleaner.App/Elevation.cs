@@ -86,8 +86,35 @@ public static class Elevation
         Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{file}\"") { UseShellExecute = true });
 }
 
-public static class Shell
+public static partial class Shell
 {
-    /// <summary>Opens a web link in the default browser.</summary>
-    public static void OpenUrl(string url) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    /// <summary>
+    /// Opens a web link in the default browser. Run as administrator (Always Admin, Restart as Administrator), a plain
+    /// ShellExecute would start the browser with Kodiak Cleaner's elevated rights (pre-Beta review, 2026-10-25), so the link is
+    /// handed to explorer.exe instead: with Windows' own shell running it passes the link to that shell, which opens the browser
+    /// as the signed-in user, unelevated. Only http and https links go that way; without a running shell (or for anything else) it
+    /// opens as before. As a standard user nothing changes.
+    /// </summary>
+    public static void OpenUrl(string url)
+    {
+        if (Elevation.IsAdministrator && Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp) && GetShellWindow() != IntPtr.Zero)
+        {
+            try
+            {
+                // AbsoluteUri escapes quotes and spaces, so the link stays one argument.
+                Process.Start(new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"), $"\"{uri.AbsoluteUri}\"")
+                {
+                    UseShellExecute = false,
+                })?.Dispose();
+                return;
+            }
+            catch (System.ComponentModel.Win32Exception) { }
+        }
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    }
+
+    /// <summary>The desktop window of Windows' shell (Explorer); zero when no shell is running.</summary>
+    [System.Runtime.InteropServices.LibraryImport("user32.dll")]
+    private static partial IntPtr GetShellWindow();
 }

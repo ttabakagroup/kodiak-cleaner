@@ -12,6 +12,9 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         DispatcherUnhandledException += OnUnhandledException;
+        // Crashes off the main thread (pre-Beta review, 2026-10-25): logged too, so a report can say what went wrong.
+        AppDomain.CurrentDomain.UnhandledException += OnBackgroundCrash;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTask;
         base.OnStartup(e);
         try
         {
@@ -147,5 +150,23 @@ public partial class App : Application
         ActivityLog.Error("Error", e.Exception);
         Dialogs.Error("Something went wrong:\n\n" + e.Exception.Message);
         e.Handled = true;
+    }
+
+    /// <summary>A background thread crashed; .NET ends the process after this, so it can only be logged.</summary>
+    private static void OnBackgroundCrash(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            if (e.ExceptionObject is Exception ex) ActivityLog.Error("Error", ex);
+            else ActivityLog.Write("Error", "A background task stopped with an unknown error.");
+        }
+        catch (Exception) { } // the process is ending anyway; never throw from here
+    }
+
+    /// <summary>A task's error that nothing waited for: marked as seen so it never takes Kodiak Cleaner down, and logged.</summary>
+    private static void OnUnobservedTask(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        e.SetObserved();
+        foreach (var ex in e.Exception.Flatten().InnerExceptions) ActivityLog.Error("Error", ex);
     }
 }

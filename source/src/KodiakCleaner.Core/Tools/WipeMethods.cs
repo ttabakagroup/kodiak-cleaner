@@ -51,17 +51,24 @@ public sealed record DiskFormat(string FileSystem, bool Gpt, string Label)
     public string PartitionStyle => Gpt ? "GPT" : "MBR";
 
     /// <summary>
-    /// Only letters, digits, spaces, hyphens and underscores, and no longer than the file system allows (<see cref="LabelLimit"/>).
+    /// Only the letters A to Z, digits, spaces, hyphens and underscores (diskpart reads its script in the console's code page, so
+    /// other letters such as é or ü could come out garbled; pre-Beta review, 2026-10-25), and no longer than the file system allows (<see cref="LabelLimit"/>).
     /// FAT32 keeps names in capitals, so it's shown that way too. Empty means the drive gets no name.
     /// </summary>
     public string SafeLabel
     {
         get
         {
-            var safe = new string(Label.Where(c => char.IsLetterOrDigit(c) || c is ' ' or '-' or '_').Take(LabelLimit(FileSystem)).ToArray()).Trim();
+            var safe = new string(Label.Where(IsLabelChar).Take(LabelLimit(FileSystem)).ToArray()).Trim();
             return FileSystem.Equals("FAT32", StringComparison.OrdinalIgnoreCase) ? safe.ToUpperInvariant() : safe;
         }
     }
+
+    /// <summary>A character every code page writes the same way, so diskpart names the drive exactly as typed.</summary>
+    public static bool IsLabelChar(char c) => char.IsAsciiLetterOrDigit(c) || c is ' ' or '-' or '_';
+
+    /// <summary>The caption under the drive name box.</summary>
+    public const string LabelRule = "Letters A to Z, numbers, spaces, hyphens and underscores; anything else is left out.";
 
     /// <summary>The longest drive name a file system takes: 32 characters on NTFS, 11 on FAT32 and exFAT.</summary>
     public static int LabelLimit(string fileSystem) => fileSystem.Equals("NTFS", StringComparison.OrdinalIgnoreCase) ? 32 : 11;
@@ -212,6 +219,24 @@ public static class WipeMethods
     public static string QuickGiveAwayNote(int drives) => drives > 1
         ? "Giving these drives away or selling them? Quick leaves old files recoverable: choose Thorough or Secure."
         : "Giving this drive away or selling it? Quick leaves old files recoverable: choose Thorough or Secure.";
+
+    /// <summary>
+    /// What a wipe that failed part way did, in plain words (pre-Beta review, 2026-10-25). <paramref name="wrote"/>: the first block
+    /// was written (the partition table at the start is gone); <paramref name="stillThere"/>: the same drive was still attached
+    /// afterwards; <paramref name="setUp"/>: its partition data was then removed again so Windows can use it.
+    /// </summary>
+    public static string PartialWipeText(bool wrote, bool stillThere, bool setUp)
+    {
+        var what = wrote
+            ? "The wipe stopped partway: part of the drive was overwritten and its partitions are gone, so its old files may be partly unreadable."
+            : "The wipe stopped as it began writing: the start of the drive, where its partitions are listed, may already be overwritten, so its old files may be partly unreadable.";
+        var next = !stillThere
+            ? " It wasn't set up again because Windows no longer sees the same drive (was it unplugged?). Plug it back in, press Refresh and wipe it again to finish."
+            : setUp
+                ? " Its partition data was removed so Windows can use it, but its old files aren't fully erased. Wipe it again to finish."
+                : " Windows couldn't set it up again. Wipe it again to finish, or open Disk Management to initialize it.";
+        return what + next;
+    }
 
     private static bool IsSsd(MediaKind k) => k is MediaKind.Ssd or MediaKind.NvmeSsd;
 

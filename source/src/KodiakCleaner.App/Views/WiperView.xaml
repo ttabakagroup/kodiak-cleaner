@@ -326,7 +326,8 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="Size" Binding="{Binding Size}" SortMemberPath="Disk.Size" Width="90" IsReadOnly="True" />
-                                    <DataGridTextColumn Header="Letters" Binding="{Binding Disk.Drives}" Width="80" IsReadOnly="True" />
+                                    <!-- Wide enough for "No Drive Letter" (pre-Beta review). -->
+                                    <DataGridTextColumn Header="Letters" Binding="{Binding Disk.Drives}" Width="125" MinWidth="80" IsReadOnly="True" />
                                     <!-- How this drive will be erased; the tooltip says it in plain words (Ted, 0.8.115). -->
                                     <DataGridTemplateColumn Header="Method" Width="160" SortMemberPath="Method">
                                         <DataGridTemplateColumn.CellTemplate>
@@ -517,13 +518,17 @@
                                 <StackPanel Margin="0,0,0,8" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                                     <TextBlock Text="Drive Name" Style="{StaticResource SettingTitle}" Margin="0,0,0,6" />
                                     <StackPanel Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding NameDrive}" VerticalAlignment="Center" Margin="0,0,10,0" AutomationProperties.Name="Name the Drive"
+                                        <CheckBox Content="Name the Drive" IsChecked="{Binding NameDrive}" VerticalAlignment="Center" Margin="0,0,10,0" AutomationProperties.Name="Name the Drive"
                                                   ToolTip="Name the drive. Untick it to leave the drive without a name." />
                                         <TextBox Text="{Binding LabelBox, UpdateSourceTrigger=PropertyChanged}" Width="200" MaxLength="{Binding LabelLimit}"
                                                  AutomationProperties.Name="Drive Name" Style="{StaticResource GrayTextBox}" IsEnabled="{Binding NameDrive}" />
                                     </StackPanel>
                                     <TextBlock Text="No name: Windows shows it as USB Drive or Local Disk." Style="{StaticResource Caption}" Margin="0,4,0,0"
                                                Visibility="{Binding NameDrive, Converter={StaticResource NotVis}}" />
+                                    <!-- diskpart can garble other letters, so names keep to these (DiskFormat.LabelRule; pre-Beta review). -->
+                                    <TextBlock Text="Letters A to Z, numbers, spaces, hyphens and underscores; anything else is left out." Style="{StaticResource Caption}"
+                                               Margin="0,4,0,0" TextWrapping="Wrap" MaxWidth="360" HorizontalAlignment="Left"
+                                               Visibility="{Binding NameDrive, Converter={StaticResource BoolToVis}}" />
                                 </StackPanel>
                             </WrapPanel>
                             <TextBlock Text="GPT suits drives over 2 TB and modern PCs; MBR suits older PCs and devices. NTFS for Windows, exFAT to share with Macs, TVs and cameras, FAT32 for old devices (drives up to 32 GB)."

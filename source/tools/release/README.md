@@ -19,4 +19,5 @@ Paths inside are written for the build container (Source at `/home/claude/k/Kodi
    - The CI workflow lives in Source/.github/workflows/build.yml (keep `continue-on-error` and `retention-days: 2` on the artifact upload).
    - If origin moved (the website thread pushes too): rebase, take theirs for website/public, rebuild and rerun the site tests.
 6. `git push origin main` and wait for Build MSI and Publish Downloads and Website to go green.
-7. `bash sync-after.sh V PV` updates the project's website, repo copy and ccleaner-alt. Keep only the newest two release-<ver> folders.
+7. `KC_WORKING_COPY=<the project folder's working copy of the app> bash sync-after.sh V PV` updates the project's website, repo copy and
+   that working copy (changed files and dist/). Keep only the newest two release-<ver> folders.

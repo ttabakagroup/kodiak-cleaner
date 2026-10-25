@@ -2,7 +2,7 @@
 
 Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
-Kodiak Cleaner is a small, honest cleaner for Windows by Ted Tabaka. It has no telemetry, ads, upsells, bundled offers or background services. Every feature is free and open source under the MIT License.
+Kodiak Cleaner is a small, honest cleaner for Windows by Ted Tabaka. It has no telemetry, ads, upsells, bundled offers or background services. Every cleaning tool is free, and the app is open source under the MIT License.
 
 Beta software: use at your own risk. Kodiak Cleaner deletes things by design, so check what's selected before you clean and keep your own backups of anything important.
 

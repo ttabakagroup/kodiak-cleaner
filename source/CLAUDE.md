@@ -54,7 +54,10 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Drive Wiper (2026-10-12): `DriveMedia` reads each disk's type from the storage stack (NVMe bus, seek penalty, USB/SD bus; no WMI).
   Entire Drive works on whole physical disks (`DriveWiper.ListDisks`/`EraseAsync`): a disk is refused when any letter on it is protected
   (`ProtectedReason`: Windows, Kodiak Cleaner's drive, page file, user folder, programs), when it holds the start-up partition
-  (HKLM\SYSTEM\Setup SystemPartition) or a volume spanning disks. Every volume on it is locked and dismounted, then hard drives and flash
+  (HKLM\SYSTEM\Setup SystemPartition) or a volume spanning disks. It fails closed (`DiskGuard.Judge`, pre-Beta review 2026-10-25): when the disk under
+  the Windows, exe, user profile, Program Files or any page-file drive (`DriveWiper.KeptDrives`), or the start-up disk, can't be found, every disk is refused.
+  A write error mid-overwrite throws `PartialWipeException` (logged, "Partly Erased", `WipeMethods.PartialWipeText`), never "Not Erased"; diskpart runs
+  afterwards only when the same disk (number, model, serial, size) is still attached. Drive names are ASCII only (`DiskFormat.IsLabelChar`); the script is written as ASCII. Every volume on it is locked and dismounted, then hard drives and flash
   drives get `Overwriter` passes (1 Pass (Zeros), DoD 5220.22-M 3, ECE 7; last pass read back) and SSD/NVMe get IOCTL_STORAGE_REINITIALIZE_MEDIA
   (crypto, then block, then default; random overwrite if refused). Wipe Type (Ted, 2026-10-12): Quick = partition data only, Thorough =
   zeros (built-in secure erase on SSD/NVMe), Secure = the Security choice incl. 30 Passes (DoD pattern x10, labelled "not a standard").
@@ -366,6 +369,8 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Never put Ted's email address anywhere: app, docs, installer, tests, website (Ted, 2026-10-10, 0.8.56; a test checks).
   Contact & Feedback buttons open the website's Contact Us form (`AppInfo.ContactUrl`) in the browser with `?topic=` and
   `&version=`. Nothing is sent automatically, no hidden data in links, and Copy Details never includes files, folders or user names.
+- Web links always open through `Shell.OpenUrl`: run as administrator it hands http(s) links to explorer.exe (the running shell opens them as the
+  signed-in user), so the browser never starts elevated (pre-Beta review, 2026-10-25).
 - Security issues are reported privately, never in public issues. Contact & Feedback has four accent buttons (Ted, 0.8.24):
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
 - Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help links. Updates come from the website since 0.8.40; release downloads stay on GitHub releases; source and Star on GitHub stay on the repo.

@@ -98,8 +98,11 @@ public static class DriveMedia
         bool? seek = Native.QueryProperty(h, 7 /* StorageDeviceSeekPenaltyProperty */, 12) is { Length: >= 9 } sp ? sp[8] != 0 : null;
         bool? trim = Native.QueryProperty(h, 8 /* StorageDeviceTrimProperty */, 12) is { Length: >= 9 } tp ? tp[8] != 0 : null;
         long size = Native.Size(h);
-        return new DiskMedia(number, model.Length > 0 ? model : $"Disk {number}", serial, size, bus, seek, trim, removable);
+        return new DiskMedia(number, ModelText(model), serial, size, bus, seek, trim, removable);
     }
+
+    /// <summary>The model shown for a disk; one that doesn't report a model reads "Disk 0: Unnamed Drive", not "Disk 0: Disk 0".</summary>
+    public static string ModelText(string model) => model.Trim() is { Length: > 0 } m ? m : "Unnamed Drive";
 
     /// <summary>The physical disk(s) a drive letter (C:\) or volume name lives on; empty if Windows doesn't say.</summary>
     public static IReadOnlyList<int> DisksOf(string root)
