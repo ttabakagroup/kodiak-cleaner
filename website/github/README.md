@@ -5,7 +5,7 @@ Files used on the Kodiak Cleaner GitHub page and its releases.
 | Path | What it is |
 |------|------------|
 | `images/` | The logo and screenshots shown on the repository's main README. |
-| `release-notes/` | The text for each GitHub release, one file per version: `<version>-beta.md` from 0.9.0 (for example `0.9.0-beta.md`), `<version>-dev.md` for the Dev builds before it. Create GitHub Release uses it as the release description. |
+| `release-notes/` | The text for each GitHub release, one file per version: `<version>-beta.md` from 0.9.0 (for example `0.9.0-beta.md`). Create GitHub Release uses it as the release description. |
 
 The main page itself is the `README.md` at the top of the repository. The app's own documents (CHANGELOG, PRIVACY, SECURITY, Terms of Use and LICENSE) live in `source/`, because the app and the packages use them.
 

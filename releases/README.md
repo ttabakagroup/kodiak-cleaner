@@ -2,7 +2,7 @@
 
 The newest downloads of Kodiak Cleaner, kept here as copies. Only the newest build of each app is kept, so the repository stays small. Every release is on the [Releases page](https://github.com/ttabakagroup/kodiakcleaner/releases), and the website has the same downloads at [www.kodiakcleaner.app](https://www.kodiakcleaner.app/).
 
-**Windows** (`Windows-<version>-beta/`, for example `Windows-0.9.0-beta/`; the Dev builds before it used `Windows-<version>-dev/` and `KodiakCleaner-Dev-...` names)
+**Windows** (`Windows-<version>-beta/`, for example `Windows-0.9.0-beta/`)
 
 - `KodiakCleaner-Beta-Setup.msi`: the installer
 - `KodiakCleaner-Beta-Portable.zip`: the portable version plus its Docs folder
