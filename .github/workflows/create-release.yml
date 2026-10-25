@@ -2,7 +2,8 @@ name: Create GitHub Release
 
 # Makes a pre-release for the newest builds in releases/ when you click Run workflow. If that version's release
 # already exists, it updates its title, notes and files instead (run it again after a Linux or Mac build lands).
-# Tag: v<windows version>-dev. Notes: website/github/release-notes/<version>-dev.md.
+# Tag: v<windows version>-<channel>, for example v0.9.0-beta (v0.8.121-dev before the Beta).
+# Notes: website/github/release-notes/<version>-<channel>.md, for example 0.9.0-beta.md.
 # Attaches the MSI, the Portable ZIP, the Linux AppImage and .deb ZIPs, the Mac DMG and ZIP and a source ZIP.
 # A tag made by this workflow doesn't start the Build MSI release build.
 
@@ -23,9 +24,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          win=$(ls -d releases/Windows-*/ | sort -V | tail -1)
+          # The newest Windows folder, Windows-<ver>-beta or Windows-<ver>-dev (Beta wins a tie).
+          win=$(for d in releases/Windows-*-beta/ releases/Windows-*-dev/; do
+                  [ -d "$d" ] || continue
+                  v=$(basename "$d"); v=${v#Windows-}; c=${v##*-}; v=${v%-*}
+                  echo "$v.$([ "$c" = beta ] && echo 1 || echo 0) $d"
+                done | sort -V | tail -1 | cut -d' ' -f2)
+          [ -n "$win" ] || { echo "::error::No releases/Windows-<version>-beta/ or -dev/ folder"; exit 1; }
           lin=$(ls -d releases/Linux-*/ | sort -V | tail -1)
-          ver=$(basename "$win"); ver=${ver#Windows-}; ver=${ver%-dev}
+          ver=$(basename "$win"); ver=${ver#Windows-}; channel=${ver##*-}; ver=${ver%-*}
+          label=$([ "$channel" = beta ] && echo Beta || echo Dev)
           linver=$(basename "$lin"); linver=${linver#Linux-}; linver=${linver%-dev}
           mac=$(ls -d releases/Mac-*/ 2>/dev/null | sort -V | tail -1 || true)
           title_extra="Linux $linver Dev"
@@ -35,15 +43,15 @@ jobs:
             title_extra="$title_extra, Mac $macver Dev"
             extra=("${mac}KodiakCleaner-Dev-Mac.dmg" "${mac}KodiakCleaner-Dev-Mac.zip")
           fi
-          tag="v$ver-dev"
-          notes="website/github/release-notes/$ver-dev.md"
+          tag="v$ver-$channel"
+          notes="website/github/release-notes/$ver-$channel.md"
           [ -f "$notes" ] || { echo "::error::Missing $notes"; exit 1; }
           git archive --format=zip --prefix=kodiakcleaner/ -o "KodiakCleaner-$ver-source.zip" HEAD source macos
           tail -n +2 "$notes" > notes.md   # the release has its own title
-          files=("${win}KodiakCleaner-Dev-Setup.msi" "${win}KodiakCleaner-Dev-Portable.zip"
+          files=("${win}KodiakCleaner-$label-Setup.msi" "${win}KodiakCleaner-$label-Portable.zip"
                  "${lin}KodiakCleaner-Dev-AppImage.zip" "${lin}KodiakCleaner-Dev-Deb.zip"
                  "${extra[@]}" "KodiakCleaner-$ver-source.zip")
-          title="Kodiak Cleaner $ver Dev ($title_extra)"
+          title="Kodiak Cleaner $ver $label ($title_extra)"
           if gh release view "$tag" >/dev/null 2>&1; then
             # Already released (for example a Linux or Mac build arrived later): refresh the title, notes and files.
             gh release edit "$tag" --title "$title" --notes-file notes.md --prerelease

@@ -46,12 +46,21 @@ jobs:
         with:
           node-version: 22
 
-      # The newest Windows-<ver>-dev and Linux-<ver>-dev folders, and the names the website links to (site.config.json).
+      # The newest Windows folder (Windows-<ver>-beta or Windows-<ver>-dev), the newest Linux-<ver>-dev and Mac-<ver>-dev
+      # folders, and the names the website links to (site.config.json).
       - name: Find the newest downloads
         if: steps.secrets.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          win=$(ls -d releases/Windows-*/ | sort -V | tail -1)
+          # Highest version wins; for the same version, Beta wins over Dev (0.9.0-beta comes after 0.8.121-dev anyway).
+          win=$(for d in releases/Windows-*-beta/ releases/Windows-*-dev/; do
+                  [ -d "$d" ] || continue
+                  v=$(basename "$d"); v=${v#Windows-}; c=${v##*-}; v=${v%-*}
+                  echo "$v.$([ "$c" = beta ] && echo 1 || echo 0) $d"
+                done | sort -V | tail -1 | cut -d' ' -f2)
+          [ -n "$win" ] || { echo "::error::No releases/Windows-<version>-beta/ or -dev/ folder"; exit 1; }
+          win_ver=$(basename "$win"); win_ver=${win_ver#Windows-}; win_channel=${win_ver##*-}; win_ver=${win_ver%-*}
+          win_label=$([ "$win_channel" = beta ] && echo Beta || echo Dev)
           lin=$(ls -d releases/Linux-*/ | sort -V | tail -1)
           mac=$(ls -d releases/Mac-*/ 2>/dev/null | sort -V | tail -1 || true)
           cfg=website/site.config.json
@@ -61,13 +70,17 @@ jobs:
             echo "R2_MAC_ZIP=$(jq -r '.mac.zip // "KodiakCleanerMac.zip"' $cfg)"
             echo "MAC_ON_SITE=$(jq -r 'if .mac then "true" else "false" end' $cfg)"
             echo "WIN_DIR=$win"
+            echo "WIN_VER=$win_ver"
+            echo "WIN_CHANNEL=$win_channel"
+            echo "WIN_MSI=${win}KodiakCleaner-${win_label}-Setup.msi"
+            echo "WIN_PORTABLE=${win}KodiakCleaner-${win_label}-Portable.zip"
             echo "LIN_DIR=$lin"
             echo "R2_INSTALLER=$(jq -r .hostedDownloads.installer $cfg)"
             echo "R2_PORTABLE=$(jq -r .hostedDownloads.portable $cfg)"
             echo "R2_APPIMAGE=$(jq -r .linux.appimage $cfg)"
             echo "R2_DEB=$(jq -r .linux.deb $cfg)"
           } >> "$GITHUB_ENV"
-          echo "Windows: $win  Linux: $lin  Mac: ${mac:-none}"
+          echo "Windows: $win ($win_ver $win_label)  Linux: $lin  Mac: ${mac:-none}"
 
       - name: Upload the downloads to R2
         if: steps.secrets.outputs.ready == 'true'
@@ -78,8 +91,8 @@ jobs:
             echo "Uploading $1 as $2 ($(stat -c %s "$1") bytes)"
             npx --yes wrangler@4 r2 object put "$BUCKET/$2" --file "$1" --content-type "$3" --remote
           }
-          put "${WIN_DIR}KodiakCleaner-Dev-Setup.msi"     "$R2_INSTALLER" application/x-msi
-          put "${WIN_DIR}KodiakCleaner-Dev-Portable.zip"  "$R2_PORTABLE"  application/zip
+          put "$WIN_MSI"                                  "$R2_INSTALLER" application/x-msi
+          put "$WIN_PORTABLE"                             "$R2_PORTABLE"  application/zip
           put "${LIN_DIR}KodiakCleaner-Dev-AppImage.zip"  "$R2_APPIMAGE"  application/zip
           put "${LIN_DIR}KodiakCleaner-Dev-Deb.zip"       "$R2_DEB"       application/zip
           if [ -n "$MAC_DIR" ]; then
@@ -87,40 +100,47 @@ jobs:
             put "${MAC_DIR}KodiakCleaner-Dev-Mac.zip"     "$R2_MAC_ZIP"   application/zip
           fi
 
-      # The Download page shows each file's size; set them from the files just uploaded (not committed).
+      # The Download page shows each file's size; set them from the files just uploaded (not committed), also under
+      # "releases" for this Windows version so it's listed as published.
       - name: Update the download sizes on the website
         if: steps.secrets.outputs.ready == 'true'
         run: |
           set -euo pipefail
           size() { node -e 'const b=+process.argv[1]; console.log(b>=1048576 ? (b/1048576).toFixed(1)+" MB" : Math.round(b/1024)+" KB")' "$(stat -c %s "$1")"; }
           cfg=website/site.config.json
-          jq --arg i "$(size "${WIN_DIR}KodiakCleaner-Dev-Setup.msi")" \
-             --arg p "$(size "${WIN_DIR}KodiakCleaner-Dev-Portable.zip")" \
+          jq --arg i "$(size "$WIN_MSI")" \
+             --arg p "$(size "$WIN_PORTABLE")" \
              --arg a "$(size "${LIN_DIR}KodiakCleaner-Dev-AppImage.zip")" \
              --arg d "$(size "${LIN_DIR}KodiakCleaner-Dev-Deb.zip")" \
-             '.hostedDownloads.installerSize=$i | .hostedDownloads.portableSize=$p | .linux.appimageSize=$a | .linux.debSize=$d' \
+             --arg v "$WIN_VER" \
+             '.hostedDownloads.installerSize=$i | .hostedDownloads.portableSize=$p | .linux.appimageSize=$a | .linux.debSize=$d
+              | .releases[$v].installerSize=$i | .releases[$v].portableSize=$p' \
              $cfg > $cfg.new && mv $cfg.new $cfg
           # Mac sizes only once the site lists the Mac downloads (a "mac" entry in site.config.json).
           if [ -n "$MAC_DIR" ] && [ "$MAC_ON_SITE" = true ]; then
             jq --arg g "$(size "${MAC_DIR}KodiakCleaner-Dev-Mac.dmg")" --arg z "$(size "${MAC_DIR}KodiakCleaner-Dev-Mac.zip")" \
                '.mac.dmgSize=$g | .mac.zipSize=$z' $cfg > $cfg.new && mv $cfg.new $cfg
           fi
-          jq '{hostedDownloads, linux, mac}' $cfg
+          jq --arg v "$WIN_VER" '{hostedDownloads, linux, mac, release: .releases[$v]}' $cfg
 
       - name: Build, test and deploy the website
         if: steps.secrets.outputs.ready == 'true'
         working-directory: website
         run: |
           set -euo pipefail
-          # The app's update check (0.8.40+) reads /updates/dev.json; its version and SHA-256 must match the MSI just uploaded.
-          msi="../${WIN_DIR}KodiakCleaner-Dev-Setup.msi"
-          ver=$(basename "$WIN_DIR"); ver=${ver#Windows-}; ver=${ver%-dev}
-          upd=src/static/updates/dev.json
-          mkdir -p "$(dirname "$upd")"
-          jq -n --arg v "$ver" --arg h "$(sha256sum "$msi" | cut -d' ' -f1)" \
-             --arg u "https://www.kodiakcleaner.app/download/$R2_INSTALLER" \
-             '{channel: "dev", version: $v, msi: {url: $u, sha256: $h}}' > "$upd"
-          cat "$upd"
+          # The app's update check reads /updates/beta.json (Beta builds) or /updates/dev.json (Dev builds, 0.8.40+); the
+          # version and SHA-256 must match the MSI just uploaded. For a Beta, dev.json names the Beta too, so Dev installs
+          # are offered it.
+          msi="../$WIN_MSI"
+          hash=$(sha256sum "$msi" | cut -d' ' -f1)
+          mkdir -p src/static/updates
+          channels=(dev); [ "$WIN_CHANNEL" = beta ] && channels=(beta dev)
+          for c in "${channels[@]}"; do
+            jq -n --arg c "$c" --arg v "$WIN_VER" --arg h "$hash" \
+               --arg u "https://www.kodiakcleaner.app/download/$R2_INSTALLER" \
+               '{channel: $c, version: $v, msi: {url: $u, sha256: $h}}' > "src/static/updates/$c.json"
+            echo "updates/$c.json:"; cat "src/static/updates/$c.json"
+          done
           node build.mjs
           node --test tests/*.test.mjs
           # Deploy to the project's production branch so www.kodiakcleaner.app gets it (any other branch is only a preview).
@@ -151,19 +171,24 @@ jobs:
             case "$code" in 200|206) ;; *) echo "::error::$f is not downloadable (HTTP $code)"; exit 1 ;; esac
             case "$type" in text/html*) echo "::error::$f returned a web page instead of the file ($final)"; exit 1 ;; esac
           done
-          # The update file must name this build's MSI, or the app throws the download away.
-          want=$(sha256sum "${WIN_DIR}KodiakCleaner-Dev-Setup.msi" | cut -d' ' -f1)
-          # A fresh deploy can take a little while to reach every Cloudflare location, so allow up to two minutes.
-          for try in $(seq 1 12); do
-            read -r code loc < <(curl -s -H 'Cache-Control: no-cache' -o /tmp/dev.json -w '%{http_code} %{redirect_url}\n' \
-              "https://www.kodiakcleaner.app/updates/dev.json?check=$GITHUB_RUN_ID-$try")
-            got=$(jq -r .msi.sha256 /tmp/dev.json 2>/dev/null || true)
-            echo "updates/dev.json (try $try): HTTP $code ${loc} sha256 ${got}"
-            if [[ "$loc" == *cloudflareaccess.com* ]]; then
-              echo "::warning::updates/dev.json is behind the Cloudflare Access login, so the app's update check can't reach it until the site is public."
-              break
-            fi
-            [ "$code" = 200 ] && [ "$got" = "$want" ] && break
-            if [ "$try" = 12 ]; then echo "::error::updates/dev.json doesn't match the uploaded MSI (HTTP $code)"; exit 1; fi
-            sleep 10
+          # The update files must name this build's MSI and version, or the app throws the download away.
+          # For a Beta both beta.json and dev.json are checked (Dev installs are offered the Beta).
+          want=$(sha256sum "$WIN_MSI" | cut -d' ' -f1)
+          updates=(dev.json); [ "$WIN_CHANNEL" = beta ] && updates=(beta.json dev.json)
+          for u in "${updates[@]}"; do
+            # A fresh deploy can take a little while to reach every Cloudflare location, so allow up to two minutes.
+            for try in $(seq 1 12); do
+              read -r code loc < <(curl -s -H 'Cache-Control: no-cache' -o "/tmp/$u" -w '%{http_code} %{redirect_url}\n' \
+                "https://www.kodiakcleaner.app/updates/$u?check=$GITHUB_RUN_ID-$try")
+              got=$(jq -r .msi.sha256 "/tmp/$u" 2>/dev/null || true)
+              gotver=$(jq -r .version "/tmp/$u" 2>/dev/null || true)
+              echo "updates/$u (try $try): HTTP $code ${loc} version ${gotver} sha256 ${got}"
+              if [[ "$loc" == *cloudflareaccess.com* ]]; then
+                echo "::warning::updates/$u is behind the Cloudflare Access login, so the app's update check can't reach it until the site is public."
+                break
+              fi
+              [ "$code" = 200 ] && [ "$got" = "$want" ] && [ "$gotver" = "$WIN_VER" ] && break
+              if [ "$try" = 12 ]; then echo "::error::updates/$u doesn't match the uploaded MSI (HTTP $code)"; exit 1; fi
+              sleep 10
+            done
           done
