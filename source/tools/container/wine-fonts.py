@@ -33,7 +33,7 @@ GLYPHS = {
     "E950": "developer_board", "E95E": "heart_pulse", "E9CE": "question_circle", "E9D9": "stethoscope",
     "E9F5": "settings_cog_multiple", "E9F9": "document_text", "EA18": "shield", "EA86": "puzzle_piece", "EB05": "data_pie",
     "EB51": "heart", "EBE8": "bug", "EC4A": "top_speed", "EC50": "folder", "EC7A": "wrench_screwdriver", "ED25": "folder_open",
-    "EDA2": "hard_drive",
+    "ED1A": "eye_off", "EDA2": "hard_drive",
 }
 
 

@@ -56,6 +56,8 @@ public sealed class MainViewModel : ObservableObject
         Pinnable.Add(new NavPage("Mass Rename", "\uE8AC", MassRename, OnNavigated, key: "rename"));
         Pinnable.Add(new NavPage("Scheduled Tasks", "\uE823", ScheduledTasks, OnNavigated, key: "tasks"));
         Pinnable.Add(new NavPage("System Restore", "\uE777", Restore, OnNavigated, key: "restore"));
+        // Settings › Tools lists every one of them with a switch that hides it from the sidebar (Ted, 0.9.1 Beta).
+        SettingsPage.SetTools(Pinnable.Select(p => new ToolChoice(p.Key, p.Title, p.Glyph, p.Badge)));
         ArrangeSidebar();
         FooterPages.Add(new NavPage("Settings", "", SettingsPage, OnNavigated));
         // System Information sits with Settings and About (Ted, 0.8.46), not in Tools.
@@ -76,8 +78,9 @@ public sealed class MainViewModel : ObservableObject
         SettingsPage.ShowRequested += () => FooterPages[0].IsSelected = true;
 
         RestartAsAdminCommand = new RelayCommand(() => Elevation.RestartElevated(Elevation.CurrentPage), () => !IsAdministrator);
-        HomeCommand = new RelayCommand(() => Pinnable[0].IsSelected = true);
-        Pinnable[0].IsSelected = true;
+        HomeCommand = new RelayCommand(OpenHome);
+        OpenToolsSettingsCommand = new RelayCommand(() => Navigate("tools"));
+        OpenHome();
 
         BackgroundTasks.Changed += UpdateCornerTask;
         _cornerDelay.Tick += (_, _) => { _cornerDelay.Stop(); UpdateCornerTask(); };
@@ -129,26 +132,88 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<NavPage> FooterPages { get; } = new();
     private IEnumerable<NavPage> AllPages => Pinnable.Concat(FooterPages);
 
-    /// <summary>With nothing pinned, Favorites says how to pin something (not when collapsed to icons).</summary>
-    public bool ShowFavoritesHint => FavoritePages.Count == 0 && !SidebarCollapsed;
+    /// <summary>With nothing pinned, Favorites says how to pin something (not when collapsed to icons, nor with every tool hidden).</summary>
+    public bool ShowFavoritesHint => FavoritePages.Count == 0 && ToolPages.Count > 0 && !SidebarCollapsed;
+    /// <summary>Every tool is hidden in Settings › Tools: the sidebar says where to turn them back on.</summary>
+    public bool NoToolsShown => FavoritePages.Count == 0 && ToolPages.Count == 0;
+    public bool ShowNoToolsHint => NoToolsShown && !SidebarCollapsed;
     public bool FavoritesAToZ => Settings.Current.FavoritesAToZ;
-    /// <summary>Reset Tools Order shows under the open Tools list (not when collapsed to icons).</summary>
-    public bool ShowResetToolsOrder => ToolsExpanded && !SidebarCollapsed;
+    /// <summary>Reset Tools Order shows under the open Tools list (not when collapsed to icons, nor with every tool hidden).</summary>
+    public bool ShowResetToolsOrder => ToolsExpanded && !SidebarCollapsed && !NoToolsShown;
 
     private List<string> SavedFavorites() =>
         SidebarFavorites.Normalize(Settings.Current.Favorites, Pinnable.Select(p => p.Key).ToList());
 
-    /// <summary>Fills Favorites and Tools from the saved favorites and the Favorites Order setting.</summary>
+    /// <summary>The tools turned off in Settings › Tools.</summary>
+    private HashSet<string> HiddenTools() =>
+        SidebarFavorites.NormalizeHidden(Settings.Current.HiddenTools, Pinnable.Select(p => p.Key).ToList());
+
+    public bool IsHidden(NavPage page) => page.CanPin && HiddenTools().Contains(page.Key);
+
+    /// <summary>Every page not in <paramref name="favorites"/> in the Tools order, hidden ones included (they keep their place).</summary>
+    private List<string> ArrangedTools(ICollection<string> favorites)
+    {
+        var byKey = Pinnable.ToDictionary(p => p.Key);
+        return SidebarFavorites.ArrangeTools(byKey.Keys, favorites, Settings.Current.ToolsOrder, k => byKey[k].Title);
+    }
+
+    /// <summary>Fills Favorites and Tools from the saved favorites and the Favorites Order setting, leaving out hidden tools.</summary>
     private void ArrangeSidebar()
     {
         var favorites = SavedFavorites();
+        var hidden = HiddenTools();
         var byKey = Pinnable.ToDictionary(p => p.Key);
-        Refill(FavoritePages, SidebarFavorites.Arrange(favorites, byKey, p => p.Title, Settings.Current.FavoritesAToZ));
-        Refill(ToolPages, SidebarFavorites.ArrangeTools(byKey.Keys, favorites, Settings.Current.ToolsOrder, k => byKey[k].Title)
-            .Select(k => byKey[k]).ToList());
+        Refill(FavoritePages, SidebarFavorites.Arrange(favorites.Where(k => !hidden.Contains(k)), byKey, p => p.Title, Settings.Current.FavoritesAToZ));
+        Refill(ToolPages, ArrangedTools(favorites).Where(k => !hidden.Contains(k)).Select(k => byKey[k]).ToList());
         foreach (var p in Pinnable) p.IsFavorite = favorites.Contains(p.Key);
         OnPropertyChanged(nameof(ShowFavoritesHint));
+        OnPropertyChanged(nameof(NoToolsShown));
+        OnPropertyChanged(nameof(ShowNoToolsHint));
+        OnPropertyChanged(nameof(ShowResetToolsOrder));
         OnPropertyChanged(nameof(FavoritesAToZ));
+    }
+
+    /// <summary>
+    /// The logo, and the page Kodiak Cleaner opens on: the Cleaner, or with the Cleaner hidden the first favorite or tool shown,
+    /// or with every tool hidden Settings › Tools, where they're turned back on.
+    /// </summary>
+    private void OpenHome()
+    {
+        var hidden = HiddenTools();
+        var home = Pinnable.FirstOrDefault(p => p.Key == "cleaner" && !hidden.Contains(p.Key))
+                   ?? FavoritePages.FirstOrDefault() ?? ToolPages.FirstOrDefault();
+        if (home is not null) home.IsSelected = true;
+        else Navigate("tools");
+    }
+
+    /// <summary>
+    /// Hides a tool from the sidebar or shows it again (Settings › Tools, or right-click › Hide from Sidebar). It stays in the saved
+    /// Favorites and Tools order, so it comes back where it was; the jump list follows.
+    /// </summary>
+    public static void SetToolHidden(string key, bool hide)
+    {
+        var list = Settings.Current.HiddenTools;
+        var had = list.Any(k => k.Equals(key, StringComparison.OrdinalIgnoreCase));
+        if (had == hide) return;
+        if (hide) list.Add(key);
+        else list.RemoveAll(k => k.Equals(key, StringComparison.OrdinalIgnoreCase));
+        Settings.Current.Save();
+        Integration.RefreshJumpList();
+        NotifySidebarSettingsChanged();
+    }
+
+    /// <summary>Right-click › Hide from Sidebar: says where it went, so it can be found again.</summary>
+    public void Hide(NavPage page)
+    {
+        SetToolHidden(page.Key, true);
+        ShowHiddenNotice(page);
+    }
+
+    private string? _hiddenNotice;
+
+    private void ShowHiddenNotice(NavPage page)
+    {
+        Notice = _hiddenNotice = $"{page.Title} is hidden from the sidebar. Turn it back on in Settings › Tools.";
     }
 
     /// <summary>Changes the lists in place, so entries that stay keep their place on screen (and their selection).</summary>
@@ -174,8 +239,11 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Right-click › Pin to Favorites, or a tool dropped on Favorites (at the place it was dropped).</summary>
     public void Pin(NavPage page, int index = -1)
     {
+        // The index is a place among the favorites shown; hidden ones go back where they were.
         var favorites = SavedFavorites();
-        if (SidebarFavorites.Pin(favorites, page.Key, index)) SaveFavorites(favorites);
+        var hidden = HiddenTools();
+        var shown = favorites.Where(k => !hidden.Contains(k)).ToList();
+        if (SidebarFavorites.Pin(shown, page.Key, index)) SaveFavorites(SidebarFavorites.MergeHidden(shown, favorites, hidden));
     }
 
     /// <summary>Right-click › Unpin from Favorites, or a favorite dropped on Tools (at the place it was dropped, which gives Tools
@@ -183,12 +251,13 @@ public sealed class MainViewModel : ObservableObject
     public void Unpin(NavPage page, int index = -1)
     {
         var favorites = SavedFavorites();
+        var before = ArrangedTools(favorites);
         if (!SidebarFavorites.Unpin(favorites, page.Key)) return;
         if (index >= 0)
         {
             var tools = ToolPages.Select(p => p.Key).ToList();
             tools.Insert(Math.Clamp(index, 0, tools.Count), page.Key);
-            Settings.Current.ToolsOrder = tools;
+            Settings.Current.ToolsOrder = SidebarFavorites.MergeHidden(tools, before, HiddenTools());
         }
         SaveFavorites(favorites);
     }
@@ -198,7 +267,7 @@ public sealed class MainViewModel : ObservableObject
     {
         var tools = ToolPages.Select(p => p.Key).ToList();
         if (!SidebarFavorites.Move(tools, page.Key, index)) return;
-        Settings.Current.ToolsOrder = tools;
+        Settings.Current.ToolsOrder = SidebarFavorites.MergeHidden(tools, ArrangedTools(SavedFavorites()), HiddenTools());
         Settings.Current.Save();
         ArrangeSidebar();
     }
@@ -229,7 +298,9 @@ public sealed class MainViewModel : ObservableObject
     {
         if (Settings.Current.FavoritesAToZ) return;
         var favorites = SavedFavorites();
-        if (SidebarFavorites.Move(favorites, page.Key, index)) SaveFavorites(favorites);
+        var hidden = HiddenTools();
+        var shown = favorites.Where(k => !hidden.Contains(k)).ToList();
+        if (SidebarFavorites.Move(shown, page.Key, index)) SaveFavorites(SidebarFavorites.MergeHidden(shown, favorites, hidden));
     }
 
     public bool CanMoveFavorite(NavPage page, int by)
@@ -245,6 +316,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand RestartAsAdminCommand { get; }
     /// <summary>The logo and name in the sidebar go back to the Cleaner.</summary>
     public ICommand HomeCommand { get; }
+    /// <summary>Choose Tools, shown in the sidebar when every tool is hidden: opens Settings › Tools.</summary>
+    public ICommand OpenToolsSettingsCommand { get; }
 
     /// <summary>The Tools group in the sidebar starts open and can be folded away; the choice is remembered in KodiakCleaner.ini.</summary>
     public bool ToolsExpanded
@@ -418,7 +491,8 @@ public sealed class MainViewModel : ObservableObject
     };
     private Dictionary<string, object>? _pageByKey;
 
-    /// <summary>Opens a page by short name (used by jump list tasks: --page=registry). Settings pages work too (--page=feedback).</summary>
+    /// <summary>Opens a page by short name (used by jump list tasks: --page=registry). Settings pages work too (--page=feedback).
+    /// The keys are listed in <see cref="CommandLineHelp.Pages"/> and <see cref="CommandLineHelp.SettingsPages"/> (a test checks).</summary>
     public void Navigate(string key)
     {
         key = key.ToLowerInvariant();
@@ -437,6 +511,9 @@ public sealed class MainViewModel : ObservableObject
         foreach (var p in AllPages)
             if (p != page) p.IsSelected = false;
         CurrentContent = page.Content;
+        // A hidden tool still opens (a jump list, --page=, a link on another page); a note says where it went.
+        if (IsHidden(page)) ShowHiddenNotice(page);
+        else if (_hiddenNotice is not null && Notice == _hiddenNotice) Notice = "";
         Elevation.CurrentPage = PageByKey.FirstOrDefault(p => p.Value == page.Content).Key;
         PageAdminNeed = IsAdministrator ? null : AdminNeed.For(page.Content);
         UpdateCornerTask();

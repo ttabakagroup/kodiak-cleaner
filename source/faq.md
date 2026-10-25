@@ -1,5 +1,9 @@
 # Frequently Asked Questions
 
+## Can I Run Kodiak Cleaner From the Command Line?
+
+Yes, with no window, so it fits in a batch file or a script. KodiakCleaner.exe /clean cleans what's ticked on the Cleaner page (add /items: with item IDs from /list-items to clean only those), /registry scans the registry and fixes what it finds (each fix backed up first; /scan-only changes nothing), and /uninstall: with a program's name or product code backs up its entries and runs its uninstaller. /list-programs lists names and product codes, and /help shows everything. Items with a caution never run from the command line. Run Command Prompt or PowerShell as administrator for items shared by all users, and use start /wait (or Start-Process -Wait in PowerShell) to read the exit code: 0 done, 1 some failures, 2 a wrong switch or nothing found, 3 the uninstall didn't finish. KodiakCleaner.exe --page= with a page's key, such as --page=rename, opens Kodiak Cleaner on that page. Settings, Command Line lists every switch, exit code and page key, with a Copy button for each example.
+
 ## Does Kodiak Cleaner Send Anything Online?
 
 No. Kodiak Cleaner sends no usage data, shows no ads and has no tracking. It only goes online to check for updates, and only when you click Check for Updates or turn on Check for Updates Automatically under Settings, Updates. Buttons such as Support on Ko-fi, Get Latest Driver and the Contact & Feedback buttons open your browser only when you click them. Integrity Check's Windows image repair is Windows' own DISM tool, which may download repair files from Windows Update.
@@ -7,6 +11,10 @@ No. Kodiak Cleaner sends no usage data, shows no ads and has no tracking. It onl
 ## How Do I Check That a Download Isn't Damaged?
 
 Open Hash Checker under Tools and drop the file on the page (or click Add Files). Copy the hash the download page lists into Expected Hashes, or drop the .sha256, .md5 or SHA256SUMS file that came with the download. Each file then shows Verified when it matches, or Doesn't Match when it differs from the one listed, which means it is damaged, changed or a different version. Press Ctrl+F to find a file by its name or any part of a hash. To let someone check a file you send or export, click it and choose Create Hash File: a small .sha256 file is saved beside it, and dropping that file here later shows Verified if the file hasn't changed. Hash Checker only reads your files and never sends them anywhere.
+
+## How Do I Hide a Tool I Don't Use?
+
+Right-click it in the sidebar and pick Hide from Sidebar, or turn its switch off under Settings, Tools, which lists every tool A to Z. A hidden tool leaves Favorites and Tools in the sidebar and the jump list, and nothing else changes: turn its switch back on and it returns to the same place, and Show Every Tool brings them all back. A hidden tool still opens from a link, an older jump list or --page=, with a note saying it's hidden, and the command line, scheduled cleanings and Clean When Windows Starts keep working. If every tool is hidden, the sidebar says so and Choose Tools opens Settings, Tools. Reset to Default shows every tool again.
 
 ## How Do I Make the Text Bigger?
 
@@ -50,7 +58,7 @@ Kodiak Cleaner only changes what you pick. Registry fixes, startup entries, sche
 
 ## What Does Reset to Default Keep?
 
-Reset to Default, under Settings, Advanced, puts every setting, your sidebar Favorites and your Cleaner selections back to how they were at install. It keeps your Supporter code, your cleaning history, your scheduled cleanings and every backup, log and report.
+Reset to Default, under Settings, Advanced, puts every setting, your sidebar Favorites and your Cleaner selections back to how they were at install, and shows every hidden tool again. It keeps your Supporter code, your cleaning history, your scheduled cleanings and every backup, log and report.
 
 ## What Is Kodiak Cleaner Beta?
 

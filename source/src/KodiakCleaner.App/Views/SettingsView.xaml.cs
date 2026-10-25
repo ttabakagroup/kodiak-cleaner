@@ -52,6 +52,9 @@ public partial class SettingsView : UserControl
                 Collect(template.LoadContent(), labels);
                 // Dropdown choices come from bindings, which an off-screen page doesn't have: add the update intervals by hand.
                 if (section.Key == "updates") labels.AddRange(vm.UpdateIntervals.Select(i => i.Label));
+                // The same for the lists from bindings: each tool's name on Tools, each switch on Command Line.
+                if (section.Key == "tools") labels.AddRange(vm.ToolChoices.Select(t => t.Title));
+                if (section.Key == "commandline") labels.AddRange(vm.CliSwitches.Concat(vm.CliSetUpSwitches).Select(c => "/" + c.Name).Append("--page="));
                 section.Labels = labels;
             }
             catch (Exception e) when (e is System.Windows.Markup.XamlParseException or InvalidOperationException) { }

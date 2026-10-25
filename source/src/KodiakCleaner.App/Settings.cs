@@ -119,6 +119,10 @@ public sealed class Settings
     public bool FavoritesAToZ { get; set; }
     /// <summary>Tools in the order set by dragging (Ted, 2026-10-23); null until changed, which means A to Z. Reset Tools Order clears it (and puts Favorites back to the default).</summary>
     public List<string>? ToolsOrder { get; set; }
+    /// <summary>Tools turned off in Settings › Tools (Ted, 0.9.1 Beta; <c>[Layout] HiddenTools</c>): left out of Favorites and Tools in the
+    /// sidebar and the jump list, but kept in <see cref="Favorites"/> and <see cref="ToolsOrder"/> so turning one back on puts it
+    /// where it was. Empty shows every tool; Reset to Default empties it.</summary>
+    public List<string> HiddenTools { get; set; } = new();
     /// <summary>Settings' Sort By dropdown: A to Z instead of the Default order (General, then the most used).</summary>
     public bool SettingsAToZ { get; set; }
     public bool ShowBetaNotice { get; set; } = true;
@@ -244,6 +248,7 @@ public sealed class Settings
         SidebarWidth = Math.Clamp(ini.GetInt("General", "SidebarWidth", SidebarWidth), MinSidebarWidth, MaxSidebarWidth);
         PaneSizes = ini.Get("Layout", "Panes") ?? "";
         ShowStartupTasks = ini.GetBool("Layout", "ShowStartupTasks", ShowStartupTasks);
+        HiddenTools = (ini.Get("Layout", "HiddenTools") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         SidebarLocked = ini.GetBool("General", "SidebarLocked", SidebarLocked);
         SidebarCollapsed = ini.GetBool("General", "SidebarCollapsed", SidebarCollapsed);
         SidebarAdjustable = ini.GetBool("General", "SidebarAdjustable", SidebarAdjustable);
@@ -308,6 +313,7 @@ public sealed class Settings
         ini.Set("General", "SidebarWidth", SidebarWidth);
         ini.Set("Layout", "Panes", PaneSizes);
         ini.Set("Layout", "ShowStartupTasks", ShowStartupTasks);
+        ini.Set("Layout", "HiddenTools", string.Join(",", HiddenTools));
         ini.Set("General", "SidebarLocked", SidebarLocked);
         ini.Set("General", "SidebarCollapsed", SidebarCollapsed);
         ini.Set("General", "SidebarAdjustable", SidebarAdjustable);

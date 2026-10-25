@@ -74,4 +74,44 @@ public static class SidebarFavorites
         var listed = toolsOrder.Select(k => k.Trim().ToLowerInvariant()).Where(tools.Contains).Distinct().ToList();
         return listed.Concat(tools.Where(k => !listed.Contains(k))).ToList();
     }
+
+    // ---- Hidden tools (Ted, 0.9.1 Beta: Settings › Tools turns a tool off, which only takes it off the sidebar) ----
+
+    /// <summary>Saved hidden tools made safe: only pages that exist, each once, lower case.</summary>
+    public static HashSet<string> NormalizeHidden(IEnumerable<string>? saved, ICollection<string> known)
+    {
+        var hidden = new HashSet<string>();
+        foreach (var raw in saved ?? Enumerable.Empty<string>())
+        {
+            var key = raw.Trim().ToLowerInvariant();
+            if (key.Length > 0 && known.Contains(key)) hidden.Add(key);
+        }
+        return hidden;
+    }
+
+    /// <summary>
+    /// After the shown entries were changed (pinned, unpinned or moved), puts the hidden ones back where they were in
+    /// <paramref name="before"/>: each right after the entry it followed (or first), so turning a tool back on returns it to its
+    /// old place in Favorites or Tools.
+    /// </summary>
+    public static List<string> MergeHidden(IEnumerable<string> shown, IEnumerable<string> before, ICollection<string> hidden)
+    {
+        var result = shown.Where(k => !hidden.Contains(k)).ToList();
+        var at = 0;
+        foreach (var key in before)
+        {
+            if (hidden.Contains(key))
+            {
+                if (result.Contains(key)) continue;
+                result.Insert(at, key);
+                at++;
+            }
+            else
+            {
+                var i = result.IndexOf(key);
+                if (i >= 0) at = i + 1;
+            }
+        }
+        return result;
+    }
 }

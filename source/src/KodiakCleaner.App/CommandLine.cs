@@ -31,33 +31,9 @@ public static class Cli
         return cut < 0 ? (body.ToLowerInvariant(), "") : (body[..cut].ToLowerInvariant(), body[(cut + 1)..].Trim('"'));
     }
 
-    public static string Help => $$"""
-        {{AppInfo.Name}} {{AppInfo.VersionName}} command line
-
-          KodiakCleaner.exe /clean [/items:ID,ID]
-              Cleans the items ticked on the Cleaner page (or just the listed items) with no window.
-              Items with a caution never run from here, the same as scheduled cleanings.
-          KodiakCleaner.exe /list-items
-              Lists every Cleaner item ID, marking the ones that are ticked.
-          KodiakCleaner.exe /registry [/scan-only] [/categories:"Fonts,Help Files"]
-              Scans the registry (every check, or the ones listed) and fixes what it finds.
-              Every fix is backed up to a .reg file first. /scan-only lists the issues and changes nothing.
-          KodiakCleaner.exe /uninstall:"Program Name" [/quiet]
-          KodiakCleaner.exe /uninstall:{PRODUCT-CODE-GUID} [/quiet]
-              Backs up the program's registry entries, then runs its uninstaller and waits for it.
-              /quiet asks it not to show anything (msiexec /x {GUID} /qn, or the program's own quiet uninstall).
-              Leftover files aren't removed from here; use Programs > Uninstall for that.
-              Kodiak Cleaner never uninstalls itself; remove it from Control Panel.
-          KodiakCleaner.exe /list-programs
-              Lists installed programs with their version and product code.
-          KodiakCleaner.exe /help
-
-        Exit codes: 0 done, 1 done with some failures, 2 wrong switch, nothing found or Kodiak Cleaner itself, 3 the uninstall didn't finish.
-        Run it as administrator to clean, fix or uninstall anything shared by all users.
-        In Command Prompt use "start /wait KodiakCleaner.exe /clean" and then %ERRORLEVEL%; in PowerShell use
-        "Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru" and read ExitCode.
-        Everything is also written to the activity log ({{Settings.Data.Logs}}).
-        """;
+    /// <summary>The /help text. It comes from <see cref="CommandLineHelp"/>, which Settings › Help › Command Line and the README
+    /// follow too (a test keeps them in step).</summary>
+    public static string Help => CommandLineHelp.Text(AppInfo.Name, AppInfo.VersionName, Settings.Data.Logs);
 
     public static int Run(string[] args)
     {

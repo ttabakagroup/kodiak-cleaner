@@ -33,7 +33,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   The scheme's own accent is always the first swatch (Ted, 0.8.32); a built-in swatch of the same color (`AccentShades.SchemeSwatch`:
   Classic = Blue) is hidden in that scheme and a saved choice of it means the scheme's own accent.
 - About is its own sidebar entry under Settings (Ted's choice), not a page inside the Settings sidebar.
-- Settings sidebar (2026-10-23 review; Sort By, Ted 2026-10-23): headings "", Personalize, Protect, Help (Ted removed the Developer heading and Developer Tools page in 0.9.0 Beta: no plan preview, no dev-only hooks; a test checks). Its Sort By dropdown
+- Settings sidebar (2026-10-23 review; Sort By, Ted 2026-10-23; Tools and Help > Command Line added in 0.9.1 Beta): headings "", Personalize, Protect, Help (Ted removed the Developer heading and Developer Tools page in 0.9.0 Beta: no plan preview, no dev-only hooks; a test checks). Its Sort By dropdown
   is Default (General first, then the most used pages, the order of the `Add` calls) or A to Z under each heading (`SettingsSort` in the ini);
   Settings opens on General.
   Help has FAQ (`faq.md`, questions A to Z): keep its answers true to the code whenever a feature changes. A test (`StaysCurrentTests`) checks the order, that Getting Started lists every sidebar page, and that every
@@ -100,7 +100,12 @@ privacy first, local first, security paramount, convenient, practical and useful
   favorites, always in this order: Cleaner, Registry, Startup, Programs (`SidebarFavorites.Default`). Any page in Favorites or Tools can be
   pinned or unpinned (right-click, or drag in or out of Favorites) and moved (Move Up/Down, or drag); pinned pages leave Tools, which is
   A to Z until a tool is dragged (`ToolsOrder=<page keys>`; Reset Tools Order under the last tool puts Favorites back to the default four in order, Favorites Order to Default, and Tools A to Z (Ted 2026-10-24), Ted
-  2026-10-23). Sidebar dragging tracks the mouse itself, never OLE drag and drop: as administrator `ElevatedFileDrop` revokes the window's
+  2026-10-23). Hidden tools (Ted, 0.9.1 Beta): Settings > Tools (key `tools`, under the "" heading) lists every pinnable page A to Z with a
+  switch, all on by default; off (or right-click > Hide from Sidebar) saves the key in `[Layout] HiddenTools` and leaves it out of Favorites,
+  Tools and the jump list. Hidden keys stay in Favorites/ToolsOrder (`SidebarFavorites.MergeHidden` puts them back after a pin, unpin or move),
+  so turning one on restores its place; Show Every Tool and Reset to Default clear the list. A hidden page still opens (--page=, jump list,
+  links) with a Notice saying it's hidden; Home opens the Cleaner, else the first page shown, else Settings > Tools; with every tool hidden the
+  sidebar says so with Choose Tools. Hiding never affects the command line, schedules or Clean When Windows Starts. Sidebar dragging tracks the mouse itself, never OLE drag and drop: as administrator `ElevatedFileDrop` revokes the window's
   drop target. Saved as `[General] Favorites=<page keys>` and `FavoritesOrder=Default|AToZ`; Settings > General > Sidebar has Favorites Order
   (Default Order or A to Z) and Restore Default Order; Reset to Default resets them. Tools open by default (Ted, 0.8.11; folding is remembered as `ToolsOpen`).
   Bottom right of the sidebar: the paperclip (on its side = locked at the default 310 width, upright = drag the edge, 240 to 480)
@@ -283,6 +288,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   timer that runs only while a task does; `Rough` marks a guessed percentage (~42%, "rough guess"). Pages show it with `Views/TaskClock`
   under their own bar (follows the page's newest task, hides itself).
 - Search boxes above tables use `Views/SearchBox`; Select All ticks only what the search shows.
+- Scroll areas (Ted, 0.9.1 Beta): a ScrollViewer clips what's drawn outside it, focus rings included, so its Padding never insets the left or top
+  (Mass Rename's Examples were cut off); put the space on the content's Margin. Right Padding for the scroll bar is fine (a test checks).
 - Accessibility (WCAG 2.1 AA audit, 2026-10-24): `Views/AccessibleNames` (registered in App.Start) names every button, check box,
   switch, text box and drop-down for screen readers from its own label, the label beside it (a Settings row's title; caption = help
   text), "Select <row>" for table tick boxes, or its tooltip; set `AutomationProperties.Name` where that guess is wrong. Icon-only
@@ -336,7 +343,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   `/list-programs`, `/help`; `-` and `=` work too. Handled in `App.Start` before single-instance and the Always Admin/Skip UAC relaunch, so it never
   opens a window. Same rules as the GUI: caution items never run, registry fixes always back up, uninstall backs up first, leftovers only from
   Programs. Output attaches to the parent console; exit codes 0 done, 1 some failures, 2 bad switch/not found, 3 uninstall didn't finish.
-  Document any new switch in `Cli.Help` and the README's Command Line section.
+  `Core/Util/CommandLineHelp` (Ted, 0.9.1 Beta) is the one description: `Cli.Help` (/help), Settings > Help > Command Line (`commandline`,
+  Copy puts an example on the clipboard with the exe's full path) and the README's Command Line section. A new switch, exit code, page key or
+  Settings page goes in CommandLineHelp and the README; `CommandLineHelpTests` checks them against CommandLine.cs, MainViewModel's
+  PageByKey and SettingsViewModel's pages.
 - Kodiak Cleaner never uninstalls itself (Ted, 0.8.54, `SelfGuard`): its own entry (upgrade code's product codes, or "Kodiak Cleaner" by Ted Tabaka,
   or this copy's folder) is left out of Uninstall, batches, Delete Entry and `/uninstall`, with a message pointing to Control Panel.
 - Reset to Default for all settings is the last card in Settings > Advanced (Ted, 0.8.59; was on the Developer page in 0.8.55, removed
@@ -387,7 +397,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Supporter tier only (Ted removed Premium). Codes are verified offline; never run `make-key` for Ted or touch his private key.
 
 ## Versions and Channels
-- `version.json` is the single source: `{ "channel": "beta", "version": "0.9.0", "targetStable": "1.0.0", "repositoryPublic": true }`.
+- `version.json` is the single source: `{ "channel": "beta", "version": "0.9.1", "targetStable": "1.0.0", "repositoryPublic": true }`.
 - Dev 0.8.x (ended at 0.8.121 Dev, 2026-10-25), Beta 0.9.x (current: Ted's "Go beta!", 2026-10-25, Windows only; the Linux and
   Mac apps stay Dev), Stable 1.x. Never change channel unless Ted says so ("move to stable" = 1.0.0, "new minor release" raises the stable minor).
 - Show `AppInfo.VersionName` ("0.9.0 Beta") wherever a version is shown or sent.

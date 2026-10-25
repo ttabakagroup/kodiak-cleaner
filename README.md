@@ -177,18 +177,117 @@ Windows Task Scheduler starts Kodiak Cleaner at that time; it cleans without ope
 
 ### Command Line
 
-Scripts and system administrators can run Kodiak Cleaner without a window:
+Kodiak Cleaner also runs from Command Prompt, PowerShell or a script, with no window, so it can be part of a batch file, a sign-in script or a remote management tool. The same help is built in: **Settings > Help > Command Line** lists every switch with a **Copy** button for each example (it copies the command with Kodiak Cleaner's full path), and `KodiakCleaner.exe /help` prints it.
+
+Run the commands from Kodiak Cleaner's folder (`C:\Program Files\Kodiak Cleaner` for the installed copy, or wherever you put the portable one), or give the full path:
+
+```bat
+cd "C:\Program Files\Kodiak Cleaner"
+KodiakCleaner.exe /list-items
+```
+
+#### Switches
 
 | Command | What it does |
 |---|---|
-| `KodiakCleaner.exe /clean` | Cleans the items ticked on the Cleaner page. Add `/items:ID,ID` to clean just those items. |
-| `KodiakCleaner.exe /list-items` | Lists every Cleaner item ID, marking the ticked ones. |
-| `KodiakCleaner.exe /registry` | Scans the registry and fixes what it finds, backing up every fix to a `.reg` file first. Add `/scan-only` to change nothing, or `/categories:"Fonts,Help Files"` for some checks only. |
-| `KodiakCleaner.exe /uninstall:"Program Name"` | Backs up the program's registry entries and runs its uninstaller. A product code works too: `/uninstall:{GUID}`. Add `/quiet` for a silent uninstall (`msiexec /x {GUID} /qn`, or the program's own quiet uninstall). |
-| `KodiakCleaner.exe /list-programs` | Lists installed programs with their version and product code. |
-| `KodiakCleaner.exe /help` | Shows these switches. |
+| `KodiakCleaner.exe /clean [/items:ID,ID]` | Cleans the items ticked on the Cleaner page with no window, or just the items listed in `/items:` (IDs from `/list-items`). Items with a caution never run from the command line, the same as scheduled cleanings. |
+| `KodiakCleaner.exe /help` | Shows these switches. Started without a console (from Run or a shortcut), they show in a window instead. |
+| `KodiakCleaner.exe /list-items` | Lists every Cleaner item ID, marking the ones that are ticked. |
+| `KodiakCleaner.exe /list-programs` | Lists installed programs with their version and product code, for `/uninstall:`. |
+| `KodiakCleaner.exe /registry [/scan-only] [/categories:"Fonts,Help Files"]` | Scans the registry (every check, or only the ones listed by name, as on the Registry page) and fixes what it finds. Every fix is backed up to a `.reg` file first. `/scan-only` lists the issues and changes nothing. |
+| `KodiakCleaner.exe /uninstall:"Program Name" [/quiet]`<br>`KodiakCleaner.exe /uninstall:{PRODUCT-CODE-GUID} [/quiet]` | Backs up the program's registry entries, then runs its uninstaller and waits for it. A program's name must match exactly; when two have the same name, use the product code. `/quiet` asks it not to show anything (`msiexec /x {GUID} /qn`, or the program's own quiet uninstall). Leftovers aren't removed from the command line: use **Programs > Uninstall** for that. Kodiak Cleaner never uninstalls itself; remove it from Control Panel. |
 
-Exit codes: `0` done, `1` done with some failures, `2` wrong switch, nothing found or Kodiak Cleaner itself, `3` the uninstall didn't finish. Items with a caution never run from the command line, and leftovers after an uninstall are only removed from the Programs page. Run it as administrator for anything shared by all users. Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it: use `start /wait KodiakCleaner.exe /clean` and then `%ERRORLEVEL%`, or in PowerShell `Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru`. Everything is also written to the activity log.
+Kodiak Cleaner sets these up in Windows by itself (they work typed by hand too):
+
+| Command | What it does |
+|---|---|
+| `KodiakCleaner.exe /autoclean` | Cleans the ticked items with no window and no output: what **Clean When Windows Starts** and the jump list's **Run Cleaner** run. |
+| `KodiakCleaner.exe /schedule:ID` | Runs one scheduled cleaning, as Windows Task Scheduler does at the time you picked. Make schedules on the Cleaner page with **Schedule**. |
+
+Switches start with `/` or `-`, and take their value after `:` or `=` (`/items:ID` or `-items=ID`).
+
+#### Examples
+
+```bat
+:: Clean what's ticked on the Cleaner page
+KodiakCleaner.exe /clean
+
+:: Clean only your temporary files and the Recycle Bin
+KodiakCleaner.exe /clean /items:win.usertemp,win.recyclebin
+
+:: List registry issues without changing anything
+KodiakCleaner.exe /registry /scan-only
+
+:: Fix only font and help file entries (each fix is backed up first)
+KodiakCleaner.exe /registry /categories:"Fonts,Help Files"
+
+:: Find a program's exact name or product code, then uninstall it quietly
+KodiakCleaner.exe /list-programs
+KodiakCleaner.exe /uninstall:"Program Name" /quiet
+
+:: Open Kodiak Cleaner on Mass Rename
+KodiakCleaner.exe --page=rename
+```
+
+#### Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Done. |
+| `1` | Done, with some failures (an item that couldn't be fully cleaned, a fix that didn't work). |
+| `2` | A wrong switch, nothing found by that name, or Kodiak Cleaner itself. |
+| `3` | The uninstall didn't finish: the program is still installed. |
+
+Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it to finish. To wait and read the exit code:
+
+```bat
+start /wait KodiakCleaner.exe /clean
+echo %ERRORLEVEL%
+```
+
+```powershell
+$run = Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru
+$run.ExitCode
+```
+
+#### Administrator Rights
+
+Run Command Prompt or PowerShell as administrator to clean, fix or uninstall anything shared by all users (Windows temporary files, all-users startup entries, programs installed for everyone). Nothing asks for the rights from the command line; without them, those items are left as they are. Everything a command does is also written to the activity log in `Logs` (`Documents\Kodiak Cleaner\Logs` for an installed copy).
+
+#### Open a Page
+
+`KodiakCleaner.exe --page=KEY` opens Kodiak Cleaner on a page, or brings the open window there. This is what the jump list, Restart as Administrator and the Safe Mode and Boot Timer restarts use. A tool hidden in **Settings > Tools** still opens, and hiding a tool never stops the command line, scheduled cleanings or Clean When Windows Starts.
+
+| Key | Page | Key | Page |
+|---|---|---|---|
+| `about` | About | `largefiles` | Large Files |
+| `boottimer` | Boot Timer | `rename` | Mass Rename |
+| `extensions` | Browser Extensions | `programs` | Programs |
+| `cleaner` | Cleaner | `registry` | Registry |
+| `optimize` | Defrag and TRIM | `tasks` | Scheduled Tasks |
+| `disk` | Disk Analyzer | `settings` | Settings |
+| `wiper` | Drive Wiper | `startup` | Startup |
+| `drivers` | Driver Cleaner | `sysinfo` | System Information |
+| `duplicates` | Duplicate Finder | `restore` | System Restore |
+| `emptyfolders` | Empty Folders | | |
+| `hash` | Hash Checker | | |
+| `integrity` | Integrity Check | | |
+
+Settings pages open the same way:
+
+| Key | Page | Key | Page |
+|---|---|---|---|
+| `advanced` | Settings > Advanced | `backups` | Settings > Registry |
+| `appearance` | Settings > Appearance | `supporter` | Settings > Supporter |
+| `application` | Settings > Application | `terms` | Settings > Terms of Use |
+| `cleaning` | Settings > Cleaning | `tools` | Settings > Tools |
+| `commandline` | Settings > Command Line | `updates` | Settings > Updates |
+| `feedback` | Settings > Contact & Feedback | `story` | Settings > Why It Was Made |
+| `faq` | Settings > FAQ | | |
+| `general` | Settings > General | | |
+| `privacy` | Settings > Privacy Policy | | |
+
+The installer and Kodiak Cleaner itself also use a few switches you don't need to type (`--uninstall-user`, `--uninstall-system`, `--elevated`, `/elevated`, `--restarted` and `--updated`).
 
 ## Features
 
@@ -266,13 +365,15 @@ Every setting is a switch and is saved straight away. Pages are A to Z under eac
 | **Advanced** | Always start as administrator, and skip the User Account Control prompt (installed copies only). |
 | **Appearance** | Honey, Classic, Glacier or Lagoon color scheme, an optional accent color, Match Device, Light or Dark, an Animations switch, and a Text Size slider (80% to 200%, on top of Windows' display scaling). |
 | **Cleaning** | Clean when Windows starts, ask before cleaning, and keep recent temp and Recycle Bin files from the last 24 hours. |
+| **Command Line** | Every command-line switch, exit code and `--page=` key, with a Copy button for each example (see [Command Line](#command-line)). |
 | **Contact & Feedback** | Send Feedback, Report a Bug, Request a Feature and Security, each opening the Contact Us form on the website in your browser with the topic picked. |
 | **FAQ** | Plain answers about going online, moving to a new PC, undoing a change, Supporter codes, updates, safety, Reset to Default and where backups are. Works offline. |
 | **General** | What's New after updates, the Beta notice, minimize or close to the system tray, the sidebar width and paperclip lock, the Recycle Bin menu and Jump List tasks. |
 | **Protect** | Back Up Now saves the registry areas Kodiak Cleaner can change into one `.reg` file (the very large ones are backed up with each fix instead), with an optional prompt before each registry fix. Back up, open or reset the settings file. |
+| **Tools** | Every tool A to Z with a switch. Turn one off to hide it from Favorites and Tools in the sidebar; turn it back on and it returns to the same place. **Show Every Tool** brings them all back, and so does Reset to Default. A hidden tool leaves the jump list too, but still opens with `--page=`. |
 | **Updates** | Check Now (also on the About page as Check for Updates). Check for Updates Automatically (off by default) looks for a new version as often as you pick (On Startup, Every Hour, Every 4 Hours, Daily, Every 3 Days, Weekly, Twice a Month or Monthly) and tells you when one is out. Download and Install Updates Automatically (off by default) also downloads it and installs it when you close Kodiak Cleaner. |
 
-The sidebar can be widened, locked with the paperclip, or collapsed to icons only.
+The sidebar can be widened, locked with the paperclip, or collapsed to icons only. Right-click a tool and pick **Hide from Sidebar**, or use **Settings > Tools**, to hide the tools you don't use.
 
 <p align="center"><img src="website/github/images/appearance.png" alt="Appearance settings with Honey, Classic, Glacier and Lagoon color schemes" width="760"></p>
 
@@ -352,6 +453,12 @@ The installer isn't code-signed yet. Click **More info**, then **Run anyway**. Y
 
 **Where are my settings?**
 In `KodiakCleaner.ini` next to `KodiakCleaner.exe`. Backups, the activity log and reports are in `Documents\Kodiak Cleaner` (the portable version keeps them beside the exe). **Settings > Application** shows both places.
+
+**Can I hide tools I don't use?**
+Yes. Right-click a tool in the sidebar and pick **Hide from Sidebar**, or turn it off under **Settings > Tools**. It only leaves the sidebar: turn it back on and it returns to the same place, and the command line and scheduled cleanings keep working.
+
+**Can I run it from a script?**
+Yes. See [Command Line](#command-line) for every switch, the exit codes and the `--page=` keys, or **Settings > Help > Command Line** in Kodiak Cleaner.
 
 **Do I need administrator rights for backups?**
 No. Backups and logs go in your Documents folder, which you can always write to. Only some cleaning and registry areas need administrator rights.

@@ -19,7 +19,7 @@ public partial class MessageWindow : Window
         Title = heading;
         Heading.Text = heading;
         Body.Text = message;
-        Body.Visibility = message.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        BodyScroll.Visibility = message.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         if (!string.IsNullOrEmpty(caution))
         {
             CautionText.Text = caution;

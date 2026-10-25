@@ -18,7 +18,10 @@
                 <TextBlock x:Name="Heading" Style="{StaticResource SectionTitle}" FontSize="18" TextWrapping="Wrap" />
             </StackPanel>
         </DockPanel>
-        <TextBlock x:Name="Body" TextWrapping="Wrap" Margin="54,10,0,0" LineHeight="20" />
+        <!-- A long message (KodiakCleaner.exe /help started without a console) scrolls instead of running off the screen. -->
+        <ScrollViewer x:Name="BodyScroll" Margin="54,10,0,0" MaxHeight="520" VerticalScrollBarVisibility="Auto" Focusable="False">
+            <TextBlock x:Name="Body" TextWrapping="Wrap" LineHeight="20" />
+        </ScrollViewer>
         <Border x:Name="CautionBox" Margin="54,12,0,0" Padding="12,9" CornerRadius="{DynamicResource Radius}" Visibility="Collapsed"
                 Background="{DynamicResource WarnBg}" BorderBrush="{DynamicResource WarnBorder}" BorderThickness="1">
             <TextBlock x:Name="CautionText" TextWrapping="Wrap" Foreground="{DynamicResource WarnText}" />

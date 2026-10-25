@@ -148,16 +148,24 @@ public static class Integration
                 ApplicationPath = ExePath,
                 IconResourcePath = ExePath,
             });
+            // Tools hidden in Settings › Tools are left out (Ted, 0.9.1 Beta); Run Cleaner cleans without a window, so it stays.
+            void Page(string title, string key, string description)
+            {
+                if (!Settings.Current.HiddenTools.Contains(key, StringComparer.OrdinalIgnoreCase)) Add(title, PageArgPrefix + key, description);
+            }
             Add("Run Cleaner", AutoCleanArg, $"Clean the selected items now without opening {AppInfo.Name}");
-            Add("Cleaner", PageArgPrefix + "cleaner", "Open the Cleaner");
-            Add("Registry", PageArgPrefix + "registry", "Open the registry scanner");
-            Add("Startup", PageArgPrefix + "startup", "Manage startup programs");
-            Add("Duplicate Finder", PageArgPrefix + "duplicates", "Find duplicate files");
-            Add("System Restore", PageArgPrefix + "restore", "Manage restore points");
+            Page("Cleaner", "cleaner", "Open the Cleaner");
+            Page("Registry", "registry", "Open the registry scanner");
+            Page("Startup", "startup", "Manage startup programs");
+            Page("Duplicate Finder", "duplicates", "Find duplicate files");
+            Page("System Restore", "restore", "Manage restore points");
         }
         JumpList.SetJumpList(System.Windows.Application.Current, list);
         list.Apply();
     }
+
+    /// <summary>Puts the jump list in step with Settings (a tool hidden or shown again); never shows an error.</summary>
+    public static void RefreshJumpList() => TryQuietly(() => ApplyJumpList(Settings.Current.JumpList));
 
     /// <summary>Re-applies every saved integration setting (paths can change after an update or move).</summary>
     public static void SyncAll()

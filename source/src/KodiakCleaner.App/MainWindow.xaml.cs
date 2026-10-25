@@ -180,6 +180,9 @@ public partial class MainWindow : Window
             menu.Items.Add(MenuEntry("Move Up", "\uE74A", _vm.CanMoveTool(page, -1), () => Move(page, -1)));
             menu.Items.Add(MenuEntry("Move Down", "\uE74B", _vm.CanMoveTool(page, 1), () => Move(page, 1)));
         }
+        // Hiding only takes it off the sidebar; Settings › Tools brings it back where it was (Ted, 0.9.1 Beta).
+        menu.Items.Add(new System.Windows.Controls.Separator());
+        menu.Items.Add(MenuEntry("Hide from Sidebar", "\uED1A", true, () => _vm.Hide(page)));
         menu.IsOpen = true;
     }
 

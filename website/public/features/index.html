@@ -20,9 +20,9 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/images/logo-512.png">
 <link rel="preload" href="/fonts/Fredoka-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="/css/theme.css?v=mvo84wtb">
-<link rel="stylesheet" href="/css/site.css?v=mvo84wtb">
-<script src="/js/theme-init.js?v=mvo84wtb"></script>
+<link rel="stylesheet" href="/css/theme.css?v=mvoaq5uk">
+<link rel="stylesheet" href="/css/site.css?v=mvoaq5uk">
+<script src="/js/theme-init.js?v=mvoaq5uk"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to Content</a>
@@ -45,6 +45,7 @@
   <a class="chip-link" href="#system-information">System Information</a>
   <a class="chip-link" href="#settings">Settings</a>
   <a class="chip-link" href="#safety">Safety</a>
+  <a class="chip-link" href="#command-line">Command Line</a>
   <a class="chip-link" href="#privacy">Privacy</a>
   <a class="chip-link" href="/open-source/">Open Source</a>
   <a class="chip-link" href="/linux/">Linux Edition</a>
@@ -184,6 +185,27 @@
   </div>
 </section>
 
+<section class="feature-group" id="command-line">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Command Line</span><h2>Run It From a Script</h2><p class="lead">Scripts and system administrators can run Kodiak Cleaner for Windows without a window: clean, scan or fix the registry, and uninstall programs. Output goes to the Command Prompt or PowerShell window it was started from, and everything is also written to the activity log.</p></div>
+    <div class="table-wrap reveal" tabindex="0" role="region" aria-label="Command-line switches"><table class="cli"><thead><tr><th scope="col">Command</th><th scope="col">What It Does</th></tr></thead><tbody>
+      <tr><td><code>KodiakCleaner.exe /clean [/items:ID,ID]</code></td><td>Cleans the items ticked on the Cleaner page (or just the listed items) with no window. Items with a caution never run from here, the same as scheduled cleanings.</td></tr><tr><td><code>KodiakCleaner.exe /list-items</code></td><td>Lists every Cleaner item ID, marking the ones that are ticked.</td></tr><tr><td><code>KodiakCleaner.exe /registry [/scan-only] [/categories:&quot;Fonts,Help Files&quot;]</code></td><td>Scans the registry (every check, or the ones listed) and fixes what it finds. Every fix is backed up to a .reg file first. <code>/scan-only</code> lists the issues and changes nothing.</td></tr><tr><td><code>KodiakCleaner.exe /uninstall:&quot;Program Name&quot; [/quiet]</code><br><code>KodiakCleaner.exe /uninstall:{PRODUCT-CODE-GUID} [/quiet]</code></td><td>Backs up the program's registry entries, then runs its uninstaller and waits for it. <code>/quiet</code> asks it not to show anything (<code>msiexec /x {GUID} /qn</code>, or the program's own quiet uninstall). Leftover files aren't removed from here; use Programs &gt; Uninstall for that. Kodiak Cleaner never uninstalls itself; remove it from Control Panel.</td></tr><tr><td><code>KodiakCleaner.exe /list-programs</code></td><td>Lists installed programs with their version and product code.</td></tr><tr><td><code>KodiakCleaner.exe /help</code></td><td>Shows these switches.</td></tr>
+    </tbody></table></div>
+    <div class="grid cols-2 mt-xl">
+      <div class="card reveal"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/></svg></span><h3>Examples</h3><p>Clean two items and wait for the exit code in Command Prompt:</p><pre><code>start /wait KodiakCleaner.exe /clean /items:ID,ID
+echo %ERRORLEVEL%</code></pre><p>List the registry issues without changing anything:</p><pre><code>KodiakCleaner.exe /registry /scan-only</code></pre><p>Fix only the Fonts and Help Files checks:</p><pre><code>KodiakCleaner.exe /registry /categories:&quot;Fonts,Help Files&quot;</code></pre><p>Uninstall a program silently by its product code:</p><pre><code>KodiakCleaner.exe /uninstall:{PRODUCT-CODE-GUID} /quiet</code></pre><p>Clean in PowerShell, then read ExitCode:</p><pre><code>Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru</code></pre></div>
+      <div class="card reveal"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></span><h3>Exit Codes</h3><ul class="exit-codes"><li><code>0</code> Done.</li><li><code>1</code> Done with some failures.</li><li><code>2</code> Wrong switch, nothing found, or the program named is Kodiak Cleaner itself.</li><li><code>3</code> The uninstall didn't finish.</li></ul>
+        <h3>Good to Know</h3><ul>
+          <li>Open Command Prompt or PowerShell in the folder that holds <code>KodiakCleaner.exe</code> (<code>C:\Program Files\Kodiak Cleaner</code> when installed, or the portable folder), or type its full path.</li>
+          <li>Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it: use <code>start /wait</code> and then <code>%ERRORLEVEL%</code>, or <code>Start-Process</code> with <code>-Wait -PassThru</code> in PowerShell and read <code>ExitCode</code>.</li>
+          <li>Run <code>/list-items</code> for the item IDs to use with <code>/items:</code>, and <code>/list-programs</code> for program names and product codes.</li>
+          <li>Run it as administrator to clean, fix or uninstall anything shared by all users.</li>
+          <li>Items with a caution never run from the command line, and leftovers after an uninstall are only removed from the Programs page.</li>
+        </ul></div>
+    </div>
+  </div>
+</section>
+
 <section class="feature-group" id="privacy">
   <div class="wrap narrow">
     <div class="section-head center"><span class="eyebrow">Privacy</span><h2>Private and Local First</h2></div>
@@ -208,7 +230,7 @@
       <div>
         <div class="footer-brand"><img src="/images/logo.svg" alt="" width="56" height="56"><span class="wordmark"><span class="w1">Kodiak</span> <span class="w2">Cleaner</span></span></div>
         <p class="muted">Not a Crap Cleaner. A Cleaner App, Built Around What Matters.</p>
-        <p class="muted">Windows: version 0.9.0 Beta, for Windows 10 and 11 (64-bit)</p>
+        <p class="muted">Windows: version 0.9.1 Beta, for Windows 10 and 11 (64-bit)</p>
         <p class="muted">Mac: version 0.8.13 Dev, for macOS 26 or newer</p>
         <p class="muted">Linux: version 0.8.20 Dev, for 64-bit Linux with GTK 4</p>
       </div>
@@ -225,6 +247,7 @@
       <div><h2>Help and Contact</h2><ul>
         <li><a href="/accessibility/">Accessibility</a></li>
         <li><a href="/contact/">Contact Us</a></li>
+        <li><a href="/faq/">FAQ</a></li>
         <li><a href="/privacy/">Privacy Policy</a></li>
         <li><a href="/contact/?topic=Security">Report a Security Problem</a></li>
         <li><a href="/terms/">Terms of Use</a></li>
@@ -254,7 +277,7 @@
   </div>
 </dialog>
 <dialog class="lightbox" id="lightbox" aria-label="Screenshot"><button class="icon-btn close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg></button><img src="data:," alt=""><p></p></dialog>
-<script src="/js/site.js?v=mvo84wtb" defer></script>
+<script src="/js/site.js?v=mvoaq5uk" defer></script>
 
 </body>
 </html>

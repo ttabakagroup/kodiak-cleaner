@@ -23,6 +23,50 @@
 
         <app:SectionTemplateSelector x:Key="SectionSelector" />
 
+        <!-- Command Line page: a command shown word by word, so a long one wraps between words and never right after a slash. -->
+        <ItemsPanelTemplate x:Key="CodeWordsPanel"><WrapPanel /></ItemsPanelTemplate>
+        <DataTemplate x:Key="CodeWord">
+            <TextBlock Text="{Binding}" FontFamily="Consolas" Margin="0,0,8,0" />
+        </DataTemplate>
+        <DataTemplate x:Key="CodeLine">
+            <ItemsControl ItemsSource="{Binding}" ItemsPanel="{StaticResource CodeWordsPanel}" ItemTemplate="{StaticResource CodeWord}" Focusable="False" />
+        </DataTemplate>
+        <DataTemplate x:Key="CodeExample">
+            <DockPanel Margin="0,6,0,0" TextElement.FontSize="12.5">
+                <TextBlock DockPanel.Dock="Left" Text="Example:" Style="{StaticResource Caption}" Margin="0,0,6,0" VerticalAlignment="Top" />
+                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource CodeLine}" />
+            </DockPanel>
+        </DataTemplate>
+        <!-- Command Line page: one switch with its example and a Copy button. -->
+        <DataTemplate x:Key="CliSwitchRow">
+            <StackPanel>
+                <Border Style="{StaticResource RowDivider}" />
+                <DockPanel Margin="0,12,0,0">
+                    <Button DockPanel.Dock="Right" VerticalAlignment="Top" Margin="16,0,0,0" CommandParameter="{Binding Example}"
+                            Command="{Binding DataContext.CopyCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            ToolTip="Copy the example with Kodiak Cleaner's full path"
+                            AutomationProperties.Name="{Binding Example, StringFormat=Copy {0}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8C8;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Copy" />
+                        </StackPanel>
+                    </Button>
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding UsageWords}" ItemTemplate="{StaticResource CodeLine}" TextElement.FontWeight="SemiBold" Focusable="False" />
+                        <TextBlock Text="{Binding LinesText}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <ContentPresenter Content="{Binding ExampleWords}" ContentTemplate="{StaticResource CodeExample}" />
+                    </StackPanel>
+                </DockPanel>
+            </StackPanel>
+        </DataTemplate>
+        <!-- Command Line page: one page key and the page it opens. -->
+        <DataTemplate x:Key="CliPageRow">
+            <DockPanel Margin="0,3,12,3" ToolTip="{Binding Argument}">
+                <TextBlock DockPanel.Dock="Left" Text="{Binding Key}" FontFamily="Consolas" FontSize="13" Width="112" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ShortTitle}" Style="{StaticResource Caption}" FontSize="13" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </DockPanel>
+        </DataTemplate>
+
         <!-- ===== Pages. Each template's DataContext is a SettingsSection; Context is its view model. ===== -->
 
         <DataTemplate x:Key="generalPage">
@@ -566,6 +610,136 @@
                     </DockPanel>
                 </StackPanel>
             </Border>
+        </DataTemplate>
+
+        <!-- Tools (Ted, 0.9.1 Beta): every tool A to Z with a switch; off only hides it from the sidebar. -->
+        <DataTemplate x:Key="toolsPage">
+            <Border Style="{StaticResource Card}" DataContext="{Binding Context}" VerticalAlignment="Top">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Command="{Binding ShowAllToolsCommand}" VerticalAlignment="Top" Margin="16,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE777;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                <TextBlock Text="Show Every Tool" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel>
+                            <TextBlock Text="Tools in the Sidebar" Style="{StaticResource SectionTitle}" />
+                            <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                       Text="Turn off the tools you don't use to hide them from Favorites and Tools in the sidebar. Nothing is removed: turn one back on and it returns to the same place. A hidden tool still opens from the jump list or --page=, and the command line and scheduled cleanings keep working." />
+                            <TextBlock Text="{Binding HiddenToolsSummary}" Style="{StaticResource Caption}" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding ToolChoices}" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <Border Style="{StaticResource RowDivider}" Margin="0,10,0,0" />
+                                    <DockPanel Margin="0,10,0,0">
+                                        <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding IsShown}"
+                                                  VerticalAlignment="Center" AutomationProperties.Name="{Binding SwitchName}" />
+                                        <Grid DockPanel.Dock="Left" Width="22" Margin="2,0,14,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Glyph}" Style="{StaticResource Icon}" FontSize="16" HorizontalAlignment="Left" />
+                                            <!-- Drive Wiper's bin over its drive, as in the sidebar. -->
+                                            <TextBlock Text="{Binding Badge}" Style="{StaticResource Icon}" FontSize="9" FontWeight="Bold"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-3"
+                                                       Visibility="{Binding HasBadge, Converter={StaticResource BoolToVis}}" />
+                                        </Grid>
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- Command Line (Ted, 0.9.1 Beta): the same switches, exit codes and page keys as KodiakCleaner.exe /help and the README
+             (all from CommandLineHelp). Copy puts an example on the clipboard with this copy's full path. -->
+        <DataTemplate x:Key="commandlinePage">
+            <StackPanel DataContext="{Binding Context}">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Commands" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                               Text="Run these in Command Prompt or PowerShell. They work with no window: the result is written where you typed the command, and the exit code says how it went." />
+                    <TextBlock Text="{Binding CliFolderNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding CliCopyStatus}" Style="{StaticResource Caption}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"
+                               Visibility="{Binding HasCliCopyStatus, Converter={StaticResource BoolToVis}}" />
+                    <ItemsControl ItemsSource="{Binding CliSwitches}" ItemTemplate="{StaticResource CliSwitchRow}" />
+                    <Border Style="{StaticResource RowDivider}" Margin="0,14,0,0" />
+                    <TextBlock Text="Set Up by Kodiak Cleaner" Style="{StaticResource SettingTitle}" Margin="0,14,0,0" />
+                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap"
+                               Text="Kodiak Cleaner adds these to Windows itself (Clean When Windows Starts, the jump list and Task Scheduler). They work typed by hand too." />
+                    <ItemsControl ItemsSource="{Binding CliSetUpSwitches}" ItemTemplate="{StaticResource CliSwitchRow}" />
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Exit Codes" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="Scripts can read these to see how a command went." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,6" />
+                    <ItemsControl ItemsSource="{Binding CliExitCodes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,6,0,0">
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding Code}" FontFamily="Consolas" FontWeight="SemiBold" Width="28" />
+                                    <TextBlock Text="{Binding Meaning}" TextWrapping="Wrap" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Open a Page" Style="{StaticResource SectionTitle}" />
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" VerticalAlignment="Top" Margin="16,0,0,0" Command="{Binding CopyCommandCommand}" CommandParameter="{Binding CliPageExample}"
+                                ToolTip="Copy the example with Kodiak Cleaner's full path" AutomationProperties.Name="Copy the Open a Page Example">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8C8;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                                <TextBlock Text="Copy" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding CliPageUsageWords}" ItemTemplate="{StaticResource CodeLine}" TextElement.FontWeight="SemiBold" Focusable="False" />
+                            <TextBlock Text="{Binding CliPageSummary}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            <ContentPresenter Content="{Binding CliPageExampleWords}" ContentTemplate="{StaticResource CodeExample}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <TextBlock Text="Pages" Style="{StaticResource SettingTitle}" Margin="0,14,0,4" />
+                    <ItemsControl ItemsSource="{Binding CliPages}" ItemTemplate="{StaticResource CliPageRow}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    <TextBlock Text="Settings Pages" Style="{StaticResource SettingTitle}" Margin="0,14,0,4" />
+                    <ItemsControl ItemsSource="{Binding CliSettingsPages}" ItemTemplate="{StaticResource CliPageRow}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Using It in Scripts" Style="{StaticResource SectionTitle}" />
+                    <ItemsControl ItemsSource="{Binding CliNotes}" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,6,0,0">
+                                    <TextBlock DockPanel.Dock="Left" Text="•" Width="16" Foreground="{DynamicResource Muted}" />
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{Binding CliLogFolder}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                </StackPanel>
+            </Border>
+            </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="feedbackPage"><views:FeedbackPage DataContext="{Binding Context}" /></DataTemplate>

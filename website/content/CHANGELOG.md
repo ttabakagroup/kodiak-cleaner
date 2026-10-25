@@ -6,6 +6,22 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.1 Beta] - 2026-10-25
+
+### Settings and Appearance
+- New Settings > Tools page lists every tool A to Z with a switch. Turn off the tools you don't use to hide them from Favorites and Tools in the sidebar and from the jump list; turn one back on and it returns to the same place. Show Every Tool brings them all back, and so does Reset to Default.
+- Right-click any tool in the sidebar and pick Hide from Sidebar to hide it straight away.
+- A hidden tool still opens from a link or the command line (--page=), with a note saying where to turn it back on. Hiding a tool never stops the command line, scheduled cleanings or Clean When Windows Starts.
+- If every tool is hidden, the sidebar says so and Choose Tools opens Settings > Tools.
+
+### Command Line
+- New Settings > Help > Command Line page explains every switch, the exit codes, using it in scripts and as administrator, and the page names for --page=, with a Copy button for each example.
+- KodiakCleaner.exe /help now also lists /autoclean, /schedule:, --page= and every page name, and shows in a window that scrolls when there's no console.
+- The README's Command Line section covers every switch with examples, the exit codes, administrator rights and every page name, and the FAQ has new answers on the command line and on hiding tools.
+
+### Fixes
+- Mass Rename: the outline around an example or a part at the left edge of the rules is no longer cut off. The same spacing is fixed in Duplicate Finder's options and the other scrolling areas laid out the same way.
+
 ## [0.9.0 Beta] - 2026-10-25
 
 The first Beta of Kodiak Cleaner: a small, honest cleaner for Windows 10 and 11 with no telemetry, no ads, no bundled offers and no background services. Everything below is in this release.

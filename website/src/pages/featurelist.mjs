@@ -44,6 +44,7 @@ const GROUPS = [
     ["Always Start as Administrator", "Start with administrator rights without the User Account Control prompt (installed copies).", "W"],
     ["Back Up and Restore Settings", "Save your settings to a file and restore them later.", "WL"],
     ["Close to Tray", "Minimize or close Kodiak Cleaner to the system tray.", "W"],
+    ["Command Line", "Clean, scan or fix the registry, and uninstall programs from a script with no window, with exit codes for each result.", "W"],
     ["Contact and Feedback", "Send Feedback, Report a Bug, Request a Feature and Security forms.", "WML"],
     ["Recycle Bin Menu and Jump List", "Clean from the Recycle Bin's right-click menu or the taskbar.", "W"],
     ["Settings Search", "Type to find any setting.", "W"],

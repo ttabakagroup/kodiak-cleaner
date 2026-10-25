@@ -196,6 +196,13 @@
                     <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="24,0,22,4"
                                Text="Right-click a tool and pick Pin to Favorites, or drag it here."
                                Visibility="{Binding ShowFavoritesHint, Converter={StaticResource BoolToVis}}" />
+                    <!-- Every tool hidden in Settings › Tools (Ted, 0.9.1 Beta): say where to turn them back on. -->
+                    <StackPanel Margin="24,0,22,4" Visibility="{Binding ShowNoToolsHint, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap"
+                                   Text="Every tool is hidden from the sidebar. Turn them back on in Settings › Tools." />
+                        <Button Style="{StaticResource LinkButton}" Content="Choose Tools" Command="{Binding OpenToolsSettingsCommand}"
+                                HorizontalAlignment="Left" Margin="-8,2,0,0" />
+                    </StackPanel>
                     <!-- Tools start open (Ted, 0.8.11); click the heading to fold them away. A line always separates Favorites from Tools
                          (Ted, 0.8.110); collapsed, it stands in for the heading. -->
                     <Border Height="1" Margin="22,10,22,2" Background="{DynamicResource Line}" />

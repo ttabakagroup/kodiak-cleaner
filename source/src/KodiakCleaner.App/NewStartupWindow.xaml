@@ -30,8 +30,8 @@
         </DockPanel>
 
         <Border Style="{StaticResource Card}" Padding="8">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,4">
-                <ItemsControl x:Name="List" Padding="8,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="List" Padding="8,4">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <DockPanel Margin="0,6">

@@ -82,8 +82,10 @@ public class ListSelectTests
                 var key = reference["{StaticResource ".Length..^1];
                 template = list.Document!.Descendants().FirstOrDefault(e => (string?)e.Attribute(x + "Key") == key);
             }
+            // Switches aren't tick boxes: ListSelect leaves them alone (Settings › Tools is a list of switches).
             var ownBoxes = template?.Descendants(Ns + "CheckBox")
-                .Any(b => !b.Ancestors(Ns + "ItemsControl").TakeWhile(a => a != list).Any()) ?? false;
+                .Any(b => (string?)b.Attribute("Style") != "{StaticResource ToggleSwitch}"
+                          && !b.Ancestors(Ns + "ItemsControl").TakeWhile(a => a != list).Any()) ?? false;
             var columns = list.Element(Ns + "ItemsControl.ItemsPanel") is not null;   // entries side by side keep their own width
             if (ownBoxes && !columns && list.Attribute("Padding") is null)
                 problems.Add($"{file}: a tick-box list needs Padding (e.g. \"8,0\") so its row highlight reaches past the tick box.");

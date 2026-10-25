@@ -29,8 +29,9 @@
         </DockPanel>
 
         <Border Style="{StaticResource Card}" Padding="0">
-            <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" Padding="22,18,16,18">
-                <StackPanel x:Name="Sections">
+            <!-- Space on the content, not the ScrollViewer's Padding, so focus rings at the edge aren't clipped (as in Mass Rename). -->
+            <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="Sections" Margin="22,18,16,18">
                     <TextBlock x:Name="Reading" Text="Reading the drive's details, health report and logged errors…" Style="{StaticResource Caption}" TextWrapping="Wrap" />
                 </StackPanel>
             </ScrollViewer>

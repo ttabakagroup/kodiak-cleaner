@@ -25,6 +25,7 @@ public partial class WelcomeWindow : Window
         new("Boot Timer", ": restart and time startup, then see what slows it down"),
         new("Browser Extensions", ": every browser's add-ons; turn them off or remove them"),
         new("Cleaner", ": temporary files, browser caches, logs and the Recycle Bin"),
+        new("Command Line", ": clean, fix the registry and uninstall from scripts, with every switch under Settings, Command Line"),
         new("Defrag and TRIM", ": defragment hard drives and trim SSDs, chosen per drive"),
         new("Disk Analyzer", ": a map of what fills your drives or a folder, colored by kind of file"),
         new("Drive Wiper", ": DoD wipes and built-in secure erase, matched to each drive type"),
@@ -45,6 +46,7 @@ public partial class WelcomeWindow : Window
         new("System Information", ": your PC at a glance, with details and reports"),
         new("System Restore", ": create and manage restore points and Point-in-Time Restore snapshots"),
         new("Your Look", ": Honey, Classic, Glacier or Lagoon, light or dark, any accent"),
+        new("Your Sidebar", ": pin favorites, put the tools in your own order and hide the ones you don't use"),
     };
 
     public static Window ShowFor(Window? owner)

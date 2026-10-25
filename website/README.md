@@ -9,7 +9,7 @@ No trackers, ads, cookies or outside fonts. The only outside script is Cloudflar
 | Page | Address | Made from |
 |------|---------|-----------|
 | Home | `/` | `src/pages/home.mjs` |
-| Features | `/features/` | `src/pages/features.mjs` |
+| Features | `/features/` | `src/pages/features.mjs` (its Command Line section copies the switches, examples and exit codes from the app's CommandLine.cs; keep them in step) |
 | Linux | `/linux/` | `src/pages/linux.mjs` and `content/linux/CHANGELOG.md` |
 | Mac | `/mac/` | `src/pages/mac.mjs` and `content/mac/CHANGELOG.md` |
 | Download | `/download/` | `src/pages/download.mjs` (Windows, Mac and Linux) |
@@ -18,6 +18,7 @@ No trackers, ads, cookies or outside fonts. The only outside script is Cloudflar
 | Archive | `/archive/` | `content/CHANGELOG.md` and `site.config.json` (Beta versions only) |
 | Contact Us | `/contact/` | `src/pages/contact.mjs` and `functions/api/contact.js` |
 | Support | `/donate/` | `src/pages/donate.mjs` (Ko-fi link from `site.config.json` "kofi") |
+| FAQ | `/faq/` | `src/pages/faq.mjs` (questions grouped A to Z, answers taken from the app's faq.md, README.md, CommandLine.cs and CHANGELOG.md; linked from the footer and Contact Us) |
 | Full Feature List | `/features/list/` | `src/pages/featurelist.mjs` (every feature, Free or Supporter, per edition) |
 | Open Source | `/open-source/` | `src/pages/opensource.mjs` and `content/LICENSE` (what open source means here, plus the license text) |
 | Why It Was Made | `/why-it-was-made/` | `content/why-it-was-made.md` (word for word) |
@@ -195,7 +196,7 @@ functions/download/[file].js  serves the hosted downloads from R2
 src/static/_redirects   short links (/github, /releases)
 src/static/updates/      beta.json and dev.json, the update files Kodiak Cleaner for Windows reads (written by the publish workflow)
 functions/_middleware.js  sends kodiakcleaner.app, pages.dev and preview links to www.kodiakcleaner.app
-tests/                  site checks, contact and Ko-fi function tests
+tests/                  site checks (faq.test.mjs: the FAQ page and the Command Line section), contact and Ko-fi function tests
 public/                 the built site (made by npm run build)
 ```
 

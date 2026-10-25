@@ -35,8 +35,10 @@
             <GridSplitter Grid.Column="1" Style="{StaticResource PaneColumns}" views:PaneSplitter.Remember="massrename" />
 
             <Border Grid.Column="0" Style="{StaticResource Card}" Padding="0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16">
-                    <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
+                <!-- The space goes on the content, not the ScrollViewer's Padding: the scrolling area clips whatever is outside it, so
+                     with Padding the focus ring and hover outline of the Examples and parts at the left edge were cut off (Ted, 0.9.1 Beta). -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" Margin="18,16">
                         <TextBlock Text="Files" Style="{StaticResource SectionTitle}" />
                         <TextBlock Text="Only Files Matching" Style="{StaticResource SettingTitle}" Margin="0,8,0,4" />
                         <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" Tag="Every file, or *.jpg; *.png" />
@@ -52,7 +54,7 @@
                         <TextBlock Text="Pattern" Style="{StaticResource SettingTitle}" Margin="0,8,0,4" />
                         <TextBox x:Name="PatternBox" Text="{Binding Pattern, UpdateSourceTrigger=PropertyChanged}" Tag="{}{name}"
                                  FontFamily="Consolas" ToolTip="{Binding TokenHelp}" />
-                        <TextBlock Text="Select a part to add it where the cursor is:" Style="{StaticResource Caption}" Margin="0,6,0,2" />
+                        <TextBlock Text="Select a part to add it where the cursor is:" Style="{StaticResource Caption}" Margin="0,6,0,6" />
                         <!-- A to Z. -->
                         <WrapPanel>
                             <Button Style="{StaticResource LinkButton}" Content="Date Created" Tag="{}{created}" Click="InsertToken" Margin="0,0,12,4" />
@@ -65,7 +67,8 @@
                         </WrapPanel>
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
                                    Text="{}{name:1-5} keeps characters 1 to 5, {num:3} pads to 3 digits, {modified:yyyy-MM-dd HH.mm} picks the date format. Point at the pattern for every part." />
-                        <TextBlock Text="Examples" Style="{StaticResource SettingTitle}" Margin="0,10,0,2" />
+                        <!-- Room under the heading for the focus ring of the first example. -->
+                        <TextBlock Text="Examples" Style="{StaticResource SettingTitle}" Margin="0,10,0,6" />
                         <ItemsControl ItemsSource="{Binding Examples}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>

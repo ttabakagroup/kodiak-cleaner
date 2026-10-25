@@ -94,6 +94,30 @@ export default function features(ctx) {
     "Uninstalling leaves nothing behind, and asks before deleting your backups, logs and reports.",
   ];
 
+  // Command line (Windows), word for word from the app's CommandLine.cs help and README's Command Line section.
+  const cliCommands = [
+    ["KodiakCleaner.exe /clean [/items:ID,ID]", "Cleans the items ticked on the Cleaner page (or just the listed items) with no window. Items with a caution never run from here, the same as scheduled cleanings."],
+    ["KodiakCleaner.exe /list-items", "Lists every Cleaner item ID, marking the ones that are ticked."],
+    ["KodiakCleaner.exe /registry [/scan-only] [/categories:\"Fonts,Help Files\"]", "Scans the registry (every check, or the ones listed) and fixes what it finds. Every fix is backed up to a .reg file first. <code>/scan-only</code> lists the issues and changes nothing."],
+    ["KodiakCleaner.exe /uninstall:\"Program Name\" [/quiet]<br>KodiakCleaner.exe /uninstall:{PRODUCT-CODE-GUID} [/quiet]", "Backs up the program's registry entries, then runs its uninstaller and waits for it. <code>/quiet</code> asks it not to show anything (<code>msiexec /x {GUID} /qn</code>, or the program's own quiet uninstall). Leftover files aren't removed from here; use Programs &gt; Uninstall for that. Kodiak Cleaner never uninstalls itself; remove it from Control Panel."],
+    ["KodiakCleaner.exe /list-programs", "Lists installed programs with their version and product code."],
+    ["KodiakCleaner.exe /help", "Shows these switches."],
+  ];
+  const exitCodes = [
+    ["0", "Done."],
+    ["1", "Done with some failures."],
+    ["2", "Wrong switch, nothing found, or the program named is Kodiak Cleaner itself."],
+    ["3", "The uninstall didn't finish."],
+  ];
+  const cliExamples = [
+    ["Clean two items and wait for the exit code in Command Prompt", "start /wait KodiakCleaner.exe /clean /items:ID,ID\necho %ERRORLEVEL%"],
+    ["List the registry issues without changing anything", "KodiakCleaner.exe /registry /scan-only"],
+    ["Fix only the Fonts and Help Files checks", "KodiakCleaner.exe /registry /categories:\"Fonts,Help Files\""],
+    ["Uninstall a program silently by its product code", "KodiakCleaner.exe /uninstall:{PRODUCT-CODE-GUID} /quiet"],
+    ["Clean in PowerShell, then read ExitCode", "Start-Process KodiakCleaner.exe -ArgumentList '/clean' -Wait -PassThru"],
+  ];
+  const cmd = (c) => c.split("<br>").map((x) => `<code>${x.replace(/"/g, "&quot;")}</code>`).join("<br>");
+
   const body = `
 ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning to ${tools.length} built-in tools. Every feature is free, and the code is open source under the MIT License.`)}
 <nav class="jump" aria-label="On this page"><div class="wrap chips">
@@ -103,6 +127,7 @@ ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning
   <a class="chip-link" href="#system-information">System Information</a>
   <a class="chip-link" href="#settings">Settings</a>
   <a class="chip-link" href="#safety">Safety</a>
+  <a class="chip-link" href="#command-line">Command Line</a>
   <a class="chip-link" href="#privacy">Privacy</a>
   <a class="chip-link" href="/open-source/">Open Source</a>
   <a class="chip-link" href="/linux/">Linux Edition</a>
@@ -158,6 +183,26 @@ ${pageHead("Features", `Everything Kodiak Cleaner can do, from everyday cleaning
     <div class="showcase flip">
       <div class="text"><span class="eyebrow">Safety</span><h2>Built-In Safety</h2><ul class="ticks">${safety.map((s) => `<li>${s}</li>`).join("")}</ul></div>
       ${shot(ctx, "advanced-cleaning-warning.png", "The warning shown before Advanced Cleaning opens")}
+    </div>
+  </div>
+</section>
+
+<section class="feature-group" id="command-line">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Command Line</span><h2>Run It From a Script</h2><p class="lead">Scripts and system administrators can run Kodiak Cleaner for Windows without a window: clean, scan or fix the registry, and uninstall programs. Output goes to the Command Prompt or PowerShell window it was started from, and everything is also written to the activity log.</p></div>
+    <div class="table-wrap reveal" tabindex="0" role="region" aria-label="Command-line switches"><table class="cli"><thead><tr><th scope="col">Command</th><th scope="col">What It Does</th></tr></thead><tbody>
+      ${cliCommands.map(([c, d]) => `<tr><td>${cmd(c)}</td><td>${d}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="grid cols-2 mt-xl">
+      <div class="card reveal"><span class="icon">${icons.terminal}</span><h3>Examples</h3>${cliExamples.map(([t, c]) => `<p>${t}:</p><pre><code>${c.replace(/"/g, "&quot;")}</code></pre>`).join("")}</div>
+      <div class="card reveal"><span class="icon">${icons.list}</span><h3>Exit Codes</h3><ul class="exit-codes">${exitCodes.map(([n, d]) => `<li><code>${n}</code> ${d}</li>`).join("")}</ul>
+        <h3>Good to Know</h3><ul>
+          <li>Open Command Prompt or PowerShell in the folder that holds <code>KodiakCleaner.exe</code> (<code>C:\\Program Files\\Kodiak Cleaner</code> when installed, or the portable folder), or type its full path.</li>
+          <li>Kodiak Cleaner is a window program, so Command Prompt doesn't wait for it: use <code>start /wait</code> and then <code>%ERRORLEVEL%</code>, or <code>Start-Process</code> with <code>-Wait -PassThru</code> in PowerShell and read <code>ExitCode</code>.</li>
+          <li>Run <code>/list-items</code> for the item IDs to use with <code>/items:</code>, and <code>/list-programs</code> for program names and product codes.</li>
+          <li>Run it as administrator to clean, fix or uninstall anything shared by all users.</li>
+          <li>Items with a caution never run from the command line, and leftovers after an uninstall are only removed from the Programs page.</li>
+        </ul></div>
     </div>
   </div>
 </section>

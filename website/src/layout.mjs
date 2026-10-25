@@ -99,6 +99,7 @@ ${page.body}
       <div><h2>Help and Contact</h2><ul>
         <li><a href="/accessibility/">Accessibility</a></li>
         <li><a href="/contact/">Contact Us</a></li>
+        <li><a href="/faq/">FAQ</a></li>
         <li><a href="/privacy/">Privacy Policy</a></li>
         <li><a href="/contact/?topic=Security">Report a Security Problem</a></li>
         <li><a href="/terms/">Terms of Use</a></li>

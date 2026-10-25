@@ -57,9 +57,9 @@ public sealed class SettingsSection : ObservableObject
 }
 
 /// <summary>
-/// Options &amp; Settings: the app's own pages (Advanced, Cleaning, General, Updates), then Personalize
-/// (Appearance, Supporter), Protect (Application, Registry), Help (Contact &amp; Feedback, FAQ, Privacy Policy, Terms of Use,
-/// Why It Was Made). Pages are in the Default order (General first, then the
+/// Options &amp; Settings: the app's own pages (Advanced, Cleaning, General, Tools, Updates), then Personalize
+/// (Appearance, Supporter), Protect (Application, Registry), Help (Command Line, Contact &amp; Feedback, FAQ, Privacy Policy,
+/// Terms of Use, Why It Was Made). Pages are in the Default order (General first, then the
 /// most used) or A to Z under each heading, as picked in the sidebar's Sort By dropdown. About has its own sidebar entry under Settings in the main window.
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
@@ -86,6 +86,8 @@ public sealed class SettingsViewModel : ObservableObject
         ResetCommand = new RelayCommand(Reset);
         DefaultTextSizeCommand = new RelayCommand(() => TextSize = KodiakCleaner.Core.Util.TextSize.Default, () => !IsDefaultTextSize);
         RestoreFavoritesOrderCommand = new RelayCommand(RestoreFavoritesOrder);
+        ShowAllToolsCommand = new RelayCommand(ShowAllTools, () => S.HiddenTools.Count > 0);
+        CopyCommandCommand = new RelayCommand<string>(CopyCommand);
         BackUpRegistryCommand = new RelayCommand(BackUpRegistryAsync, () => !IsBackingUp);
         BackUpSettingsCommand = new RelayCommand(BackUpSettings);
         CheckForUpdatesCommand = new RelayCommand(CheckForUpdatesAsync, () => !IsCheckingUpdates);
@@ -96,6 +98,7 @@ public sealed class SettingsViewModel : ObservableObject
         // shows each heading's pages alphabetically instead (SortSections). Settings still opens on General.
         Add("general", "General", "\uE713", "", "How Kodiak Cleaner fits into Windows.", this);
         Add("cleaning", "Cleaning", "\uE74D", "", "What the Cleaner asks and keeps.", this);
+        Add("tools", "Tools", "\uEC7A", "", "Choose which tools show in the sidebar.", this);
         Add("updates", "Updates", "\uE895", "", "Get new versions of Kodiak Cleaner.", this);
         Add("advanced", "Advanced", "\uE9F5", "", "Options for people who know what they need, and Reset to Default.", this);
         Add("appearance", "Appearance", "\uE790", "Personalize", "Color scheme, accent color, light or dark mode and text size.", this);
@@ -103,6 +106,7 @@ public sealed class SettingsViewModel : ObservableObject
         Add("backups", "Registry", "\uE8F1", "Protect", "Registry backups: made before every fix, or whenever you choose.", this);
         Add("application", "Application", "\uE74C", "Protect", "Kodiak Cleaner's settings file, backups and activity log.", this);
         Add("faq", "FAQ", "\uE897", "Help", "Plain answers to common questions about Kodiak Cleaner.", Faq);
+        Add("commandline", "Command Line", "\uE756", "Help", "Run Kodiak Cleaner from Command Prompt, PowerShell or a script, with no window.", this);
         Add("feedback", "Contact & Feedback", "\uE8BD", "Help", "Tell us what's working and what isn't.", Feedback);
         Add("story", "Why It Was Made", "\uE736", "Help", "The story behind Kodiak Cleaner, in Ted's words.", Story);
         Add("privacy", "Privacy Policy", "\uE72E", "Help", "What Kodiak Cleaner does with information: everything stays on this PC.", Privacy);
@@ -112,6 +116,7 @@ public sealed class SettingsViewModel : ObservableObject
         MainViewModel.SidebarSettingsChanged += () =>
         {
             foreach (var c in FavoriteOrders) c.IsSelected = c.Value == S.FavoritesAToZ;
+            RefreshToolChoices(); // a tool hidden from the sidebar's right-click menu
         };
         SortSections();
         Sections.First(s => s.Key == "general").IsSelected = true;
@@ -274,6 +279,81 @@ public sealed class SettingsViewModel : ObservableObject
     }
     public ICommand BackUpRegistryCommand { get; }
     public ICommand BackUpSettingsCommand { get; }
+
+    // ---- Tools (Ted, 0.9.1 Beta): each tool can be turned off, which only hides it from the sidebar ----
+
+    /// <summary>Every tool, A to Z, with its switch.</summary>
+    public ObservableCollection<ToolChoice> ToolChoices { get; } = new();
+
+    /// <summary>Called once by the main window with every page that can sit in Favorites or Tools.</summary>
+    public void SetTools(IEnumerable<ToolChoice> tools)
+    {
+        ToolChoices.Clear();
+        foreach (var t in tools.OrderBy(t => t.Title, StringComparer.CurrentCultureIgnoreCase)) ToolChoices.Add(t);
+        RefreshToolChoices();
+    }
+
+    private void RefreshToolChoices()
+    {
+        foreach (var t in ToolChoices) t.Refresh(!S.HiddenTools.Contains(t.Key, StringComparer.OrdinalIgnoreCase));
+        OnPropertyChanged(nameof(HiddenToolsSummary));
+    }
+
+    /// <summary>"Every tool shows in the sidebar." or "2 of 18 tools are hidden."</summary>
+    public string HiddenToolsSummary
+    {
+        get
+        {
+            var hidden = ToolChoices.Count(t => !t.IsShown);
+            return hidden == 0 ? "Every tool shows in the sidebar."
+                : hidden == ToolChoices.Count ? "Every tool is hidden from the sidebar."
+                : $"{hidden} of {ToolChoices.Count} tools {(hidden == 1 ? "is" : "are")} hidden from the sidebar.";
+        }
+    }
+
+    public ICommand ShowAllToolsCommand { get; }
+
+    private void ShowAllTools()
+    {
+        S.HiddenTools.Clear();
+        S.Save();
+        Integration.RefreshJumpList();
+        MainViewModel.NotifySidebarSettingsChanged();
+    }
+
+    // ---- Command Line (Ted, 0.9.1 Beta): the same text as KodiakCleaner.exe /help ----
+
+    public IReadOnlyList<CliSwitch> CliSwitches => CommandLineHelp.Switches;
+    public IReadOnlyList<CliSwitch> CliSetUpSwitches => CommandLineHelp.SetUpByKodiakCleaner;
+    public IReadOnlyList<CliExitCode> CliExitCodes => CommandLineHelp.ExitCodes;
+    public IReadOnlyList<CliPage> CliPages => CommandLineHelp.Pages;
+    public IReadOnlyList<CliPage> CliSettingsPages => CommandLineHelp.SettingsPages;
+    public IReadOnlyList<string> CliNotes => CommandLineHelp.Notes;
+    public string CliPageUsage => CommandLineHelp.PageUsage;
+    public string CliPageExample => CommandLineHelp.PageExample;
+    public IReadOnlyList<IReadOnlyList<string>> CliPageUsageWords => new[] { CommandLineHelp.Words(CommandLineHelp.PageUsage) };
+    public IReadOnlyList<string> CliPageExampleWords => CommandLineHelp.Words(CommandLineHelp.PageExample);
+    public string CliPageSummary => CommandLineHelp.PageSummary;
+    public string CliFolderNote => $"Kodiak Cleaner is in {Settings.Folder}. Copy puts its full path in front, so the command runs from any folder.";
+    public string CliLogFolder => $"Everything a command does is also written to the activity log in {Settings.Data.Logs}.";
+
+    public ICommand CopyCommandCommand { get; }
+
+    /// <summary>Copies an example with this copy's full path in place of KodiakCleaner.exe, ready to paste into Command Prompt.</summary>
+    private void CopyCommand(string? example)
+    {
+        if (string.IsNullOrWhiteSpace(example)) return;
+        const string exe = "KodiakCleaner.exe";
+        var command = example.StartsWith(exe, StringComparison.OrdinalIgnoreCase)
+            ? $"\"{System.IO.Path.Combine(Settings.Folder, exe)}\"{example[exe.Length..]}"
+            : example;
+        if (ClipboardHelper.CopyOrExplain(command)) CliCopyStatus = "Copied: " + command;
+    }
+
+    private string _cliCopyStatus = "";
+    /// <summary>Says what Copy put on the clipboard, under the Commands card's heading.</summary>
+    public string CliCopyStatus { get => _cliCopyStatus; private set { if (Set(ref _cliCopyStatus, value)) OnPropertyChanged(nameof(HasCliCopyStatus)); } }
+    public bool HasCliCopyStatus => CliCopyStatus.Length > 0;
 
     private bool _isBackingUp;
     public bool IsBackingUp { get => _isBackingUp; private set => Set(ref _isBackingUp, value); }
@@ -718,4 +798,42 @@ public sealed record UpdateIntervalOption(UpdateInterval Interval, string Label)
 {
     // The themed ComboBox shows the chosen item's text, not DisplayMemberPath.
     public override string ToString() => Label;
+}
+
+/// <summary>One tool on Settings › Tools: on shows it in the sidebar, off hides it (Ted, 0.9.1 Beta).</summary>
+public sealed class ToolChoice : ObservableObject
+{
+    public ToolChoice(string key, string title, string glyph, string badge)
+    {
+        Key = key;
+        Title = title;
+        Glyph = glyph;
+        Badge = badge;
+    }
+
+    public string Key { get; }
+    public string Title { get; }
+    public string Glyph { get; }
+    public string Badge { get; }
+    public bool HasBadge => Badge.Length > 0;
+    public string SwitchName => $"Show {Title} in the Sidebar";
+
+    private bool _isShown = true;
+    public bool IsShown
+    {
+        get => _isShown;
+        set
+        {
+            if (!Set(ref _isShown, value)) return;
+            MainViewModel.SetToolHidden(Key, !value);
+        }
+    }
+
+    /// <summary>Follows the saved setting without saving it again.</summary>
+    public void Refresh(bool shown)
+    {
+        if (_isShown == shown) return;
+        _isShown = shown;
+        OnPropertyChanged(nameof(IsShown));
+    }
 }
