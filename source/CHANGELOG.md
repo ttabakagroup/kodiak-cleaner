@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.119 Dev] - 2026-10-25
+
+### Drive Wiper
+- Entire Drive has a fourth step, Actions, with the warning and the Wipe, Check Drive and Open Reports buttons. Step 3, After the Wipe, now holds only Leave It Uninitialized Like a New Drive and Check the Drive Afterwards.
+
 ## [0.8.118 Dev] - 2026-10-24
 
 ### Drive Wiper

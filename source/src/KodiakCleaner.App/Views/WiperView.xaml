@@ -215,8 +215,8 @@
                                 <TextBlock Text="Wipe" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
                             </DockPanel>
 
-                            <!-- Entire Drive: the three steps follow in their own cards. -->
-                            <TextBlock Text="Erase whole drives in three steps: pick the drive, choose how it's wiped and formatted, then choose what happens afterwards."
+                            <!-- Entire Drive: the four steps follow in their own cards. -->
+                            <TextBlock Text="Erase whole drives in four steps: pick the drive, choose how it's wiped and formatted, choose what happens afterwards, then start."
                                        Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,0"
                                        Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}" />
 
@@ -531,7 +531,7 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Entire Drive, Step 3: what happens once the wipe is done, then the warning and Wipe. -->
+                    <!-- Entire Drive, Step 3: what happens once the wipe is done. -->
                     <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <DockPanel>
@@ -540,7 +540,7 @@
                                 </Border>
                                 <StackPanel>
                                     <TextBlock Text="After the Wipe" Style="{StaticResource SectionTitle}" />
-                                    <TextBlock Text="Choose whether the drive is set up again and checked once it's wiped, then start."
+                                    <TextBlock Text="Choose whether the drive is set up again and checked once it's wiped."
                                                Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                 </StackPanel>
                             </DockPanel>
@@ -562,8 +562,24 @@
                                           IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" AutomationProperties.Name="Check the Drive Afterwards" />
                                 <StackPanel Margin="0,0,24,0">
                                     <TextBlock Text="Check the Drive Afterwards" Style="{StaticResource SettingTitle}" />
-                                    <TextBlock Text="After the wipe and setup, each drive is checked: its own health report (errors, wear, temperature), the disk errors Windows logged for it, and a read of every sector to find areas that are unreadable or unusually slow. When Verify the Last Pass ran, that read-back already tested every sector, so it isn't read again. Check Drive below runs the same check now, without erasing anything, and Open Reports shows the saved reports."
+                                    <TextBlock Text="After the wipe and setup, each drive is checked: its own health report (errors, wear, temperature), the disk errors Windows logged for it, and a read of every sector to find areas that are unreadable or unusually slow. When Verify the Last Pass ran, that read-back already tested every sector, so it isn't read again. Check Drive in Step 4 runs the same check now, without erasing anything, and Open Reports shows the saved reports."
                                                Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Entire Drive, Step 4: Actions (Ted, 0.8.119): the warning, then Wipe, Check Drive and Open Reports. -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding EntireDrive, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Style="{StaticResource StepBadge}">
+                                    <TextBlock Text="4" Style="{StaticResource StepNumber}" AutomationProperties.Name="Step 4" />
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="Actions" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Wipe the ticked drives, check them without erasing anything, or open the saved check reports."
+                                               Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                 </StackPanel>
                             </DockPanel>
 

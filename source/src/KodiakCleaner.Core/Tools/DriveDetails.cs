@@ -141,7 +141,7 @@ public static class DriveDetails
         var summary = new List<DriveDetailLine> { new("Verdict", verdict.VerdictName) };
         summary.AddRange(verdict.Reasons.Select((reason, i) => new DriveDetailLine(i == 0 ? "Why" : "", reason)));
         sections.Add(new DriveDetailSection("Summary", summary,
-            verdict.Summary + " Check Drive in Step 3 also reads every sector, without writing anything."));
+            verdict.Summary + " Check Drive in Step 4 also reads every sector, without writing anything."));
 
         var drive = new List<DriveDetailLine>
         {

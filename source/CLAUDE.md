@@ -71,10 +71,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   blocks re-read in 64 KB pieces, slow = 1 s or 10x typical and 200 ms, gives up at 100 areas or 64 MB). A wipe that verified its last
   pass skips the scan (the read-back counts). Verdict Healthy/Warning/Failing with plain reasons, shown in the progress card, logged and
   saved to Reports\Integrity Check. Never write during a check; a test keeps GenericWrite and writes out of DriveHealthCheck.cs.
-  Layout (Ted, 0.8.115): Entire Drive is three numbered step cards (1 Select the Drive, 2 Wipe and Format, 3 After the Wipe + warning,
-  Wipe, Check Drive, Open Reports); Free Space Only keeps one card. Users see `WipeMethod.Firmware` as "Built-In Secure Erase", never
+  Layout (Ted, 0.8.115; Step 4 0.8.119): Entire Drive is four numbered step cards (1 Select the Drive, 2 Wipe and Format, 3 After the
+  Wipe, 4 Actions: warning, Wipe, Check Drive, Open Reports); Free Space Only keeps one card. Users see `WipeMethod.Firmware` as "Built-In Secure Erase", never
   "firmware erase" (people read it as erasing the firmware); say it wipes the data and the drive keeps working. Open Reports opens
-  Reports\Integrity Check (progress card after a check, Step 3, and Integrity Check's details card). A PaneRows divider ("wiper")
+  Reports\Integrity Check (progress card after a check, Step 4: Actions, and Integrity Check's details card). A PaneRows divider ("wiper")
   sits between the progress card and the settings; it and the card hide together and the settings then span all rows.
   Ted, 0.8.118: the progress card has an X (only when nothing is running) that hides the card and the divider; Step 2 has a
   "Giving This Drive Away or Selling It?" tip per drive type, and a Quick confirmation ends with the give-away warning.
@@ -83,7 +83,7 @@ privacy first, local first, security paramount, convenient, practical and useful
   USB SSD; 11 characters at most) until typed over, never "Wiped"; unticking Name the Drive blanks the box and diskpart gets no label=.
   `DiskFormat.SafeLabel`: 32 characters on NTFS, 11 on exFAT/FAT32, capitals on FAT32. Step 1's table grows to ~10 rows (MaxHeight 460)
   and the wheel scrolls the page unless the table itself still has rows to scroll; a click anywhere on a row ticks it (not on the tick
-  box or a button, not after a drag); two or more ticked shows `WipeMethods.SelectedWarning` in Step 1 and Step 3. Each row's info button
+  box or a button, not after a drag); two or more ticked shows `WipeMethods.SelectedWarning` in Step 1 and Step 4. Each row's info button
   opens `DriveDetailsWindow` (`DriveDetails` in Core: MSFT_PhysicalDisk/MSFT_Disk/MSFT_Partition, the Check Drive health report,
   ParseDriveEvents; queries only, never opens the disk), with Copy.
 - Defrag and TRIM (2026-10-12, `DriveOptimizer`): Windows' own defrag.exe only; hard drives /D (NTFS/FAT), SSD and NVMe /L, unknown /O, flash
