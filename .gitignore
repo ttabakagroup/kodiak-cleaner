@@ -3,3 +3,6 @@
 website/.dev.vars
 website/.wrangler/
 node_modules/
+
+# Claude Code session settings stay out of the public repo (Ted, 2026-10-25)
+.claude/
