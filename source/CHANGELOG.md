@@ -5,6 +5,11 @@ the changes since your previous version, and About > See all changes shows the f
 
 ## [Unreleased]
 
+## [0.8.120 Dev] - 2026-10-25
+
+### Settings
+- Why It Was Made now asks you to consider supporting Kodiak Cleaner on Ko-fi, instead of making a donation (Ted).
+
 ## [0.8.119 Dev] - 2026-10-25
 
 ### Drive Wiper
