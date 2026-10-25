@@ -1,0 +1,8 @@
+{
+  "name": "kofi-webhook",
+  "private": true,
+  "type": "module",
+  "description": "Ted's Ko-fi webhook: signs and emails supporter codes for each product.",
+  "license": "MIT",
+  "scripts": { "test": "node --test tests/*.test.mjs", "deploy": "npx wrangler deploy" }
+}

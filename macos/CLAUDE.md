@@ -1,6 +1,6 @@
 # Kodiak Cleaner for Mac: Project Rules
 
-Kodiak Cleaner for Mac is Ted Tabaka's Mac cleaner and the Mac edition of Kodiak Cleaner (Windows: `/mnt/project-files/ccleaner-alt/`,
+Kodiak Cleaner for Mac is Ted Tabaka's Mac cleaner and the Mac edition of Kodiak Cleaner (Windows: `source/` in the repo, the folder `KC_WINDOWS_APP` names in the project files,
 Linux: `/mnt/project-files/kodiak-linux/`; leave those alone from here). Swift with SwiftUI, a Swift package with no Xcode project:
 logic in `Sources/KodiakCore` (Foundation only, unit tested), the app in `Sources/KodiakCleaner`. It follows Ted's app standard
 (the appbuilder skill): privacy first, local first, security paramount, convenient, practical and useful to everyone.
