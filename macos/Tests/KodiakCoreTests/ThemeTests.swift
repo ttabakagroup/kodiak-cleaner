@@ -85,4 +85,17 @@ final class ThemeTests: XCTestCase {
             }
         }
     }
+
+    /// Each Color Scheme tile shows a strip of its primary, secondary and tertiary colors (Ted, 0.8.15).
+    func testSchemePreviewStrip() {
+        for scheme in Themes.schemeOrder {
+            for dark in [false, true] {
+                let colors = Themes.schemePreview(scheme, dark: dark)
+                XCTAssertEqual(colors.count, 3, scheme)
+                XCTAssertEqual(Set(colors).count, 3, scheme)
+            }
+        }
+        XCTAssertEqual(Themes.schemePreview("honey", dark: false), ["#6B4A34", "#D9A441", "#F5EFE6"])
+        XCTAssertTrue(Themes.schemeReasons["classic"]!.contains("thank-you to supporters"))
+    }
 }
