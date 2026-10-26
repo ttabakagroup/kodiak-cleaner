@@ -65,7 +65,7 @@ jobs:
           ../packaging/store/build-msix.ps1 -Publish publish -Out dist-store -Version $version
           ../packaging/store/build-msix.ps1 -Publish publish -Out dist-store -Version $version -Store
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         continue-on-error: true
         with:
           name: KodiakCleaner-${{ steps.version.outputs.tag }}-msix-run${{ github.run_number }}
@@ -74,7 +74,7 @@ jobs:
 
       # Every build is also kept in releases/ and the download bucket, so this copy is short-lived, and a full artifact
       # store never fails the build.
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         continue-on-error: true
         with:
           name: KodiakCleaner-${{ steps.version.outputs.tag }}-run${{ github.run_number }}
