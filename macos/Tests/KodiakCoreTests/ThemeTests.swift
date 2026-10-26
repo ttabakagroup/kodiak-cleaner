@@ -98,4 +98,12 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(Themes.schemePreview("honey", dark: false), ["#6B4A34", "#D9A441", "#F5EFE6"])
         XCTAssertTrue(Themes.schemeReasons["classic"]!.contains("thank-you to supporters"))
     }
+
+    /// Every color scheme uses the same fonts (Ted, 0.8.16), so switching schemes never changes sizes.
+    func testOneFontEverywhere() {
+        for scheme in Themes.schemeOrder {
+            XCTAssertEqual(Themes.schemes[scheme]!.displayFont, "fredoka", scheme)
+            XCTAssertEqual(Themes.schemes[scheme]!.bodyFont, "fredoka", scheme)
+        }
+    }
 }

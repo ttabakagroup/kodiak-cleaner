@@ -17,7 +17,7 @@ public enum Themes {
         public var dark: [String: String]
         public var radius: Double
         public var radiusCard: Double
-        /// "fredoka", "system" or "avenir"
+        /// "fredoka" in every scheme: one font for all text, so switching never changes sizes (Ted, 0.8.16).
         public var displayFont: String
         public var bodyFont: String
     }
@@ -41,7 +41,7 @@ public enum Themes {
                    "warn_bg": "#4A2A22", "warn_text": "#F0A08A", "warn_border": "#4A2A22", "danger": "#F0A08A",
                    "danger_bg": "#B4432E", "danger_fg": "#FFFFFF", "danger_border": "#B4432E", "chip_bg": "#4A3A1D",
                    "chip_text": "#E8C176", "brand_1": "#EDE6DC", "brand_2": "#E0A94C"],
-            radius: 10, radiusCard: 16, displayFont: "fredoka", bodyFont: "system"),
+            radius: 10, radiusCard: 16, displayFont: "fredoka", bodyFont: "fredoka"),
         "classic": Scheme(
             light: ["bg": "#F5F6F8", "surface": "#FFFFFF", "surface_alt": "#F2F4F7", "row_alt": "#F1F4F8", "row_hover": "#E6EDF8",
                     "row_line": "#DCE1E7", "column_divider": "#9AA3AE", "line": "#E3E6EA", "text": "#1B1F24", "muted": "#5F6670",
@@ -59,7 +59,7 @@ public enum Themes {
                    "warn_border": "#8A7330", "danger": "#F87171", "danger_bg": "#DC2626", "danger_fg": "#FFFFFF",
                    "danger_border": "#DC2626", "chip_bg": "#23324D", "chip_text": "#93BBFB", "brand_1": "#F1F2F4",
                    "brand_2": "#60A5FA"],
-            radius: 8, radiusCard: 10, displayFont: "system", bodyFont: "system"),
+            radius: 8, radiusCard: 10, displayFont: "fredoka", bodyFont: "fredoka"),
         "glacier": Scheme(
             light: ["bg": "#F1F3F3", "surface": "#F7F8F8", "surface_alt": "#EAEEEF", "row_alt": "#EAEEEF",
                     "row_hover": "rgba(108,147,166,0.16)", "row_line": "#D5DCDF", "column_divider": "#D5DCDF", "line": "#D5DCDF",
@@ -77,7 +77,7 @@ public enum Themes {
                    "warn_bg": "#252D31", "warn_text": "#B39690", "warn_border": "#B39690", "danger": "#B39690",
                    "danger_bg": "#252D31", "danger_fg": "#B39690", "danger_border": "#333D42", "chip_bg": "#A9BDB4",
                    "chip_text": "#26301F", "brand_1": "#EAEEEE", "brand_2": "#EAEEEE"],
-            radius: 6, radiusCard: 6, displayFont: "avenir", bodyFont: "avenir"),
+            radius: 6, radiusCard: 6, displayFont: "fredoka", bodyFont: "fredoka"),
         "lagoon": Scheme(
             light: ["bg": "#F2F7FB", "surface": "#FFFFFF", "surface_alt": "#E8F1F8", "row_alt": "#E8F1F8",
                     "row_hover": "rgba(10,132,214,0.16)", "row_line": "#D3E2EE", "column_divider": "#D3E2EE", "line": "#D3E2EE",
@@ -95,7 +95,7 @@ public enum Themes {
                    "warn_bg": "#3A2A14", "warn_text": "#F6C88A", "warn_border": "#8A6A3A", "danger": "#FF8A80",
                    "danger_bg": "#C2362B", "danger_fg": "#FFFFFF", "danger_border": "#C2362B", "chip_bg": "#12324A",
                    "chip_text": "#8EDCF5", "brand_1": "#E8F1F8", "brand_2": "#5CC6F2"],
-            radius: 12, radiusCard: 16, displayFont: "fredoka", bodyFont: "system"),
+            radius: 12, radiusCard: 16, displayFont: "fredoka", bodyFont: "fredoka"),
     ]
 
     /// Color Scheme tiles, always in this order. Honey is free and the default; Classic, Glacier and Lagoon are Supporter themes.

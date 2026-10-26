@@ -65,7 +65,7 @@ struct AboutView: View {
 
     static let credits: [(String, String, String, String)] = [
         // (name, what it does here, license, address)
-        ("Fredoka", "Heading font in the Honey theme, built into Kodiak Cleaner", "SIL Open Font License 1.1",
+        ("Fredoka", "The font for all text, Regular and SemiBold, built into Kodiak Cleaner with its license", "SIL Open Font License 1.1",
          "https://github.com/hafontia/Fredoka-One"),
         ("SF Symbols", "Icons, from macOS itself (not bundled)", "Apple's license for macOS", "https://developer.apple.com/sf-symbols/"),
         ("Swift and SwiftUI", "The language and interface, from Apple (not bundled)", "Apache 2.0 (Swift) and Apple's license for macOS",

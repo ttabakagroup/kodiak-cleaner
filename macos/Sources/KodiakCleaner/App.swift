@@ -77,7 +77,7 @@ enum SelfTest {
         print("\(AppInfo.name) \(AppInfo.versionName) on \(AppInfo.osDescription) (\(AppInfo.processorDescription))")
         check("Version from the app's Info.plist", AppInfo.build.packaged || CommandLine.arguments.contains("--source"),
               AppInfo.versionName)
-        for name in ["logo.png", "CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "Fonts/Fredoka-SemiBold.ttf"] {
+        for name in ["logo.png", "CHANGELOG.md", "PRIVACY.md", "terms-of-use.md", "Fonts/Fredoka-Regular.ttf", "Fonts/Fredoka-SemiBold.ttf", "Fonts/Fredoka-OFL.txt"] {
             check("Bundled \(name)", Resources.path(name) != nil)
         }
         // build.sh ships Ted's key in place of the test key once it exists, so either one counts.
@@ -120,12 +120,8 @@ enum SelfTest {
         let filesystems = Run.program(WipeDisks.diskutilPath, ["listFilesystems"]).output
         print("      diskutil listFilesystems: " + filesystems.split(separator: "\n").joined(separator: " | "))
         check("diskutil knows the file systems", ["APFS", "HFS+", "ExFAT", "FAT32", "Free Space"].allSatisfy { filesystems.contains($0) })
-        check("Fredoka font", NSFont(name: "Fredoka-SemiBold", size: 12) != nil || registerAndCheckFont())
-        return ok
-    }
-
-    static func registerAndCheckFont() -> Bool {
         Theme.registerFonts()
-        return NSFont(name: "Fredoka-SemiBold", size: 12) != nil
+        check("Fredoka fonts", NSFont(name: "Fredoka-Regular", size: 12) != nil && NSFont(name: "Fredoka-SemiBold", size: 12) != nil)
+        return ok
     }
 }

@@ -1,5 +1,11 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.16 Dev] - 2026-10-26
+
+### Changed
+- **Settings > Appearance:** each Color Scheme tile is now filled with a soft gradient of its three main colors, with the name and description on a frosted panel so they stay easy to read.
+- Every color scheme now uses Fredoka, the Kodiak Cleaner font, for all text, in its real Regular and SemiBold weights, so nothing looks bolder in one scheme than another and switching schemes no longer changes text sizes.
+
 ## [0.8.15 Dev] - 2026-10-26
 
 ### Changed

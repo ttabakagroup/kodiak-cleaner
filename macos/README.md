@@ -4,7 +4,7 @@ Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
 Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a small, honest cleaner for caches, logs, temporary files and browser data, plus Triggers, one list of everything that starts by itself on your Mac, and Drive Wiper. No telemetry, no ads, no upsells, no background services. Free and open source under the MIT License.
 
-**Status:** 0.8.15 Dev, beta software. Use at your own risk and keep your own backups.
+**Status:** 0.8.16 Dev, beta software. Use at your own risk and keep your own backups.
 
 ## Contents
 
@@ -84,7 +84,7 @@ Needs a Mac with Xcode 26 or newer. The GitHub workflow (`.github/workflows/maco
 | `Sources/KodiakCleaner/` | The SwiftUI app: pages, components, theme, dialogs, self-test and screenshots |
 | `Tests/KodiakCoreTests/` | Unit tests (cleaning, Triggers, Drive Wiper with a fake diskutil, contrast, settings, supporter codes) |
 | `tests/check_source.py` | Title Case, colors only in the theme files, no network code, docs present |
-| `Resources/` | Bundled into the app: logo, Fredoka font, supporter keys |
+| `Resources/` | Bundled into the app: logo, Fredoka font (Regular, SemiBold, OFL), supporter keys |
 | `packaging/` | Info.plist, app icon and the ReadMe for the Docs folder |
 | `tools/make_docs.py` | Writes the seven plain-text Docs files |
 | `build.sh` | Test, build, package, self-test and screenshots |
