@@ -155,6 +155,13 @@ public class UninstallTests
     }
 
     [Fact]
+    public void A_rebuild_of_the_same_version_replaces_the_old_install_instead_of_adding_a_second_one()
+    {
+        // Ted 2026-10-26: three 0.9.7 review builds left three "Kodiak Cleaner" entries in Programs and Features.
+        Assert.Matches("<MajorUpgrade [^>]*AllowSameVersionUpgrades=\"yes\"", Wxs);
+    }
+
+    [Fact]
     public void The_start_menu_shortcut_keeps_its_machine_key_and_the_ice_checks_that_disagree_are_off()
     {
         // ICE38/ICE43/ICE57 (only run by the Windows build) want an HKCU key path for a Start menu shortcut, which is wrong

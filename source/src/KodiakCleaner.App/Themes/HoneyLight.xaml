@@ -39,6 +39,8 @@
     <CornerRadius x:Key="RadiusCard">16</CornerRadius>
     <!-- Soft ring around a focused text box (Honey only). -->
     <SolidColorBrush x:Key="FocusGlow" Color="#2ED9A441" />
-    <FontFamily x:Key="FontDisplay">pack://application:,,,/Assets/Fonts/#Fredoka SemiBold</FontFamily>
-    <FontFamily x:Key="FontBody">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <!-- Fredoka for all text in every color scheme (Ted, 0.9.7): Regular and SemiBold are built in, so bold text is the real
+         SemiBold face and switching schemes changes only colors and corners, never sizes. -->
+    <FontFamily x:Key="FontDisplay">pack://application:,,,/Assets/Fonts/#Fredoka</FontFamily>
+    <FontFamily x:Key="FontBody">pack://application:,,,/Assets/Fonts/#Fredoka</FontFamily>
 </ResourceDictionary>

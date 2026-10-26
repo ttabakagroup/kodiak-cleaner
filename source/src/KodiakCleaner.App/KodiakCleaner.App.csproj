@@ -25,9 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\Fonts\Fredoka-Regular.ttf" />
+    <Resource Include="Assets\Fonts\Fredoka-SemiBold.ttf" />
+    <Resource Include="Assets\Fonts\Fredoka-OFL.txt" />
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\logo.png" />
-    <Resource Include="Assets\Fonts\Fredoka-SemiBold.ttf" />
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="CHANGELOG.md" />
     <!-- Every Dev build's changes (0.8.0 to 0.8.121), for About > All Changes Since the Start. -->
     <EmbeddedResource Include="..\..\docs\history\dev-changelog.md" LogicalName="dev-changelog.md" />

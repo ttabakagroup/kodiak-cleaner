@@ -417,7 +417,7 @@ The sidebar can be widened, locked with the paperclip, or collapsed to icons onl
 Everything stays on your PC.
 
 - **Feedback** opens the Contact Us form on the website in your browser. Nothing is sent until you press Send Message there.
-- **No remote resources.** The Fredoka font is built in, and icons come from Windows' own icon font.
+- **No remote resources.** The Fredoka font (SIL Open Font License) is built in, and icons come from Windows' own icon font.
 - **No telemetry**, analytics, crash reports, accounts or ads. Nothing is sent automatically, ever.
 - **Settings, backups and logs** are plain files: `KodiakCleaner.ini` next to `KodiakCleaner.exe`, and the `Backups`, `Logs` and `Reports` folders in `Documents\Kodiak Cleaner` (beside the exe for the portable version). The activity log stays on your PC and can be turned off.
 - **Updates are the only network use.** Kodiak Cleaner reads one small update file from its website, www.kodiakcleaner.app, only when you click **Check for Updates** on the About page or **Check Now** in Settings, or on the schedule you pick if you turn on Check for Updates Automatically (off by default; on startup, every hour up to monthly). The installer comes from the same website and is checked against the SHA-256 checksum in that file before it's installed.

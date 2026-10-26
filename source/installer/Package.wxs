@@ -8,8 +8,10 @@
            Compressed="yes">
 
     <SummaryInformation Description="$(var.ProductName) - a small, honest PC cleaner" />
-    <!-- afterInstallExecute keeps KodiakCleaner.ini in place across upgrades. -->
-    <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer version of Kodiak Cleaner is already installed." />
+    <!-- afterInstallExecute keeps KodiakCleaner.ini in place across upgrades. AllowSameVersionUpgrades: Windows Installer
+         only compares the first three version parts, so without it a rebuild of the same version (0.9.7 twice, or 0.9.7.1
+         after 0.9.7.0) installs next to the old one and Programs and Features shows two Kodiak Cleaners. -->
+    <MajorUpgrade Schedule="afterInstallExecute" AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of Kodiak Cleaner is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
     <Icon Id="AppIcon" SourceFile="..\src\KodiakCleaner.App\Assets\app.ico" />

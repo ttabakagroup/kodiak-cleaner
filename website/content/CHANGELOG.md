@@ -6,6 +6,12 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.7 Beta] - 2026-10-26
+
+### Settings and Appearance
+- Each Color Scheme tile in Settings > Appearance is now filled with a soft gradient of its three main colors, in place of the strip. The name, description and Supporter Theme tag sit on a frosted panel so they stay easy to read.
+- Every color scheme now uses Fredoka, the Kodiak Cleaner font, for all text, in its real Regular and SemiBold weights, so nothing looks bolder in one scheme than another and switching schemes no longer changes the size of the window's text.
+
 ## [0.9.6 Beta] - 2026-10-26
 
 ### Settings and Appearance

@@ -9,7 +9,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - The only network use is the update check on the website (`UpdateManifest`, https://www.kodiakcleaner.app/updates/<channel>.json, beta.json for the Beta, since 0.8.40
   because the GitHub repo went private; Ted), off by default and only on request. Any new online feature
   must be off until turned on, explained where it's turned on, and added to PRIVACY.md and store-assets/privacy-policy.html.
-- No remote resources (CDNs, web fonts). Fonts are bundled (`Assets/Fonts`) or come from Windows.
+- No remote resources (CDNs, web fonts). Fredoka Regular + SemiBold and its OFL are bundled (`Assets/Fonts`); icons are Segoe Fluent Icons from Windows.
 - Settings go in `KodiakCleaner.ini` next to the exe. Backups and logs go in `Settings.Data` (`DataFolders`, Ted 0.8.36):
   `Documents\Kodiak Cleaner` for an installed copy (AppData\Local\Kodiak Cleaner only if Documents can't be written), beside
   the exe for a portable copy, with `Backups\{Drivers, Event Logs, Mass Rename, Programs History, Registry, Scheduled Tasks, Settings, Startup History}`, `Logs\` and `Reports\` (System Information exports, Ted 0.8.46).
@@ -34,8 +34,8 @@ privacy first, local first, security paramount, convenient, practical and useful
 
 ## Interface
 - Colors only from the Honey (default), Classic, Glacier and Lagoon theme dictionaries in `Themes/` and the accent shades
-  (`Core/Appearance/AccentShades.cs`, used by `AccentColors.cs`); no colors anywhere else (a test enforces this). Only colors, fonts and corner
-  radii differ between themes. The theme colors match the standard's `tools/design/theme.css` exactly (a test checks; run
+  (`Core/Appearance/AccentShades.cs`, used by `AccentColors.cs`); no colors anywhere else (a test enforces this). Only colors and corner
+  radii differ between themes: every scheme uses the built-in Fredoka (Regular and SemiBold) for all text (Ted, 0.9.7, so switching never changes sizes or boldness). The theme colors match the standard's `tools/design/theme.css` exactly (a test checks; run
   `python3 tools/design/check_contrast.py tools/design/theme.css` after any color change: WCAG 2.2 AA). Honey is free; Classic, Glacier and
   Lagoon are Supporter themes (standard, 0.8.31; Lagoon 0.8.74) and fall back to Honey without a code. Accent colors (theme's own, Windows, Blue, Teal, Green,
   Purple, Pink, Orange, Slate) are free and adjusted per theme and mode; swatches are 28px with a ring and a checkmark when chosen.

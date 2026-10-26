@@ -104,10 +104,25 @@ public sealed class PaletteChoice : ObservableObject
     /// <summary>The scheme's primary, secondary and tertiary colors for the strip on its tile, in the current light or dark mode.</summary>
     public System.Windows.Media.Brush[] Preview => ThemeManager.SchemePreview(Palette);
 
+    /// <summary>The tile's fill: a soft left-to-right blend of the three preview colors (Ted, 0.9.7).</summary>
+    public System.Windows.Media.Brush Fill
+    {
+        get
+        {
+            var colors = Preview.OfType<System.Windows.Media.SolidColorBrush>().Select(b => b.Color).ToArray();
+            var fill = new System.Windows.Media.LinearGradientBrush { StartPoint = new(0, 0.5), EndPoint = new(1, 0.5) };
+            for (int i = 0; i < colors.Length; i++)
+                fill.GradientStops.Add(new System.Windows.Media.GradientStop(colors[i], colors.Length == 1 ? 0 : (double)i / (colors.Length - 1)));
+            fill.Freeze();
+            return fill;
+        }
+    }
+
     public void Refresh()
     {
         OnPropertyChanged(nameof(IsSelected));
         OnPropertyChanged(nameof(Preview));
+        OnPropertyChanged(nameof(Fill));
     }
 }
 

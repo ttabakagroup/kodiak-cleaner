@@ -51,7 +51,7 @@ public class SchemePreviewTests
     public void TheTileHasTheStrip()
     {
         var xaml = Repo.Read("src", "KodiakCleaner.App", "Views", "SettingsView.xaml");
-        for (int i = 0; i < 3; i++) Assert.Contains($"{{Binding Preview[{i}]}}", xaml);
+        Assert.Contains("{Binding Fill}", xaml);
         Assert.Contains("p.Refresh()", Repo.Read("src", "KodiakCleaner.App", "ViewModels", "SettingsViewModel.cs"));
     }
 }
