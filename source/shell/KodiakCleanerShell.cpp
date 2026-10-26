@@ -5,12 +5,10 @@
 // (com:SurrogateServer in packaging/store/AppxManifest.xml), so it runs in its own dllhost.exe with the package's identity
 // and never inside File Explorer itself; if it fails, Explorer only loses the menu entry.
 //
-// It is offered in two places:
-// - the empty space inside a folder (desktop5:ItemType "Directory\Background" in the manifest), but GetState hides it
-//   everywhere except the Recycle Bin, so ordinary folders and the desktop don't get an extra entry;
-// - the Recycle Bin icon, through the app's own registry verb (Integration.SetRecycleBinMenu sets ExplorerCommandHandler
-//   to this class). Microsoft doesn't document this for the new menu, so it is an experiment; the verb keeps its command
-//   key and still works under Show More Options either way.
+// It is registered for the empty space inside a folder (desktop5:ItemType "Directory\Background" in the manifest), and
+// GetState hides it everywhere except the Recycle Bin window, so ordinary folders and the desktop don't get an extra entry.
+// The Recycle Bin icon itself keeps the app's classic registry verb (Show More Options). Pointing that verb at this class
+// with ExplorerCommandHandler was tried in 0.9.3 Beta: Windows 11 hid the entry from both menus, so it isn't done.
 //
 // Plain COM with no libraries, so it builds with MSVC (CI, via CMakeLists.txt) and MinGW (a quick check on Linux).
 #include <windows.h>

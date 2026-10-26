@@ -6,6 +6,11 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.4 Beta] - 2026-10-26
+
+### Microsoft Store
+- Open Kodiak Cleaner is back under Show More Options on the Recycle Bin in the Store version. Windows 11 doesn't allow it in the short right-click menu there, and the 0.9.3 Beta try hid it from both menus.
+
 ## [0.9.3 Beta] - 2026-10-26
 
 ### Microsoft Store

@@ -81,11 +81,9 @@ public static class Integration
         verb.SetValue("Icon", $"\"{ExePath}\",0");
         using var cmd = verb.CreateSubKey("command", writable: true);
         cmd.SetValue("", $"\"{LaunchPath}\"");
-        // Store copy (Ted, 2026-10-26): also hand the verb to the package's Windows 11 menu command (source/shell), in the
-        // hope that the short right-click menu lists it. Undocumented; if Windows ignores it, the command key above still
-        // works under Show More Options.
-        if (IsStore) verb.SetValue("ExplorerCommandHandler", ShellCommandClsid);
-        else verb.DeleteValue("ExplorerCommandHandler", throwOnMissingValue: false);
+        // Never an ExplorerCommandHandler here: Ted tested it on Windows 11 (2026-10-26) and Explorer then dropped the entry from
+        // Show More Options as well, without adding it to the short menu. Removed from copies that set it in 0.9.3.
+        verb.DeleteValue("ExplorerCommandHandler", throwOnMissingValue: false);
     }
 
     /// <summary>KodiakCleanerShell.dll's IExplorerCommand class (also in AppxManifest.xml and KodiakCleanerShell.cpp; a test keeps them equal).</summary>
