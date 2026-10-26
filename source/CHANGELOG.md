@@ -6,6 +6,13 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.2 Beta] - 2026-10-26
+
+### Terms of Use
+- Supporting on Ko-fi can be one time or monthly, with a link to the new Refund Policy at kodiakcleaner.app/refunds/.
+- The supporter extras now list the Lagoon theme too, and the update-check sentence matches the Privacy Policy (Check for Updates, Check Now, or the schedule you pick).
+- A new Governing Law section (Illinois, USA). Effective October 26, 2026.
+
 ## [0.9.1 Beta] - 2026-10-25
 
 ### Settings and Appearance

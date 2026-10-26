@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.21 Dev] - 2026-10-26
+
+### Changed
+- **Terms of Use:** supporting on Ko-fi can be one time or monthly, with a link to the new Refund Policy at kodiakcleaner.app/refunds/; the supporter extras now list the Lagoon theme too; a new Governing Law section (Illinois, USA). Effective October 26, 2026.
+
 ## [0.8.20 Dev] - 2026-10-24
 
 ### Supporting Kodiak Cleaner
