@@ -223,16 +223,16 @@ private struct AppearanceSettings: View {
             }
         }
         Card(title: "Color Scheme") {
-            // The tiles wrap onto a second line in a narrow window instead of being cut off.
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 240), spacing: 10, alignment: .top)],
+            // Two tiles to a line (Ted, 0.8.15).
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10, alignment: .top), count: 2),
                       alignment: .leading, spacing: 10) {
                 ForEach(Themes.schemeOrder, id: \.self) { key in schemeTile(key) }
             }
             // Ted's reasons for each color scheme, as in the Windows edition.
             Rectangle().fill(theme.line).frame(height: 1).padding(.vertical, 6)
             Text("Why These Colors").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
-            ForEach(Themes.schemeOrder, id: \.self) { key in
-                Text("\(Text(Themes.schemeNames[key]!).bold()) \(Themes.schemeReasons[key]!)")
+            ForEach(Array(Themes.schemeOrder.enumerated()), id: \.element) { number, key in
+                Text("\(Text("\(number + 1). \(Themes.schemeNames[key]!)").bold()) \(Themes.schemeReasons[key]!)")
                     .font(theme.body(12)).foregroundStyle(theme.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -258,12 +258,17 @@ private struct AppearanceSettings: View {
             }
         } label: {
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 4) {
+                // A preview strip: the scheme's primary, secondary and tertiary colors, a third each.
+                HStack(spacing: 0) {
                     ForEach(Themes.schemePreview(key, dark: theme.dark), id: \.self) { color in
-                        Circle().fill(Theme.color(color)).frame(width: 16, height: 16)
-                            .overlay(Circle().strokeBorder(theme.line, lineWidth: 1))
+                        Rectangle().fill(Theme.color(color)).frame(maxWidth: .infinity)
                     }
                 }
+                .frame(height: 14)
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+                .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(theme.controlBorder, lineWidth: 1))
+                .padding(.bottom, 4)
+                .accessibilityHidden(true)
                 Text(Themes.schemeNames[key]!).font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
                 Caption(Themes.schemeBlurbs[key]!)
                 if locked { Chip(text: "Supporter Theme", icon: "lock.fill") }

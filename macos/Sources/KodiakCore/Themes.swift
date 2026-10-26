@@ -107,9 +107,9 @@ public enum Themes {
     /// Ted's reasons for each scheme (Settings > Appearance > Why These Colors), word for word as in the Windows edition.
     public static let schemeReasons = [
         "honey": "is inspired by the bear behind Kodiak Cleaner. Its warm golds and creams are part of the Kodiak Cleaner brand.",
-        "classic": "is a timeless choice for supporters: crisp white and blue that show a little class without getting in the way.",
-        "glacier": "is my thank-you to supporters, with cool, calm blues inspired by the quiet beauty of glacier ice.",
-        "lagoon": "is another thank-you to supporters: fresh and clear like shallow water, with ocean blues and aqua, and deep water at night in dark mode.",
+        "classic": "is my thank-you to supporters: a timeless, crisp white and blue that show a little class without getting in the way.",
+        "glacier": "is another thank-you to supporters, with cool, calm blues inspired by the quiet beauty of glacier ice.",
+        "lagoon": "is one more thank-you to supporters: fresh and clear like shallow water, with ocean blues and aqua, and deep water at night in dark mode.",
     ]
 
     /// Accent colors for everyone, in the standard's fixed order after the scheme's own accent (""). "macOS" follows
@@ -267,9 +267,14 @@ public enum Themes {
         tokensFor(scheme, dark: dark, accent: accent, systemAccentColor: systemAccentColor)["accent"]!
     }
 
-    /// Three colors a Color Scheme tile shows: background, accent and text.
+    /// The colors on each Color Scheme tile's strip (Ted, 0.8.15): primary, secondary and tertiary, a third each.
+    /// The same theme colors as the Windows and Linux editions.
+    public static let schemePreviewKeys = ["honey": ["primary", "accent", "bg"], "classic": ["primary", "text", "bg"],
+                                           "glacier": ["primary", "chip_bg", "bg"], "lagoon": ["primary", "success", "bg"]]
+
+    /// Three colors a Color Scheme tile shows: its primary, secondary and tertiary (the page background).
     public static func schemePreview(_ scheme: String, dark: Bool) -> [String] {
         let table = dark ? schemes[scheme]!.dark : schemes[scheme]!.light
-        return [table["bg"]!, table["accent"]!, table["text"]!]
+        return schemePreviewKeys[scheme]!.map { table[$0]! }
     }
 }
