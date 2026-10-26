@@ -21,22 +21,22 @@ public static class ScheduledCleaning
     /// <summary>The same schedule's task under another channel's folder (a Dev install updated to Beta).</summary>
     private static IEnumerable<string> OtherChannelNames(CleaningSchedule s) => AppInfo.OtherChannels.Select(c => TaskName(AppInfo.IdFor(c), s));
 
-    /// <summary>Administrator schedules are only offered to an administrator on the installed copy (a task that runs a
-    /// user-writable exe with full rights would let anything elevate).</summary>
-    public static bool CanRunAsAdmin => Elevation.IsAdministrator && Integration.IsInstalled;
+    /// <summary>Administrator schedules are only offered to an administrator on the MSI copy (a task that runs a
+    /// user-writable exe or the Store's app alias with full rights would let anything elevate).</summary>
+    public static bool CanRunAsAdmin => Elevation.IsAdministrator && Integration.CanSkipUac;
 
     /// <summary>Makes (or replaces) the Windows task. Throws InvalidOperationException with Windows' message when it can't.</summary>
     public static void Register(CleaningSchedule s)
     {
         if (s.AsAdmin && !CanRunAsAdmin) s.AsAdmin = false;
-        var xml = s.TaskXml(Integration.ExePath, Arg + s.Id, WindowsIdentity.GetCurrent().Name,
+        var xml = s.TaskXml(Integration.LaunchPath, Arg + s.Id, WindowsIdentity.GetCurrent().Name,
             $"{s.Name}: {s.Describe()}. A scheduled cleaning made in {AppInfo.Name}; change or delete it there, under Cleaner > Schedule.", DateTime.Now);
         var file = Path.Combine(Path.GetTempPath(), $"kodiakcleaner-schedule-{Guid.NewGuid():N}.xml");
         try
         {
             File.WriteAllText(file, xml, Encoding.Unicode);
             Integration.RunSchtasks($"/Create /TN \"{TaskName(s)}\" /XML \"{file}\" /F", ignoreErrors: false);
-            s.RegisteredFor = Integration.ExePath;
+            s.RegisteredFor = Integration.LaunchPath;
             foreach (var old in OtherChannelNames(s)) Integration.RunSchtasks($"/Delete /TN \"{old}\" /F", ignoreErrors: true);
         }
         finally
@@ -55,7 +55,7 @@ public static class ScheduledCleaning
     public static void SyncTasks()
     {
         var changed = false;
-        foreach (var s in Settings.Current.Schedules.Where(s => !string.Equals(s.RegisteredFor, Integration.ExePath, StringComparison.OrdinalIgnoreCase)))
+        foreach (var s in Settings.Current.Schedules.Where(s => !string.Equals(s.RegisteredFor, Integration.LaunchPath, StringComparison.OrdinalIgnoreCase)))
         {
             if (s.AsAdmin && !CanRunAsAdmin) continue; // only an administrator can remake an administrator task
             Register(s);

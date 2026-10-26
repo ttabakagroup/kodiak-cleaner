@@ -70,7 +70,9 @@ public partial class ScheduleEditWindow : Window
             ? "Also cleans the items that need administrator rights. Off, those items are skipped."
             : Integration.IsInstalled
                 ? "Items that need administrator rights are skipped. To include them, open Kodiak Cleaner as administrator first."
-                : "Items that need administrator rights are skipped. Only the installed version can run schedules as administrator.";
+                : Integration.IsStore
+                    ? "Items that need administrator rights are skipped. Only the MSI version from the website can run schedules as administrator."
+                    : "Items that need administrator rights are skipped. Only the installed version can run schedules as administrator.";
 
         var on = s.Targets.ToHashSet(StringComparer.OrdinalIgnoreCase);
         _groups = ScheduledCleaning.Schedulable(CleanCatalog.Order(catalog)).GroupBy(t => t.Group).Select(g => new ScheduleGroup(g.Key, g, on)).ToList();

@@ -109,6 +109,39 @@ public static class UninstallCleanup
         if (remove) Try(data.DeleteAll);
     }
 
+    /// <summary>
+    /// Settings &gt; Application &gt; Remove Windows Changes in the Microsoft Store copy (2026-10-26): a Store uninstall never runs
+    /// <see cref="UserArg"/> or <see cref="SystemArg"/>, so this does their work while Kodiak Cleaner is still installed, and
+    /// turns the matching settings off so the next start doesn't put anything back. Backups, logs and reports stay; the Store
+    /// copy's settings file goes with the app. Returns true when administrator schedules are left because this copy isn't
+    /// elevated (a standard user can't delete them).
+    /// </summary>
+    public static bool RemoveWindowsChanges()
+    {
+        var s = Settings.Current;
+        Try(() => Integration.SetCleanOnStartup(false));
+        Try(() => Integration.SetRecycleBinMenu(false));
+        Try(() => BootProbe.SetReopen(false));
+        Try(Integration.RemoveOtherChannelEntries);
+        s.CleanOnStartup = false;
+        s.RecycleBinMenu = false;
+        bool left = false;
+        foreach (var schedule in s.Schedules.ToList())
+        {
+            if (schedule.AsAdmin && !Elevation.IsAdministrator) { left = true; continue; }
+            Try(() => ScheduledCleaning.Unregister(schedule));
+            s.Schedules.Remove(schedule);
+        }
+        if (Elevation.IsAdministrator)
+        {
+            Try(DeleteScheduledTasks); // also the Task Scheduler folders
+            Try(DriverTools.RemoveSafeModeStart);
+        }
+        s.Save();
+        ActivityLog.Write("Settings", "Removed Kodiak Cleaner's Windows changes before uninstalling" + (left ? " (administrator schedules kept)" : ""));
+        return left;
+    }
+
     private static bool Ask(DataFolders data)
     {
         ThemeManager.Apply();

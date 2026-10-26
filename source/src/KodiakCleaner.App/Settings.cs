@@ -24,14 +24,16 @@ public enum Palette
 
 /// <summary>
 /// All preferences, stored in KodiakCleaner.ini next to KodiakCleaner.exe. The MSI grants normal users write access to
-/// that one file, so the program files themselves stay protected. Backups and logs live in <see cref="Data"/>.
+/// that one file, so the program files themselves stay protected. The Microsoft Store copy can't write beside its exe, so it
+/// keeps the file in its package's LocalState folder (<see cref="InstallKinds.SettingsFolder"/>). Backups and logs live in <see cref="Data"/>.
 /// </summary>
 public sealed class Settings
 {
     public static Settings Current { get; private set; } = new();
 
     public static string Folder => AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-    public static string FilePath => Path.Combine(Folder, "KodiakCleaner.ini");
+    public static string FilePath => Path.Combine(InstallKinds.SettingsFolder(Integration.Kind, Folder,
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Integration.PackageFamilyName), "KodiakCleaner.ini");
 
     /// <summary>
     /// Backups and logs: Documents\Kodiak Cleaner for an installed copy (AppData\Local\Kodiak Cleaner if Documents can't be
@@ -51,6 +53,7 @@ public sealed class Settings
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
         int moved = 0;
+        if (Integration.IsStore) return; // nothing was ever saved in the Store copy's read-only folder
         try { moved = Data.MoveFromOldLayout(Path.Combine(Folder, "Backups")); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         if (moved > 0) ActivityLog.Write("Backups", $"Moved {moved} backup file(s) from {Path.Combine(Folder, "Backups")} to {Data.Backups}");
@@ -58,7 +61,7 @@ public sealed class Settings
 
     private static DataFolders PickDataFolders()
     {
-        if (!Integration.IsInstalled) return new DataFolders(Folder);
+        if (!InstallKinds.UsesDocuments(Integration.Kind)) return new DataFolders(Folder);
         foreach (var place in new[] { Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.LocalApplicationData })
         {
             var root = Environment.GetFolderPath(place);
@@ -206,6 +209,7 @@ public sealed class Settings
     {
         try
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!); // the Store copy's LocalState folder, normally there already
             File.WriteAllText(FilePath, Write().Serialize(
                 "Kodiak Cleaner settings. Edit with Kodiak Cleaner closed; unknown or invalid values fall back to defaults."));
             SaveError = null;

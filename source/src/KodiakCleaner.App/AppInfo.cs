@@ -81,7 +81,7 @@ public static class AppInfo
         VersionName,
         $"{RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})",
         Supporter.PlanName,
-        Integration.IsInstalled ? "MSI installer" : "portable ZIP",
+        Integration.Kind switch { KodiakCleaner.Core.Util.InstallKind.Installed => "MSI installer", KodiakCleaner.Core.Util.InstallKind.Store => "Microsoft Store", _ => "portable ZIP" },
         Elevation.IsAdministrator,
         $"{Settings.Current.Palette}, {Settings.Current.Theme switch { AppTheme.Light => "light", AppTheme.Dark => "dark", _ => "match device" }}");
 

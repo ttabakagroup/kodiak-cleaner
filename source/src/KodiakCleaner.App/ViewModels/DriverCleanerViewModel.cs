@@ -160,9 +160,14 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
 
     public bool IsSafeMode { get; } = DriverTools.IsSafeMode;
     public string SafeModeTitle => IsSafeMode ? "Running in Safe Mode" : "Safe Mode";
+    /// <summary>False in the Microsoft Store copy: Windows doesn't start Store apps in Safe Mode, so it couldn't finish there.</summary>
+    public bool CanUseSafeMode { get; } = KodiakCleaner.Core.Util.InstallKinds.CanOpenInSafeMode(Integration.Kind);
     public string SafeModeText => IsSafeMode
         ? "Windows is in Safe Mode, so no driver is loaded and everything can be removed. Restarting from here starts Windows normally again."
-        : "For the cleanest removal, restart in Safe Mode. Kodiak Cleaner opens on this page there. Download the new driver first: Safe Mode has no internet.";
+        : !CanUseSafeMode
+            ? "Windows doesn't start Microsoft Store apps in Safe Mode, so this copy of Kodiak Cleaner removes drivers in a normal start. " +
+              "The MSI or portable version from the website can also restart into Safe Mode and finish there."
+            : "For the cleanest removal, restart in Safe Mode. Kodiak Cleaner opens on this page there. Download the new driver first: Safe Mode has no internet.";
     public string SafeModeButton => IsSafeMode ? "Restart Normally" : "Restart in Safe Mode";
 
     private DriverVendor _vendor = DriverVendor.Nvidia;
@@ -313,6 +318,11 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
             if (!Dialogs.Confirm("Restart Windows normally now? Save anything you have open first.", "Restart Normally")) return;
             // Without admin rights bcdedit can't clear Safe Mode, but msconfig asks for them itself.
             if (!Elevation.IsAdministrator || !DriverTools.Restart()) ShowNormalStartSteps();
+            return;
+        }
+        if (!CanUseSafeMode)
+        {
+            Dialogs.Info(SafeModeText);
             return;
         }
         if (!Elevation.IsAdministrator)
@@ -510,7 +520,7 @@ public sealed class DriverCleanerViewModel : ObservableObject, ILoadOnFirstVisit
         int packs = chosen.Count(i => i.Package is not null);
         string caution = (IsAudio ? "Sound may stop until a new driver is installed. " : "The screen may flicker and drop to a low resolution until a new driver is installed. ")
             + "Save your work and close other programs first."
-            + (IsSafeMode ? "" : " For the cleanest result, use Restart in Safe Mode instead.");
+            + (IsSafeMode || !CanUseSafeMode ? "" : " For the cleanest result, use Restart in Safe Mode instead.");
         if (!Dialogs.Warn($"Remove {TargetRun.Plural(packs, "driver package")} and {TargetRun.Plural(chosen.Count - packs, "leftover")} from {VendorName}?",
                 "Clean Drivers", caution))
             return;

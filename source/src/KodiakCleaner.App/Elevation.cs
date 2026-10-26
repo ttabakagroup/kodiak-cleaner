@@ -13,8 +13,8 @@ public static class Elevation
     /// <summary>Restarts Kodiak Cleaner as administrator (Windows asks first), reopening on <paramref name="page"/> (a --page= key).</summary>
     public static void RestartElevated(string? page = null)
     {
-        var exe = Environment.ProcessPath;
-        if (exe is null) return;
+        // The Store copy restarts through its app alias, so the elevated copy keeps the package identity (and its settings).
+        var exe = Integration.LaunchPath;
         // Restarting stops anything still running, so ask first (Ted, 2026-10-23).
         if (!MainWindow.ConfirmExit("Restart")) return;
         try
@@ -58,8 +58,7 @@ public static class Elevation
     /// </summary>
     public static bool TryStartElevated(IEnumerable<string> args)
     {
-        var exe = Environment.ProcessPath;
-        if (exe is null) return false;
+        var exe = Integration.LaunchPath;
         var psi = new ProcessStartInfo(exe) { UseShellExecute = true, Verb = "runas" };
         foreach (var a in args) psi.ArgumentList.Add(a);
         psi.ArgumentList.Add(ElevatedArg);

@@ -28,7 +28,8 @@ public static class NewStartupWatch
     /// <summary>True for Kodiak Cleaner's own entries (Clean on Startup and the like), which never pop up.</summary>
     private static bool IsOurs(StartupItem i) =>
         i.Name.StartsWith(AppInfo.ShortName, StringComparison.OrdinalIgnoreCase) || // every channel's ("Kodiak Cleaner Dev AutoClean")
-        i.Command.Contains(Integration.ExePath, StringComparison.OrdinalIgnoreCase);
+        (i.Command.Contains(Integration.ExePath, StringComparison.OrdinalIgnoreCase) ||
+        i.Command.Contains(Integration.LaunchPath, StringComparison.OrdinalIgnoreCase));
 
     private static async Task CheckAsync()
     {

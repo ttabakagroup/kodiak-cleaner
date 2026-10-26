@@ -268,7 +268,8 @@
 
         <DataTemplate x:Key="updatesPage">
             <StackPanel DataContext="{Binding Context}">
-            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+            <!-- The Microsoft Store copy is updated by the Store (2026-10-26): no website checks, no switches. -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding ShowWebsiteUpdates, Converter={StaticResource BoolToVis}}">
                 <StackPanel>
                     <TextBlock Text="Automatic Updates" Style="{StaticResource SectionTitle}" />
                     <!-- Two switches (Ted, 0.8.51): checking only tells you; downloading and installing is a separate choice. -->
@@ -318,7 +319,10 @@
             <Border Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Check Now" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="Kodiak Cleaner only goes online when you check, or on the schedule above if Check for Updates Automatically is on." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                    <TextBlock Text="Kodiak Cleaner only goes online when you check, or on the schedule above if Check for Updates Automatically is on." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                               Visibility="{Binding ShowWebsiteUpdates, Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="This copy came from the Microsoft Store, which installs new versions for you. Check for Updates opens the Store's Downloads page. Kodiak Cleaner itself never goes online." Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                               Visibility="{Binding IsStore, Converter={StaticResource BoolToVis}}" />
                     <DockPanel Style="{StaticResource SettingRow}" Margin="0,10,0,0">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Content="Install Update" Command="{Binding InstallUpdateCommand}" Style="{StaticResource AccentButton}"
@@ -590,6 +594,16 @@
                             <TextBlock Text="{Binding DataFolder}" Style="{StaticResource Caption}" FontFamily="Consolas" Margin="0,4,0,0" />
                         </StackPanel>
                     </DockPanel>
+                    <!-- Microsoft Store copy only (2026-10-26): a Store uninstall can't run Kodiak Cleaner's own cleanup like the MSI does. -->
+                    <StackPanel Visibility="{Binding IsStore, Converter={StaticResource BoolToVis}}">
+                        <Border Style="{StaticResource RowDivider}" />
+                        <DockPanel Style="{StaticResource SettingRow}">
+                            <Button DockPanel.Dock="Right" Content="Remove Windows Changes" Command="{Binding RemoveWindowsChangesCommand}" Margin="0" VerticalAlignment="Center" />
+                            <StackPanel Margin="0,0,24,0">
+                                <TextBlock Text="Before You Uninstall" Style="{StaticResource SettingTitle}" />
+                                <TextBlock Text="Turns off everything Kodiak Cleaner set up in Windows: Clean When Windows Starts, the Recycle Bin menu entry, scheduled cleanings and any restart it was waiting for. Windows removes the app and its settings when you uninstall it, but not these."
+                                           Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            </StackPanel>
                     <Border Style="{StaticResource RowDivider}" />
                     <DockPanel Style="{StaticResource SettingRow}">
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding KeepActivityLog}" />
@@ -604,10 +618,12 @@
                         <Button DockPanel.Dock="Right" Content="Open Folder" Command="{Binding OpenSettingsFolderCommand}" Margin="0" VerticalAlignment="Center" />
                         <StackPanel Margin="0,0,24,0">
                             <TextBlock Text="Settings File" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="All settings are saved to KodiakCleaner.ini next to KodiakCleaner.exe." Style="{StaticResource Caption}" />
+                            <TextBlock Text="{Binding SettingsFileNote}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding SettingsFile}" Style="{StaticResource Caption}" FontFamily="Consolas" Margin="0,4,0,0" />
                         </StackPanel>
                     </DockPanel>
+                        </DockPanel>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </DataTemplate>

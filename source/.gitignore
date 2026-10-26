@@ -4,6 +4,7 @@ publish/
 *.user
 .vs/
 dist/
+dist-store/
 # Ted's supporter signing key. Never commit it.
 keys/supporter-private.pem
 __pycache__/

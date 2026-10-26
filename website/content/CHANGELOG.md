@@ -6,6 +6,17 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.3 Beta] - 2026-10-26
+
+### Microsoft Store
+- Kodiak Cleaner can now be built as a Microsoft Store (MSIX) package. Nothing changes for the MSI and portable versions.
+- The Store version keeps its settings in its own app folder (Windows removes it on uninstall), and its backups, logs and reports in Documents\Kodiak Cleaner like the MSI.
+- The Store installs its updates, so the Store version never checks the website; Check for Updates opens the Store's Downloads page.
+- Skip UAC, administrator scheduled cleanings and the Driver Cleaner's Safe Mode restart are left out of the Store version (Windows doesn't start Store apps in Safe Mode).
+- Settings > Application > Before You Uninstall has a Remove Windows Changes button in the Store version, since a Store uninstall can't turn off Clean When Windows Starts, the Recycle Bin menu or scheduled cleanings by itself.
+- System Information and bug reports show "Microsoft Store" as the install type.
+- In the Store version, "Open Kodiak Cleaner" is offered in Windows 11's short right-click menu for the Recycle Bin (an early try: if Windows doesn't show it there, it stays under Show More Options as before).
+
 ## [0.9.2 Beta] - 2026-10-26
 
 ### Terms of Use

@@ -1,0 +1,4 @@
+LIBRARY KodiakCleanerShell
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE

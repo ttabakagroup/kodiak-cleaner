@@ -204,7 +204,7 @@ public static partial class DriverTools
         try
         {
             using var k = Registry.LocalMachine.CreateSubKey(RunOnceKey);
-            k.SetValue(RunOnceName, $"\"{Environment.ProcessPath}\" {Integration.PageArgPrefix}drivers");
+            k.SetValue(RunOnceName, $"\"{Integration.LaunchPath}\" {Integration.PageArgPrefix}drivers");
         }
         catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
         return true;

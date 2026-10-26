@@ -28,7 +28,7 @@ public static class BootProbe
     public static void SetReopen(bool on)
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunOnceKey);
-        if (on && Environment.ProcessPath is { } exe) key.SetValue(RunOnceName, $"\"{exe}\" {Integration.PageArgPrefix}boottimer");
+        if (on) key.SetValue(RunOnceName, $"\"{Integration.LaunchPath}\" {Integration.PageArgPrefix}boottimer");
         else key.DeleteValue(RunOnceName, throwOnMissingValue: false);
     }
 

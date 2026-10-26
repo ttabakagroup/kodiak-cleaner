@@ -470,7 +470,7 @@ public sealed class SystemInfoViewModel : ObservableObject, ILoadOnFirstVisit
         }));
         facts.AddRange(lines.Where(l => l.Item2 is not null).Select(l => new SystemFact("Drives", l.name, l.Item2!)));
         facts.Add(new(AppInfo.Name, "Version", AppInfo.VersionName));
-        facts.Add(new(AppInfo.Name, "Install Type", Integration.IsInstalled ? "Installed (MSI)" : "Portable"));
+        facts.Add(new(AppInfo.Name, "Install Type", KodiakCleaner.Core.Util.InstallKinds.Describe(Integration.Kind)));
         facts.Add(new(AppInfo.Name, ".NET", RuntimeInformation.FrameworkDescription));
         facts.Add(new(AppInfo.Name, "Running As", Elevation.IsAdministrator ? "Administrator" : "Standard user"));
         return facts;

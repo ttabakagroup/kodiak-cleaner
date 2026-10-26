@@ -4,6 +4,7 @@ using System.Security;
 using System.Security.Principal;
 using System.Text;
 using System.Windows.Shell;
+using KodiakCleaner.Core.Util;
 using Microsoft.Win32;
 
 namespace KodiakCleaner.App;
@@ -13,15 +14,39 @@ public static class Integration
 {
     public static string ExePath => Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "KodiakCleaner.exe");
 
-    /// <summary>True when running from the MSI install location (Program Files), not a portable copy.</summary>
-    public static bool IsInstalled
+    /// <summary>The package family name when Kodiak Cleaner runs as a Store (MSIX) app; null for the MSI and portable copies. Declared
+    /// before <see cref="Kind"/>, which reads it while the class starts.</summary>
+    public static string? PackageFamilyName { get; } = ReadPackageFamilyName();
+
+    /// <summary>Portable, the MSI, or the Microsoft Store package. Worked out once; the rules are in <see cref="InstallKinds"/>.</summary>
+    public static InstallKind Kind { get; } = InstallKinds.Detect(ExePath,
+        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), PackageFamilyName is not null);
+
+    /// <summary>True when running from the MSI install location (Program Files), not a portable or Store copy.</summary>
+    public static bool IsInstalled => Kind == InstallKind.Installed;
+
+    /// <summary>True for the Microsoft Store copy.</summary>
+    public static bool IsStore => Kind == InstallKind.Store;
+
+    /// <summary>What Windows should start (see <see cref="InstallKinds.LaunchPath"/>): the Store copy's app alias, otherwise this exe.</summary>
+    public static string LaunchPath => InstallKinds.LaunchPath(Kind, ExePath,
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+
+    private static string? ReadPackageFamilyName()
     {
-        get
+        try
         {
-            var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            return ExePath.StartsWith(pf + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            int length = 0;
+            // 15700 = APPMODEL_ERROR_NO_PACKAGE (not packaged); 122 = ERROR_INSUFFICIENT_BUFFER (packaged, length now set).
+            if (GetCurrentPackageFamilyName(ref length, null) != 122 || length <= 0) return null;
+            var name = new char[length];
+            return GetCurrentPackageFamilyName(ref length, name) == 0 ? new string(name, 0, Math.Max(0, length - 1)) : null;
         }
+        catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException) { return null; } // Windows 7, Wine
     }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int GetCurrentPackageFamilyName(ref int packageFamilyNameLength, char[]? packageFamilyName);
 
     // ---- Clean when Windows starts -------------------------------------------------------------
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
@@ -34,7 +59,7 @@ public static class Integration
     public static void SetCleanOnStartup(bool on)
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunKey, writable: true);
-        if (on) key.SetValue(RunValue, $"\"{ExePath}\" {AutoCleanArg}");
+        if (on) key.SetValue(RunValue, $"\"{LaunchPath}\" {AutoCleanArg}");
         else key.DeleteValue(RunValue, throwOnMissingValue: false);
     }
 
@@ -52,18 +77,27 @@ public static class Integration
         }
         using var verb = Registry.CurrentUser.CreateSubKey(RecycleBinShell, writable: true);
         verb.SetValue("", $"Open {AppInfo.Name}...");
+        // The icon comes from the exe itself; SyncAll sets it again at each start, so a Store update's new folder is picked up.
         verb.SetValue("Icon", $"\"{ExePath}\",0");
         using var cmd = verb.CreateSubKey("command", writable: true);
-        cmd.SetValue("", $"\"{ExePath}\"");
+        cmd.SetValue("", $"\"{LaunchPath}\"");
+        // Store copy (Ted, 2026-10-26): also hand the verb to the package's Windows 11 menu command (source/shell), in the
+        // hope that the short right-click menu lists it. Undocumented; if Windows ignores it, the command key above still
+        // works under Show More Options.
+        if (IsStore) verb.SetValue("ExplorerCommandHandler", ShellCommandClsid);
+        else verb.DeleteValue("ExplorerCommandHandler", throwOnMissingValue: false);
     }
+
+    /// <summary>KodiakCleanerShell.dll's IExplorerCommand class (also in AppxManifest.xml and KodiakCleanerShell.cpp; a test keeps them equal).</summary>
+    public const string ShellCommandClsid = "{04C283A9-1A6F-4898-BE4C-60A428E89BD5}";
 
     // ---- Skip UAC (scheduled task that runs Kodiak Cleaner with highest privileges) --------------------
     private static string TaskName => SkipUacTaskFor(AppInfo.Id);
     private static string SkipUacTaskFor(string id) => $@"{id}\SkipUAC";
     public const string ElevatedArg = "/elevated";
 
-    /// <summary>Only offered for the installed copy: a task pointing at a user-writable exe would let anything elevate.</summary>
-    public static bool CanSkipUac => IsInstalled;
+    /// <summary>Only offered for the MSI copy: a task pointing at a user-writable exe (portable, or the Store's alias) would let anything elevate.</summary>
+    public static bool CanSkipUac => InstallKinds.MayStartElevatedWithoutPrompt(Kind);
 
     public static void SetSkipUac(bool on)
     {
@@ -145,7 +179,7 @@ public static class Integration
                 Title = title,
                 Arguments = args,
                 Description = description,
-                ApplicationPath = ExePath,
+                ApplicationPath = LaunchPath,
                 IconResourcePath = ExePath,
             });
             // Tools hidden in Settings › Tools are left out (Ted, 0.9.1 Beta); Run Cleaner cleans without a window, so it stays.

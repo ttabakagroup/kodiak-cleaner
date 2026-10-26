@@ -82,6 +82,7 @@ public sealed class SettingsViewModel : ObservableObject
         LockedPaletteCommand = new RelayCommand(() => Open("supporter"));
         OpenBackupsCommand = new RelayCommand(() => Elevation.OpenFolder(Settings.Data.Registry));
         OpenSettingsFolderCommand = new RelayCommand(() => Elevation.ShowInExplorer(Settings.FilePath));
+        RemoveWindowsChangesCommand = new RelayCommand(RemoveWindowsChanges);
         OpenDataFolderCommand = new RelayCommand(() => Elevation.OpenFolder(Settings.Data.Root));
         ResetCommand = new RelayCommand(Reset);
         DefaultTextSizeCommand = new RelayCommand(() => TextSize = KodiakCleaner.Core.Util.TextSize.Default, () => !IsDefaultTextSize);
@@ -254,12 +255,14 @@ public sealed class SettingsViewModel : ObservableObject
 
     public string DataFolder => Settings.Data.Root;
     public string RegistryBackupFolder => Settings.Data.Registry;
-    public string DataFolderNote => (Integration.IsInstalled
+    public string DataFolderNote => (InstallKinds.UsesDocuments(Integration.Kind)
             ? "Kept in your Documents folder, so saving them never needs administrator rights. "
             : "This portable copy keeps them beside KodiakCleaner.exe. ") +
         $"Backups has a folder for each kind ({string.Join(", ", DataFolders.BackupKinds[..^1])} and {DataFolders.BackupKinds[^1]}); " +
         "Logs has the activity log; Reports has the System Information reports you export and the Boot Timer and Integrity Check results. " +
-        (Integration.IsInstalled ? "Uninstalling Kodiak Cleaner asks whether to delete them." : "Delete the folder to remove them.");
+        (Integration.IsInstalled ? "Uninstalling Kodiak Cleaner asks whether to delete them."
+            : Integration.IsStore ? "They stay after you uninstall the Microsoft Store version; delete the folder to remove them."
+            : "Delete the folder to remove them.");
     public ICommand ResetCommand { get; }
     public ICommand RestoreFavoritesOrderCommand { get; }
 
@@ -334,7 +337,9 @@ public sealed class SettingsViewModel : ObservableObject
     public IReadOnlyList<IReadOnlyList<string>> CliPageUsageWords => new[] { CommandLineHelp.Words(CommandLineHelp.PageUsage) };
     public IReadOnlyList<string> CliPageExampleWords => CommandLineHelp.Words(CommandLineHelp.PageExample);
     public string CliPageSummary => CommandLineHelp.PageSummary;
-    public string CliFolderNote => $"Kodiak Cleaner is in {Settings.Folder}. Copy puts its full path in front, so the command runs from any folder.";
+    public string CliFolderNote => Integration.IsStore
+        ? $"The Microsoft Store copy starts from {Integration.LaunchPath}. Copy puts that path in front, so the command runs from any folder."
+        : $"Kodiak Cleaner is in {Settings.Folder}. Copy puts its full path in front, so the command runs from any folder.";
     public string CliLogFolder => $"Everything a command does is also written to the activity log in {Settings.Data.Logs}.";
 
     public ICommand CopyCommandCommand { get; }
@@ -345,7 +350,7 @@ public sealed class SettingsViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(example)) return;
         const string exe = "KodiakCleaner.exe";
         var command = example.StartsWith(exe, StringComparison.OrdinalIgnoreCase)
-            ? $"\"{System.IO.Path.Combine(Settings.Folder, exe)}\"{example[exe.Length..]}"
+            ? $"\"{(Integration.IsStore ? Integration.LaunchPath : System.IO.Path.Combine(Settings.Folder, exe))}\"{example[exe.Length..]}"
             : example;
         if (ClipboardHelper.CopyOrExplain(command)) CliCopyStatus = "Copied: " + command;
     }
@@ -418,13 +423,19 @@ public sealed class SettingsViewModel : ObservableObject
     public ICommand InstallUpdateCommand { get; }
 
     public string SettingsFile => Settings.FilePath;
+    public string SettingsFileNote => Integration.IsStore
+        ? "All settings are saved to KodiakCleaner.ini in the Microsoft Store app's own folder, which Windows deletes when you uninstall it."
+        : "All settings are saved to KodiakCleaner.ini next to KodiakCleaner.exe.";
+    public ICommand RemoveWindowsChangesCommand { get; }
     public string? SaveError => Settings.SaveError;
     public bool HasSaveError => Settings.SaveError is not null;
     public bool IsInstalled => Integration.IsInstalled;
     public bool CanSkipUac => Integration.CanSkipUac;
     public string SkipUacNote => Integration.CanSkipUac
         ? "Starts Kodiak Cleaner as administrator without the Windows permission prompt, using a scheduled task. Turning this on or off needs administrator rights."
-        : "Only available when Kodiak Cleaner is installed with the MSI (a portable copy could be swapped out by other programs).";
+        : Integration.IsStore
+            ? "Not available in the Microsoft Store version. Windows starts Store apps from a folder other programs can change, so a no-prompt start could be misused."
+            : "Only available when Kodiak Cleaner is installed with the MSI (a portable copy could be swapped out by other programs).";
 
     // ---- General ----
     public bool CleanOnStartup
@@ -523,7 +534,13 @@ public sealed class SettingsViewModel : ObservableObject
 
     public bool UpdateAvailable => _available is not null;
 
-    public string LastChecked => S.LastUpdateCheckUtc is { } t ? $"Last checked {t.ToLocalTime():g}." : "Never checked.";
+    public string LastChecked => Integration.IsStore ? StoreUpdatesText
+        : S.LastUpdateCheckUtc is { } t ? $"Last checked {t.ToLocalTime():g}." : "Never checked.";
+
+    /// <summary>The Microsoft Store copy is updated by the Store, never from the website (Store policy 10.2.2).</summary>
+    public const string StoreUpdatesText = "Updates come from the Microsoft Store.";
+    public bool IsStore => Integration.IsStore;
+    public bool ShowWebsiteUpdates => !Integration.IsStore;
 
     // ---- Advanced ----
     public bool TempOlderThan24h
@@ -651,8 +668,30 @@ public sealed class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(HasSaveError));
     }
 
+    /// <summary>Store copy: the MSI's uninstall cleanup, run by hand before uninstalling (Store policy 10.2.7, clean uninstall).</summary>
+    private void RemoveWindowsChanges()
+    {
+        if (!Dialogs.Confirm("Turn off Clean When Windows Starts, the Recycle Bin menu entry and every scheduled cleaning, so nothing is left in Windows when you uninstall Kodiak Cleaner?",
+                "Remove Windows Changes")) return;
+        var left = UninstallCleanup.RemoveWindowsChanges();
+        foreach (var name in new[] { nameof(CleanOnStartup), nameof(RecycleBinMenu) }) OnPropertyChanged(name);
+        var message = left
+            ? "Done, except the scheduled cleanings set to run as administrator. Restart Kodiak Cleaner as administrator and click Remove Windows Changes again to remove those too."
+            : "Done. Nothing Kodiak Cleaner set up is left in Windows. You can uninstall it from Settings > Apps > Installed Apps (open it now?).";
+        if (left) { Dialogs.Info(message, "Remove Windows Changes"); return; }
+        if (Dialogs.Confirm(message, "Open Installed Apps"))
+            try { Shell.OpenUrl("ms-settings:appsfeatures"); } catch (System.ComponentModel.Win32Exception) { }
+    }
+
     private async Task CheckForUpdatesAsync()
     {
+        if (Integration.IsStore)
+        {
+            // The Store's own Downloads and Updates page, where Get Updates checks every Store app (Kodiak Cleaner included).
+            try { Shell.OpenUrl("ms-windows-store://downloadsandupdates"); UpdateStatus = "Opened the Microsoft Store. Click Get Updates there."; }
+            catch (System.ComponentModel.Win32Exception) { UpdateStatus = "Open the Microsoft Store, then Downloads, and click Get Updates."; }
+            return;
+        }
         IsCheckingUpdates = true;
         UpdateStatus = "Checking…";
         try

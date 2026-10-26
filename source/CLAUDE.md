@@ -21,6 +21,15 @@ privacy first, local first, security paramount, convenient, practical and useful
   Task Scheduler folder), only on REMOVE=ALL and never on upgrade (0.8.47: the exe also skips it while two products with our
   upgrade code are registered, `UninstallCleanup.IsUpgrading`, since Wine runs it mid-upgrade). Anything new the app registers with Windows must be
   removed there too. Cleanup must never show an error or block the uninstall.
+- Microsoft Store copy (MSIX, 2026-10-26; manifest and build script in the repo's packaging/store/): `Integration.Kind` is
+  Portable, Installed (MSI) or Store (package identity via `GetCurrentPackageFamilyName`); the rules are in Core `InstallKinds`.
+  The Store copy keeps KodiakCleaner.ini in its package LocalState, backups in Documents\Kodiak Cleaner, never checks or installs
+  website updates, has no Skip UAC, administrator schedules or Driver Cleaner Safe Mode restart, and anything Windows starts
+  (Run value, tasks, RunOnce, Recycle Bin verb, Restart as Administrator) uses `Integration.LaunchPath` (the app alias), never
+  `ExePath`. A Store uninstall never runs --uninstall-user/system, so Settings > Application > Remove Windows Changes does that
+  work; anything new registered with Windows must be removed there too.
+  Its Windows 11 menu command is source/shell/KodiakCleanerShell.dll (C++ IExplorerCommand, out of process via com:SurrogateServer,
+  Directory\Background hidden except on the Recycle Bin, plus ExplorerCommandHandler on the Recycle Bin verb; one CLSID in three places, a test checks).
 - Every registry change is backed up to a `.reg` file first. Removed files go to the Recycle Bin where possible.
 
 ## Interface
