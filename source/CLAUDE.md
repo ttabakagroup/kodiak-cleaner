@@ -314,7 +314,10 @@ privacy first, local first, security paramount, convenient, practical and useful
   similar files with a likeness score (capped at 99%; identical files stay in Identical): content-defined chunks of the first 8 MB, names
   without copy marks, sizes, and pictures by a 64-bit difference hash (`PictureHasher`, Windows' decoders). Only files whose SHA-256
   matches another can be ticked (Ted, 2026-10-23, `DuplicateFileItem.CanTick`): identical sets until Verify Hashes finds a copy changed,
-  and in similar sets only files Verify Hashes found identical; one copy of each hash always stays. Verify Hashes re-reads the shown
+  and in similar sets only files with the same SHA-256 as another there; one copy of each hash always stays. Every In-Depth search hash checks
+  its similar sets (Ted, 2026-10-26, `DuplicateFinder.ConfirmByHash`): same-size files in a set get the 64 KB then full SHA-256 (hashes
+  from identical sets reused), giving each file a `HashMatch` (Identical, DifferentSize, DifferentContents, Unreadable), shown in Notes
+  and the set's badge ("N Identical"). Same Name Only can put exact copies with different names there. Verify Hashes re-reads the shown
   files in full and compares SHA-256; changed copies are unticked and locked.
   Keep Original (was Check All, renamed 2026-10-24) ticks every copy but `DuplicateFinder.SuggestKeep` (no copy mark, outside
   Downloads/Temp, oldest, shortest path), which is listed first in its set as "Likely the original"; Keep Newest/Oldest only tick too,

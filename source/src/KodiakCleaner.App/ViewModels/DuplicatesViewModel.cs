@@ -17,6 +17,20 @@ public sealed class DuplicateFileItem : ObservableObject
             Likeness = similar.Score * 100;
             LikenessText = group.Pattern is null ? KodiakCleaner.Core.Tools.Likeness.Pct(similar.Score) : "";
             Why = similar.Why;
+            // The search's own hash check (Ted, 2026-10-26): exact copies inside a similar set can be ticked straight away.
+            FullHash = similar.Hash;
+            Match = similar.Match;
+            _sameAsAnother = similar.Match == HashMatch.Identical;
+            CopiesElsewhere = similar.CopiesElsewhere;
+            _hashTip = similar.Match switch
+            {
+                HashMatch.Identical => $"Same SHA-256 as another file in this set, so it's an exact copy. SHA-256: {similar.Hash}",
+                HashMatch.DifferentContents => "Another file here has the same size, but its SHA-256 differs, so this isn't an exact copy." +
+                                               (similar.Hash is { } h ? $" SHA-256: {h}" : ""),
+                HashMatch.DifferentSize => "No other file in this set has this size, so it can't be an exact copy.",
+                HashMatch.Unreadable => "This file couldn't be read for the hash check (it may be open in another program).",
+                _ => "",
+            };
         }
     }
 
@@ -33,12 +47,28 @@ public sealed class DuplicateFileItem : ObservableObject
     public bool IsLikelyOriginal { get; internal set; }
 
     /// <summary>
-    /// The table's Notes column: the hash check once Verify Hashes has run, else how alike it is and why (similar sets),
-    /// or "Likely the original" for the copy Keep Original keeps.
+    /// The table's Notes column: the hash check once Verify Hashes has run, else (similar sets) what the search's hash check
+    /// found, how alike it is and why, or "Likely the original" for the copy Keep Original keeps.
     /// </summary>
     public string Note => Hash.Length > 0 ? Hash
-        : Group.IsSimilar ? string.Join(" · ", new[] { LikenessText, Why }.Where(s => s.Length > 0))
+        : Group.IsSimilar ? string.Join(" · ", new[] { MatchText, ElsewhereText, LikenessText, Why }.Where(s => s.Length > 0))
         : IsLikelyOriginal ? "Likely the original" : "";
+
+    /// <summary>Similar sets: what the search's SHA-256 check found.</summary>
+    public HashMatch Match { get; }
+    /// <summary>True for a file in a similar set with the same SHA-256 as another file there (shown in the accent color).</summary>
+    public bool IsHashIdentical => Group.IsSimilar && _sameAsAnother;
+    private string MatchText => Match switch
+    {
+        HashMatch.Identical => "Identical (SHA-256)",
+        HashMatch.DifferentContents => "SHA-256 differs",
+        HashMatch.Unreadable => "Couldn't be hashed",
+        _ => "",
+    };
+    /// <summary>Exact copies of this file listed under Identical, not in this similar set.</summary>
+    public int CopiesElsewhere { get; }
+    private string ElsewhereText => CopiesElsewhere == 0 ? ""
+        : $"{CopiesElsewhere:N0} identical {(CopiesElsewhere == 1 ? "copy" : "copies")} under Identical";
 
     /// <summary>Similar sets only: how alike this file is to its closest match (0 to 100), and why.</summary>
     public double Likeness { get; }
@@ -64,6 +94,7 @@ public sealed class DuplicateFileItem : ObservableObject
         HashMismatch = mismatch;
         _sameAsAnother = sameAsAnother;
         OnPropertyChanged(nameof(Note));
+        OnPropertyChanged(nameof(IsHashIdentical));
         if (!CanTick) IsChecked = false;
         OnPropertyChanged(nameof(CanTick));
         OnPropertyChanged(nameof(TickTip));
@@ -72,11 +103,12 @@ public sealed class DuplicateFileItem : ObservableObject
     private bool _sameAsAnother;
     /// <summary>
     /// Only files whose SHA-256 matches another file can be ticked (Ted, 2026-10-23): every copy in an identical set until a hash
-    /// check finds it changed, and in a similar set only the files Verify Hashes shows are identical to another one there.
+    /// check finds it changed, and in a similar set only the files whose SHA-256 matches another one there (found by the search's
+    /// own hash check, or by Verify Hashes).
     /// </summary>
     public bool CanTick => Group.IsSimilar ? _sameAsAnother : !HashMismatch;
     public string TickTip => CanTick ? File.Path
-        : Group.IsSimilar ? "Similar files aren't exact copies, so they can't be ticked. Verify Hashes finds any here that are identical, and those can be."
+        : Group.IsSimilar ? "This file's SHA-256 doesn't match any other file in this set, so it isn't an exact copy and can't be ticked."
         : "This copy no longer has the same SHA-256 as the others, so it can't be ticked.";
 
     private bool _isChecked;
@@ -121,12 +153,23 @@ public sealed class DuplicateGroupItem : ObservableObject
         {
             Header = $"{group.Files.Count} files matching \"{pattern}\" · {ByteSize.Format(group.Files.Sum(f => f.File.Size))} in all";
             _badge = "Name Pattern";
-            BadgeTip = "Every file here matches a name pattern you typed. Their contents weren't compared, so check them before removing any.";
+            BadgeTip = "Every file here matches a name pattern you typed. Only their SHA-256 hashes were compared, so check the others before removing any.";
+        }
+        // Exact copies found by the search's hash check: said in the heading and the badge, so they stand out from files only alike.
+        if (group.IdenticalFiles > 0)
+        {
+            IdenticalFiles = group.IdenticalFiles;
+            Header += $" · {group.IdenticalFiles:N0} identical (same SHA-256)";
+            _badge = $"{group.IdenticalFiles:N0} Identical";
+            BadgeTip = $"{group.IdenticalFiles:N0} of these files have the same SHA-256 as another file here, so they are exact copies and can be ticked. " +
+                       "The others are only alike. At least one copy of each always stays.";
         }
     }
 
     public DuplicatesViewModel Owner { get; }
     public bool IsSimilar { get; }
+    /// <summary>Similar sets: files the search's hash check found identical to another file in the set.</summary>
+    public int IdenticalFiles { get; }
     /// <summary>Identical sets: the SHA-256 every copy had when searched.</summary>
     public string? Hash { get; }
     public double Likeness { get; }
@@ -373,7 +416,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     public string IdenticalLabel => $"Identical ({Groups.Count:N0})";
     public string SimilarLabel => $"Similar ({SimilarGroups.Count:N0})";
     public string ResultsHint => ShowSimilar
-        ? "Similar files aren't exact copies: an edited version, a re-saved picture or an older draft, so they can't be ticked. Verify Hashes finds any that are identical, and those can be ticked."
+        ? "Similar files are usually not exact copies: an edited version, a re-saved picture or an older draft. Every set was hash checked: files with the same SHA-256 as another file in their set are marked Identical and can be ticked; the others can't."
         : "";
 
     public bool? AllDrives
@@ -551,6 +594,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
                 "Scanning" => $"Scanning… {p.FilesScanned:N0} files so far",
                 "Comparing" => $"Comparing contents… {p.Done:N0} of {p.Total:N0} candidate files",
                 "Pictures" => $"Looking at pictures… {p.Done:N0} of {p.Total:N0}",
+                "Hashing" => $"Checking SHA-256 hashes of similar files… {p.Done:N0} of {p.Total:N0}",
                 _ => $"Comparing similar files… {p.Done:N0} of {p.Total:N0} likely pairs",
             };
             task.Title = p.Stage switch
@@ -558,6 +602,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
                 "FileTable" or "Scanning" => "Scanning for Files",
                 "Comparing" => "Comparing Files",
                 "Pictures" => "Comparing Pictures",
+                "Hashing" => "Checking Hashes",
                 _ => "Comparing Similar Files",
             };
             // No total while the folders or the file table are still being listed.
@@ -571,9 +616,11 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
             var identical = found.Identical.Count == 0
                 ? "No identical files found"
                 : $"Found {found.Identical.Count:N0} {(found.Identical.Count == 1 ? "set" : "sets")} of identical files using {ByteSize.Format(found.Identical.Sum(g => g.WastedBytes))} of extra space";
+            var copies = found.Similar.Sum(g => g.IdenticalFiles);
             var similar = !inDepth ? "" : found.Similar.Count == 0
                 ? ", and no similar files."
-                : $", and {found.Similar.Count:N0} {(found.Similar.Count == 1 ? "set" : "sets")} of similar files.";
+                : $", and {found.Similar.Count:N0} {(found.Similar.Count == 1 ? "set" : "sets")} of similar files" +
+                  (copies == 0 ? " (none of them identical by SHA-256)." : $" with {copies:N0} {(copies == 1 ? "file" : "files")} identical to another by SHA-256.");
             var skipped = found.SkippedRoots > 0 ? $" {found.SkippedRoots} chosen folder(s) were skipped because Windows or a program keeps its own files there." : "";
             var fast = found.FastDrives > 0 ? $" {found.FastDrives} {(found.FastDrives == 1 ? "drive was" : "drives were")} read straight from the drive's file table." : "";
             var slow = found.SlowDrives > 0 && !Elevation.IsAdministrator ? " Restart as Administrator to read whole drives straight from their file table, which is much faster." : "";
@@ -589,7 +636,7 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
     /// <summary>
     /// Keep Original (was Check All; Ted, 2026-10-23/24): in each identical set ticks every copy but the likely original
     /// (<see cref="DuplicateFinder.SuggestKeep"/>: no copy mark, outside Downloads, the oldest), and in similar sets only files
-    /// Verify Hashes found identical, again keeping one of each. Nothing is removed until Remove Selected.
+    /// the hash check found identical, again keeping one of each. Nothing is removed until Remove Selected.
     /// </summary>
     private void KeepOriginal()
     {
@@ -697,6 +744,13 @@ public sealed class DuplicatesViewModel : ObservableObject, ILoadOnFirstVisit
                     {
                         g.Badge = $"{same.Count} Identical";
                         g.BadgeTip = "Some of these files have the same SHA-256, so they are exact copies of each other and can be ticked.";
+                        g.BadgeWarn = false;
+                    }
+                    else if (g.IdenticalFiles > 0)
+                    {
+                        g.Badge = "No Longer Identical";
+                        g.BadgeTip = "Files here had the same SHA-256 when searched, but changed since; they were unticked. Search again for an up-to-date list.";
+                        g.BadgeWarn = true;
                     }
                     confirmed++;
                 }

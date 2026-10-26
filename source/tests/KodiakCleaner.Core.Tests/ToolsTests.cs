@@ -386,6 +386,52 @@ public sealed class DuplicateFinderTests : IDisposable
         Assert.DoesNotMatch(SimilarFinder.PatternRegex("IMG_????"), "IMG_00412");
     }
 
+    [Fact]
+    public void Similar_sets_are_hash_checked_so_exact_copies_are_marked_identical()
+    {
+        // Same Name Only keeps these out of Identical, so In-Depth lists them as similar; the hash check finds they're exact copies.
+        var same = Text(400, 41);
+        Write("a/Holiday notes.txt", same);
+        Write("b/Notes from the trip.txt", same);
+
+        var result = DuplicateFinder.Search(new DuplicateSearchOptions { Folders = new[] { _root }, FindSimilar = true, MatchName = true });
+
+        Assert.Empty(result.Identical);
+        var group = Assert.Single(result.Similar);
+        Assert.Equal(2, group.IdenticalFiles);
+        Assert.All(group.Files, f => Assert.Equal(HashMatch.Identical, f.Match));
+        Assert.Equal(DuplicateFinder.FullHash(Path.Combine(_root, "a", "Holiday notes.txt")), group.Files[0].Hash);
+        Assert.Equal(group.Files[0].Hash, group.Files[1].Hash);
+    }
+
+    [Fact]
+    public void Hash_check_tells_copies_from_same_size_and_other_size_files_in_a_set()
+    {
+        var copy = Text(50, 51);
+        Write("x/Invoice 1001.pdf", copy);
+        Write("y/Invoice 1002.pdf", copy);           // exact copy
+        Write("z/Invoice 1003.pdf", Text(50, 52));   // same size, other contents
+        Write("z/Invoice 1004.pdf", Text(80, 53));   // other size
+        Write("w/Receipt.pdf", copy);                // a third copy, outside the pattern
+
+        var result = DuplicateFinder.Search(new DuplicateSearchOptions
+        {
+            Folders = new[] { _root }, FindSimilar = true, Names = new NameRules { Patterns = new[] { "Invoice #.pdf" } },
+        });
+
+        var group = Assert.Single(result.Similar, g => g.Pattern is not null);
+        HashMatch Of(string name) => group.Files.Single(f => Path.GetFileName(f.File.Path) == name).Match;
+        Assert.Equal(HashMatch.Identical, Of("Invoice 1001.pdf"));
+        Assert.Equal(HashMatch.Identical, Of("Invoice 1002.pdf"));
+        Assert.Equal(HashMatch.DifferentContents, Of("Invoice 1003.pdf"));
+        Assert.Equal(HashMatch.DifferentSize, Of("Invoice 1004.pdf"));
+        Assert.Null(group.Files.Single(f => f.Match == HashMatch.DifferentSize).Hash); // never read again
+        Assert.Equal(2, group.IdenticalFiles);
+        // The third copy is listed under Identical, and both copies here say so.
+        Assert.Equal(3, Assert.Single(result.Identical).Files.Count);
+        Assert.All(group.Files.Where(f => f.Match == HashMatch.Identical), f => Assert.Equal(1, f.CopiesElsewhere));
+    }
+
     [Theory]
     [InlineData("Scan 2024-05-01 14-30-05.pdf", "scan")]
     [InlineData("Scan_20240501.pdf", "scan")]

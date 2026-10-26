@@ -6,6 +6,12 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.8 Beta] - 2026-10-26
+
+### Duplicate Finder
+- Every In-Depth search now hash checks its similar sets. Files with the same SHA-256 as another file in their set are marked Identical (in the Notes column, the set's heading and its badge) and can be ticked or picked by Keep Original right away, without clicking Verify Hashes. Files the same size as another in their set but with a different SHA-256 say so.
+- A similar file that also has exact copies elsewhere says how many are listed under Identical.
+
 ## [0.9.7 Beta] - 2026-10-26
 
 ### Settings and Appearance

@@ -78,7 +78,7 @@ public static class DuplicateFinder
         var files = Scan(options, progress, ct, out var skipped, out var fast, out var slow);
         var identical = FindIdentical(files, options, progress, ct);
         var similar = options.FindSimilar
-            ? SimilarFinder.Find(files, identical, options, progress, ct)
+            ? ConfirmByHash(SimilarFinder.Find(files, identical, options, progress, ct), identical, files.Count, progress, ct)
             : new List<SimilarGroup>();
         return new DuplicateResults(identical, similar, files.Count, skipped, fast, slow);
     }
@@ -231,6 +231,72 @@ public static class DuplicateFinder
         }
 
         return groups.OrderByDescending(g => g.WastedBytes).ToList();
+    }
+
+    /// <summary>
+    /// The hash check for similar sets (Ted, 2026-10-26: "find similar files with the same hash"). In each set, files that share
+    /// a size with another file there are compared like identical files (first 64 KB, then the whole file's SHA-256), so a
+    /// "similar" file that is in fact an exact copy is marked <see cref="HashMatch.Identical"/> and can be ticked. A file whose
+    /// size no other file in its set has can't be a copy and isn't read again. Hashes already worked out for identical sets
+    /// are reused, and each file is read at most once even when it is in more than one set.
+    /// </summary>
+    public static List<SimilarGroup> ConfirmByHash(IReadOnlyList<SimilarGroup> similar, IReadOnlyList<DuplicateGroup> identical, int filesScanned,
+        IProgress<DuplicateProgress>? progress = null, CancellationToken ct = default)
+    {
+        var sets = new Dictionary<string, DuplicateGroup>(StringComparer.OrdinalIgnoreCase);
+        foreach (var g in identical)
+            foreach (var f in g.Files) sets[f.Path] = g;
+        var partials = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var fulls = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        string? Partial(DuplicateFile f)
+        {
+            if (!partials.TryGetValue(f.Path, out var h)) partials[f.Path] = h = HashOf(f.Path, PartialBytes);
+            return h;
+        }
+        string? Full(DuplicateFile f)
+        {
+            if (fulls.TryGetValue(f.Path, out var h)) return h;
+            // Up to 64 KB the first part is the whole file; files in an identical set were hashed by the search already.
+            h = sets.TryGetValue(f.Path, out var g) ? g.Hash : f.Size <= PartialBytes ? Partial(f) : HashOf(f.Path, long.MaxValue);
+            return fulls[f.Path] = h;
+        }
+
+        int total = similar.Sum(g => g.Files.Count), done = 0;
+        var checkedSets = new List<SimilarGroup>(similar.Count);
+        foreach (var group in similar)
+        {
+            ct.ThrowIfCancellationRequested();
+            var inSet = new HashSet<string>(group.Files.Select(f => f.File.Path), StringComparer.OrdinalIgnoreCase);
+            var found = new Dictionary<SimilarFile, (HashMatch Match, string? Hash)>();
+            foreach (var sameSize in group.Files.GroupBy(f => f.File.Size))
+            {
+                ct.ThrowIfCancellationRequested();
+                var list = sameSize.ToList();
+                if (list.Count == 1) { found[list[0]] = (HashMatch.DifferentSize, null); continue; }
+                foreach (var byPart in list.GroupBy(f => Partial(f.File)))
+                {
+                    var part = byPart.ToList();
+                    if (byPart.Key is null) { foreach (var f in part) found[f] = (HashMatch.Unreadable, null); continue; }
+                    if (part.Count == 1) { found[part[0]] = (HashMatch.DifferentContents, null); continue; }
+                    foreach (var byFull in part.GroupBy(f => Full(f.File)))
+                        foreach (var f in byFull)
+                            found[f] = byFull.Key is null ? (HashMatch.Unreadable, null)
+                                : (byFull.Count() > 1 ? HashMatch.Identical : HashMatch.DifferentContents, byFull.Key);
+                }
+            }
+            checkedSets.Add(group with
+            {
+                Files = group.Files.Select(f => f with
+                {
+                    Match = found[f].Match,
+                    Hash = found[f].Hash,
+                    CopiesElsewhere = sets.TryGetValue(f.File.Path, out var g) ? g.Files.Count(c => !inSet.Contains(c.Path)) : 0,
+                }).ToList(),
+            });
+            done += group.Files.Count;
+            progress?.Report(new DuplicateProgress("Hashing", filesScanned, done, total));
+        }
+        return checkedSets;
     }
 
     private static List<(string Hash, List<DuplicateFile> Files)> GroupByHash(List<DuplicateFile> files, long bytes, CancellationToken ct)

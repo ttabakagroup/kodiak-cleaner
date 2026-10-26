@@ -3,14 +3,40 @@ using System.Text.RegularExpressions;
 
 namespace KodiakCleaner.Core.Tools;
 
+/// <summary>What the search's hash check found for a file in a similar set (<see cref="DuplicateFinder.ConfirmByHash"/>).</summary>
+public enum HashMatch
+{
+    /// <summary>Not hash checked (a search without In-Depth never makes similar sets).</summary>
+    NotChecked,
+    /// <summary>Same SHA-256 as at least one other file in its set: an exact copy, which can be ticked.</summary>
+    Identical,
+    /// <summary>No other file in its set has its size, so none can be an exact copy; the file wasn't read again.</summary>
+    DifferentSize,
+    /// <summary>Another file in its set has its size, but the SHA-256s (or the first 64 KB) differ.</summary>
+    DifferentContents,
+    /// <summary>The file couldn't be read for the hash check.</summary>
+    Unreadable,
+}
+
 /// <summary>A file in a similar set, with how alike it is to its closest match in the set and why.</summary>
-public sealed record SimilarFile(DuplicateFile File, double Score, string Why);
+public sealed record SimilarFile(DuplicateFile File, double Score, string Why)
+{
+    /// <summary>The whole file's SHA-256 (hex) when the hash check read it in full, else null.</summary>
+    public string? Hash { get; init; }
+    public HashMatch Match { get; init; }
+    /// <summary>Exact copies of this file found by the search that aren't in this set (they're listed under Identical).</summary>
+    public int CopiesElsewhere { get; init; }
+}
 
 /// <summary>
 /// Files that are alike without being identical. <see cref="Score"/> is the closest pair's likeness (0 to 1).
 /// <see cref="Pattern"/> is set for a set made by a name pattern the person typed (then Score is 1 and the files' scores 0).
 /// </summary>
-public sealed record SimilarGroup(double Score, IReadOnlyList<SimilarFile> Files, string? Pattern = null);
+public sealed record SimilarGroup(double Score, IReadOnlyList<SimilarFile> Files, string? Pattern = null)
+{
+    /// <summary>Files the hash check found to be exact copies of another file in this set.</summary>
+    public int IdenticalFiles => Files.Count(f => f.Match == HashMatch.Identical);
+}
 
 /// <summary>What to leave out when comparing file names, and name patterns that gather files into a set.</summary>
 public sealed class NameRules
