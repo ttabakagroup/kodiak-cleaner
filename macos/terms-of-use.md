@@ -1,6 +1,6 @@
 # Terms of Use
 
-**Effective date:** October 6, 2026
+**Effective date:** October 26, 2026
 
 These terms cover your use of Kodiak Cleaner for Mac, a free Mac cleaner made by Ted Tabaka, an independent developer. By using Kodiak Cleaner you agree to them. If you don't agree, please don't use Kodiak Cleaner.
 
@@ -35,7 +35,11 @@ Kodiak Cleaner works on your Mac. It collects no personal data, sends no usage d
 
 ## Supporting Kodiak Cleaner
 
-Supporting Kodiak Cleaner on Ko-fi is optional and is a one-time thank-you. A supporter code unlocks small extras such as the Classic and Glacier themes. Every cleaning feature works without one. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/.
+Supporting Kodiak Cleaner on Ko-fi is optional, one time or monthly. The Refund Policy at kodiakcleaner.app/refunds/ explains how to get your money back. A supporter code unlocks small extras such as the Classic, Glacier and Lagoon themes. Every cleaning feature works without one. One supporter code covers up to 10 of your computers. Need more? Use the contact form at kodiakcleaner.app/contact/.
+
+## Governing Law
+
+These terms are governed by the laws of the State of Illinois, USA. Nothing in them takes away rights that the law where you live gives you.
 
 ## Changes to These Terms
 

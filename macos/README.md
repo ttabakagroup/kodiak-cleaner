@@ -4,7 +4,7 @@ Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
 Kodiak Cleaner for Mac is the Mac edition of Kodiak Cleaner by Ted Tabaka: a small, honest cleaner for caches, logs, temporary files and browser data, plus Triggers, one list of everything that starts by itself on your Mac, and Drive Wiper. No telemetry, no ads, no upsells, no background services. Free and open source under the MIT License.
 
-**Status:** 0.8.13 Dev, beta software. Use at your own risk and keep your own backups.
+**Status:** 0.8.14 Dev, beta software. Use at your own risk and keep your own backups.
 
 ## Contents
 
