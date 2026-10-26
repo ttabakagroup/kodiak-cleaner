@@ -81,13 +81,10 @@ public static class Integration
         verb.SetValue("Icon", $"\"{ExePath}\",0");
         using var cmd = verb.CreateSubKey("command", writable: true);
         cmd.SetValue("", $"\"{LaunchPath}\"");
-        // Never an ExplorerCommandHandler here: Ted tested it on Windows 11 (2026-10-26) and Explorer then dropped the entry from
-        // Show More Options as well, without adding it to the short menu. Removed from copies that set it in 0.9.3.
+        // 0.9.3 Beta's Store copy pointed the verb at a Windows 11 menu command (ExplorerCommandHandler), which hid the entry
+        // from both menus on Ted's PC (2026-10-26). That command is gone; the value is removed from copies that set it.
         verb.DeleteValue("ExplorerCommandHandler", throwOnMissingValue: false);
     }
-
-    /// <summary>KodiakCleanerShell.dll's IExplorerCommand class (also in AppxManifest.xml and KodiakCleanerShell.cpp; a test keeps them equal).</summary>
-    public const string ShellCommandClsid = "{04C283A9-1A6F-4898-BE4C-60A428E89BD5}";
 
     // ---- Skip UAC (scheduled task that runs Kodiak Cleaner with highest privileges) --------------------
     private static string TaskName => SkipUacTaskFor(AppInfo.Id);

@@ -28,9 +28,8 @@ privacy first, local first, security paramount, convenient, practical and useful
   (Run value, tasks, RunOnce, Recycle Bin verb, Restart as Administrator) uses `Integration.LaunchPath` (the app alias), never
   `ExePath`. A Store uninstall never runs --uninstall-user/system, so Settings > Application > Remove Windows Changes does that
   work; anything new registered with Windows must be removed there too.
-  Its Windows 11 menu command is source/shell/KodiakCleanerShell.dll (C++ IExplorerCommand, out of process via com:SurrogateServer,
-  Directory\Background hidden except inside the Recycle Bin window; one CLSID in three places, a test checks). Never put ExplorerCommandHandler on the
-  Recycle Bin verb: Ted's Windows 11 test showed it hides the entry from Show More Options and the short menu never lists it.
+  No Windows 11 short-menu command: a packaged IExplorerCommand (0.9.3 Beta) never showed on the Recycle Bin (Ted's test,
+  2026-10-26), and ExplorerCommandHandler on the verb hid it from Show More Options too. Don't try either again.
 - Every registry change is backed up to a `.reg` file first. Removed files go to the Recycle Bin where possible.
 
 ## Interface

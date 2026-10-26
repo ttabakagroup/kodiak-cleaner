@@ -76,21 +76,7 @@ public class StoreInstallTests
         Assert.Contains("<rescap:Capability Name=\"runFullTrust\" />", xml);
         // Restart as Administrator is a normal UAC prompt; allowElevation (auto-elevation at launch) is not needed.
         Assert.DoesNotContain("<rescap:Capability Name=\"allowElevation\"", xml);
-    }
-
-    [Fact]
-    public void The_menu_command_has_one_class_id_everywhere()
-    {
-        var id = System.Text.RegularExpressions.Regex.Match(Repo.Read("src", "KodiakCleaner.App", "Integration.cs"),
-            @"ShellCommandClsid = ""\{([0-9A-F-]{36})\}""").Groups[1].Value;
-        Assert.NotEmpty(id);
-        var g = Guid.Parse(id).ToByteArray();
-        // The C++ form: { 0x04c283a9, 0x1a6f, 0x4898, { 0xbe, ... } }
-        var cpp = $"{{ 0x{BitConverter.ToUInt32(g, 0):x8}, 0x{BitConverter.ToUInt16(g, 4):x4}, 0x{BitConverter.ToUInt16(g, 6):x4}, {{ " +
-                  string.Join(", ", g[8..].Select(b => $"0x{b:x2}")) + " } }";
-        Assert.Contains(cpp, Repo.Read("shell", "KodiakCleanerShell.cpp"));
-        if (Manifest() is not { } xml) return;
-        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(xml, id).Count); // the COM class and the menu verb
-        Assert.Contains("Path=\"KodiakCleanerShell.dll\"", xml);
+        // The Windows 11 menu command tried in 0.9.3 Beta never showed on the Recycle Bin, so the package has no COM server.
+        Assert.DoesNotContain("windows.comServer", xml);
     }
 }

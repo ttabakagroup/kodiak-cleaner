@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     tags: ['v*']
-    paths-ignore: ['website/**', 'assets/**', 'releases/**', 'macos/**', '.github/workflows/macos.yml', 'packaging/chocolatey/**', 'packaging/winget/**']
+    paths-ignore: ['website/**', 'assets/**', 'releases/**', 'macos/**', '.github/workflows/macos.yml']
   pull_request:
-    paths-ignore: ['website/**', 'assets/**', 'releases/**', 'macos/**', '.github/workflows/macos.yml', 'packaging/chocolatey/**', 'packaging/winget/**']
+    paths-ignore: ['website/**', 'assets/**', 'releases/**', 'macos/**', '.github/workflows/macos.yml']
   workflow_dispatch:
 
 permissions:
@@ -20,9 +20,9 @@ jobs:
       run:
         working-directory: source
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
@@ -54,27 +54,9 @@ jobs:
         run: |
           if ("${{ github.ref_type }}" -eq "tag") { ./build.ps1 -Release } else { ./build.ps1 }
 
-      # Microsoft Store package (MSIX, 2026-10-26): the unsigned test package every build, and the Store upload package
-      # once packaging/store/identity.json has the Partner Center identity. Neither goes on the GitHub release: the Store
-      # copy reaches people through the Store, which signs it.
-      - name: Build the Microsoft Store packages (MSIX)
-        continue-on-error: true # never holds up the MSI and Portable ZIP
-        shell: pwsh
-        run: |
-          $version = (Get-Content version.json -Raw | ConvertFrom-Json).version
-          ../packaging/store/build-msix.ps1 -Publish publish -Out dist-store -Version $version
-          ../packaging/store/build-msix.ps1 -Publish publish -Out dist-store -Version $version -Store
-
-      - uses: actions/upload-artifact@v6
-        continue-on-error: true
-        with:
-          name: KodiakCleaner-${{ steps.version.outputs.tag }}-msix-run${{ github.run_number }}
-          path: source/dist-store/*
-          retention-days: 7
-
       # Every build is also kept in releases/ and the download bucket, so this copy is short-lived, and a full artifact
       # store never fails the build.
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
           name: KodiakCleaner-${{ steps.version.outputs.tag }}-run${{ github.run_number }}

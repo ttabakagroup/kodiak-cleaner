@@ -208,7 +208,7 @@
                         <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding RecycleBinMenu}" />
                         <StackPanel Margin="0,0,24,0">
                             <TextBlock Text="Open Kodiak Cleaner From the Recycle Bin Menu" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="Right-click the Recycle Bin to open Kodiak Cleaner. On Windows 11 it is under Show more options." Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            <TextBlock Text="Right-click the Recycle Bin to open Kodiak Cleaner. On Windows 11 it is under Show more options, or Shift + right-click to see it straight away." Style="{StaticResource Caption}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
                 </StackPanel>
