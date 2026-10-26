@@ -65,7 +65,8 @@ try {
     $manifest = $manifest.Replace('Name="PLACEHOLDER-PartnerCenter.KodiakCleaner"', "Name=`"$name`"")
     $manifest = $manifest.Replace('Publisher="CN=00000000-0000-0000-0000-000000000000"', "Publisher=`"$([Security.SecurityElement]::Escape($publisher))`"")
     $manifest = $manifest.Replace('Version="0.0.0.0"', "Version=`"$packageVersion`"")
-    if ($manifest -match 'PLACEHOLDER|CN=00000000|Version="0\.0\.0\.0"') { throw "A placeholder in AppxManifest.xml was not filled in." }
+    # -cmatch: case-sensitive, so the word "placeholders" in the manifest's own comment doesn't count.
+    if ($manifest -cmatch 'Name="PLACEHOLDER-|Publisher="CN=00000000-|Version="0\.0\.0\.0"') { throw "A placeholder in AppxManifest.xml was not filled in." }
     Set-Content (Join-Path $stage "AppxManifest.xml") $manifest -Encoding utf8
 
     # resources.pri lets Windows pick Square44x44Logo.scale-200.png and the like for "Assets\Square44x44Logo.png".
