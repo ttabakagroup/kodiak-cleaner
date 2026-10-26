@@ -1,6 +1,6 @@
 # Kodiak Cleaner for Mac: Project Rules
 
-Kodiak Cleaner for Mac is Ted Tabaka's Mac cleaner and the Mac edition of Kodiak Cleaner (Windows: `/mnt/project-files/ccleaner-alt/`,
+Kodiak Cleaner for Mac is Ted Tabaka's Mac cleaner and the Mac edition of Kodiak Cleaner (Windows: `source/` in the repo, the folder `KC_WINDOWS_APP` names in the project files,
 Linux: `/mnt/project-files/kodiak-linux/`; leave those alone from here). Swift with SwiftUI, a Swift package with no Xcode project:
 logic in `Sources/KodiakCore` (Foundation only, unit tested), the app in `Sources/KodiakCleaner`. It follows Ted's app standard
 (the appbuilder skill): privacy first, local first, security paramount, convenient, practical and useful to everyone.
@@ -21,7 +21,7 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
   (`tests/check_source.py` fails on URLSession and friends). Links open in the person's own browser.
 - The one exception to "no nags" is the support reminder (Ted, 2026-10-10; same as Windows 0.8.55): see Interface.
   Nothing else may ask for money or nag.
-- No remote resources. Fredoka is bundled and registered for this process only; icons are SF Symbols or the apps' own icons.
+- No remote resources. Fredoka Regular + SemiBold (with the OFL) are bundled and registered for this process only; every color scheme uses Fredoka for all text (Ted, 0.8.16); icons are SF Symbols or the apps' own icons.
 - Settings: `~/Library/Application Support/Kodiak Cleaner/Settings.json`. Backups and Triggers History: `.../Backups`.
 - The Cleaner only removes files inside the home folder and the person's own temporary folder (`Cleaner.allowed`), never
   follows links, skips sockets, pipes and devices, and leaves the folders the patterns point at in place. Every pattern starts

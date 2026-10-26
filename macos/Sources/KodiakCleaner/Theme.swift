@@ -63,23 +63,22 @@ struct Theme {
     var brand1: Color { self["brand_1"] }
     var brand2: Color { self["brand_2"] }
 
-    /// Headings: Fredoka in Honey and Lagoon (bundled), Avenir Next in Glacier, the system font in Classic.
+    /// Headings and text use the bundled Fredoka in every color scheme (Ted, 0.8.16), so switching never changes sizes.
+    /// Bold text uses the real SemiBold face rather than a made-up bold.
     func display(_ size: CGFloat) -> Font {
-        switch displayFont {
-        case "fredoka": return .custom("Fredoka-SemiBold", size: size)
-        case "avenir": return .custom("Avenir Next", size: size).weight(.semibold)
-        default: return .system(size: size, weight: .semibold)
-        }
+        .custom("Fredoka-SemiBold", size: size)
     }
 
     func body(_ size: CGFloat = 13, weight: Font.Weight = .regular) -> Font {
-        bodyFont == "avenir" ? .custom("Avenir Next", size: size).weight(weight) : .system(size: size, weight: weight)
+        .custom([.semibold, .bold, .heavy, .black].contains(weight) ? "Fredoka-SemiBold" : "Fredoka-Regular", size: size)
     }
 
-    /// Registers the bundled Fredoka font for this app only (nothing is installed on the Mac).
+    /// Registers the bundled Fredoka faces for this app only (nothing is installed on the Mac).
     static func registerFonts() {
-        guard let path = Resources.path("Fonts/Fredoka-SemiBold.ttf") else { return }
-        CTFontManagerRegisterFontsForURL(URL(fileURLWithPath: path) as CFURL, .process, nil)
+        for name in ["Fredoka-Regular.ttf", "Fredoka-SemiBold.ttf"] {
+            guard let path = Resources.path("Fonts/" + name) else { continue }
+            CTFontManagerRegisterFontsForURL(URL(fileURLWithPath: path) as CFURL, .process, nil)
+        }
     }
 
     /// The accent color chosen in System Settings, as #RRGGBB, for the macOS swatch.

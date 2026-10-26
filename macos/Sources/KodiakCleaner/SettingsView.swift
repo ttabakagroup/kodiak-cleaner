@@ -210,6 +210,8 @@ private struct TriggersSettings: View {
 private struct AppearanceSettings: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.theme) private var theme
+    /// The largest scheme tile text panel, so every panel is drawn that size (Ted, 0.8.16).
+    @State private var schemeLabelSize = CGSize.zero
 
     var body: some View {
         PageHeader(title: "Appearance", subtitle: "Colors, light or dark, and motion.")
@@ -228,6 +230,7 @@ private struct AppearanceSettings: View {
                       alignment: .leading, spacing: 10) {
                 ForEach(Themes.schemeOrder, id: \.self) { key in schemeTile(key) }
             }
+            .onPreferenceChange(SchemeLabelSizeKey.self) { schemeLabelSize = $0 }
             // Ted's reasons for each color scheme, as in the Windows edition.
             Rectangle().fill(theme.line).frame(height: 1).padding(.vertical, 6)
             Text("Why These Colors").font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
@@ -264,6 +267,10 @@ private struct AppearanceSettings: View {
                 Caption(Themes.schemeBlurbs[key]!)
                 if locked { Chip(text: "Supporter Theme", icon: "lock.fill") }
             }
+            // Every panel is as wide and tall as the largest one.
+            .fixedSize()
+            .background(GeometryReader { Color.clear.preference(key: SchemeLabelSizeKey.self, value: $0.size) })
+            .frame(minWidth: schemeLabelSize.width, minHeight: schemeLabelSize.height, alignment: .topLeading)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(RoundedRectangle(cornerRadius: 8).fill(theme.surface.opacity(0.9)))
@@ -304,6 +311,15 @@ private struct AppearanceSettings: View {
         .help(title)
         .accessibilityLabel(title)
         .accessibilityAddTraits(chosen ? .isSelected : [])
+    }
+}
+
+/// Collects the largest scheme tile text panel.
+private struct SchemeLabelSizeKey: PreferenceKey {
+    static var defaultValue = CGSize.zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let next = nextValue()
+        value = CGSize(width: max(value.width, next.width), height: max(value.height, next.height))
     }
 }
 
