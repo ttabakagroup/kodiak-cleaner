@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>kodiak-cleaner.portable</id>
+    <!-- Filled in by .github/workflows/store-packages.yml from the release tag. A -beta or -dev suffix makes Chocolatey
+         treat it as a pre-release; a plain 1.0.0 is stable. -->
+    <version>__VERSION__</version>
+    <title>Kodiak Cleaner (Portable)</title>
+    <authors>Ted Tabaka</authors>
+    <owners>TTabakaGroup</owners>
+    <projectUrl>https://www.kodiakcleaner.app/</projectUrl>
+    <projectSourceUrl>https://github.com/ttabakagroup/kodiakcleaner</projectSourceUrl>
+    <packageSourceUrl>https://github.com/ttabakagroup/kodiakcleaner/tree/main/packaging/chocolatey</packageSourceUrl>
+    <docsUrl>https://www.kodiakcleaner.app/features/</docsUrl>
+    <bugTrackerUrl>https://www.kodiakcleaner.app/contact/</bugTrackerUrl>
+    <releaseNotes>https://www.kodiakcleaner.app/changelog/</releaseNotes>
+    <iconUrl>https://raw.githubusercontent.com/ttabakagroup/kodiakcleaner/main/assets/logo/github/kodiak-cleaner-logo-512.png</iconUrl>
+    <licenseUrl>https://github.com/ttabakagroup/kodiakcleaner/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright (c) Ted Tabaka</copyright>
+    <tags>kodiak-cleaner cleaner disk-cleanup junk-files startup-manager uninstaller privacy open-source foss portable</tags>
+    <summary>A small, honest PC cleaner with no telemetry and no ads. Portable version, nothing is installed.</summary>
+    <description><![CDATA[Kodiak Cleaner clears junk files, browser caches and leftovers, manages startup programs and installed programs, and includes tools such as Disk Analyzer, Duplicate Finder, Drive Wiper and Boot Timer.
+
+It has no telemetry, no ads and no upsells. Free and open source under the MIT License.
+
+This is the portable version. It runs from the package folder without an installer, and adds a Kodiak Cleaner (Portable) shortcut to the Start Menu. Settings (KodiakCleaner.ini), backups, logs and reports are kept next to KodiakCleaner.exe and are carried over when the package is upgraded. Upgrade it with Chocolatey; the app's own updater is for the installed version only.
+
+__NOTE__
+]]></description>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

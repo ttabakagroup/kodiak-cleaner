@@ -6,6 +6,7 @@ name: Create GitHub Release
 # Notes: website/github/release-notes/<version>-<channel>.md, for example 0.9.0-beta.md.
 # Attaches the MSI, the Portable ZIP, the Linux AppImage and .deb ZIPs, the Mac DMG and ZIP and a source ZIP.
 # A tag made by this workflow doesn't start the Build MSI release build.
+# A new release (not a refresh of one) is then sent to Chocolatey and Winget by store-packages.yml.
 
 on:
   workflow_dispatch:
@@ -16,10 +17,14 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.create.outputs.tag }}
+      created: ${{ steps.create.outputs.created }}
     steps:
       - uses: actions/checkout@v5
 
       - name: Create the release
+        id: create
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -56,7 +61,18 @@ jobs:
             # Already released (for example a Linux or Mac build arrived later): refresh the title, notes and files.
             gh release edit "$tag" --title "$title" --notes-file notes.md --prerelease
             gh release upload "$tag" --clobber "${files[@]}"
+            echo "created=false" >> "$GITHUB_OUTPUT"
           else
             gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title "$title" --notes-file notes.md "${files[@]}"
+            echo "created=true" >> "$GITHUB_OUTPUT"
           fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "Created $(gh release view "$tag" --json url -q .url)"
+
+  stores:
+    needs: release
+    if: needs.release.outputs.created == 'true'
+    uses: ./.github/workflows/store-packages.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}
+    secrets: inherit
