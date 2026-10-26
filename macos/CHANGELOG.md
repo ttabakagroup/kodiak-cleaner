@@ -1,5 +1,10 @@
 # Kodiak Cleaner for Mac Changelog
 
+## [0.8.16 Dev] - 2026-10-26
+
+### Changed
+- **Settings > Appearance:** each Color Scheme tile is now filled with a soft gradient of its three main colors, with the name and description on a frosted panel so they stay easy to read.
+
 ## [0.8.15 Dev] - 2026-10-26
 
 ### Changed

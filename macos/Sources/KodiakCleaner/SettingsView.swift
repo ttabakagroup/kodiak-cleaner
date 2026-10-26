@@ -257,26 +257,21 @@ private struct AppearanceSettings: View {
                 model.settings.scheme = key
             }
         } label: {
+            // The whole tile is a soft blend of the scheme's primary, secondary and tertiary colors (Ted, 0.8.16). The text
+            // sits on a frosted surface panel that hugs it, so it stays readable on every color.
             VStack(alignment: .leading, spacing: 6) {
-                // A preview strip: the scheme's primary, secondary and tertiary colors, a third each.
-                HStack(spacing: 0) {
-                    ForEach(Themes.schemePreview(key, dark: theme.dark), id: \.self) { color in
-                        Rectangle().fill(Theme.color(color)).frame(maxWidth: .infinity)
-                    }
-                }
-                .frame(height: 14)
-                .clipShape(RoundedRectangle(cornerRadius: 5))
-                .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(theme.controlBorder, lineWidth: 1))
-                .padding(.bottom, 4)
-                .accessibilityHidden(true)
                 Text(Themes.schemeNames[key]!).font(theme.body(13, weight: .semibold)).foregroundStyle(theme.text)
                 Caption(Themes.schemeBlurbs[key]!)
                 if locked { Chip(text: "Supporter Theme", icon: "lock.fill") }
             }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(RoundedRectangle(cornerRadius: 8).fill(theme.surface.opacity(0.9)))
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(minHeight: 96, alignment: .topLeading)
-            .background(RoundedRectangle(cornerRadius: theme.radius).fill(chosen ? theme.accentTint : theme.surface))
+            .background(RoundedRectangle(cornerRadius: theme.radius).fill(LinearGradient(
+                colors: Themes.schemePreview(key, dark: theme.dark).map { Theme.color($0) }, startPoint: .leading, endPoint: .trailing)))
             .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(chosen ? theme.accent : theme.controlBorder, lineWidth: chosen ? 2 : 1))
         }
         .buttonStyle(TileStyle(radius: theme.radius))
