@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import { parseChangelog } from "./src/markdown.mjs";
 import { layout } from "./src/layout.mjs";
 import home from "./src/pages/home.mjs";
@@ -94,7 +95,8 @@ for (const f of readdirSync(at("src", "assets", "images", "screens"))) {
   if (!/\.png$/i.test(f)) continue;
   const b = readFileSync(at("src", "assets", "images", "screens", f));
   if (b.length < 24 || !b.subarray(0, 8).equals(PNG_SIGNATURE)) throw new Error(`src/assets/images/screens/${f} isn't a PNG file`);
-  imageSizes[f] = [b.readUInt32BE(16), b.readUInt32BE(20)];
+  // The third value is a short content hash, added to the image URL so a retaken screenshot is never served from a browser cache.
+  imageSizes[f] = [b.readUInt32BE(16), b.readUInt32BE(20), createHash("sha256").update(b).digest("hex").slice(0, 10)];
 }
 
 // Launch video overlay on the homepage, shown when site.config.json "launchVideo" names a file in src/assets/video/.

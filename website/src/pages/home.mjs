@@ -76,7 +76,7 @@ export default function home(ctx) {
     </div>
     ${ctx.launchVideo ? `<div class="btn-row hero-video"><button class="btn" type="button" data-intro-open>${icons.play}Watch the Video</button></div>` : ""}
     <p class="hero-meta"><span>Open source (MIT License)</span><span>Windows 10 and 11 (64-bit)</span><span>macOS 26 or newer</span><span>Linux (DEB or AppImage)</span><span>No account needed</span></p>
-    <div class="hero-shot">${shot(ctx, "cleaner.png", "Kodiak Cleaner's Cleaner page after Analyze, showing 717.1 MB that can be freed", { eager: true })}</div>
+    <div class="hero-shot">${shot(ctx, "cleaner.png", "Kodiak Cleaner's Cleaner page after Analyze, showing 6.8 GB that can be freed", { eager: true })}</div>
   </div>
 </section>
 

@@ -19,7 +19,7 @@ export const wordmark = `<span class="wordmark"><span class="w1">Kodiak</span> <
 export function shot(ctx, file, alt, { eager = false, bar = "Kodiak Cleaner" } = {}) {
   const size = ctx.imageSizes[file] || [1440, 900];
   return `<div class="frame"><div class="bar"><i></i><i></i><i></i><span>${esc(bar)}</span></div>` +
-    `<button class="zoom" type="button" aria-label="View larger: ${esc(alt)}"><img src="/images/screens/${file}" alt="${esc(alt)}" width="${size[0]}" height="${size[1]}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></button></div>`;
+    `<button class="zoom" type="button" aria-label="View larger: ${esc(alt)}"><img src="/images/screens/${file}${size[2] ? `?v=${size[2]}` : ""}" alt="${esc(alt)}" width="${size[0]}" height="${size[1]}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></button></div>`;
 }
 
 export function betaNotice() {
