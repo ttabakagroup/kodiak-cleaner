@@ -1,6 +1,6 @@
 {
   "_note": "Copy these from Partner Center > Kodiak Cleaner > Product management > Product identity, character for character. While Name is empty, the build only makes the unsigned test package.",
-  "name": "",
-  "publisher": "",
-  "storeId": ""
+  "name": "TedTabaka.KodiakCleaner",
+  "publisher": "CN=2D72DC49-989E-49CE-8A86-B89318714F71",
+  "storeId": "9NTTFR04NXW1"
 }
