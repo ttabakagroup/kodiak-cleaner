@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kodiak Cleaner, Microsoft Store (MSIX) package manifest.
+
+  build-msix.ps1 fills in the three placeholders: Identity Name and Publisher from identity.json (Partner Center >
+  Kodiak Cleaner > Product management > Product identity, copied exactly) or the unsigned-test identity, and Version
+  from source/version.json as four numbers ending in 0 (0.9.2 -> 0.9.2.0; the Store needs the last one to be 0).
+
+  Package layout (made by build-msix.ps1):
+    AppxManifest.xml, resources.pri
+    KodiakCleaner.exe        (from source/publish)
+    Docs\...                 (from source/publish/Docs)
+    Assets\*.png             (from packaging/store/Assets)
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+  IgnorableNamespaces="uap uap3 desktop desktop6 rescap com desktop4 desktop5">
+
+  <Identity
+    Name="PLACEHOLDER-PartnerCenter.KodiakCleaner"
+    Publisher="CN=00000000-0000-0000-0000-000000000000"
+    Version="0.0.0.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <!-- Must be the name reserved in Partner Center, character for character. -->
+    <DisplayName>Kodiak Cleaner</DisplayName>
+    <PublisherDisplayName>Ted Tabaka</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>A small, honest cleaner for Windows: private, local, no ads.</Description>
+
+    <!--
+      DECISION FOR TED (see STORE-GUIDE.md, "Virtualization"). By default Windows gives a packaged app a private copy of
+      HKEY_CURRENT_USER and of new files in AppData. A cleaner that removes startup entries, registry items and adds the
+      Recycle Bin menu needs to change the real ones, so these two lines turn that off. They need the restricted
+      capability unvirtualizedResources (below), which Store certification must approve and may question.
+      Remove both lines AND the unvirtualizedResources capability to ship without it (features that write HKCU then
+      only change Kodiak Cleaner's private copy and must be hidden in the Store build).
+    -->
+    <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
+    <desktop6:FileSystemWriteVirtualization>disabled</desktop6:FileSystemWriteVirtualization>
+  </Properties>
+
+  <Dependencies>
+    <!-- 10.0.18362 = Windows 10 1903, the first build with unvirtualizedResources. .NET 8 itself needs 1607+. -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.18362.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application Id="KodiakCleaner" Executable="KodiakCleaner.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Kodiak Cleaner"
+        Description="Kodiak Cleaner: a private, local Windows cleaner."
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="Assets\Wide310x150Logo.png"
+          Square71x71Logo="Assets\Square71x71Logo.png"
+          Square310x310Logo="Assets\Square310x310Logo.png"
+          ShortName="Kodiak Cleaner">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <!--
+          Lets Windows start the packaged app by name (kodiakcleaner.exe in %LOCALAPPDATA%\Microsoft\WindowsApps) WITH its
+          package identity. The app should use this path, never its own WindowsApps folder (which changes with every
+          Store update), for scheduled-cleaning tasks, the Run entry, RunOnce, "reopen after..." and Restart as
+          Administrator. It also keeps the command-line switches (/clean, /help ...) working from a console.
+        -->
+        <uap3:Extension Category="windows.appExecutionAlias" Executable="KodiakCleaner.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap3:AppExecutionAlias>
+            <desktop:ExecutionAlias Alias="kodiakcleaner.exe" />
+          </uap3:AppExecutionAlias>
+        </uap3:Extension>
+
+        <!--
+          "Open Kodiak Cleaner" in Windows 11's short right-click menu (Ted, 2026-10-26). KodiakCleanerShell.dll
+          (source/shell, built by build-msix.ps1) implements IExplorerCommand and runs out of process in a dllhost with
+          this package's identity. Microsoft only lets a manifest add it to files, folders and folder backgrounds, so it is
+          registered for Directory\Background and the DLL hides it everywhere except the Recycle Bin. The Recycle Bin icon
+          itself is tried through the app's registry verb (Integration.SetRecycleBinMenu, ExplorerCommandHandler), which
+          Microsoft doesn't document for the new menu. The CLSID is also in KodiakCleanerShell.cpp and Integration.cs.
+        -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:SurrogateServer DisplayName="Kodiak Cleaner menu command">
+              <com:Class Id="04C283A9-1A6F-4898-BE4C-60A428E89BD5" Path="KodiakCleanerShell.dll" ThreadingModel="STA" />
+            </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
+        <desktop4:Extension Category="windows.fileExplorerContextMenus">
+          <desktop4:FileExplorerContextMenus>
+            <desktop5:ItemType Type="Directory\Background">
+              <desktop5:Verb Id="OpenKodiakCleaner" Clsid="04C283A9-1A6F-4898-BE4C-60A428E89BD5" />
+            </desktop5:ItemType>
+          </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- Required for every desktop (Win32/WPF) app in an MSIX. Restricted: explain it in the submission notes. -->
+    <rescap:Capability Name="runFullTrust" />
+    <!-- Needed by the two desktop6 lines in Properties. Restricted and rarely granted: see STORE-GUIDE.md. -->
+    <rescap:Capability Name="unvirtualizedResources" />
+    <!--
+      NOT declared on purpose: allowElevation. Kodiak Cleaner starts as a normal user (asInvoker) and only elevates
+      when the person clicks Restart as Administrator, which a full-trust packaged app can do without it.
+      Microsoft rarely approves allowElevation for Store apps.
+    -->
+  </Capabilities>
+</Package>
