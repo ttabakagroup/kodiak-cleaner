@@ -101,6 +101,7 @@ ${page.body}
         <li><a href="/contact/">Contact Us</a></li>
         <li><a href="/faq/">FAQ</a></li>
         <li><a href="/privacy/">Privacy Policy</a></li>
+        <li><a href="/refunds/">Refund Policy</a></li>
         <li><a href="/contact/?topic=Security">Report a Security Problem</a></li>
         <li><a href="/terms/">Terms of Use</a></li>
       </ul></div>
@@ -112,7 +113,7 @@ ${page.body}
       </ul></div>
     </div>
     <div class="footer-bottom">
-      <span>Free and <a href="/open-source/">open source</a> under the <a href="/open-source/#license">MIT License</a>. Copyright © ${cfg.copyrightYear} Ted Tabaka.</span>
+      <span>Free and <a href="/open-source/">open source</a> under the <a href="/open-source/#license">MIT License</a>. Copyright © ${cfg.copyrightYear} Ted Tabaka, Illinois, USA.</span>
       <span>No ads and no tracking on this site or in the app. <a href="/accessibility/">Working toward WCAG 2.1 and ADA accessibility</a>.</span>
     </div>
   </div>

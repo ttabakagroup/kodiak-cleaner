@@ -19,7 +19,7 @@ import mac from "./src/pages/mac.mjs";
 import donate from "./src/pages/donate.mjs";
 import featureList from "./src/pages/featurelist.mjs";
 import openSource from "./src/pages/opensource.mjs";
-import { story, privacy, terms, notFound } from "./src/pages/docs.mjs";
+import { story, privacy, terms, refunds, notFound } from "./src/pages/docs.mjs";
 import accessibility from "./src/pages/accessibility.mjs";
 import faq from "./src/pages/faq.mjs";
 
@@ -202,7 +202,7 @@ function externalLinks(html) {
 }
 
 // Pages
-const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, changelogHistory, contact, donate, story, privacy, terms, accessibility, faq, notFound].map((p) => p(ctx)).filter(Boolean);
+const pages = [home, features, featureList, openSource, linux, mac, download, archive, changelog, changelogHistory, contact, donate, story, privacy, terms, refunds, accessibility, faq, notFound].map((p) => p(ctx)).filter(Boolean);
 for (const page of pages) {
   const file = join(out, page.out);
   mkdirSync(dirname(file), { recursive: true });

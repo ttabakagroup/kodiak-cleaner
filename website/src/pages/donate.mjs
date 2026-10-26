@@ -17,7 +17,7 @@ ${pageHead("Support Kodiak Cleaner", "Kodiak Cleaner is free and always will be.
       <div class="btn-row centered mt">
         <a class="btn primary lg" href="${cfg.kofi}" target="_blank" rel="noopener">${icons.heart}<span>Support on Ko-fi<small>Opens ko-fi.com in a new tab</small></span></a>
       </div>
-      <p class="muted mt">Ko-fi handles the payment. This website never sees your card or account details.</p>
+      <p class="muted mt">Ko-fi handles the payment. This website never sees your card or account details. Changed your mind? You can get a full refund within 14 days: see the <a href="/refunds/">Refund Policy</a>.</p>
     </div>
   </div>
 </section>
