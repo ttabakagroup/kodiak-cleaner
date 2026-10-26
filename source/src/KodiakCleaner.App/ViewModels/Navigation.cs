@@ -101,7 +101,14 @@ public sealed class PaletteChoice : ObservableObject
 
     public bool IsSelected => !IsLocked && ThemeManager.ActivePalette == Palette;
 
-    public void Refresh() => OnPropertyChanged(nameof(IsSelected));
+    /// <summary>The scheme's primary, secondary and tertiary colors for the strip on its tile, in the current light or dark mode.</summary>
+    public System.Windows.Media.Brush[] Preview => ThemeManager.SchemePreview(Palette);
+
+    public void Refresh()
+    {
+        OnPropertyChanged(nameof(IsSelected));
+        OnPropertyChanged(nameof(Preview));
+    }
 }
 
 /// <summary>An accent color swatch on the Appearance page. The empty name is the color scheme's own accent.</summary>

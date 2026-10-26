@@ -409,7 +409,7 @@
                         <TextBlock Text="Color Scheme" Style="{StaticResource SectionTitle}" />
                         <ItemsControl ItemsSource="{Binding Palettes}" Margin="0,12,0,0">
                             <ItemsControl.ItemsPanel>
-                                <!-- Same-size tiles filling the width; when the window is too narrow for three (under 150 each) they stack instead of being cut off. -->
+                                <!-- Same-size tiles filling the width, two to a line (Ted, 0.9.5); when the window is too narrow for two (under 150 each) they stack instead of being cut off. -->
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource TileColumns}, ConverterParameter=150}" />
                                 </ItemsPanelTemplate>
@@ -445,11 +445,22 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding Name}" Style="{StaticResource SectionTitle}" />
-                                            <TextBlock Grid.Row="1" Text="{Binding Description}" Style="{StaticResource Caption}" Margin="0,4,0,0" TextWrapping="Wrap" />
-                                            <Viewbox Grid.Row="2" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,10,0,0"
+                                            <!-- A preview of the scheme (Ted, 0.9.5): its primary, secondary and tertiary colors, a third of the strip each,
+                                                 in the light or dark mode now showing. The edge keeps a pale or dark third visible on the tile. -->
+                                            <Border Height="14" Margin="0,0,0,10" CornerRadius="5" BorderThickness="1" BorderBrush="{DynamicResource ControlBorder}"
+                                                    SnapsToDevicePixels="True" AutomationProperties.Name="Color preview">
+                                                <UniformGrid Columns="3">
+                                                    <Border CornerRadius="4,0,0,4" Background="{Binding Preview[0]}" />
+                                                    <Border Background="{Binding Preview[1]}" />
+                                                    <Border CornerRadius="0,4,4,0" Background="{Binding Preview[2]}" />
+                                                </UniformGrid>
+                                            </Border>
+                                            <TextBlock Grid.Row="1" Text="{Binding Name}" Style="{StaticResource SectionTitle}" />
+                                            <TextBlock Grid.Row="2" Text="{Binding Description}" Style="{StaticResource Caption}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                            <Viewbox Grid.Row="3" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,10,0,0"
                                                      Visibility="{Binding IsLocked, Converter={StaticResource BoolToVis}}">
                                                 <Border Style="{StaticResource Chip}" Padding="7,2,8,2">
                                                     <StackPanel Orientation="Horizontal">
@@ -467,16 +478,16 @@
                         <Border Style="{StaticResource RowDivider}" Margin="0,16,0,12" />
                         <TextBlock Text="Why These Colors" Style="{StaticResource SettingTitle}" />
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0">
-                            <Run Text="Honey" FontWeight="SemiBold" /><Run Text=" is inspired by the bear behind Kodiak Cleaner. Its warm golds and creams are part of the Kodiak Cleaner brand." />
+                            <Run Text="1. Honey" FontWeight="SemiBold" /><Run Text=" is inspired by the bear behind Kodiak Cleaner. Its warm golds and creams are part of the Kodiak Cleaner brand." />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0">
-                            <Run Text="Classic" FontWeight="SemiBold" /><Run Text=" is a timeless choice for supporters: crisp white and blue that show a little class without getting in the way." />
+                            <Run Text="2. Classic" FontWeight="SemiBold" /><Run Text=" is my thank-you to supporters: a timeless, crisp white and blue that show a little class without getting in the way." />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0">
-                            <Run Text="Glacier" FontWeight="SemiBold" /><Run Text=" is my thank-you to supporters, with cool, calm blues inspired by the quiet beauty of glacier ice." />
+                            <Run Text="3. Glacier" FontWeight="SemiBold" /><Run Text=" is another thank-you to supporters, with cool, calm blues inspired by the quiet beauty of glacier ice." />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0">
-                            <Run Text="Lagoon" FontWeight="SemiBold" /><Run Text=" is another thank-you to supporters: fresh and clear like shallow water, with ocean blues and aqua, and deep water at night in dark mode." />
+                            <Run Text="4. Lagoon" FontWeight="SemiBold" /><Run Text=" is one more thank-you to supporters: fresh and clear like shallow water, with ocean blues and aqua, and deep water at night in dark mode." />
                         </TextBlock>
                     </StackPanel>
                 </Border>

@@ -1,5 +1,11 @@
 # Kodiak Cleaner for Linux Changelog
 
+## [0.8.22 Dev] - 2026-10-26
+
+### Changed
+- **Settings > Appearance:** each Color Scheme now shows a strip of its three main colors, so you can see what it looks like before you pick it. The schemes sit two to a line.
+- **Why These Colors:** now a numbered list (1. Honey, 2. Classic, 3. Glacier, 4. Lagoon), and Classic is described as my thank-you to supporters.
+
 ## [0.8.21 Dev] - 2026-10-26
 
 ### Changed

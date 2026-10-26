@@ -6,6 +6,12 @@ starts fresh with the first Beta; About > All Changes Since the Start also shows
 
 ## [Unreleased]
 
+## [0.9.6 Beta] - 2026-10-26
+
+### Settings and Appearance
+- Each Color Scheme in Settings > Appearance now shows a strip of its three main colors (primary, secondary and background), so you can see what it looks like before you pick it. The strips follow Light or Dark mode. The schemes now sit two to a line.
+- Why These Colors is now a numbered list (1. Honey, 2. Classic, 3. Glacier, 4. Lagoon), and Classic is described as my thank-you to supporters.
+
 ## [0.9.5 Beta] - 2026-10-26
 
 ### Microsoft Store

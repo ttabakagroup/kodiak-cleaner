@@ -136,6 +136,8 @@ public sealed class SettingsViewModel : ObservableObject
             // A scheme change can change the swatch list (Classic hides Blue, its own color).
             if (!Accents.Select(a => a.Name).SequenceEqual(AccentNames)) BuildAccents();
             foreach (var a in Accents) a.Refresh(CurrentAccent);
+            // Light or dark can change, so the scheme tiles' color strips follow.
+            foreach (var p in Palettes) p.Refresh();
         };
     }
 

@@ -19,12 +19,13 @@ public sealed class NotVisibilityConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }
 
-/// <summary>Panel width → how many same-size tiles fit side by side (ConverterParameter: the narrowest a tile may be), 1 to 3.</summary>
+/// <summary>Panel width → how many same-size tiles fit side by side (ConverterParameter: the narrowest a tile may be), 1 or 2,
+/// so the four color schemes sit two to a line (Ted, 0.9.5).</summary>
 public sealed class TileColumnsConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
         value is double width && double.TryParse(parameter as string, NumberStyles.Float, CultureInfo.InvariantCulture, out var min) && min > 0
-            ? Math.Clamp((int)(width / min), 1, 3)
-            : 3;
+            ? Math.Clamp((int)(width / min), 1, 2)
+            : 2;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }

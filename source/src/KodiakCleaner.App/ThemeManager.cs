@@ -63,6 +63,34 @@ public static partial class ThemeManager
         }
     }
 
+    /// <summary>
+    /// The three colors a Color Scheme tile shows (Ted, 0.9.5), in the mode now showing: the scheme's primary, then its
+    /// second color, then its page background. Read from the scheme's own dictionary, so they always match the theme and
+    /// ignore the chosen accent color.
+    /// </summary>
+    public static System.Windows.Media.Brush[] SchemePreview(Palette palette)
+    {
+        var key = $"{palette}{(IsDark ? "Dark" : "Light")}";
+        if (!PreviewCache.TryGetValue(key, out var colors))
+        {
+            var theme = new ResourceDictionary { Source = new Uri($"pack://application:,,,/Themes/{key}.xaml") };
+            colors = PreviewKeys(palette).Select(k => (System.Windows.Media.Brush)theme[k]).ToArray();
+            PreviewCache[key] = colors;
+        }
+        return colors;
+    }
+
+    /// <summary>Which theme colors make up each scheme's preview: primary, secondary, tertiary.</summary>
+    public static string[] PreviewKeys(Palette palette) => palette switch
+    {
+        Palette.Classic => new[] { "Primary", "Text", "Bg" },
+        Palette.Glacier => new[] { "Primary", "ChipBg", "Bg" },
+        Palette.Lagoon => new[] { "Primary", "Success", "Bg" },
+        _ => new[] { "Primary", "Accent", "Bg" },
+    };
+
+    private static readonly Dictionary<string, System.Windows.Media.Brush[]> PreviewCache = new();
+
     /// <summary>Gives the window a dark title bar in dark mode (Windows 10 20H1+ / Windows 11).</summary>
     public static void ApplyTitleBar(Window window)
     {
