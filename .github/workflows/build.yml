@@ -72,6 +72,62 @@ jobs:
           path: source/dist-store/*
           retention-days: 7
 
+      # Tagged releases go to the Microsoft Store too (Ted, 2026-10-26): the Store package is uploaded to Partner Center
+      # and submitted for certification with Microsoft's msstore tool. Needs four repo secrets from Partner Center >
+      # Account settings > User management > Microsoft Entra applications: MSSTORE_TENANT_ID, MSSTORE_SELLER_ID,
+      # MSSTORE_CLIENT_ID and MSSTORE_CLIENT_SECRET. Skipped while any is missing. The Store refuses a new submission
+      # while the previous one is still in certification; that only shows a warning and never fails the release.
+      # The publish choice from the last submission carries over (Partner Center > Submission options).
+      - name: Check the Microsoft Store secrets
+        id: msstore
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          TENANT: ${{ secrets.MSSTORE_TENANT_ID }}
+          SELLER: ${{ secrets.MSSTORE_SELLER_ID }}
+          CLIENT: ${{ secrets.MSSTORE_CLIENT_ID }}
+          SECRET: ${{ secrets.MSSTORE_CLIENT_SECRET }}
+        run: |
+          $version = (Get-Content version.json -Raw | ConvertFrom-Json).version
+          $msix = "dist-store\KodiakCleaner-$version-x64-Store.msix"
+          if (-not ($env:TENANT -and $env:SELLER -and $env:CLIENT -and $env:SECRET)) {
+            Write-Output '::warning::The MSSTORE_* secrets aren''t all set, so the Microsoft Store submission was skipped.'
+            'run=false' >> $env:GITHUB_OUTPUT; exit 0
+          }
+          if (-not (Test-Path $msix)) {
+            Write-Output "::warning::$msix wasn't built, so the Microsoft Store submission was skipped."
+            'run=false' >> $env:GITHUB_OUTPUT; exit 0
+          }
+          'run=true' >> $env:GITHUB_OUTPUT
+          "msix=$((Resolve-Path $msix).Path)" >> $env:GITHUB_OUTPUT
+          "storeId=$((Get-Content ../packaging/store/identity.json -Raw | ConvertFrom-Json).storeId)" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/setup-dotnet@v5
+        if: steps.msstore.outputs.run == 'true'
+        with:
+          dotnet-version: 9.0.x # the msstore tool runs on .NET 9
+
+      - uses: microsoft/microsoft-store-apppublisher@v1.1
+        if: steps.msstore.outputs.run == 'true'
+
+      - name: Submit to the Microsoft Store
+        if: steps.msstore.outputs.run == 'true'
+        continue-on-error: true # a submission still in certification mustn't fail the release
+        shell: pwsh
+        env:
+          TENANT: ${{ secrets.MSSTORE_TENANT_ID }}
+          SELLER: ${{ secrets.MSSTORE_SELLER_ID }}
+          CLIENT: ${{ secrets.MSSTORE_CLIENT_ID }}
+          SECRET: ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          MSIX: ${{ steps.msstore.outputs.msix }}
+          STORE_ID: ${{ steps.msstore.outputs.storeId }}
+        run: |
+          msstore reconfigure --tenantId $env:TENANT --sellerId $env:SELLER --clientId $env:CLIENT --clientSecret $env:SECRET
+          if ($LASTEXITCODE) { Write-Output '::warning::msstore couldn''t sign in to Partner Center. Check the MSSTORE_* secrets.'; exit 1 }
+          msstore publish (Split-Path $env:MSIX) --inputFile $env:MSIX --appId $env:STORE_ID
+          if ($LASTEXITCODE) { Write-Output '::warning::The Microsoft Store submission failed. If the last one is still in certification, submit this package by hand later (it''s in the msix artifact).'; exit 1 }
+          Write-Output "::notice::Submitted $(Split-Path $env:MSIX -Leaf) to the Microsoft Store for certification."
+
       # Every build is also kept in releases/ and the download bucket, so this copy is short-lived, and a full artifact
       # store never fails the build.
       - uses: actions/upload-artifact@v6
