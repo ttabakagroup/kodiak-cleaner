@@ -9,13 +9,13 @@
     <authors>Ted Tabaka</authors>
     <owners>TTabakaGroup</owners>
     <projectUrl>https://www.kodiakcleaner.app/</projectUrl>
-    <projectSourceUrl>https://github.com/ttabakagroup/kodiakcleaner</projectSourceUrl>
-    <packageSourceUrl>https://github.com/ttabakagroup/kodiakcleaner/tree/main/packaging/chocolatey</packageSourceUrl>
+    <projectSourceUrl>https://github.com/ttabakagroup/kodiak-cleaner</projectSourceUrl>
+    <packageSourceUrl>https://github.com/ttabakagroup/kodiak-cleaner/tree/main/packaging/chocolatey</packageSourceUrl>
     <docsUrl>https://www.kodiakcleaner.app/features/</docsUrl>
     <bugTrackerUrl>https://www.kodiakcleaner.app/contact/</bugTrackerUrl>
     <releaseNotes>https://www.kodiakcleaner.app/changelog/</releaseNotes>
-    <iconUrl>https://raw.githubusercontent.com/ttabakagroup/kodiakcleaner/main/assets/logo/github/kodiak-cleaner-logo-512.png</iconUrl>
-    <licenseUrl>https://github.com/ttabakagroup/kodiakcleaner/blob/main/LICENSE</licenseUrl>
+    <iconUrl>https://raw.githubusercontent.com/ttabakagroup/kodiak-cleaner/main/assets/logo/github/kodiak-cleaner-logo-512.png</iconUrl>
+    <licenseUrl>https://github.com/ttabakagroup/kodiak-cleaner/blob/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <copyright>Copyright (c) Ted Tabaka</copyright>
     <tags>kodiak-cleaner cleaner disk-cleanup junk-files startup-manager uninstaller privacy open-source foss portable</tags>

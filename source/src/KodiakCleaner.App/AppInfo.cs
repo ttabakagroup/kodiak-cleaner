@@ -17,7 +17,7 @@ public static class AppInfo
     private static readonly Assembly Me = Assembly.GetExecutingAssembly();
 
     /// <summary>GitHub "owner/name": source code and Star on GitHub.</summary>
-    public const string Repository = "ttabakagroup/kodiakcleaner";
+    public const string Repository = "ttabakagroup/kodiak-cleaner";
     /// <summary>
     /// version.json's "repositoryPublic" (false when missing). Ted made the repository public at 0.9.0 Beta; while the flag is
     /// false, the GitHub links point at the website or are hidden, in every channel.

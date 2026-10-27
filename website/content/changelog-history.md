@@ -1113,7 +1113,7 @@ About > All Changes Since the Start.
 PCSweep is now **Kodiak Cleaner**: Not a Crap Cleaner. A Cleaner App, Built Around What Matters.
 
 ### Name
-- New name everywhere: the window, Start menu, installer, files (KodiakCleaner.exe, KodiakCleaner.ini) and the GitHub project (ttabakagroup/kodiakcleaner).
+- New name everywhere: the window, Start menu, installer, files (KodiakCleaner.exe, KodiakCleaner.ini) and the GitHub project (ttabakagroup/kodiak-cleaner).
 - The slogan appears on About and Getting Started.
 
 ### Tools

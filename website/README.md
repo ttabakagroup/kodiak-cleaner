@@ -158,7 +158,7 @@ Every page carries a small pop-up (`#download-thanks` in `src/layout.mjs`, scrip
 3. `npm test`, then `npm run deploy`.
 
 Archive links point at the GitHub release files, for example
-`https://github.com/ttabakagroup/kodiakcleaner/releases/download/v0.9.0-beta/KodiakCleaner-Beta-Setup.msi`
+`https://github.com/ttabakagroup/kodiak-cleaner/releases/download/v0.9.0-beta/KodiakCleaner-Beta-Setup.msi`
 (Dev builds: `.../v0.8.37-dev/KodiakCleaner-Dev-Setup.msi`;
 0.8.31 to 0.8.36: `KodiakCleaner-Dev-Setup.zip`; 0.8.30 and older: `KodiakCleaner-0.8.27-x64-msi-dev.zip`).
 The Archive lists the Beta versions only; the Dev builds' notes are on `/changelog/history/` with a link to each GitHub release page.

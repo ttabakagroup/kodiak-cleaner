@@ -13,7 +13,7 @@ A plain Swift package (no .xcodeproj) builds the same way from Terminal and on G
 - macOS 26 Tahoe and newer (`LSMinimumSystemVersion` 26.0, `.macOS(.v26)`), built for macOS 27 Golden Gate (the newest, released
   2026-09-14). Universal binary (Apple silicon and Intel). Raise the minimum only when Ted asks.
 - Builds need Xcode 26 or newer. This cloud container can't build Swift for the Mac: push to the `macos-dev` branch of
-  ttabakagroup/kodiakcleaner (folder `macos/`) and the workflow builds, tests, self-tests, screenshots and packages it on a
+  ttabakagroup/kodiak-cleaner (folder `macos/`) and the workflow builds, tests, self-tests, screenshots and packages it on a
   GitHub Mac, then force-pushes the results (ZIP, DMG, screenshots, logs) to the `macos-dev-builds` branch.
 
 ## Privacy and Safety

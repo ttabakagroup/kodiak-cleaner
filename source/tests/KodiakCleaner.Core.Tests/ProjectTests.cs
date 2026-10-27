@@ -332,7 +332,7 @@ public class DocumentTests
         foreach (var channel in Enum.GetValues<ReleaseChannel>())
             Assert.Equal("https://www.kodiakcleaner.app/download/", DocsFolder.DownloadUrl(channel, repositoryPublic: false));
         Assert.Equal("https://www.kodiakcleaner.app/download/", DocsFolder.DownloadUrl(ReleaseChannel.Dev, repositoryPublic: true));
-        Assert.Equal("https://github.com/ttabakagroup/kodiakcleaner/releases/latest/download/KodiakCleaner-Stable-Setup.msi",
+        Assert.Equal("https://github.com/ttabakagroup/kodiak-cleaner/releases/latest/download/KodiakCleaner-Stable-Setup.msi",
             DocsFolder.DownloadUrl(ReleaseChannel.Stable, repositoryPublic: true));
         Assert.Equal("https://www.kodiakcleaner.app/download/", DocsFolder.DownloadUrl(ReleaseChannel.Beta, repositoryPublic: true));
     }

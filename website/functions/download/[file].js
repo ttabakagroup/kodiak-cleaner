@@ -127,7 +127,7 @@ export function rangeFor(request, obj) {
 }
 
 function notFound() {
-  return new Response("This download isn't available right now. Please try again later, or get Kodiak Cleaner from https://github.com/ttabakagroup/kodiakcleaner/releases", {
+  return new Response("This download isn't available right now. Please try again later, or get Kodiak Cleaner from https://github.com/ttabakagroup/kodiak-cleaner/releases", {
     status: 404,
     headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
   });

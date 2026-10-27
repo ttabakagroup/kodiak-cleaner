@@ -114,7 +114,7 @@ test("headings, nav, buttons and labels use Title Case", () => {
 
 test("required facts are present", () => {
   const all = pages.map((p) => p.html).join("\n");
-  for (const s of ["https://tedtabaka.com", "https://github.com/ttabakagroup/kodiakcleaner", "MIT License", "Copyright © 2026 Ted Tabaka", "use at your own risk"]) {
+  for (const s of ["https://tedtabaka.com", "https://github.com/ttabakagroup/kodiak-cleaner", "MIT License", "Copyright © 2026 Ted Tabaka", "use at your own risk"]) {
     assert.ok(all.includes(s), `missing: ${s}`);
   }
   assert.ok(true, "Ted's full name must not appear");

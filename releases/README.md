@@ -1,6 +1,6 @@
 # Releases
 
-The newest downloads of Kodiak Cleaner, kept here as copies. Only the newest build of each app is kept, so the repository stays small. Every release is on the [Releases page](https://github.com/ttabakagroup/kodiakcleaner/releases), and the website has the same downloads at [www.kodiakcleaner.app](https://www.kodiakcleaner.app/).
+The newest downloads of Kodiak Cleaner, kept here as copies. Only the newest build of each app is kept, so the repository stays small. Every release is on the [Releases page](https://github.com/ttabakagroup/kodiak-cleaner/releases), and the website has the same downloads at [www.kodiakcleaner.app](https://www.kodiakcleaner.app/).
 
 **Windows** (`Windows-<version>-beta/`, for example `Windows-0.9.0-beta/`)
 

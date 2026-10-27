@@ -9,7 +9,7 @@ public enum AppInfo {
     public static let developer = "Ted Tabaka"
     public static let bundleID = "app.kodiakcleaner.Mac"
 
-    public static let repository = "ttabakagroup/kodiakcleaner"
+    public static let repository = "ttabakagroup/kodiak-cleaner"
     public static let projectURL = URL(string: "https://github.com/\(repository)")!
     public static let releasesURL = URL(string: "https://github.com/\(repository)/releases")!
     public static let homepageURL = URL(string: "https://www.kodiakcleaner.app/")!

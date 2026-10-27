@@ -8,7 +8,7 @@
 
 A small, honest cleaner for Windows. No telemetry, no ads, no upsells, no bundled offers and no background services.
 
-[![Latest release](https://img.shields.io/github/v/release/ttabakagroup/kodiakcleaner?include_prereleases&label=release&color=c08a2e)](https://github.com/ttabakagroup/kodiakcleaner/releases)
+[![Latest release](https://img.shields.io/github/v/release/ttabakagroup/kodiak-cleaner?include_prereleases&label=release&color=c08a2e)](https://github.com/ttabakagroup/kodiak-cleaner/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-6b4a2f)](LICENSE)
 [![Platform: Windows 10 and 11](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011%20(x64)-2f6f9f)](#system-requirements)
 [![Built with .NET 8](https://img.shields.io/badge/.NET-8-512bd4)](https://dotnet.microsoft.com/)

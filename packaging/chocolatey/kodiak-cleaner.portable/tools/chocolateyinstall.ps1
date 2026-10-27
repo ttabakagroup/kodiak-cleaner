@@ -5,7 +5,7 @@ $keepPath  = Join-Path $env:USERPROFILE 'kodiak-cleaner_temp'
 $packageArgs = @{
   packageName    = $env:ChocolateyPackageName
   unzipLocation  = $toolsPath
-  url64bit       = 'https://github.com/ttabakagroup/kodiakcleaner/releases/download/__TAG__/__ZIP__'
+  url64bit       = 'https://github.com/ttabakagroup/kodiak-cleaner/releases/download/__TAG__/__ZIP__'
   checksum64     = '__ZIP_SHA256__'
   checksumType64 = 'sha256'
 }

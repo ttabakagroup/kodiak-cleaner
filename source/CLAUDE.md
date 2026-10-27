@@ -397,7 +397,7 @@ privacy first, local first, security paramount, convenient, practical and useful
 - Security issues are reported privately, never in public issues. Contact & Feedback has four accent buttons (Ted, 0.8.24):
   Send Feedback, Report a Bug, Request a Feature and Security (the security form); no separate security link.
 - Website: https://www.kodiakcleaner.app/ (Ted, 0.8.28; `AppInfo.HomepageUrl`): About > Learn More Website, HOMEPAGE.url and the MSI support/help/update links. Updates come from the website since 0.8.40; release files also go on GitHub releases; source and Star on GitHub stay on the repo.
-- The repository (ttabakagroup/kodiakcleaner) was private 2026-10-06 to 0.9.0 Beta; Ted chose to make it public at 0.9.0 (2026-10-25), so "repositoryPublic" is true. version.json's
+- The repository (ttabakagroup/kodiak-cleaner) was private 2026-10-06 to 0.9.0 Beta; Ted chose to make it public at 0.9.0 (2026-10-25), so "repositoryPublic" is true. version.json's
   `"repositoryPublic"` (false, and false when missing; `DocsFolder.RepositoryIsPublic(json)`, `AppInfo.RepositoryIsPublic` from the build's
   RepositoryPublic metadata) is the only switch: while false, Download.url, Project Page (website /open-source/) and the MSI's update link point at the
   website and Star on GitHub is hidden, in every channel. Ted flips it when the repository goes public. Rate Kodiak Cleaner points to starring it on GitHub until there's a store listing.

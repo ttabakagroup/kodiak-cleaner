@@ -11,7 +11,7 @@ namespace KodiakCleaner.Core.About;
 public static class DocsFolder
 {
     public const string Homepage = "https://www.kodiakcleaner.app/";
-    public const string Repository = "https://github.com/ttabakagroup/kodiakcleaner";
+    public const string Repository = "https://github.com/ttabakagroup/kodiak-cleaner";
 
     /// <summary>The file names, A to Z.</summary>
     public static readonly string[] Files =
