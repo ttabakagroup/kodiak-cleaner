@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-REPOSITORY = "https://github.com/ttabakagroup/kodiakcleaner"
+REPOSITORY = "https://github.com/ttabakagroup/kodiak-cleaner"
 HOMEPAGE = "https://www.kodiakcleaner.app/"
 DOCS_FOLDER = ("Changelog.txt", "Download.url", "Homepage.url", "License.txt", "Privacy.txt", "ReadMe.txt", "TermsOfUse.txt")
 DOCS_SOURCES = {"Changelog.txt": "CHANGELOG.md", "License.txt": "LICENSE", "Privacy.txt": "PRIVACY.md",
