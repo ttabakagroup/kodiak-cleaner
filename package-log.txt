@@ -1,0 +1,288 @@
+0%: Compute target dependency graph
+Building targets in dependency order
+Target dependency graph (3 targets)
+0%: Gather provisioning inputs
+0%: Create build description
+0%: Discovering version info for swiftc
+0%: Discovering version info for clang
+0%: Discovering version info for ld
+Build description signature: 247956150989166999974bc373cc084d
+
+Build description path: /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/.build/apple/Intermediates.noindex/XCBuildData/247956150989166999974bc373cc084d.xcbuilddata
+
+0%: Create build directory $(TARGET_BUILD_DIR)
+0%: Create build directory $(OBJROOT)
+0%: Build stat cache for /Applications/Xcode_26.6.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk
+0%: Create build directory $(TARGET_BUILD_DIR)/Release
+0%: Create build directory $(OBJROOT)/SwiftExplicitPrecompiledModules
+0%: Create build directory $(OBJROOT)/ExplicitPrecompiledModules
+0%: Create build directory $(TARGET_BUILD_DIR)/Release/PackageFrameworks
+0%: Create build directory $(OBJROOT)/EagerLinkingTBDs/Release
+0%: Write KodiakCore_Module_const_extract_protocols.json (x86_64)
+0%: Write KodiakCore_Module.SwiftFileList (x86_64)
+0%: Write KodiakCore_Module.SwiftConstValuesFileList
+15%: Write KodiakCore_Module.LinkFileList (x86_64)
+15%: Write KodiakCore_Module-OutputFileMap.json (x86_64)
+15%: Write KodiakCore_Module_const_extract_protocols.json (arm64)
+15%: Write KodiakCore_Module.SwiftFileList (arm64)
+15%: Write KodiakCore_Module.SwiftConstValuesFileList
+15%: Write KodiakCore_Module.LinkFileList (arm64)
+15%: Write KodiakCore_Module-OutputFileMap.json (arm64)
+15%: Write KodiakCore_Module.DependencyStaticMetadataFileList
+15%: Write KodiakCore_Module.DependencyMetadataFileList
+15%: Write KodiakCore.modulemap
+15%: Copy KodiakCore.modulemap
+15%: Write KodiakCleaner_const_extract_protocols.json (x86_64)
+15%: Write KodiakCleaner.SwiftFileList (x86_64)
+15%: Write KodiakCleaner.LinkFileList (x86_64)
+15%: Write KodiakCleaner-OutputFileMap.json (x86_64)
+15%: Write KodiakCleaner_const_extract_protocols.json (arm64)
+15%: Write KodiakCleaner.SwiftFileList (arm64)
+15%: Write KodiakCleaner.LinkFileList (arm64)
+15%: Write KodiakCleaner-OutputFileMap.json (arm64)
+15%: Write KodiakCleaner.DependencyStaticMetadataFileList
+15%: Write KodiakCleaner.DependencyMetadataFileList
+47%: Planning Swift module KodiakCore (x86_64)
+47%: Planning Swift module KodiakCore (arm64)
+48%: Compile KodiakCore_Module (arm64)
+48%: Compiling Clang module _Builtin_stdarg
+48%: Compiling Clang module _AvailabilityInternal
+48%: Compiling Clang module _Builtin_stddef
+48%: Compiling Clang module ptrauth
+48%: Compiling Clang module _Builtin_float
+48%: Compiling Clang module _Builtin_stdarg
+28%: Compiling Clang module ptrauth
+28%: Compiling Clang module _SwiftConcurrencyShims
+28%: Compiling Clang module SwiftShims
+28%: Compiling Clang module ptrcheck
+28%: Compiling Clang module _Builtin_stdbool
+28%: Compiling Clang module _Builtin_stddef
+33%: Compiling Clang module SwiftShims
+33%: Compiling Clang module _Builtin_float
+33%: Compiling Clang module _DarwinFoundation1
+33%: Compiling Clang module _AvailabilityInternal
+33%: Compiling Clang module ptrcheck
+33%: Compiling Clang module _Builtin_stdbool
+37%: Compiling Clang module _DarwinFoundation2
+37%: Compiling Clang module _Builtin_limits
+37%: Compiling Clang module _DarwinFoundation1
+37%: Compiling Clang module _SwiftConcurrencyShims
+37%: Compile KodiakCore_Module (x86_64)
+37%: Compiling Clang module _Builtin_stdint
+37%: Compiling Clang module sys_types
+42%: Compiling Clang module _DarwinFoundation2
+42%: Compiling Clang module _Builtin_limits
+42%: Compiling Clang module libDER
+42%: Compiling Clang module _DarwinFoundation3
+42%: Compiling Clang module _Builtin_stdint
+42%: Compiling Clang module sys_types
+46%: Compiling Clang module _DarwinFoundation3
+46%: Compiling Clang module libDER
+46%: Compiling Clang module _Builtin_inttypes
+46%: Compiling Clang module _Builtin_intrinsics
+46%: Compiling Clang module _Builtin_inttypes
+46%: Compiling Clang module Darwin
+51%: Compiling Clang module Darwin
+51%: Compiling Clang module libkern
+51%: Compiling Clang module launch
+51%: Compiling Clang module MachO
+51%: Compiling Clang module libkern
+54%: Compiling Clang module launch
+54%: Compiling Clang module MachO
+54%: Compiling Clang module ObjectiveC
+56%: Compiling Clang module ObjectiveC
+56%: Compiling Clang module os_object
+56%: Compiling Clang module os_workgroup
+56%: Compiling Clang module os_object
+59%: Compiling Clang module Dispatch
+59%: Compiling Clang module os_workgroup
+59%: Compiling Clang module Dispatch
+59%: Compiling Clang module CoreFoundation
+59%: Compiling Clang module XPC
+63%: Compiling Clang module XPC
+63%: Compiling Clang module CoreFoundation
+63%: Compiling Clang module Security
+63%: Compiling Clang module IOKit
+63%: Compiling Clang module CFNetwork
+66%: Compiling Clang module IOKit
+66%: Compiling Clang module CFNetwork
+68%: Compiling Clang module Security
+68%: Compiling Clang module DiskArbitration
+69%: Compiling Clang module CoreServices
+69%: Compiling Clang module DiskArbitration
+71%: Compiling Clang module CoreServices
+72%: Compiling Clang module Foundation
+72%: Compiling Clang module Foundation
+73%: Compiling Clang module LocalAuthentication
+73%: Compiling AppInfo.swift, Changelog.swift, Cleaning.swift, DetailText.swift, DiskEraser.swift, Donation.swift, FileSystem.swift, FreeSpaceWiper.swift, Settings.swift, Supporter.swift, Themes.swift, Triggers.swift, WipeDisks.swift, WipeMethods.swift
+73%: Compiling Clang module LocalAuthentication
+73%: Compile 14 Swift source files (arm64)
+75%: Compiling AppInfo.swift, Changelog.swift, Cleaning.swift, DetailText.swift, DiskEraser.swift, Donation.swift, FileSystem.swift, FreeSpaceWiper.swift, Settings.swift, Supporter.swift, Themes.swift, Triggers.swift, WipeDisks.swift, WipeMethods.swift
+75%: Compile 14 Swift source files (x86_64)
+76%: Discovering Swift tasks after 'Compiling AppInfo.swift, Changelog.swift, Cleaning.swift, DetailText.swift, DiskEraser.swift, Donation.swift, FileSystem.swift, FreeSpaceWiper.swift, Settings.swift, Supporter.swift, Themes.swift, Triggers.swift, WipeDisks.swift, WipeMethods.swift'
+76%: Discovering Swift tasks after 'Compiling AppInfo.swift, Changelog.swift, Cleaning.swift, DetailText.swift, DiskEraser.swift, Donation.swift, FileSystem.swift, FreeSpaceWiper.swift, Settings.swift, Supporter.swift, Themes.swift, Triggers.swift, WipeDisks.swift, WipeMethods.swift'
+76%: Unblock downstream dependents of KodiakCore_Module (arm64)
+76%: Unblock downstream dependents of KodiakCore_Module (x86_64)
+76%: Merge Objective-C generated interface headers
+76%: Copy KodiakCore.swiftdoc (x86_64)
+76%: Copy KodiakCore.swiftmodule (x86_64)
+76%: Copy KodiakCore.abi.json (x86_64)
+76%: Copy KodiakCore.swiftmodule (arm64)
+76%: Copy KodiakCore.swiftdoc (arm64)
+76%: Copy KodiakCore.abi.json (arm64)
+76%: Copy KodiakCore.swiftsourceinfo (x86_64)
+76%: Copy KodiakCore.swiftsourceinfo (arm64)
+76%: Link KodiakCore_Module.o (x86_64)
+76%: Link KodiakCore_Module.o (arm64)
+76%: Planning Swift module KodiakCleaner (x86_64)
+76%: Planning Swift module KodiakCleaner (arm64)
+85%: Create universal binary KodiakCore_Module.o
+85%: Extract app intents metadata
+2026-10-27 03:20:00.012 appintentsmetadataprocessor[6012:21417] Starting appintentsmetadataprocessor export
+2026-10-27 03:20:00.085 appintentsmetadataprocessor[6012:21417] Extracted no relevant App Intents symbols, skipping writing output
+
+86%: Register execution policy exception for KodiakCore_Module.o
+87%: Compile KodiakCleaner (x86_64)
+87%: Compiling Clang module DataDetection
+87%: Compiling Clang module CoreData
+87%: Compiling Clang module UniformTypeIdentifiers
+87%: Compiling Clang module _Builtin_stdatomic
+64%: Compiling Clang module CoreGraphics
+64%: Compiling Clang module ColorSync
+64%: Compiling Clang module DeveloperToolsSupport
+65%: Compiling Clang module CoreGraphics
+65%: Compiling Clang module OpenGL
+65%: Compiling Clang module _Builtin_intrinsics
+67%: Compiling Clang module ImageIO
+67%: Compiling Clang module CoreText
+67%: Compiling Clang module ImageIO
+68%: Compiling Clang module Accessibility
+68%: Compiling Clang module _Builtin_stdatomic
+68%: Compiling Clang module CoreTransferable
+68%: Compiling Clang module os
+68%: Compiling Clang module os
+71%: Compiling Clang module Symbols
+71%: Compiling Clang module UniformTypeIdentifiers
+71%: Compiling Clang module OSLog
+71%: Compiling Clang module OSLog
+71%: Compiling Clang module _Builtin_tgmath
+73%: Compiling Clang module CoreTransferable
+73%: Compiling Clang module CUPS
+73%: Compiling Clang module simd
+73%: Compiling Clang module CUPS
+73%: Compiling Clang module CoreData
+76%: Compiling Clang module Accessibility
+76%: Compiling Clang module ApplicationServices
+76%: Compiling Clang module DeveloperToolsSupport
+76%: Compiling Clang module DataDetection
+78%: Compiling Clang module IOSurface
+78%: Compiling Clang module ColorSync
+78%: Compiling Clang module OpenGL
+79%: Compiling Clang module Metal
+79%: Compiling Clang module _Builtin_tgmath
+79%: Compiling Clang module Spatial
+79%: Compiling Clang module simd
+81%: Compiling Clang module Symbols
+81%: Compiling Clang module CoreVideo
+82%: Compiling Clang module IOSurface
+82%: Compiling Clang module CoreText
+82%: Compiling Clang module Metal
+82%: Compiling Clang module CoreImage
+84%: Compiling Clang module QuartzCore
+84%: Compiling Clang module Spatial
+84%: Compiling Clang module ApplicationServices
+86%: Compile KodiakCleaner (arm64)
+86%: Compiling Clang module SwiftUICore
+86%: Compiling Clang module AppKit
+87%: Compiling Clang module CoreVideo
+88%: Compiling Clang module CoreImage
+88%: Compiling Clang module QuartzCore
+88%: Compiling Clang module SwiftUICore
+89%: Compiling Clang module AppKit
+90%: Compiling Clang module SwiftUI
+90%: Compiling App.swift, AppModel.swift, CleanerView.swift, Components.swift, Dialogs.swift, HomeAbout.swift, RootView.swift, Screenshots.swift, SettingsView.swift, Theme.swift, TriggersView.swift, WiperModel.swift, WiperView.swift
+90%: Compile 13 Swift source files (x86_64)
+91%: Compiling Clang module SwiftUI
+91%: Compiling App.swift, AppModel.swift, CleanerView.swift, Components.swift, Dialogs.swift, HomeAbout.swift, RootView.swift, Screenshots.swift, SettingsView.swift, Theme.swift, TriggersView.swift, WiperModel.swift, WiperView.swift
+91%: Compile 13 Swift source files (arm64)
+reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+main actor-isolated static property 'space' can not be referenced from a Sendable closure
+passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+                model.findings = found
+                                 ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+                let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+                            ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+                let files = found.values.reduce(0) { $0 + $1.count }
+                            ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+                                                                               ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:380:16: note: static property declared here
+    static let space = "tick-rows"
+               ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:316:73: warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: next)
+                                                                        ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:315:26: note: parameter 'next' is implicitly non-Sendable
+    private func after(_ next: @escaping () -> Void) {
+                         ^
+                               @Sendable 
+
+92%: Discovering Swift tasks after 'Compiling App.swift, AppModel.swift, CleanerView.swift, Components.swift, Dialogs.swift, HomeAbout.swift, RootView.swift, Screenshots.swift, SettingsView.swift, Theme.swift, TriggersView.swift, WiperModel.swift, WiperView.swift'
+92%: Unblock downstream dependents of KodiakCleaner (x86_64)
+92%: Copy KodiakCleaner.swiftmodule (x86_64)
+92%: Link KodiakCleaner (x86_64)
+92%: Copy KodiakCleaner.swiftdoc (x86_64)
+92%: Copy KodiakCleaner.abi.json (x86_64)
+92%: Copy KodiakCleaner.swiftsourceinfo (x86_64)
+reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+main actor-isolated static property 'space' can not be referenced from a Sendable closure
+passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+                model.findings = found
+                                 ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+                let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+                            ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode
+                let files = found.values.reduce(0) { $0 + $1.count }
+                            ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+                                                                               ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:380:16: note: static property declared here
+    static let space = "tick-rows"
+               ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:316:73: warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: next)
+                                                                        ^
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:315:26: note: parameter 'next' is implicitly non-Sendable
+    private func after(_ next: @escaping () -> Void) {
+                         ^
+                               @Sendable 
+
+95%: Discovering Swift tasks after 'Compiling App.swift, AppModel.swift, CleanerView.swift, Components.swift, Dialogs.swift, HomeAbout.swift, RootView.swift, Screenshots.swift, SettingsView.swift, Theme.swift, TriggersView.swift, WiperModel.swift, WiperView.swift'
+95%: Unblock downstream dependents of KodiakCleaner (arm64)
+95%: Copy KodiakCleaner.swiftmodule (arm64)
+95%: Copy KodiakCleaner.swiftdoc (arm64)
+95%: Link KodiakCleaner (arm64)
+95%: Copy KodiakCleaner.abi.json (arm64)
+95%: Copy KodiakCleaner.swiftsourceinfo (arm64)
+98%: Create universal binary KodiakCleaner
+98%: Generate KodiakCleaner.dSYM for KodiakCleaner
+99%: Register execution policy exception for KodiakCleaner
+100%: Build succeeded
+Build complete!
+dist/Kodiak Cleaner.app/Contents/Info.plist: OK
+dist/Kodiak Cleaner.app: replacing existing signature
+Built dist/Kodiak Cleaner.app (0.8.16 Dev)
+Wrote 7 Docs files to dist/Docs
+created: /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/KodiakCleaner-Dev-Mac.dmg
+Packaged dist/KodiakCleaner-Dev-Mac.zip and dist/KodiakCleaner-Dev-Mac.dmg

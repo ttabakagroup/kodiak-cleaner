@@ -1,0 +1,499 @@
+Source checks passed (203 labels in Title Case, colors only in the theme files, no network code).
+Building for debugging...
+[0/12] /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/.build/arm64-apple-macosx/debug/KodiakCleanerPackageTests.derived/runner.swift
+[1/12] Write sources
+[5/12] Write KodiakCleaner-entitlement.plist
+[6/12] Write swift-version-7974D3F7F03D5E95.txt
+[8/23] Emitting module KodiakCore
+[9/27] Compiling KodiakCore Themes.swift
+[10/27] Compiling KodiakCore Triggers.swift
+[11/27] Compiling KodiakCore WipeDisks.swift
+[12/27] Compiling KodiakCore WipeMethods.swift
+[13/27] Compiling KodiakCore AppInfo.swift
+[14/27] Compiling KodiakCore Changelog.swift
+[15/27] Compiling KodiakCore Cleaning.swift
+[16/27] Compiling KodiakCore DetailText.swift
+[17/27] Compiling KodiakCore DiskEraser.swift
+[18/27] Compiling KodiakCore Donation.swift
+[19/27] Compiling KodiakCore FileSystem.swift
+[20/27] Compiling KodiakCore FreeSpaceWiper.swift
+[21/27] Compiling KodiakCore Settings.swift
+[22/27] Compiling KodiakCore Supporter.swift
+[23/41] Compiling KodiakCoreTests ThemeTests.swift
+[24/42] Compiling KodiakCleaner App.swift
+[25/42] Compiling KodiakCleaner AppModel.swift
+[26/42] Emitting module KodiakCoreTests
+[27/42] Compiling KodiakCoreTests WipeTests.swift
+[28/42] Compiling KodiakCleaner HomeAbout.swift
+[29/42] Compiling KodiakCleaner RootView.swift
+[30/42] Compiling KodiakCleaner Screenshots.swift
+[31/42] Compiling KodiakCleaner SettingsView.swift
+[32/46] Emitting module KodiakCleaner
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+308 |             await MainActor.run {
+309 |                 let model = AppModel.shared
+310 |                 model.findings = found
+    |                                  `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+310 |                 model.findings = found
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+315 |                 then?()
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+378 | @MainActor
+379 | final class TickDrag: ObservableObject {
+380 |     static let space = "tick-rows"
+    |                `- note: static property declared here
+381 |     /// Each drawn row's place in the list (not published: moving rows never redraws the page).
+382 |     var frames: [String: CGRect] = [:]
+    :
+412 |                      apply: @escaping ([String], Bool) -> Void) -> some View {
+413 |         self
+414 |             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+    |                                                                                `- warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+415 |             .onDisappear { drag.frames[id] = nil }
+416 |             .simultaneousGesture(
+
+[#SendableClosureCaptures]: <https://docs.swift.org/compiler/documentation/diagnostics/sendable-closure-captures>
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+308 |             await MainActor.run {
+309 |                 let model = AppModel.shared
+310 |                 model.findings = found
+    |                                  `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+310 |                 model.findings = found
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+315 |                 then?()
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+378 | @MainActor
+379 | final class TickDrag: ObservableObject {
+380 |     static let space = "tick-rows"
+    |                `- note: static property declared here
+381 |     /// Each drawn row's place in the list (not published: moving rows never redraws the page).
+382 |     var frames: [String: CGRect] = [:]
+    :
+412 |                      apply: @escaping ([String], Bool) -> Void) -> some View {
+413 |         self
+414 |             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+    |                                                                                `- warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+415 |             .onDisappear { drag.frames[id] = nil }
+416 |             .simultaneousGesture(
+
+[#SendableClosureCaptures]: <https://docs.swift.org/compiler/documentation/diagnostics/sendable-closure-captures>
+[35/46] Compiling KodiakCleaner CleanerView.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+308 |             await MainActor.run {
+309 |                 let model = AppModel.shared
+310 |                 model.findings = found
+    |                                  `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+310 |                 model.findings = found
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+315 |                 then?()
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+378 | @MainActor
+379 | final class TickDrag: ObservableObject {
+380 |     static let space = "tick-rows"
+    |                `- note: static property declared here
+381 |     /// Each drawn row's place in the list (not published: moving rows never redraws the page).
+382 |     var frames: [String: CGRect] = [:]
+    :
+412 |                      apply: @escaping ([String], Bool) -> Void) -> some View {
+413 |         self
+414 |             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+    |                                                                                `- warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+415 |             .onDisappear { drag.frames[id] = nil }
+416 |             .simultaneousGesture(
+
+[#SendableClosureCaptures]: <https://docs.swift.org/compiler/documentation/diagnostics/sendable-closure-captures>
+[36/46] Compiling KodiakCleaner Components.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+308 |             await MainActor.run {
+309 |                 let model = AppModel.shared
+310 |                 model.findings = found
+    |                                  `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+310 |                 model.findings = found
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+315 |                 then?()
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+378 | @MainActor
+379 | final class TickDrag: ObservableObject {
+380 |     static let space = "tick-rows"
+    |                `- note: static property declared here
+381 |     /// Each drawn row's place in the list (not published: moving rows never redraws the page).
+382 |     var frames: [String: CGRect] = [:]
+    :
+412 |                      apply: @escaping ([String], Bool) -> Void) -> some View {
+413 |         self
+414 |             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+    |                                                                                `- warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+415 |             .onDisappear { drag.frames[id] = nil }
+416 |             .simultaneousGesture(
+
+[#SendableClosureCaptures]: <https://docs.swift.org/compiler/documentation/diagnostics/sendable-closure-captures>
+[37/46] Compiling KodiakCleaner Dialogs.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:310:34: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+308 |             await MainActor.run {
+309 |                 let model = AppModel.shared
+310 |                 model.findings = found
+    |                                  `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:312:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+310 |                 model.findings = found
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/AppModel.swift:313:29: warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+311 |                 model.working = nil
+312 |                 let total = found.values.reduce(Int64(0)) { $0 + $1.size }
+313 |                 let files = found.values.reduce(0) { $0 + $1.count }
+    |                             `- warning: reference to captured var 'found' in concurrently-executing code; this is an error in the Swift 6 language mode [#SendableClosureCaptures]
+314 |                 model.summary = "Found \(formatBytes(total)) in \(files) file\(files == 1 ? "" : "s")."
+315 |                 then?()
+
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/Components.swift:414:80: warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+378 | @MainActor
+379 | final class TickDrag: ObservableObject {
+380 |     static let space = "tick-rows"
+    |                `- note: static property declared here
+381 |     /// Each drawn row's place in the list (not published: moving rows never redraws the page).
+382 |     var frames: [String: CGRect] = [:]
+    :
+412 |                      apply: @escaping ([String], Bool) -> Void) -> some View {
+413 |         self
+414 |             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(TickDrag.space)) } action: { drag.frames[id] = $0 }
+    |                                                                                `- warning: main actor-isolated static property 'space' can not be referenced from a Sendable closure
+415 |             .onDisappear { drag.frames[id] = nil }
+416 |             .simultaneousGesture(
+
+[#SendableClosureCaptures]: <https://docs.swift.org/compiler/documentation/diagnostics/sendable-closure-captures>
+[38/48] Compiling KodiakCleanerPackageTests runner.swift
+[39/48] Emitting module KodiakCleanerPackageTests
+[39/48] Write Objects.LinkFileList
+[40/48] Linking KodiakCleanerPackageTests
+[42/48] Compiling KodiakCleaner Theme.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:316:73: warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+313 | 
+314 |     /// Runs the next pop-up once the one before has closed.
+315 |     private func after(_ next: @escaping () -> Void) {
+    |                          `- note: parameter 'next' is implicitly non-Sendable
+316 |         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: next)
+    |                                                                         `- warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+317 |     }
+318 | 
+[43/48] Compiling KodiakCleaner TriggersView.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:316:73: warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+313 | 
+314 |     /// Runs the next pop-up once the one before has closed.
+315 |     private func after(_ next: @escaping () -> Void) {
+    |                          `- note: parameter 'next' is implicitly non-Sendable
+316 |         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: next)
+    |                                                                         `- warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+317 |     }
+318 | 
+[44/48] Compiling KodiakCleaner WiperModel.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:316:73: warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+313 | 
+314 |     /// Runs the next pop-up once the one before has closed.
+315 |     private func after(_ next: @escaping () -> Void) {
+    |                          `- note: parameter 'next' is implicitly non-Sendable
+316 |         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: next)
+    |                                                                         `- warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+317 |     }
+318 | 
+[45/48] Compiling KodiakCleaner WiperView.swift
+/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/Sources/KodiakCleaner/WiperModel.swift:316:73: warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+313 | 
+314 |     /// Runs the next pop-up once the one before has closed.
+315 |     private func after(_ next: @escaping () -> Void) {
+    |                          `- note: parameter 'next' is implicitly non-Sendable
+316 |         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: next)
+    |                                                                         `- warning: passing non-Sendable parameter 'next' to function expecting a '@Sendable' closure
+317 |     }
+318 | 
+[45/48] Write Objects.LinkFileList
+[46/48] Linking KodiakCleaner
+[47/48] Applying KodiakCleaner
+Build complete! (25.69s)
+Test Suite 'All tests' started at 2026-10-27 03:19:12.354.
+Test Suite 'KodiakCleanerPackageTests.xctest' started at 2026-10-27 03:19:12.358.
+Test Suite 'CleanerTests' started at 2026-10-27 03:19:12.358.
+Test Case '-[KodiakCoreTests.CleanerTests testAdvancedItemsAreNeverDefault]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testAdvancedItemsAreNeverDefault]' passed (0.007 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testBrowsersNeverLoseBookmarks]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testBrowsersNeverLoseBookmarks]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testCleaningChecksFileAgeAgain]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testCleaningChecksFileAgeAgain]' passed (0.004 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testCleaningChecksOpenProgramsAgain]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testCleaningChecksOpenProgramsAgain]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testDefaultOrderFollowsTedsRule]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testDefaultOrderFollowsTedsRule]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testDefaultPutsTickedFirstInEachGroup]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testDefaultPutsTickedFirstInEachGroup]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testFindsAndCleansOnlyWhatItShould]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testFindsAndCleansOnlyWhatItShould]' passed (0.005 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testIDsAreUnique]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testIDsAreUnique]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testKeepRecentTemporaryFilesAndExclusions]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testKeepRecentTemporaryFilesAndExclusions]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testLinkedPatternFolderStays]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testLinkedPatternFolderStays]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testLinksAreRemovedNeverFollowed]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testLinksAreRemovedNeverFollowed]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testLogsLeaveCrashReportsToTheirOwnItem]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testLogsLeaveCrashReportsToTheirOwnItem]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testMissingProgramsAreHidden]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testMissingProgramsAreHidden]' passed (0.008 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testNothingOutsideHomeOrTemp]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testNothingOutsideHomeOrTemp]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.CleanerTests testOpenProgramIsSkipped]' started.
+Test Case '-[KodiakCoreTests.CleanerTests testOpenProgramIsSkipped]' passed (0.003 seconds).
+Test Suite 'CleanerTests' passed at 2026-10-27 03:19:12.408.
+	 Executed 15 tests, with 0 failures (0 unexpected) in 0.048 (0.050) seconds
+Test Suite 'DiskEraserTests' started at 2026-10-27 03:19:12.408.
+Test Case '-[KodiakCoreTests.DiskEraserTests testAdministratorScript]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testAdministratorScript]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testCancelledPasswordPrompt]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testCancelledPasswordPrompt]' passed (0.099 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testEraseRunsEveryStep]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testEraseRunsEveryStep]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testErrorLines]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testErrorLines]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testFallbackOnlyWhenMBRFits]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testFallbackOnlyWhenMBRFits]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testNeedsRootRunsTheRestAsAdministratorOnce]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testNeedsRootRunsTheRestAsAdministratorOnce]' passed (0.606 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testPassFailureStops]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testPassFailureStops]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testProgressParsing]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testProgressParsing]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testQuoting]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testQuoting]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testReadLog]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testReadLog]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testSetupFallsBackToMBRAndReportsErrors]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testSetupFallsBackToMBRAndReportsErrors]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testStepsForEachLevel]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testStepsForEachLevel]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DiskEraserTests testStopSkipsPassesButStillSetsUp]' started.
+Test Case '-[KodiakCoreTests.DiskEraserTests testStopSkipsPassesButStillSetsUp]' passed (0.001 seconds).
+Test Suite 'DiskEraserTests' passed at 2026-10-27 03:19:13.127.
+	 Executed 13 tests, with 0 failures (0 unexpected) in 0.716 (0.718) seconds
+Test Suite 'DonationTests' started at 2026-10-27 03:19:13.127.
+Test Case '-[KodiakCoreTests.DonationTests testBannerOnEveryTenthStart]' started.
+Test Case '-[KodiakCoreTests.DonationTests testBannerOnEveryTenthStart]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testCanOptOutAfterTenStarts]' started.
+Test Case '-[KodiakCoreTests.DonationTests testCanOptOutAfterTenStarts]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testCaptions]' started.
+Test Case '-[KodiakCoreTests.DonationTests testCaptions]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testDefaultsAndSaving]' started.
+Test Case '-[KodiakCoreTests.DonationTests testDefaultsAndSaving]' passed (0.006 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testFirstStartCountsOneAndAsks]' started.
+Test Case '-[KodiakCoreTests.DonationTests testFirstStartCountsOneAndAsks]' passed (0.011 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testResetStartsTheCountAgain]' started.
+Test Case '-[KodiakCoreTests.DonationTests testResetStartsTheCountAgain]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testShouldPrompt]' started.
+Test Case '-[KodiakCoreTests.DonationTests testShouldPrompt]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testSupporterTurnsItOff]' started.
+Test Case '-[KodiakCoreTests.DonationTests testSupporterTurnsItOff]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.DonationTests testTurningItOffEarlyKeepsItOn]' started.
+Test Case '-[KodiakCoreTests.DonationTests testTurningItOffEarlyKeepsItOn]' passed (0.001 seconds).
+Test Suite 'DonationTests' passed at 2026-10-27 03:19:13.151.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.022 (0.024) seconds
+Test Suite 'FreeSpaceWiperTests' started at 2026-10-27 03:19:13.151.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testCleanupRemovesLeftoversButNotLinksOrOtherFolders]' started.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testCleanupRemovesLeftoversButNotLinksOrOtherFolders]' passed (0.004 seconds).
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testFillsThenRemovesEverything]' started.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testFillsThenRemovesEverything]' passed (1.693 seconds).
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testNoPassesIsAnError]' started.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testNoPassesIsAnError]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testRandomPassIsNotZeros]' started.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testRandomPassIsNotZeros]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testReserveStaysFree]' started.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testReserveStaysFree]' passed (0.663 seconds).
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testStopRemovesTheFillerFiles]' started.
+Test Case '-[KodiakCoreTests.FreeSpaceWiperTests testStopRemovesTheFillerFiles]' passed (0.609 seconds).
+Test Suite 'FreeSpaceWiperTests' passed at 2026-10-27 03:19:16.122.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 2.970 (2.971) seconds
+Test Suite 'RunTests' started at 2026-10-27 03:19:16.122.
+Test Case '-[KodiakCoreTests.RunTests testLargeErrorOutputDoesNotBlock]' started.
+Test Case '-[KodiakCoreTests.RunTests testLargeErrorOutputDoesNotBlock]' passed (0.217 seconds).
+Test Case '-[KodiakCoreTests.RunTests testTimeoutStopsAProgram]' started.
+Test Case '-[KodiakCoreTests.RunTests testTimeoutStopsAProgram]' passed (0.682 seconds).
+Test Suite 'RunTests' passed at 2026-10-27 03:19:17.022.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.899 (0.900) seconds
+Test Suite 'SettingsAndTextTests' started at 2026-10-27 03:19:17.022.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testBundledChangelogHasThisVersion]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testBundledChangelogHasThisVersion]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testChangelogParsing]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testChangelogParsing]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testFeedbackLinkHasNoHiddenData]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testFeedbackLinkHasNoHiddenData]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testNoEmailAddressInLinks]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testNoEmailAddressInLinks]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testResetKeepsCodeAndHistory]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testResetKeepsCodeAndHistory]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testSettingsSurviveDamageAndKeepDefaults]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testSettingsSurviveDamageAndKeepDefaults]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testVersionNames]' started.
+Test Case '-[KodiakCoreTests.SettingsAndTextTests testVersionNames]' passed (0.001 seconds).
+Test Suite 'SettingsAndTextTests' passed at 2026-10-27 03:19:17.033.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.010 (0.011) seconds
+Test Suite 'SupporterTests' started at 2026-10-27 03:19:17.033.
+Test Case '-[KodiakCoreTests.SupporterTests testBadCodes]' started.
+Test Case '-[KodiakCoreTests.SupporterTests testBadCodes]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.SupporterTests testTestKeyIsBundledAndLocksThemes]' started.
+Test Case '-[KodiakCoreTests.SupporterTests testTestKeyIsBundledAndLocksThemes]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.SupporterTests testValidCodes]' started.
+Test Case '-[KodiakCoreTests.SupporterTests testValidCodes]' passed (0.001 seconds).
+Test Suite 'SupporterTests' passed at 2026-10-27 03:19:17.037.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'ThemeTests' started at 2026-10-27 03:19:17.037.
+Test Case '-[KodiakCoreTests.ThemeTests testAccentPortMatchesLinuxEdition]' started.
+Test Case '-[KodiakCoreTests.ThemeTests testAccentPortMatchesLinuxEdition]' passed (0.004 seconds).
+Test Case '-[KodiakCoreTests.ThemeTests testEverySchemeAndAccentPasses]' started.
+Test Case '-[KodiakCoreTests.ThemeTests testEverySchemeAndAccentPasses]' passed (0.051 seconds).
+Test Case '-[KodiakCoreTests.ThemeTests testEveryTokenDefined]' started.
+Test Case '-[KodiakCoreTests.ThemeTests testEveryTokenDefined]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.ThemeTests testOneFontEverywhere]' started.
+Test Case '-[KodiakCoreTests.ThemeTests testOneFontEverywhere]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.ThemeTests testSchemePreviewStrip]' started.
+Test Case '-[KodiakCoreTests.ThemeTests testSchemePreviewStrip]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.ThemeTests testSwatchOrderAndDuplicates]' started.
+Test Case '-[KodiakCoreTests.ThemeTests testSwatchOrderAndDuplicates]' passed (0.000 seconds).
+Test Suite 'ThemeTests' passed at 2026-10-27 03:19:17.094.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.056 (0.057) seconds
+Test Suite 'TriggerTests' started at 2026-10-27 03:19:17.094.
+Test Case '-[KodiakCoreTests.TriggerTests testAppNameFromProgramPath]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testAppNameFromProgramPath]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testCronLines]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testCronLines]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testDetailTextSkipsEmptyValues]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testDetailTextSkipsEmptyValues]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testMissingProgramAndOddPlaces]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testMissingProgramAndOddPlaces]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testParsesLaunchctlOverrides]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testParsesLaunchctlOverrides]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testProtectedAndSystemRules]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testProtectedAndSystemRules]' passed (0.202 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testReadsALaunchAgentWithNotes]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testReadsALaunchAgentWithNotes]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testRejectsUnsafeLabels]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testRejectsUnsafeLabels]' passed (0.235 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testRemoveBacksUpAndRestorePutsItBack]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testRemoveBacksUpAndRestorePutsItBack]' passed (0.467 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testRestoringARemovedCronJobTwiceAddsItOnce]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testRestoringARemovedCronJobTwiceAddsItOnce]' passed (1.402 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testTabSeparatedCronLines]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testTabSeparatedCronLines]' passed (0.003 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testTriggerHoverDetails]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testTriggerHoverDetails]' passed (0.004 seconds).
+Test Case '-[KodiakCoreTests.TriggerTests testTurningOffRecordsHistory]' started.
+Test Case '-[KodiakCoreTests.TriggerTests testTurningOffRecordsHistory]' passed (0.773 seconds).
+Test Suite 'TriggerTests' passed at 2026-10-27 03:19:20.192.
+	 Executed 13 tests, with 0 failures (0 unexpected) in 3.094 (3.098) seconds
+Test Suite 'WipeDisksTests' started at 2026-10-27 03:19:20.192.
+Test Case '-[KodiakCoreTests.WipeDisksTests testAppAndHomeDisksAreRefused]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testAppAndHomeDisksAreRefused]' passed (0.004 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testDiskImagesAndUnreadableDisksAreRefused]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testDiskImagesAndUnreadableDisksAreRefused]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testIdentifiers]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testIdentifiers]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testInternalDisksAreRefusedEvenIfNotTheStartupDisk]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testInternalDisksAreRefusedEvenIfNotTheStartupDisk]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testListFailure]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testListFailure]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testListRefusesTheStartupDiskAndKeepsExternals]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testListRefusesTheStartupDiskAndKeepsExternals]' passed (0.002 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testSameDrive]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testSameDrive]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.WipeDisksTests testUnknownStartupDiskRefusesEverything]' started.
+Test Case '-[KodiakCoreTests.WipeDisksTests testUnknownStartupDiskRefusesEverything]' passed (0.001 seconds).
+Test Suite 'WipeDisksTests' passed at 2026-10-27 03:19:20.207.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.012 (0.015) seconds
+Test Suite 'WipeMethodsTests' started at 2026-10-27 03:19:20.207.
+Test Case '-[KodiakCoreTests.WipeMethodsTests testDrivePasses]' started.
+Test Case '-[KodiakCoreTests.WipeMethodsTests testDrivePasses]' passed (0.001 seconds).
+Test Case '-[KodiakCoreTests.WipeMethodsTests testFormatProblems]' started.
+Test Case '-[KodiakCoreTests.WipeMethodsTests testFormatProblems]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.WipeMethodsTests testPassesMatchWindows]' started.
+Test Case '-[KodiakCoreTests.WipeMethodsTests testPassesMatchWindows]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.WipeMethodsTests testRecommendedFormat]' started.
+Test Case '-[KodiakCoreTests.WipeMethodsTests testRecommendedFormat]' passed (0.000 seconds).
+Test Case '-[KodiakCoreTests.WipeMethodsTests testSafeLabel]' started.
+Test Case '-[KodiakCoreTests.WipeMethodsTests testSafeLabel]' passed (0.000 seconds).
+Test Suite 'WipeMethodsTests' passed at 2026-10-27 03:19:20.210.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'KodiakCleanerPackageTests.xctest' passed at 2026-10-27 03:19:20.210.
+	 Executed 87 tests, with 0 failures (0 unexpected) in 7.832 (7.852) seconds
+Test Suite 'All tests' passed at 2026-10-27 03:19:20.210.
+	 Executed 87 tests, with 0 failures (0 unexpected) in 7.832 (7.856) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

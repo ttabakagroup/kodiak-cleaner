@@ -1,0 +1,91 @@
+ZIP contents:
+Archive:  dist/KodiakCleaner-Dev-Mac.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  10-27-2026 03:20   Docs/
+     3356  10-27-2026 03:20   Docs/TermsOfUse.txt
+      127  10-27-2026 03:20   Docs/Download.url
+    11033  10-27-2026 03:20   Docs/Changelog.txt
+     3787  10-27-2026 03:20   Docs/ReadMe.txt
+     2502  10-27-2026 03:20   Docs/Privacy.txt
+       56  10-27-2026 03:20   Docs/Homepage.url
+     1067  10-27-2026 03:20   Docs/License.txt
+        0  10-27-2026 03:20   Kodiak Cleaner.app/
+        0  10-27-2026 03:20   Kodiak Cleaner.app/Contents/
+        0  10-27-2026 03:20   Kodiak Cleaner.app/Contents/_CodeSignature/
+     4632  10-27-2026 03:20   Kodiak Cleaner.app/Contents/_CodeSignature/CodeResources
+        0  10-27-2026 03:20   Kodiak Cleaner.app/Contents/MacOS/
+  8299680  10-27-2026 03:20   Kodiak Cleaner.app/Contents/MacOS/KodiakCleaner
+        0  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/
+     3186  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/terms-of-use.md
+    10947  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/CHANGELOG.md
+     2353  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/PRIVACY.md
+   180225  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/AppIcon.icns
+    56335  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/logo.png
+        0  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/keys/
+      178  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/keys/supporter-public.pem
+      148  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/keys/withdrawn-codes.txt
+        0  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/Fonts/
+     4388  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/Fonts/Fredoka-OFL.txt
+    69832  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/Fonts/Fredoka-Regular.ttf
+    75488  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Resources/Fonts/Fredoka-SemiBold.ttf
+     1194  10-27-2026 03:20   Kodiak Cleaner.app/Contents/Info.plist
+---------                     -------
+  8730514                     28 files
+
+Disk image:
+Format Description: UDIF read-only compressed (zlib)
+Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+		Checksum Type: CRC32
+Format: UDZO
+/Users/runner/work/_temp/dmg:
+total 0
+drwxr-xr-x   5 runner  staff  160 Oct 27 03:20 .
+drwxr-xr-x  11 runner  staff  352 Oct 27 03:20 ..
+lrwxr-xr-x   1 runner  staff   13 Oct 27 03:20 Applications -> /Applications
+drwxr-xr-x   9 runner  staff  288 Oct 27 03:20 Docs
+drwxr-xr-x   3 runner  staff   96 Oct 27 03:20 Kodiak Cleaner.app
+
+/Users/runner/work/_temp/dmg/Docs:
+total 72
+drwxr-xr-x  9 runner  staff    288 Oct 27 03:20 .
+drwxr-xr-x  5 runner  staff    160 Oct 27 03:20 ..
+-rw-r--r--  1 runner  staff  11033 Oct 27 03:20 Changelog.txt
+-rw-r--r--  1 runner  staff    127 Oct 27 03:20 Download.url
+-rw-r--r--  1 runner  staff     56 Oct 27 03:20 Homepage.url
+-rw-r--r--  1 runner  staff   1067 Oct 27 03:20 License.txt
+-rw-r--r--  1 runner  staff   2502 Oct 27 03:20 Privacy.txt
+-rw-r--r--  1 runner  staff   3787 Oct 27 03:20 ReadMe.txt
+-rw-r--r--  1 runner  staff   3356 Oct 27 03:20 TermsOfUse.txt
+
+Signature:
+Executable=/Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/Kodiak Cleaner.app/Contents/MacOS/KodiakCleaner
+Identifier=app.kodiakcleaner.Mac
+Format=app bundle with Mach-O universal (x86_64 arm64)
+CodeDirectory v=20400 size=8142 flags=0x2(adhoc) hashes=248+3 location=embedded
+Signature=adhoc
+Info.plist entries=16
+TeamIdentifier=not set
+Sealed Resources version=2 rules=13 files=10
+Internal requirements count=0 size=12
+
+Architectures:
+x86_64 arm64
+
+Gatekeeper's view (unsigned Dev build, expected to be rejected):
+dist/Kodiak Cleaner.app: rejected
+
+total 10784
+drwxr-xr-x   6 runner  staff      192 Oct 27 03:20 .
+drwxr-xr-x  20 runner  staff      640 Oct 27 03:20 ..
+drwxr-xr-x   9 runner  staff      288 Oct 27 03:20 Docs
+drwxr-xr-x   3 runner  staff       96 Oct 27 03:20 Kodiak Cleaner.app
+-rw-r--r--@  1 runner  staff  2995678 Oct 27 03:20 KodiakCleaner-Dev-Mac.dmg
+-rw-r--r--   1 runner  staff  2521530 Oct 27 03:20 KodiakCleaner-Dev-Mac.zip

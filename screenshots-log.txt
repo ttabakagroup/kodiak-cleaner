@@ -1,0 +1,150 @@
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/home-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/about-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-general-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-supporter-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-feedback-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-changelog-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-developer-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/home-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/about-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-general-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-supporter-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-feedback-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-changelog-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-developer-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-classic-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-classic-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-classic-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-classic-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-classic-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-classic-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-classic-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-classic-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-classic-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-classic-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-classic-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-classic-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-glacier-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-glacier-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-glacier-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-glacier-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-glacier-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-glacier-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-glacier-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-glacier-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-glacier-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-glacier-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-glacier-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-glacier-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-lagoon-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-lagoon-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-lagoon-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-lagoon-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-lagoon-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-lagoon-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/cleaner-lagoon-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/triggers-lagoon-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-lagoon-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/beta-notice-lagoon-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-lagoon-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/dialog-lagoon-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-entire-honey-light.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-entire-honey-dark.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-entire-changed.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-entire-uninitialized.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/wiper-check.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/accent-teal.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/accent-purple.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/accent-macos.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/settings-appearance-free.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-banner.png
+Saved /Users/runner/work/kodiak-cleaner/kodiak-cleaner/macos/dist/screenshots/donation-free.png
+about-honey-dark.png
+about-honey-light.png
+accent-macos.png
+accent-purple.png
+accent-teal.png
+beta-notice-classic-dark.png
+beta-notice-classic-light.png
+beta-notice-glacier-dark.png
+beta-notice-glacier-light.png
+beta-notice-honey-dark.png
+beta-notice-honey-light.png
+beta-notice-lagoon-dark.png
+beta-notice-lagoon-light.png
+cleaner-classic-dark.png
+cleaner-classic-light.png
+cleaner-glacier-dark.png
+cleaner-glacier-light.png
+cleaner-honey-dark.png
+cleaner-honey-light.png
+cleaner-lagoon-dark.png
+cleaner-lagoon-light.png
+dialog-classic-dark.png
+dialog-classic-light.png
+dialog-glacier-dark.png
+dialog-glacier-light.png
+dialog-honey-dark.png
+dialog-honey-light.png
+dialog-lagoon-dark.png
+dialog-lagoon-light.png
+donation-banner.png
+donation-classic-dark.png
+donation-classic-light.png
+donation-free.png
+donation-glacier-dark.png
+donation-glacier-light.png
+donation-honey-dark.png
+donation-honey-light.png
+donation-lagoon-dark.png
+donation-lagoon-light.png
+home-honey-dark.png
+home-honey-light.png
+settings-appearance-classic-dark.png
+settings-appearance-classic-light.png
+settings-appearance-free.png
+settings-appearance-glacier-dark.png
+settings-appearance-glacier-light.png
+settings-appearance-honey-dark.png
+settings-appearance-honey-light.png
+settings-appearance-lagoon-dark.png
+settings-appearance-lagoon-light.png
+settings-changelog-honey-dark.png
+settings-changelog-honey-light.png
+settings-developer-honey-dark.png
+settings-developer-honey-light.png
+settings-feedback-honey-dark.png
+settings-feedback-honey-light.png
+settings-general-honey-dark.png
+settings-general-honey-light.png
+settings-supporter-honey-dark.png
+settings-supporter-honey-light.png
+triggers-classic-dark.png
+triggers-classic-light.png
+triggers-glacier-dark.png
+triggers-glacier-light.png
+triggers-honey-dark.png
+triggers-honey-light.png
+triggers-lagoon-dark.png
+triggers-lagoon-light.png
+wiper-check.png
+wiper-entire-changed.png
+wiper-entire-honey-dark.png
+wiper-entire-honey-light.png
+wiper-entire-uninitialized.png
+wiper-honey-dark.png
+wiper-honey-light.png

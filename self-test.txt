@@ -1,0 +1,48 @@
+Kodiak Cleaner for Mac 0.8.16 Dev on macOS 26.6.2 (Apple silicon)
+PASS  Version from the app's Info.plist: 0.8.16 Dev
+PASS  Bundled logo.png
+PASS  Bundled CHANGELOG.md
+PASS  Bundled PRIVACY.md
+PASS  Bundled terms-of-use.md
+PASS  Bundled Fonts/Fredoka-Regular.ttf
+PASS  Bundled Fonts/Fredoka-SemiBold.ttf
+PASS  Bundled Fonts/Fredoka-OFL.txt
+PASS  Bundled keys/supporter-public.pem
+PASS  Changelog has this version: 0.8.16 Dev
+PASS  Cleaner catalog: 20 of 76 items on this Mac
+      macOS / Crash Reports: 0 files, 0 bytes
+      macOS / Logs: 7 files, 2552 bytes
+      macOS / Quick Look Thumbnails: Size shown after cleaning
+      macOS / Saved Window State: 0 files, 0 bytes
+      macOS / Shell History: 0 files, 0 bytes
+      macOS / Temporary Files: 0 files, 0 bytes
+      macOS / Trash: 0 files, 0 bytes
+      Mail / Mail Downloads: 0 files, 0 bytes
+      Safari / Cache: 0 files, 0 bytes
+      Safari / Cookies: 0 files, 0 bytes
+      Safari / History: 0 files, 0 bytes
+      Homebrew / Download Cache: 1397 files, 42108982 bytes
+      Homebrew / Old Versions: Size shown after cleaning
+      npm / Package Cache: 0 files, 0 bytes
+      pip / Package Cache: 14 files, 2027238 bytes
+      Xcode / Derived Data: 0 files, 0 bytes
+      Xcode / Simulator Caches: 0 files, 0 bytes
+      Yarn / Package Cache: 0 files, 0 bytes
+      Advanced Cleaning / Entire Cache Folder: 3009 files, 370553383 bytes
+      Advanced Cleaning / Xcode Device Support: 0 files, 0 bytes
+PASS  Analyze every item: 414692155 bytes found
+PASS  Triggers list: Apple Launch Agents: 465, Apple Launch Daemons: 422, Launch Agents for All Users: 5, Launch Agents for You: 1, Launch Daemons: 7, Shell Startup Files: 2, System Shell Startup Files: 4
+      Worth a look: runner-provisioner: Added or changed in the last 7 days
+      Worth a look: .bash_profile: Added or changed in the last 7 days
+PASS  launchctl print-disabled
+PASS  Full Disk Access check runs: allowed
+PASS  Drive Wiper lists the disks: 1 disks
+      Apple Inc. VirtIO Block Media (disk0): SSD, 348966092800 bytes, internal, bus , volumes No Volumes: macOS starts from this disk.
+PASS  Drive Wiper refuses the startup disk
+PASS  Drive Wiper lists volumes for free space: Macintosh HD (apfs, SSD yes, 100793528320 bytes)
+      diskutil zeroDisk: Usage:  diskutil zeroDisk [force] [short] MountPoint|DiskIdentifier|DeviceNode | Write zeros across the given whole disk or partition. | After this operation, a whole disk will need to be partitioned ("diskutil | partitionDisk") to be used again as a partition map; a partition will need to | be erased ("diskutil eraseVolume") to be used again as a volume for files. | Specifying "force" will do best-effort force unmounts and shared writes.
+      diskutil randomDisk: Usage:  diskutil randomDisk [times] MountPoint|DiskIdentifier|DeviceNode | Write random information across the given whole disk or partition. | Times is the number of times to write random information. | After this operation, a whole disk will need to be partitioned; a partition | will need to be erased (newfs'd), in order to be used again as a volume. | Ownership of the affected disk is required.
+      diskutil eraseDisk: Usage:  diskutil eraseDisk [-noEFI] format name | [APM[Format]|MBR[Format]|GPT[Format]] MountPoint|DiskIdentifier|DeviceNode | (Re)-partition a whole disk (create a new partition map). This completely | erases any existing data on the given whole disk; all volumes on this disk | will be destroyed. Format is the specific file system name you want to erase it | as (HFS+, etc.). Name is the (new) volume name (subject to file system naming
+      diskutil listFilesystems: Formattable file systems | These file system personalities can be used for erasing and partitioning. | When specifying a personality as a parameter to a verb, case is not considered. | Certain common aliases (also case-insensitive) are listed below as well. | ------------------------------------------------------------------------------- | PERSONALITY                     USER VISIBLE NAME                                | ------------------------------------------------------------------------------- | Case-sensitive APFS             APFS (Case-sensitive)                            |   (or) APFSX | APFS                            APFS                                             |   (or) APFSI | ExFAT                           ExFAT                                            | Free Space                      Free Space                                       |   (or) FREE | MS-DOS                          MS-DOS (FAT)                                     | MS-DOS FAT12                    MS-DOS (FAT12)                                   | MS-DOS FAT16                    MS-DOS (FAT16)                                   | MS-DOS FAT32                    MS-DOS (FAT32)                                   |   (or) FAT32 | HFS+                            Mac OS Extended                                  | Case-sensitive HFS+             Mac OS Extended (Case-sensitive)                 |   (or) HFSX | Case-sensitive Journaled HFS+   Mac OS Extended (Case-sensitive, Journaled)      |   (or) JHFSX | Journaled HFS+                  Mac OS Extended (Journaled)                      |   (or) JHFS+
+PASS  diskutil knows the file systems
+PASS  Fredoka fonts
